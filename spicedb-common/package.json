@@ -1,0 +1,45 @@
+{
+  "name": "@code/spicedb-common",
+  "version": "0.1.0",
+  "description": "",
+  "scripts": {
+    "test": "react-scripts test",
+    "lint": "../node_modules/.bin/eslint src",
+    "lint-fix": "../node_modules/.bin/eslint --fix src"
+  },
+  "author": "",
+  "eslintConfig": {
+    "extends": "react-app"
+  },
+  "peerDependencies": {
+    "@apollo/client": "^3.3.21",
+    "@apollo/link-context": "^2.0.0-beta.3",
+    "@auth0/auth0-react": "^1.9.0",
+    "@auth0/auth0-spa-js": "^1.17.0",
+    "@material-ui/core": "^4.11.2",
+    "@material-ui/icons": "^4.11.2",
+    "@material-ui/labs": "^4.11.2",
+    "@types/parsimmon": "^1.10.6",
+    "google-protobuf": "^3.15.0-rc.1",
+    "graphql": "16.0.1",
+    "grpc-web": "^1.2.1",
+    "parsimmon": "^1.16.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.13.1",
+    "react-router-dom": "^5.2.0",
+    "string-to-color": "^2.2.2",
+    "yaml": "^1.10.2"
+  },
+  "dependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.4.0",
+    "@fortawesome/free-solid-svg-icons": "^6.2.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
+    "@glideapps/glide-data-grid": "^4.0.2",
+    "@glideapps/glide-data-grid-cells": "^4.0.2",
+    "@protobuf-ts/plugin": "^2.6.0",
+    "ajv": "^8.11.0",
+    "dequal": "^2.0.2",
+    "react-cookie": "^4.1.1",
+    "string-to-color": "^2.2.2"
+  }
+}

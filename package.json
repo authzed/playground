@@ -1,0 +1,15 @@
+{
+  "name": "code",
+  "private": "true",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "yarn workspace playground build && ./scripts/copy-build.sh"
+  },
+  "workspaces": [
+    "spicedb-common",
+    "playground-ui",
+    "playground"
+  ],
+  "dependencies": {}
+}
