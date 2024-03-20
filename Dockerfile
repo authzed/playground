@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=node:14.16-alpine3.12
+ARG BASE_IMAGE=node:18-alpine3.18
 
 FROM --platform=$BUILDPLATFORM $BASE_IMAGE AS playground-builder
 WORKDIR /app
@@ -15,6 +15,7 @@ COPY ./playground ./playground
 WORKDIR /app/playground
 
 ARG APPLICATION_ROOT=/
+ARG NODE_OPTIONS=--openssl-legacy-provider
 ENV PUBLIC_URL ${APPLICATION_ROOT}
 RUN yarn build
 

@@ -43,7 +43,7 @@ Deploy an instance hosted on Vercel
 or using the Vercel CLI
 
 ```command
-vercel build
+NODE_OPTIONS=--openssl-legacy-provider vercel build
 vercel deploy --prebuilt
 ```
 
@@ -51,10 +51,12 @@ vercel deploy --prebuilt
 
 The `build` directory in the project root directory after running `yarn build` will contain an optimized production React application that can be served using your preferred NodeJS hosting method.
 
+> ℹ️ Node v18.x is required.
+
 For example:
 
 ```command
-yarn global install serve
+NODE_OPTIONS=--openssl-legacy-provider yarn global install serve
 cd build
 serve
 ```
