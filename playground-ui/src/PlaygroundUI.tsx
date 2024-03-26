@@ -106,7 +106,7 @@ function Themed(props: PropsWithChildren<PlaygroundUIProps>) {
 }
 
 /**
- * PlaygroundUI defines a skeleton (doot-doot) for modern admin-panel-style React apps.
+ * PlaygroundUI defines a skeleton for modern admin-panel-style React apps.
  *
  * @param props The properties for the PlaygroundUI skeleton.
  * @example <PlaygroundUI appBarState={appBarState} drawerContent={drawerContent}>content</PlaygroundUI>

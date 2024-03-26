@@ -4,13 +4,6 @@
   "ga": {
     "measurementId": ""
   },
-  "auth0": {
-    "domain": "",
-    "clientID": "",
-    "logoutRedirectURL": "",
-    "useLocalStorageCache": false,
-    "connection": ""
-  },
   "oidc": {
     "urlPrefix": ""
   },

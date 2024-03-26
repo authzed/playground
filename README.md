@@ -10,7 +10,7 @@ SpiceDB Playground features include:
 - Visual relationship editor with support for defining caveat context data
 - Developer system that detects and presents schema and data errors
 - Real-time check requests against a full SpiceDB instance running client side via WASM
-- Fully functional zed CLI instance running client side via WASM
+- Fully functional [zed](https://github.com/authzed/zed) CLI instance running client side via WASM
 - Schema and relationship graph visualization
 - Import and export schema and workspace data as a YAML file
 
@@ -20,7 +20,7 @@ SpiceDB is a graph database purpose-built for storing and evaluating access cont
 
 As of 2021, broken access control became the #1 threat to the web. With SpiceDB, developers finally have the solution to stopping this threat the same way as the hyperscalers.
 
-Learn more about [SpiceDB &#8599;](https://authzed.com/spicedb)
+Learn more about [SpiceDB](https://authzed.com/spicedb)
 
 ## Getting Started
 
@@ -69,17 +69,15 @@ Run `yarn install` in the _root_ project directory.
 
 ## Updating wasm dependencies
 
-The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the following files with the appropriate tag/commit hash.
+The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the following script files with the appropriate tag/commit hash and then run from the project root:
 
-From the project root, run:
+`yarn run update:spicedb`
 
-`./scripts/update-spicedb.sh`
-
-`./scripts/update-zed.sh`
+`yarn run update:zed`
 
 ## Developing your own schema
 
-You can try both SpiceDB and zed entirely in your browser on a SpiceDB Playground deployment thanks to the power of WebAssembly.
+You can try both [SpiceDB](https://github.com/authzed/spicedb) and [zed](https://github.com/authzed/zed) entirely in your browser on a SpiceDB Playground deployment thanks to the power of [WebAssembly](https://authzed.com/blog/some-assembly-required).
 
 If you don't want to start with the examples loadable from a Playground, you can follow a guide for [developing a schema] or review the the schema language [design documentation].
 
@@ -112,5 +110,6 @@ Our [documentation website] is also open source if you'd like to clarify anythin
 
 SpiceDB is a community project where everyone is invited to participate and [feel welcomed].
 While the project has a technical goal, participation is not restricted to those with code contributions.
+Join our [Community Discord](https://authzed.com/discord) to ask questions and meet other users.
 
 [feel welcomed]: CODE-OF-CONDUCT.md

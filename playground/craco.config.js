@@ -19,8 +19,7 @@ module.exports = {
       return webpackConfig;
     },
     headers: {
-      'Content-Security-Policy':
-        "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com",
+      'Content-Security-Policy': "frame-ancestors 'self'",
     },
   },
   plugins: [

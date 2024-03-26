@@ -1,6 +1,5 @@
 import {
   AllowedAuthenticationTypes,
-  Auth0Config,
   OIDCConfig,
 } from '@code/spicedb-common/src/authn/provider';
 import { env } from 'process';
@@ -10,8 +9,6 @@ import * as config from '../config.json';
  * Configuration that we get through an environment js file.
  */
 interface EnvConfig {
-  AUTH0_CLIENT_ID?: string;
-  AUTH0_CONNECTION_NAME?: string;
   OIDC_URL_PREFIX?: string;
   AUTHENTICATION_ENGINE?: string;
 
@@ -88,7 +85,6 @@ interface ApplicationConfig {
 
   discord: DiscordConfig;
 
-  auth0: Auth0Config;
   oidc: OIDCConfig;
 }
 
@@ -111,10 +107,8 @@ export default function AppConfig(): ApplicationConfig {
   let typed = {
     authentication: config.authentication as AllowedAuthenticationTypes,
     authzed: config.authzed ?? ({} as AuthzedConfig),
-    auth0: config.auth0,
-    oidc: config.oidc,
     ga: config.ga,
-
+    oidc: config.oidc,
     discord: config.discord,
   };
 
@@ -141,14 +135,6 @@ export default function AppConfig(): ApplicationConfig {
 
     if (window._env_.GOOGLE_ANALYTICS_MEASUREMENT_ID) {
       typed.ga.measurementId = window._env_.GOOGLE_ANALYTICS_MEASUREMENT_ID;
-    }
-
-    if (window._env_.AUTH0_CLIENT_ID) {
-      typed.auth0.clientID = window._env_.AUTH0_CLIENT_ID;
-    }
-
-    if (window._env_.AUTH0_CONNECTION_NAME) {
-      typed.auth0.connection = window._env_.AUTH0_CONNECTION_NAME;
     }
 
     if (window._env_.OIDC_URL_PREFIX) {
