@@ -14,7 +14,7 @@ All communication in these forums abides by our [Code of Conduct].
 ## Creating issues
 
 If any part of the project has a bug or documentation mistakes, please let us know by opening an issue.
-All bugs and mistakes are considered very seriously, regardless of complexity.
+All bugs and mistakes are considered seriously, regardless of complexity.
 
 Before creating an issue, please check that an issue reporting the same problem does not already exist.
 To make the issue accurate and easy to understand, please try to create issues that are:

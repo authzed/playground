@@ -1,6 +1,13 @@
-# SpiceDB Playground
+<a href="https://authzed.com#gh-dark-mode-only" target="_blank">
+    <img width="300" src="https://github.com/authzed/spicedb/assets/343539/82234426-468b-4297-8b5c-f06a44fe2278" alt="spicedb logo">
+</a>
+<a href="https://authzed.com#gh-light-mode-only" target="_blank">
+    <img width="300" src="https://github.com/authzed/spicedb/assets/343539/312ff046-7076-4c30-afd4-2e3d86c06f51" alt="spicedb Logo">
+</a>
 
-The SpiceDB Playground is an interactive app for building a SpiceDB schema, interacting with test relationships, and quickly iterating with test assertions.
+# Playground
+
+The SpiceDB Playground is an interactive app for building a [SpiceDB] schema, interacting with test relationships, and quickly iterating with test assertions.
 
 Whether you're just getting started learning SpiceDB concepts or need to develop a new permissions system schema for your application, the SpiceDB playground has functionality to help.
 
@@ -20,7 +27,9 @@ SpiceDB is a graph database purpose-built for storing and evaluating access cont
 
 As of 2021, broken access control became the #1 threat to the web. With SpiceDB, developers finally have the solution to stopping this threat the same way as the hyperscalers.
 
-Learn more about [SpiceDB](https://authzed.com/spicedb)
+Learn more about [SpiceDB]
+
+[SpiceDB]: https://authzed.com/spicedb
 
 ## Getting Started
 
