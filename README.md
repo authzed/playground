@@ -40,7 +40,7 @@ Learn more about [SpiceDB]
 Run the latest Docker container
 
 ```command
-docker run -it authzed/spicedb-playground:latest
+docker run -it ghcr.io/authzed/spicedb-playground:latest
 ```
 
 ### Vercel
