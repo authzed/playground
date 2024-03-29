@@ -43,6 +43,12 @@ Run the latest Docker container
 docker run -it ghcr.io/authzed/spicedb-playground:latest
 ```
 
+Connect to the running container. Port 3000 is exposed by default.
+
+```command
+http://<container>:3000
+```
+
 ### Vercel
 
 Deploy an instance hosted on Vercel
