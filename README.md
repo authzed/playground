@@ -40,7 +40,7 @@ Learn more about [SpiceDB]
 Run the latest Docker container
 
 ```command
-docker run -it ghcr.io/authzed/spicedb-playground:latest
+docker run -p 3000:3000 -it ghcr.io/authzed/spicedb-playground:latest
 ```
 
 Connect to the running container. Port 3000 is exposed by default.
