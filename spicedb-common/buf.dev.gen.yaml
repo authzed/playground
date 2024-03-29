@@ -1,0 +1,9 @@
+#!/usr/bin/env -S buf generate ../../spicedb/proto/internal/developer/v1/developer.proto --template
+---
+version: 'v1'
+plugins:
+  - plugin: buf.build/community/timostamm-protobuf-ts:v2.9.1
+    out: 'src/protodevdefs'
+    opt:
+      - long_type_string
+      - generate_dependencies

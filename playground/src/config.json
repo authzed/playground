@@ -1,0 +1,15 @@
+{
+  "authentication": "none",
+  "authzed": null,
+  "ga": {
+    "measurementId": ""
+  },
+  "oidc": {
+    "urlPrefix": ""
+  },
+  "discord": {
+    "inviteUrl": "https://authzed.com/discord",
+    "serverId": "",
+    "channelId": ""
+  }
+}
