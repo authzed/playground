@@ -9,12 +9,7 @@ const resolvePackage = (relativePath) => {
 
 module.exports = {
   webpack: {
-    plugins: [
-      new DefinePlugin({
-        // Use build timestamp as version id
-        'process.env.WASM_VERSION': DefinePlugin.runtimeValue(Date.now, true),
-      }),
-    ],
+    plugins: [],
     configure: (webpackConfig, { env, paths }) => {
       return webpackConfig;
     },

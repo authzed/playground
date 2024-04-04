@@ -17,7 +17,7 @@ import {
 } from '../protodevdefs/developer/v1/developer';
 
 const WASM_FILE = `${process.env.PUBLIC_URL}/static/main.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 31161196; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 45260507; // bytes
 const ENTRYPOINT_FUNCTION = 'runSpiceDBDeveloperRequest';
 
 /**
@@ -210,8 +210,6 @@ class DeveloperServiceRequest {
   }
 }
 
-const wasmVersion: number | string = Math.random();
-
 /**
  * useDeveloperService returns a reference to the developer service for invoking calls against the WASM-based
  * developer package. Note that it is safe to invoke this hook multiple times; it will instantiate a singleton
@@ -240,7 +238,7 @@ export function useDeveloperService(): DeveloperService {
     }
 
     // Fetch the WASM file with progress tracking.
-    const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
+    const fetched = await fetch(WASM_FILE);
     const contentLength = +(
       fetched.headers.get('Content-Length') ?? ESTIMATED_WASM_BINARY_SIZE
     );
@@ -270,7 +268,7 @@ export function useDeveloperService(): DeveloperService {
 
     // Refetch, which should be from cache.
     const go = new (window as any).Go();
-    const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
+    const refetched = await fetch(WASM_FILE);
 
     try {
       const result = await WebAssembly.instantiateStreaming(

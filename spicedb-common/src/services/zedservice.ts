@@ -4,7 +4,7 @@ import { parseRelationships } from '../parsing';
 import { RequestContext } from '../protodevdefs/developer/v1/developer';
 
 const WASM_FILE = `${process.env.PUBLIC_URL}/static/zed.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 49262480; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 52643236; // bytes
 const ENTRYPOINT_FUNCTION = 'runZedCommand';
 
 /**
@@ -59,8 +59,6 @@ export type ZedServiceState =
       progress: number;
     };
 
-const wasmVersion: number | string = Math.random();
-
 export function useZedService(): ZedService {
   const [state, setState] = useState<ZedServiceState>({
     status: 'standby',
@@ -84,7 +82,7 @@ export function useZedService(): ZedService {
     }
 
     // Fetch the WASM file with progress tracking.
-    const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
+    const fetched = await fetch(WASM_FILE);
     const contentLength = +(
       fetched.headers.get('Content-Length') ?? ESTIMATED_WASM_BINARY_SIZE
     );
@@ -114,7 +112,7 @@ export function useZedService(): ZedService {
 
     // Refetch, which should be from cache.
     const go = new (window as any).Go();
-    const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
+    const refetched = await fetch(WASM_FILE);
 
     try {
       const result = await WebAssembly.instantiateStreaming(

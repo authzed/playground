@@ -62,11 +62,13 @@ NODE_OPTIONS=--openssl-legacy-provider vercel build
 vercel deploy --prebuilt
 ```
 
+> ℹ️  Git Large File Storage (LFS) must be enabled in your Vercel project settings.
+
 ### NodeJS
 
 The `build` directory in the project root directory after running `yarn build` will contain an optimized production React application that can be served using your preferred NodeJS hosting method.
 
-> ℹ️ Node v18.x is required.
+> ℹ️  Node v18.x is required.
 
 For example:
 
