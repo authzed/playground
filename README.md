@@ -86,11 +86,16 @@ Run `yarn install` in the _root_ project directory.
 
 ## Updating wasm dependencies
 
-The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the following script files with the appropriate tag/commit hash and then run from the project root:
+The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the [wasm-config.json] file with the desired tag/commit hash and then run from the project root:
 
 `yarn run update:spicedb`
 
 `yarn run update:zed`
+
+> ℹ️ [jq] is required and must be installed.
+
+[wasm-config.json]: https://github.com/authzed/playground/blob/wasm-caching/spicedb-common/wasm-config.json
+[jq]: https://jqlang.github.io/jq/
 
 ## Developing your own schema
 

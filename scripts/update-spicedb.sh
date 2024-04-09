@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION=$(grep spicedb ./spicedb-common/wasm-config.json | sed -E  's/"spicedb":.*"(.*)".*/\1/' | xargs)
+VERSION=$(jq -r '.spicedb' ./spicedb-common/wasm-config.json)
 if [ -z ${VERSION} ] ; then
     echo "SpiceDB version not defined in wasm config" >&2
     exit 1
