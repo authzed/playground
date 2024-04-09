@@ -2,9 +2,10 @@ import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodev
 import { useCallback, useEffect, useState } from 'react';
 import { parseRelationships } from '../parsing';
 import { RequestContext } from '../protodevdefs/developer/v1/developer';
+import wasmConfig from '../../wasm-config.json';
 
 const WASM_FILE = `${process.env.PUBLIC_URL}/static/zed.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 52643236; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
 const ENTRYPOINT_FUNCTION = 'runZedCommand';
 
 /**
@@ -59,6 +60,10 @@ export type ZedServiceState =
       progress: number;
     };
 
+const wasmVersion: number | string = wasmConfig?.zed
+  ? encodeURIComponent(wasmConfig.zed)
+  : Math.random();
+
 export function useZedService(): ZedService {
   const [state, setState] = useState<ZedServiceState>({
     status: 'standby',
@@ -82,7 +87,7 @@ export function useZedService(): ZedService {
     }
 
     // Fetch the WASM file with progress tracking.
-    const fetched = await fetch(WASM_FILE);
+    const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
     const contentLength = +(
       fetched.headers.get('Content-Length') ?? ESTIMATED_WASM_BINARY_SIZE
     );
@@ -112,7 +117,7 @@ export function useZedService(): ZedService {
 
     // Refetch, which should be from cache.
     const go = new (window as any).Go();
-    const refetched = await fetch(WASM_FILE);
+    const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
 
     try {
       const result = await WebAssembly.instantiateStreaming(
