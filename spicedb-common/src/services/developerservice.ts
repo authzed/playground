@@ -15,9 +15,10 @@ import {
   RunValidationParameters,
   RunValidationResult,
 } from '../protodevdefs/developer/v1/developer';
+import wasmConfig from '../../wasm-config.json';
 
 const WASM_FILE = `${process.env.PUBLIC_URL}/static/main.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 31161196; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes
 const ENTRYPOINT_FUNCTION = 'runSpiceDBDeveloperRequest';
 
 /**
@@ -210,7 +211,9 @@ class DeveloperServiceRequest {
   }
 }
 
-const wasmVersion: number | string = Math.random();
+const wasmVersion: number | string = wasmConfig?.spicedb
+  ? encodeURIComponent(wasmConfig.spicedb)
+  : Math.random();
 
 /**
  * useDeveloperService returns a reference to the developer service for invoking calls against the WASM-based
