@@ -102,6 +102,9 @@ export function flatMapExpression<T>(
   walker: ExprWalker<T>
 ): T[] {
   switch (expr.kind) {
+    case 'namedarrow':
+      // fallthrough
+      
     case 'arrow':
       const arrowResult = walker(expr);
       const childResults = flatMapExpression<T>(expr.sourceRelation, walker);
@@ -231,6 +234,7 @@ export type ParsedExpression =
   | ParsedBinaryExpression
   | ParsedRelationRefExpression
   | ParsedArrowExpression
+  | ParsedNamedArrowExpression
   | ParsedNilExpression;
 
 export interface ParsedArrowExpression {
@@ -239,6 +243,15 @@ export interface ParsedArrowExpression {
   targetRelationOrPermission: string;
   range: TextRange;
 }
+
+export interface ParsedNamedArrowExpression {
+  kind: 'namedarrow';
+  sourceRelation: ParsedRelationRefExpression;
+  functionName: string;
+  targetRelationOrPermission: string;
+  range: TextRange;
+}
+
 
 export interface ParsedRelationRefExpression {
   kind: 'relationref';
@@ -357,6 +370,7 @@ const rcaret = lexeme(string('>'));
 const arrow = lexeme(string('->'));
 const hash = lexeme(string('#'));
 const comma = lexeme(string(','));
+const dot = lexeme(string('.'));
 
 const terminator: any = newline.or(semicolon);
 
@@ -447,6 +461,24 @@ const arrowExpr: any = Parsimmon.lazy(() => {
   );
 });
 
+
+const namedArrowExpr: any = Parsimmon.lazy(() => {
+  return Parsimmon.seqMap(
+    Parsimmon.index,
+    seq(relationReference, dot, identifier, lparen, identifier, rparen),
+    Parsimmon.index,
+    function (startIndex, data, endIndex) {
+      return {
+        kind: 'namedarrow',
+        sourceRelation: data[0],
+        functionName: data[2],
+        targetRelationOrPermission: data[4],
+        range: { startIndex: startIndex, endIndex: endIndex },
+      };
+    }
+  );
+});
+
 const nilExpr: any = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
@@ -467,6 +499,7 @@ const parensExpr: any = Parsimmon.lazy(() =>
     .then(expr)
     .skip(string(')'))
     .or(arrowExpr)
+    .or(namedArrowExpr)
     .or(nilExpr)
     .or(relationReference)
 );

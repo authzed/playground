@@ -2,6 +2,7 @@ import {
   ParsedArrowExpression,
   ParsedBinaryExpression,
   ParsedCaveatDefinition,
+  ParsedNamedArrowExpression,
   ParsedNilExpression,
   ParsedObjectDefinition,
   ParsedRelationRefExpression,
@@ -449,6 +450,43 @@ describe('parsing', () => {
     expect(
       (rightExpr.sourceRelation as ParsedRelationRefExpression).relationName
     ).toEqual('org');
+    expect(rightExpr.targetRelationOrPermission).toEqual('admin');
+  });
+
+  it('parses a named arrow expression', () => {
+    const schema = `definition user {}
+
+        definition organization {
+            relation admin: user;
+        }
+
+        definition document {
+            relation reader: user
+            relation org: organization
+
+            permission read = reader + org.any(admin)
+        }`;
+
+    const parsed = parseSchema(schema);
+    expect(parsed?.definitions?.length).toEqual(3);
+
+    const definition = parsed?.definitions[2]! as ParsedObjectDefinition;
+    expect(definition.name).toEqual('document');
+    expect(definition.relations.length).toEqual(2);
+    expect(definition.permissions.length).toEqual(1);
+
+    const read = definition.permissions[0]!;
+    expect(read.name).toEqual('read');
+
+    const expr = read.expr as ParsedBinaryExpression;
+    const leftExpr = expr.left as ParsedRelationRefExpression;
+    expect(leftExpr.relationName).toEqual('reader');
+
+    const rightExpr = expr.right as ParsedNamedArrowExpression;
+    expect(
+      (rightExpr.sourceRelation as ParsedRelationRefExpression).relationName
+    ).toEqual('org');
+    expect(rightExpr.functionName).toEqual('any');
     expect(rightExpr.targetRelationOrPermission).toEqual('admin');
   });
 
