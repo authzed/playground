@@ -87,7 +87,7 @@ export function ExamplesDropdown(props: {
         {examples !== undefined &&
           examples.map((example) => {
             return (
-              <MenuItem onClick={() => exampleSelected(example)}>
+              <MenuItem onClick={() => exampleSelected(example)} key={example.id}>
                 <ListItemText
                   primary={example.title}
                   secondary={example.subtitle}
