@@ -1159,18 +1159,27 @@ const TabLabelWithCount = (props: {
 }) => {
   const classes = useSummaryStyles();
   const problemService = props.problemService;
-  const problemCount = problemService.getProblemCount(props.kind);
+  const errorCount = problemService.getErrorCount(props.kind);
+  const warningCount = props.kind === DataStoreItemKind.SCHEMA ? problemService.warnings.length : 0;
 
   return (
     <div className={classes.problemTab}>
       <TabLabel icon={props.icon} title={props.title} />
       <span
-        style={{ display: problemCount > 0 ? 'inline-flex' : 'none' }}
+        style={{ display: errorCount > 0 ? 'inline-flex' : 'none' }}
         className={clsx(classes.badge, {
-          [classes.failBadge]: problemCount > 0,
+          [classes.failBadge]: errorCount > 0,
         })}
       >
-        {problemCount}
+        {errorCount}
+      </span>
+      <span
+        style={{ display: warningCount > 0 ? 'inline-flex' : 'none' }}
+        className={clsx(classes.badge, {
+          [classes.warningBadge]: warningCount > 0,
+        })}
+      >
+        {warningCount}
       </span>
     </div>
   );

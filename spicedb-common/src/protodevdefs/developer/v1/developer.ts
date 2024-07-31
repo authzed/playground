@@ -103,6 +103,10 @@ export interface Operation {
      * @generated from protobuf field: developer.v1.FormatSchemaParameters format_schema_parameters = 4;
      */
     formatSchemaParameters?: FormatSchemaParameters;
+    /**
+     * @generated from protobuf field: developer.v1.SchemaWarningsParameters schema_warnings_parameters = 5;
+     */
+    schemaWarningsParameters?: SchemaWarningsParameters;
 }
 /**
  * OperationsResults holds the results for the operations, indexed by the operation.
@@ -139,6 +143,41 @@ export interface OperationResult {
      * @generated from protobuf field: developer.v1.FormatSchemaResult format_schema_result = 4;
      */
     formatSchemaResult?: FormatSchemaResult;
+    /**
+     * @generated from protobuf field: developer.v1.SchemaWarningsResult schema_warnings_result = 5;
+     */
+    schemaWarningsResult?: SchemaWarningsResult;
+}
+/**
+ * DeveloperWarning represents a single warning raised by the development package.
+ *
+ * @generated from protobuf message developer.v1.DeveloperWarning
+ */
+export interface DeveloperWarning {
+    /**
+     * message is the message for the developer warning.
+     *
+     * @generated from protobuf field: string message = 1;
+     */
+    message: string;
+    /**
+     * line is the 1-indexed line for the developer warning.
+     *
+     * @generated from protobuf field: uint32 line = 2;
+     */
+    line: number;
+    /**
+     * column is the 1-indexed column on the line for the developer warning.
+     *
+     * @generated from protobuf field: uint32 column = 3;
+     */
+    column: number;
+    /**
+     * source_code is the source code for the developer warning, if any.
+     *
+     * @generated from protobuf field: string source_code = 4;
+     */
+    sourceCode: string;
 }
 /**
  * DeveloperError represents a single error raised by the development package. Unlike an internal
@@ -473,6 +512,26 @@ export interface FormatSchemaResult {
      */
     formattedSchema: string;
 }
+/**
+ * SchemaWarningsParameters are the parameters for a `schemaWarnings` operation.
+ *
+ * empty
+ *
+ * @generated from protobuf message developer.v1.SchemaWarningsParameters
+ */
+export interface SchemaWarningsParameters {
+}
+/**
+ * SchemaWarningsResult is the result of the `schemaWarnings` operation.
+ *
+ * @generated from protobuf message developer.v1.SchemaWarningsResult
+ */
+export interface SchemaWarningsResult {
+    /**
+     * @generated from protobuf field: repeated developer.v1.DeveloperWarning warnings = 1;
+     */
+    warnings: DeveloperWarning[];
+}
 // @generated message type with reflection information, may provide speed optimized methods
 class DeveloperRequest$Type extends MessageType<DeveloperRequest> {
     constructor() {
@@ -649,7 +708,8 @@ class Operation$Type extends MessageType<Operation> {
             { no: 1, name: "check_parameters", kind: "message", T: () => CheckOperationParameters },
             { no: 2, name: "assertions_parameters", kind: "message", T: () => RunAssertionsParameters },
             { no: 3, name: "validation_parameters", kind: "message", T: () => RunValidationParameters },
-            { no: 4, name: "format_schema_parameters", kind: "message", T: () => FormatSchemaParameters }
+            { no: 4, name: "format_schema_parameters", kind: "message", T: () => FormatSchemaParameters },
+            { no: 5, name: "schema_warnings_parameters", kind: "message", T: () => SchemaWarningsParameters }
         ]);
     }
     create(value?: PartialMessage<Operation>): Operation {
@@ -676,6 +736,9 @@ class Operation$Type extends MessageType<Operation> {
                 case /* developer.v1.FormatSchemaParameters format_schema_parameters */ 4:
                     message.formatSchemaParameters = FormatSchemaParameters.internalBinaryRead(reader, reader.uint32(), options, message.formatSchemaParameters);
                     break;
+                case /* developer.v1.SchemaWarningsParameters schema_warnings_parameters */ 5:
+                    message.schemaWarningsParameters = SchemaWarningsParameters.internalBinaryRead(reader, reader.uint32(), options, message.schemaWarningsParameters);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -700,6 +763,9 @@ class Operation$Type extends MessageType<Operation> {
         /* developer.v1.FormatSchemaParameters format_schema_parameters = 4; */
         if (message.formatSchemaParameters)
             FormatSchemaParameters.internalBinaryWrite(message.formatSchemaParameters, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* developer.v1.SchemaWarningsParameters schema_warnings_parameters = 5; */
+        if (message.schemaWarningsParameters)
+            SchemaWarningsParameters.internalBinaryWrite(message.schemaWarningsParameters, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -784,7 +850,8 @@ class OperationResult$Type extends MessageType<OperationResult> {
             { no: 1, name: "check_result", kind: "message", T: () => CheckOperationsResult },
             { no: 2, name: "assertions_result", kind: "message", T: () => RunAssertionsResult },
             { no: 3, name: "validation_result", kind: "message", T: () => RunValidationResult },
-            { no: 4, name: "format_schema_result", kind: "message", T: () => FormatSchemaResult }
+            { no: 4, name: "format_schema_result", kind: "message", T: () => FormatSchemaResult },
+            { no: 5, name: "schema_warnings_result", kind: "message", T: () => SchemaWarningsResult }
         ]);
     }
     create(value?: PartialMessage<OperationResult>): OperationResult {
@@ -811,6 +878,9 @@ class OperationResult$Type extends MessageType<OperationResult> {
                 case /* developer.v1.FormatSchemaResult format_schema_result */ 4:
                     message.formatSchemaResult = FormatSchemaResult.internalBinaryRead(reader, reader.uint32(), options, message.formatSchemaResult);
                     break;
+                case /* developer.v1.SchemaWarningsResult schema_warnings_result */ 5:
+                    message.schemaWarningsResult = SchemaWarningsResult.internalBinaryRead(reader, reader.uint32(), options, message.schemaWarningsResult);
+                    break;
                 default:
                     let u = options.readUnknownField;
                     if (u === "throw")
@@ -835,6 +905,9 @@ class OperationResult$Type extends MessageType<OperationResult> {
         /* developer.v1.FormatSchemaResult format_schema_result = 4; */
         if (message.formatSchemaResult)
             FormatSchemaResult.internalBinaryWrite(message.formatSchemaResult, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* developer.v1.SchemaWarningsResult schema_warnings_result = 5; */
+        if (message.schemaWarningsResult)
+            SchemaWarningsResult.internalBinaryWrite(message.schemaWarningsResult, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -845,6 +918,74 @@ class OperationResult$Type extends MessageType<OperationResult> {
  * @generated MessageType for protobuf message developer.v1.OperationResult
  */
 export const OperationResult = new OperationResult$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class DeveloperWarning$Type extends MessageType<DeveloperWarning> {
+    constructor() {
+        super("developer.v1.DeveloperWarning", [
+            { no: 1, name: "message", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "line", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 3, name: "column", kind: "scalar", T: 13 /*ScalarType.UINT32*/ },
+            { no: 4, name: "source_code", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<DeveloperWarning>): DeveloperWarning {
+        const message = { message: "", line: 0, column: 0, sourceCode: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<DeveloperWarning>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: DeveloperWarning): DeveloperWarning {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string message */ 1:
+                    message.message = reader.string();
+                    break;
+                case /* uint32 line */ 2:
+                    message.line = reader.uint32();
+                    break;
+                case /* uint32 column */ 3:
+                    message.column = reader.uint32();
+                    break;
+                case /* string source_code */ 4:
+                    message.sourceCode = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: DeveloperWarning, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string message = 1; */
+        if (message.message !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.message);
+        /* uint32 line = 2; */
+        if (message.line !== 0)
+            writer.tag(2, WireType.Varint).uint32(message.line);
+        /* uint32 column = 3; */
+        if (message.column !== 0)
+            writer.tag(3, WireType.Varint).uint32(message.column);
+        /* string source_code = 4; */
+        if (message.sourceCode !== "")
+            writer.tag(4, WireType.LengthDelimited).string(message.sourceCode);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message developer.v1.DeveloperWarning
+ */
+export const DeveloperWarning = new DeveloperWarning$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class DeveloperError$Type extends MessageType<DeveloperError> {
     constructor() {
@@ -1460,3 +1601,76 @@ class FormatSchemaResult$Type extends MessageType<FormatSchemaResult> {
  * @generated MessageType for protobuf message developer.v1.FormatSchemaResult
  */
 export const FormatSchemaResult = new FormatSchemaResult$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class SchemaWarningsParameters$Type extends MessageType<SchemaWarningsParameters> {
+    constructor() {
+        super("developer.v1.SchemaWarningsParameters", []);
+    }
+    create(value?: PartialMessage<SchemaWarningsParameters>): SchemaWarningsParameters {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<SchemaWarningsParameters>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: SchemaWarningsParameters): SchemaWarningsParameters {
+        return target ?? this.create();
+    }
+    internalBinaryWrite(message: SchemaWarningsParameters, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message developer.v1.SchemaWarningsParameters
+ */
+export const SchemaWarningsParameters = new SchemaWarningsParameters$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class SchemaWarningsResult$Type extends MessageType<SchemaWarningsResult> {
+    constructor() {
+        super("developer.v1.SchemaWarningsResult", [
+            { no: 1, name: "warnings", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => DeveloperWarning }
+        ]);
+    }
+    create(value?: PartialMessage<SchemaWarningsResult>): SchemaWarningsResult {
+        const message = { warnings: [] };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<SchemaWarningsResult>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: SchemaWarningsResult): SchemaWarningsResult {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* repeated developer.v1.DeveloperWarning warnings */ 1:
+                    message.warnings.push(DeveloperWarning.internalBinaryRead(reader, reader.uint32(), options));
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: SchemaWarningsResult, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* repeated developer.v1.DeveloperWarning warnings = 1; */
+        for (let i = 0; i < message.warnings.length; i++)
+            DeveloperWarning.internalBinaryWrite(message.warnings[i], writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message developer.v1.SchemaWarningsResult
+ */
+export const SchemaWarningsResult = new SchemaWarningsResult$Type();

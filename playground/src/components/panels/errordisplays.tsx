@@ -1,6 +1,7 @@
 import {
   DeveloperError,
   DeveloperError_Source,
+  DeveloperWarning,
 } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
@@ -89,6 +90,19 @@ export function DeveloperErrorDisplay(props: { error: DeveloperError }) {
   );
 }
 
+export function DeveloperWarningDisplay(props: { warning: DeveloperWarning }) {
+  const classes = useErrorDisplayStyles();
+  return (
+    <Alert
+      className={classes.validationError}
+      variant="outlined"
+      severity="warning"
+    >
+      {props.warning.message}
+    </Alert>
+  );
+}
+
 const useSourceDisplayStyles = makeStyles((theme: Theme) =>
   createStyles({
     link: {
@@ -100,6 +114,19 @@ const useSourceDisplayStyles = makeStyles((theme: Theme) =>
     },
   })
 );
+
+export function DeveloperWarningSourceDisplay(props: {warning: DeveloperWarning}) {
+  const vw = props.warning;
+  const classes = useSourceDisplayStyles();
+
+  return <div className={classes.validationErrorContext}>
+  In{' '}
+  <Link className={classes.link} to={DataStorePaths.Schema()}>
+    Schema
+  </Link>
+  :
+</div>
+}
 
 export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
   const ve = props.error;

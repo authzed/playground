@@ -1,5 +1,5 @@
 import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import { ERROR_SOURCE_TO_ITEM } from '../components/panels/errordisplays';
 import { LiveCheckService, LiveCheckStatus } from './check';
 import { DataStoreItemKind } from './datastore';
@@ -33,23 +33,29 @@ export interface ProblemService {
   invalidRelationships: RelationshipFound[];
 
   /**
-   * hasProblems indicates whether any problems were found.
+   * hasProblems is true if there are any problems.
    */
   hasProblems: boolean;
 
   /**
-   * problemCount is the count of the problems found, if any.
+   * errorCount is the count of the errors found, if any.
    */
-  problemCount: number;
+  errorCount: number;
 
   /**
-   * getProblemCount returns the number of errors in the specific item.
+   * getErrorCount returns the number of errors in the specific item.
    */
-  getProblemCount: (kind: DataStoreItemKind) => number;
+  getErrorCount: (kind: DataStoreItemKind) => number;
+
+  /**
+   * warnings are warnings raised by the last call to validation.
+   */
+  warnings: DeveloperWarning[];
 }
 
 interface ProblemsResult {
   requestErrors?: DeveloperError[];
+  warnings?: DeveloperWarning[];
 }
 
 /**
@@ -71,9 +77,9 @@ export function useProblemService(
   const invalidRelationships = localParseService.state.relationships.filter(
     (rel: RelationshipFound) => 'errorMessage' in rel.parsed
   );
-  const problemCount = requestErrors.length + invalidRelationships.length;
+  const errorCount = requestErrors.length + invalidRelationships.length;
 
-  const getProblemCount = (kind: DataStoreItemKind) => {
+  const getErrorCount = (kind: DataStoreItemKind) => {
     const allProblems = Array.from(requestErrors);
     allProblems.push(...(validationService.state.validationErrors ?? []));
     let foundCount = allProblems.filter(
@@ -89,16 +95,17 @@ export function useProblemService(
     liveCheckService.state.status === LiveCheckStatus.CHECKING ||
     validationService.isRunning;
   const validationErrors = validationService.state.validationErrors ?? [];
-  const stateKey = `${isUpdating}:${problemCount}-${validationErrors.length}-${invalidRelationships.length}`;
+  const stateKey = `${isUpdating}:${errorCount}-${validationErrors.length}-${invalidRelationships.length}`;
 
   return {
     stateKey: stateKey,
     isUpdating: isUpdating,
-    hasProblems: problemCount > 0,
-    problemCount: problemCount,
+    errorCount: errorCount,
     requestErrors: requestErrors,
     validationErrors: validationErrors,
     invalidRelationships: invalidRelationships,
-    getProblemCount: getProblemCount,
+    getErrorCount: getErrorCount,
+    warnings: problemsResult.warnings ?? [],
+    hasProblems: errorCount > 0 || (problemsResult.warnings ?? []).length > 0,
   };
 }

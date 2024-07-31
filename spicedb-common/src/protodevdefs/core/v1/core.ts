@@ -496,6 +496,14 @@ export interface ReachabilityEntrypoint {
      * @generated from protobuf field: string tupleset_relation = 5;
      */
     tuplesetRelation: string;
+    /**
+     * *
+     * computed_userset_relation is the name of the computed userset relation on the ComputedUserset
+     * this entrypoint represents, if applicable.
+     *
+     * @generated from protobuf field: string computed_userset_relation = 6;
+     */
+    computedUsersetRelation: string;
 }
 /**
  * @generated from protobuf enum core.v1.ReachabilityEntrypoint.ReachabilityEntrypointKind
@@ -703,6 +711,12 @@ export interface SetOperation_Child {
          */
         usersetRewrite: UsersetRewrite;
     } | {
+        oneofKind: "functionedTupleToUserset";
+        /**
+         * @generated from protobuf field: core.v1.FunctionedTupleToUserset functioned_tuple_to_userset = 8;
+         */
+        functionedTupleToUserset: FunctionedTupleToUserset;
+    } | {
         oneofKind: "Nil";
         /**
          * @generated from protobuf field: core.v1.SetOperation.Child.Nil _nil = 6;
@@ -761,6 +775,53 @@ export interface TupleToUserset_Tupleset {
      * @generated from protobuf field: string relation = 1;
      */
     relation: string;
+}
+/**
+ * @generated from protobuf message core.v1.FunctionedTupleToUserset
+ */
+export interface FunctionedTupleToUserset {
+    /**
+     * @generated from protobuf field: core.v1.FunctionedTupleToUserset.Function function = 1;
+     */
+    function: FunctionedTupleToUserset_Function;
+    /**
+     * @generated from protobuf field: core.v1.FunctionedTupleToUserset.Tupleset tupleset = 2;
+     */
+    tupleset?: FunctionedTupleToUserset_Tupleset;
+    /**
+     * @generated from protobuf field: core.v1.ComputedUserset computed_userset = 3;
+     */
+    computedUserset?: ComputedUserset;
+    /**
+     * @generated from protobuf field: core.v1.SourcePosition source_position = 4;
+     */
+    sourcePosition?: SourcePosition;
+}
+/**
+ * @generated from protobuf message core.v1.FunctionedTupleToUserset.Tupleset
+ */
+export interface FunctionedTupleToUserset_Tupleset {
+    /**
+     * @generated from protobuf field: string relation = 1;
+     */
+    relation: string;
+}
+/**
+ * @generated from protobuf enum core.v1.FunctionedTupleToUserset.Function
+ */
+export enum FunctionedTupleToUserset_Function {
+    /**
+     * @generated from protobuf enum value: FUNCTION_UNSPECIFIED = 0;
+     */
+    UNSPECIFIED = 0,
+    /**
+     * @generated from protobuf enum value: FUNCTION_ANY = 1;
+     */
+    ANY = 1,
+    /**
+     * @generated from protobuf enum value: FUNCTION_ALL = 2;
+     */
+    ALL = 2
 }
 /**
  * @generated from protobuf message core.v1.ComputedUserset
@@ -861,6 +922,75 @@ export enum CaveatOperation_Operation {
      * @generated from protobuf enum value: NOT = 3;
      */
     NOT = 3
+}
+/**
+ * @generated from protobuf message core.v1.RelationshipFilter
+ */
+export interface RelationshipFilter {
+    /**
+     * resource_type is the *optional* resource type of the relationship.
+     * NOTE: It is not prefixed with "optional_" for legacy compatibility.
+     *
+     * @generated from protobuf field: string resource_type = 1;
+     */
+    resourceType: string;
+    /**
+     * optional_resource_id is the *optional* resource ID of the relationship.
+     * If specified, optional_resource_id_prefix cannot be specified.
+     *
+     * @generated from protobuf field: string optional_resource_id = 2;
+     */
+    optionalResourceId: string;
+    /**
+     * optional_resource_id_prefix is the *optional* prefix for the resource ID of the relationship.
+     * If specified, optional_resource_id cannot be specified.
+     *
+     * @generated from protobuf field: string optional_resource_id_prefix = 5;
+     */
+    optionalResourceIdPrefix: string;
+    /**
+     * relation is the *optional* relation of the relationship.
+     *
+     * @generated from protobuf field: string optional_relation = 3;
+     */
+    optionalRelation: string;
+    /**
+     * optional_subject_filter is the optional filter for the subjects of the relationships.
+     *
+     * @generated from protobuf field: core.v1.SubjectFilter optional_subject_filter = 4;
+     */
+    optionalSubjectFilter?: SubjectFilter;
+}
+/**
+ * SubjectFilter specifies a filter on the subject of a relationship.
+ *
+ * subject_type is required and all other fields are optional, and will not
+ * impose any additional requirements if left unspecified.
+ *
+ * @generated from protobuf message core.v1.SubjectFilter
+ */
+export interface SubjectFilter {
+    /**
+     * @generated from protobuf field: string subject_type = 1;
+     */
+    subjectType: string;
+    /**
+     * @generated from protobuf field: string optional_subject_id = 2;
+     */
+    optionalSubjectId: string;
+    /**
+     * @generated from protobuf field: core.v1.SubjectFilter.RelationFilter optional_relation = 3;
+     */
+    optionalRelation?: SubjectFilter_RelationFilter;
+}
+/**
+ * @generated from protobuf message core.v1.SubjectFilter.RelationFilter
+ */
+export interface SubjectFilter_RelationFilter {
+    /**
+     * @generated from protobuf field: string relation = 1;
+     */
+    relation: string;
 }
 // @generated message type with reflection information, may provide speed optimized methods
 class RelationTuple$Type extends MessageType<RelationTuple> {
@@ -1937,11 +2067,12 @@ class ReachabilityEntrypoint$Type extends MessageType<ReachabilityEntrypoint> {
             { no: 1, name: "kind", kind: "enum", T: () => ["core.v1.ReachabilityEntrypoint.ReachabilityEntrypointKind", ReachabilityEntrypoint_ReachabilityEntrypointKind] },
             { no: 2, name: "target_relation", kind: "message", T: () => RelationReference },
             { no: 4, name: "result_status", kind: "enum", T: () => ["core.v1.ReachabilityEntrypoint.EntrypointResultStatus", ReachabilityEntrypoint_EntrypointResultStatus] },
-            { no: 5, name: "tupleset_relation", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
+            { no: 5, name: "tupleset_relation", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 6, name: "computed_userset_relation", kind: "scalar", T: 9 /*ScalarType.STRING*/ }
         ]);
     }
     create(value?: PartialMessage<ReachabilityEntrypoint>): ReachabilityEntrypoint {
-        const message = { kind: 0, resultStatus: 0, tuplesetRelation: "" };
+        const message = { kind: 0, resultStatus: 0, tuplesetRelation: "", computedUsersetRelation: "" };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ReachabilityEntrypoint>(this, message, value);
@@ -1963,6 +2094,9 @@ class ReachabilityEntrypoint$Type extends MessageType<ReachabilityEntrypoint> {
                     break;
                 case /* string tupleset_relation */ 5:
                     message.tuplesetRelation = reader.string();
+                    break;
+                case /* string computed_userset_relation */ 6:
+                    message.computedUsersetRelation = reader.string();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -1988,6 +2122,9 @@ class ReachabilityEntrypoint$Type extends MessageType<ReachabilityEntrypoint> {
         /* string tupleset_relation = 5; */
         if (message.tuplesetRelation !== "")
             writer.tag(5, WireType.LengthDelimited).string(message.tuplesetRelation);
+        /* string computed_userset_relation = 6; */
+        if (message.computedUsersetRelation !== "")
+            writer.tag(6, WireType.LengthDelimited).string(message.computedUsersetRelation);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -2331,6 +2468,7 @@ class SetOperation_Child$Type extends MessageType<SetOperation_Child> {
             { no: 2, name: "computed_userset", kind: "message", oneof: "childType", T: () => ComputedUserset, options: { "validate.rules": { message: { required: true } } } },
             { no: 3, name: "tuple_to_userset", kind: "message", oneof: "childType", T: () => TupleToUserset, options: { "validate.rules": { message: { required: true } } } },
             { no: 4, name: "userset_rewrite", kind: "message", oneof: "childType", T: () => UsersetRewrite, options: { "validate.rules": { message: { required: true } } } },
+            { no: 8, name: "functioned_tuple_to_userset", kind: "message", oneof: "childType", T: () => FunctionedTupleToUserset, options: { "validate.rules": { message: { required: true } } } },
             { no: 6, name: "_nil", kind: "message", oneof: "childType", T: () => SetOperation_Child_Nil },
             { no: 5, name: "source_position", kind: "message", T: () => SourcePosition },
             { no: 7, name: "operation_path", kind: "scalar", repeat: 1 /*RepeatType.PACKED*/, T: 13 /*ScalarType.UINT32*/ }
@@ -2370,6 +2508,12 @@ class SetOperation_Child$Type extends MessageType<SetOperation_Child> {
                     message.childType = {
                         oneofKind: "usersetRewrite",
                         usersetRewrite: UsersetRewrite.internalBinaryRead(reader, reader.uint32(), options, (message.childType as any).usersetRewrite)
+                    };
+                    break;
+                case /* core.v1.FunctionedTupleToUserset functioned_tuple_to_userset */ 8:
+                    message.childType = {
+                        oneofKind: "functionedTupleToUserset",
+                        functionedTupleToUserset: FunctionedTupleToUserset.internalBinaryRead(reader, reader.uint32(), options, (message.childType as any).functionedTupleToUserset)
                     };
                     break;
                 case /* core.v1.SetOperation.Child.Nil _nil */ 6:
@@ -2412,6 +2556,9 @@ class SetOperation_Child$Type extends MessageType<SetOperation_Child> {
         /* core.v1.UsersetRewrite userset_rewrite = 4; */
         if (message.childType.oneofKind === "usersetRewrite")
             UsersetRewrite.internalBinaryWrite(message.childType.usersetRewrite, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.FunctionedTupleToUserset functioned_tuple_to_userset = 8; */
+        if (message.childType.oneofKind === "functionedTupleToUserset")
+            FunctionedTupleToUserset.internalBinaryWrite(message.childType.functionedTupleToUserset, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
         /* core.v1.SetOperation.Child.Nil _nil = 6; */
         if (message.childType.oneofKind === "Nil")
             SetOperation_Child_Nil.internalBinaryWrite(message.childType.Nil, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
@@ -2595,6 +2742,121 @@ class TupleToUserset_Tupleset$Type extends MessageType<TupleToUserset_Tupleset> 
  * @generated MessageType for protobuf message core.v1.TupleToUserset.Tupleset
  */
 export const TupleToUserset_Tupleset = new TupleToUserset_Tupleset$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class FunctionedTupleToUserset$Type extends MessageType<FunctionedTupleToUserset> {
+    constructor() {
+        super("core.v1.FunctionedTupleToUserset", [
+            { no: 1, name: "function", kind: "enum", T: () => ["core.v1.FunctionedTupleToUserset.Function", FunctionedTupleToUserset_Function, "FUNCTION_"], options: { "validate.rules": { enum: { definedOnly: true, notIn: [0] } } } },
+            { no: 2, name: "tupleset", kind: "message", T: () => FunctionedTupleToUserset_Tupleset, options: { "validate.rules": { message: { required: true } } } },
+            { no: 3, name: "computed_userset", kind: "message", T: () => ComputedUserset, options: { "validate.rules": { message: { required: true } } } },
+            { no: 4, name: "source_position", kind: "message", T: () => SourcePosition }
+        ]);
+    }
+    create(value?: PartialMessage<FunctionedTupleToUserset>): FunctionedTupleToUserset {
+        const message = { function: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<FunctionedTupleToUserset>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: FunctionedTupleToUserset): FunctionedTupleToUserset {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* core.v1.FunctionedTupleToUserset.Function function */ 1:
+                    message.function = reader.int32();
+                    break;
+                case /* core.v1.FunctionedTupleToUserset.Tupleset tupleset */ 2:
+                    message.tupleset = FunctionedTupleToUserset_Tupleset.internalBinaryRead(reader, reader.uint32(), options, message.tupleset);
+                    break;
+                case /* core.v1.ComputedUserset computed_userset */ 3:
+                    message.computedUserset = ComputedUserset.internalBinaryRead(reader, reader.uint32(), options, message.computedUserset);
+                    break;
+                case /* core.v1.SourcePosition source_position */ 4:
+                    message.sourcePosition = SourcePosition.internalBinaryRead(reader, reader.uint32(), options, message.sourcePosition);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: FunctionedTupleToUserset, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* core.v1.FunctionedTupleToUserset.Function function = 1; */
+        if (message.function !== 0)
+            writer.tag(1, WireType.Varint).int32(message.function);
+        /* core.v1.FunctionedTupleToUserset.Tupleset tupleset = 2; */
+        if (message.tupleset)
+            FunctionedTupleToUserset_Tupleset.internalBinaryWrite(message.tupleset, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.ComputedUserset computed_userset = 3; */
+        if (message.computedUserset)
+            ComputedUserset.internalBinaryWrite(message.computedUserset, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.SourcePosition source_position = 4; */
+        if (message.sourcePosition)
+            SourcePosition.internalBinaryWrite(message.sourcePosition, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message core.v1.FunctionedTupleToUserset
+ */
+export const FunctionedTupleToUserset = new FunctionedTupleToUserset$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class FunctionedTupleToUserset_Tupleset$Type extends MessageType<FunctionedTupleToUserset_Tupleset> {
+    constructor() {
+        super("core.v1.FunctionedTupleToUserset.Tupleset", [
+            { no: 1, name: "relation", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "64", pattern: "^[a-z][a-z0-9_]{1,62}[a-z0-9]$" } } } }
+        ]);
+    }
+    create(value?: PartialMessage<FunctionedTupleToUserset_Tupleset>): FunctionedTupleToUserset_Tupleset {
+        const message = { relation: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<FunctionedTupleToUserset_Tupleset>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: FunctionedTupleToUserset_Tupleset): FunctionedTupleToUserset_Tupleset {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string relation */ 1:
+                    message.relation = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: FunctionedTupleToUserset_Tupleset, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string relation = 1; */
+        if (message.relation !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.relation);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message core.v1.FunctionedTupleToUserset.Tupleset
+ */
+export const FunctionedTupleToUserset_Tupleset = new FunctionedTupleToUserset_Tupleset$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class ComputedUserset$Type extends MessageType<ComputedUserset> {
     constructor() {
@@ -2824,3 +3086,186 @@ class CaveatOperation$Type extends MessageType<CaveatOperation> {
  * @generated MessageType for protobuf message core.v1.CaveatOperation
  */
 export const CaveatOperation = new CaveatOperation$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class RelationshipFilter$Type extends MessageType<RelationshipFilter> {
+    constructor() {
+        super("core.v1.RelationshipFilter", [
+            { no: 1, name: "resource_type", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "128", pattern: "^(([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9])?$" } } } },
+            { no: 2, name: "optional_resource_id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "1024", pattern: "^([a-zA-Z0-9/_|\\-=+]{1,})?$" } } } },
+            { no: 5, name: "optional_resource_id_prefix", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "1024", pattern: "^([a-zA-Z0-9/_|\\-=+]{1,})?$" } } } },
+            { no: 3, name: "optional_relation", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "64", pattern: "^([a-z][a-z0-9_]{1,62}[a-z0-9])?$" } } } },
+            { no: 4, name: "optional_subject_filter", kind: "message", T: () => SubjectFilter }
+        ]);
+    }
+    create(value?: PartialMessage<RelationshipFilter>): RelationshipFilter {
+        const message = { resourceType: "", optionalResourceId: "", optionalResourceIdPrefix: "", optionalRelation: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<RelationshipFilter>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: RelationshipFilter): RelationshipFilter {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string resource_type */ 1:
+                    message.resourceType = reader.string();
+                    break;
+                case /* string optional_resource_id */ 2:
+                    message.optionalResourceId = reader.string();
+                    break;
+                case /* string optional_resource_id_prefix */ 5:
+                    message.optionalResourceIdPrefix = reader.string();
+                    break;
+                case /* string optional_relation */ 3:
+                    message.optionalRelation = reader.string();
+                    break;
+                case /* core.v1.SubjectFilter optional_subject_filter */ 4:
+                    message.optionalSubjectFilter = SubjectFilter.internalBinaryRead(reader, reader.uint32(), options, message.optionalSubjectFilter);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: RelationshipFilter, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string resource_type = 1; */
+        if (message.resourceType !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.resourceType);
+        /* string optional_resource_id = 2; */
+        if (message.optionalResourceId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.optionalResourceId);
+        /* string optional_resource_id_prefix = 5; */
+        if (message.optionalResourceIdPrefix !== "")
+            writer.tag(5, WireType.LengthDelimited).string(message.optionalResourceIdPrefix);
+        /* string optional_relation = 3; */
+        if (message.optionalRelation !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.optionalRelation);
+        /* core.v1.SubjectFilter optional_subject_filter = 4; */
+        if (message.optionalSubjectFilter)
+            SubjectFilter.internalBinaryWrite(message.optionalSubjectFilter, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message core.v1.RelationshipFilter
+ */
+export const RelationshipFilter = new RelationshipFilter$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class SubjectFilter$Type extends MessageType<SubjectFilter> {
+    constructor() {
+        super("core.v1.SubjectFilter", [
+            { no: 1, name: "subject_type", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "128", pattern: "^([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$" } } } },
+            { no: 2, name: "optional_subject_id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "1024", pattern: "^(([a-zA-Z0-9/_|\\-=+]{1,})|\\*)?$" } } } },
+            { no: 3, name: "optional_relation", kind: "message", T: () => SubjectFilter_RelationFilter }
+        ]);
+    }
+    create(value?: PartialMessage<SubjectFilter>): SubjectFilter {
+        const message = { subjectType: "", optionalSubjectId: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<SubjectFilter>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: SubjectFilter): SubjectFilter {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string subject_type */ 1:
+                    message.subjectType = reader.string();
+                    break;
+                case /* string optional_subject_id */ 2:
+                    message.optionalSubjectId = reader.string();
+                    break;
+                case /* core.v1.SubjectFilter.RelationFilter optional_relation */ 3:
+                    message.optionalRelation = SubjectFilter_RelationFilter.internalBinaryRead(reader, reader.uint32(), options, message.optionalRelation);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: SubjectFilter, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string subject_type = 1; */
+        if (message.subjectType !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.subjectType);
+        /* string optional_subject_id = 2; */
+        if (message.optionalSubjectId !== "")
+            writer.tag(2, WireType.LengthDelimited).string(message.optionalSubjectId);
+        /* core.v1.SubjectFilter.RelationFilter optional_relation = 3; */
+        if (message.optionalRelation)
+            SubjectFilter_RelationFilter.internalBinaryWrite(message.optionalRelation, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message core.v1.SubjectFilter
+ */
+export const SubjectFilter = new SubjectFilter$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class SubjectFilter_RelationFilter$Type extends MessageType<SubjectFilter_RelationFilter> {
+    constructor() {
+        super("core.v1.SubjectFilter.RelationFilter", [
+            { no: 1, name: "relation", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "64", pattern: "^([a-z][a-z0-9_]{1,62}[a-z0-9])?$" } } } }
+        ]);
+    }
+    create(value?: PartialMessage<SubjectFilter_RelationFilter>): SubjectFilter_RelationFilter {
+        const message = { relation: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<SubjectFilter_RelationFilter>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: SubjectFilter_RelationFilter): SubjectFilter_RelationFilter {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string relation */ 1:
+                    message.relation = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: SubjectFilter_RelationFilter, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string relation = 1; */
+        if (message.relation !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.relation);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message core.v1.SubjectFilter.RelationFilter
+ */
+export const SubjectFilter_RelationFilter = new SubjectFilter_RelationFilter$Type();

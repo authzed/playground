@@ -6,7 +6,7 @@ import registerDSLanguage, {
 import { useDebouncedChecker } from '@code/playground-ui/src/debouncer';
 import { TextRange } from '@code/spicedb-common/src/include/protobuf-parser';
 import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
@@ -208,6 +208,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
             return;
           }
 
+          
           markers.push({
             startLineNumber: invalid.lineNumber + 1,
             startColumn: 0,
@@ -220,9 +221,29 @@ export function EditorDisplay(props: EditorDisplayProps) {
       );
     }
 
-    // Generate markers for all other kinds of errors.
     const contents = currentItem?.editableContents ?? '';
     const finder = lineColumn(contents);
+    const lines = contents.split('\n');
+
+    // Generate markers for warnings.
+    if (currentItem.kind === DataStoreItemKind.SCHEMA) {
+      props.services.problemService.warnings.forEach(
+        (warning: DeveloperWarning) => {
+          const line = lines[warning.line -1];
+          const index = line.indexOf(warning.sourceCode, warning.column - 1);
+          markers.push({
+            startLineNumber: warning.line,
+            startColumn: index + 1,
+            endLineNumber: warning.line,
+            endColumn: index + warning.sourceCode.length + 1,
+            message: warning.message,
+            severity: monacoRef.MarkerSeverity.Warning,
+          });
+        }
+      );
+    }
+
+    // Generate markers for all other kinds of errors.
     const allErrors = [
       ...props.services.problemService.requestErrors,
       ...props.services.problemService.validationErrors,
