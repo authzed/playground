@@ -62,13 +62,13 @@ NODE_OPTIONS=--openssl-legacy-provider vercel build
 vercel deploy --prebuilt
 ```
 
-> ℹ️  Git Large File Storage (LFS) must be enabled in your Vercel project settings.
+> ℹ️ Git Large File Storage (LFS) must be enabled in your Vercel project settings.
 
 ### NodeJS
 
 The `build` directory in the project root directory after running `yarn build` will contain an optimized production React application that can be served using your preferred NodeJS hosting method.
 
-> ℹ️  Node v18.x is required.
+> ℹ️ Node v18.x is required.
 
 For example:
 
@@ -83,6 +83,11 @@ serve
 Setup git submodules: `git submodule update --init --recursive`
 
 Run `yarn install` in the _root_ project directory.
+
+## Running for development
+
+1. Copy the files in the `wasm` root directory into `playground/public/static`
+2. Run `yarn start` from the `playground` subdirectory
 
 ## Updating wasm dependencies
 
