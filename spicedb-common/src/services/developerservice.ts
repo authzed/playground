@@ -14,6 +14,8 @@ import {
   RunAssertionsResult,
   RunValidationParameters,
   RunValidationResult,
+  SchemaWarningsParameters,
+  SchemaWarningsResult,
 } from '../protodevdefs/developer/v1/developer';
 import wasmConfig from '../../wasm-config.json';
 
@@ -91,6 +93,13 @@ type OperationAndCallback =
         formatSchemaParameters: FormatSchemaParameters;
       };
       callback: ResultExtractor;
+    }
+    | {
+      operation: 'schemaWarnings';
+      parameters: {
+        schemaWarningsParameters: SchemaWarningsParameters;
+      };
+      callback: ResultExtractor;
     };
 
 /**
@@ -105,6 +114,22 @@ class DeveloperServiceRequest {
   constructor(private schema: string, relationshipsString: string) {
     this.relationships = parseRelationships(relationshipsString);
   }
+
+  /**
+   * schemaWarnings returns the request's schema's warnings, if any.
+   */
+  public schemaWarnings(callback: DevServiceCallback<SchemaWarningsResult>) {
+    this.operations.push({
+      operation: 'schemaWarnings',
+      parameters: {
+        schemaWarningsParameters: {},
+      },
+      callback: (result: OperationResult) => {
+        callback(result.schemaWarningsResult!);
+      },
+    });
+  }
+
 
   /**
    * formatSchema returns the request's schema formatted.

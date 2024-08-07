@@ -1,4 +1,4 @@
-import { DeveloperError } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import { DeveloperService } from '@code/spicedb-common/src/services/developerservice';
 import { useAlert } from '@code/playground-ui/src/AlertProvider';
 import { useGoogleAnalytics } from '@code/playground-ui/src/GoogleAnalyticsHook';
@@ -26,6 +26,7 @@ export interface ValidationState {
   runError?: string | undefined;
   validationDatastoreIndex?: string;
   lastRun?: Date;
+  warnings?: DeveloperWarning[];
 }
 
 export interface ValidationResult {
@@ -94,6 +95,11 @@ function runValidation(
     validationDevErrors.push(...result.validationErrors);
   });
 
+  let warnings: DeveloperWarning[] = [];
+  request.schemaWarnings((result) => {
+    warnings = result.warnings;
+  })
+
   const response = request.execute();
   if (response.internalError) {
     setValidationState({
@@ -101,6 +107,7 @@ function runValidation(
       validationDatastoreIndex: datastoreIndex,
       runError: response.internalError,
       lastRun: new Date(),
+      warnings: warnings,
     });
     return;
   }
@@ -119,6 +126,7 @@ function runValidation(
     validationErrors: validationDevErrors,
     validationDatastoreIndex: datastoreIndex,
     lastRun: new Date(),
+    warnings: warnings,
   });
   callback(validated, { updatedValidationYaml: updatedValidationYaml });
 }

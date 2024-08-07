@@ -264,7 +264,23 @@ export default function registerDSLanguage(monaco: any) {
         [/}/, { token: '@rematch', next: '@popall' }],
         [/relation/, { token: '@rematch', next: '@popall' }],
         [/permission/, { token: '@rematch', next: '@popall' }],
+        [/any/, { token: 'keyword.any', next: '@arrowopen' }],
+        [/all/, { token: 'keyword.all', next: '@arrowopen' }],
         [/nil/, { token: 'keyword.nil' }],
+        [/\w+/, { token: 'identifier.relorperm' }],
+        { include: '@whitespace' },
+      ],
+      arrowopen: [
+        [/$/, { token: 'close', next: '@popall' }],
+        [/}/, { token: '@rematch', next: '@popall' }],
+        [/\)/, { token: 'close', next: '@pop' }],
+        [/\(/, { token: '@rematch', next: '@arrowrel' }],
+        { include: '@whitespace' },
+      ],
+      arrowrel: [
+        [/$/, { token: 'close', next: '@popall' }],
+        [/}/, { token: '@rematch', next: '@popall' }],
+        [/\)/, { token: 'close', next: '@pop' }],
         [/\w+/, { token: 'identifier.relorperm' }],
         { include: '@whitespace' },
       ],
@@ -620,7 +636,9 @@ export default function registerDSLanguage(monaco: any) {
       { token: 'keyword.definition', foreground: '4242ff' },
       { token: 'keyword.caveat', foreground: 'ff4271' },
       { token: 'keyword.nil', foreground: '999999' },
-
+      { token: 'keyword.any', foreground: '23974d' },
+      { token: 'keyword.all', foreground: '972323' },
+  
       { token: 'identifier.type-prefix', foreground: 'aaaaaa' },
       { token: 'identifier.definition-prefix', foreground: 'aaaaaa' },
 
@@ -662,6 +680,8 @@ export default function registerDSLanguage(monaco: any) {
     { token: 'keyword.definition', foreground: '8787ff' },
     { token: 'keyword.caveat', foreground: 'ff87a6' },
     { token: 'keyword.nil', foreground: 'cccccc' },
+    { token: 'keyword.any', foreground: 'abe5ff' },
+    { token: 'keyword.all', foreground: 'ffabab' },
 
     { token: 'identifier.type-prefix', foreground: 'aaaaaa' },
     { token: 'identifier.definition-prefix', foreground: 'aaaaaa' },

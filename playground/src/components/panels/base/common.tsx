@@ -83,6 +83,10 @@ export const useSummaryStyles = makeStyles((theme: Theme) =>
       backgroundColor: theme.palette.error.dark,
       color: theme.palette.getContrastText(theme.palette.error.dark),
     },
+    warningBadge: {
+      backgroundColor: theme.palette.warning.dark,
+      color: theme.palette.getContrastText(theme.palette.warning.dark),
+    },
     checkTab: {
       display: 'grid',
       alignItems: 'center',
@@ -93,7 +97,7 @@ export const useSummaryStyles = makeStyles((theme: Theme) =>
     },
     problemTab: {
       display: 'grid',
-      gridTemplateColumns: 'auto auto',
+      gridTemplateColumns: 'auto auto auto',
       columnGap: '10px',
       alignItems: 'center',
     },

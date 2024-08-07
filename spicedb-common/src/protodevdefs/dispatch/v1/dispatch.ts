@@ -46,6 +46,17 @@ export interface DispatchCheckRequest {
      * @generated from protobuf field: dispatch.v1.DispatchCheckRequest.DebugSetting debug = 6;
      */
     debug: DispatchCheckRequest_DebugSetting;
+    /**
+     * *
+     * check_hints are hints provided to the check call to help the resolver optimize the check
+     * by skipping calculations for the provided checks. The string key is the fully qualified
+     * "relationtuple"-string for the problem, e.g. `document:example#relation@user:someuser`.
+     * It is up to the caller to *ensure* that the hints provided are correct; if incorrect,
+     * the resolver may return incorrect results which will in turn be cached.
+     *
+     * @generated from protobuf field: repeated dispatch.v1.CheckHint check_hints = 7;
+     */
+    checkHints: CheckHint[];
 }
 /**
  * @generated from protobuf enum dispatch.v1.DispatchCheckRequest.DebugSetting
@@ -76,6 +87,27 @@ export enum DispatchCheckRequest_ResultsSetting {
      * @generated from protobuf enum value: ALLOW_SINGLE_RESULT = 1;
      */
     ALLOW_SINGLE_RESULT = 1
+}
+/**
+ * @generated from protobuf message dispatch.v1.CheckHint
+ */
+export interface CheckHint {
+    /**
+     * @generated from protobuf field: core.v1.ObjectAndRelation resource = 1;
+     */
+    resource?: ObjectAndRelation;
+    /**
+     * @generated from protobuf field: core.v1.ObjectAndRelation subject = 2;
+     */
+    subject?: ObjectAndRelation;
+    /**
+     * @generated from protobuf field: string ttu_computed_userset_relation = 3;
+     */
+    ttuComputedUsersetRelation: string;
+    /**
+     * @generated from protobuf field: dispatch.v1.ResourceCheckResult result = 4;
+     */
+    result?: ResourceCheckResult;
 }
 /**
  * @generated from protobuf message dispatch.v1.DispatchCheckResponse
@@ -185,6 +217,77 @@ export interface Cursor {
      * @generated from protobuf field: uint32 dispatch_version = 3;
      */
     dispatchVersion: number;
+}
+/**
+ * @generated from protobuf message dispatch.v1.DispatchLookupResources2Request
+ */
+export interface DispatchLookupResources2Request {
+    /**
+     * @generated from protobuf field: dispatch.v1.ResolverMeta metadata = 1;
+     */
+    metadata?: ResolverMeta;
+    /**
+     * @generated from protobuf field: core.v1.RelationReference resource_relation = 2;
+     */
+    resourceRelation?: RelationReference;
+    /**
+     * @generated from protobuf field: core.v1.RelationReference subject_relation = 3;
+     */
+    subjectRelation?: RelationReference;
+    /**
+     * @generated from protobuf field: repeated string subject_ids = 4;
+     */
+    subjectIds: string[];
+    /**
+     * @generated from protobuf field: core.v1.ObjectAndRelation terminal_subject = 5;
+     */
+    terminalSubject?: ObjectAndRelation;
+    /**
+     * @generated from protobuf field: google.protobuf.Struct context = 6;
+     */
+    context?: Struct;
+    /**
+     * @generated from protobuf field: dispatch.v1.Cursor optional_cursor = 7;
+     */
+    optionalCursor?: Cursor;
+    /**
+     * @generated from protobuf field: uint32 optional_limit = 8;
+     */
+    optionalLimit: number;
+}
+/**
+ * @generated from protobuf message dispatch.v1.PossibleResource
+ */
+export interface PossibleResource {
+    /**
+     * @generated from protobuf field: string resource_id = 1;
+     */
+    resourceId: string;
+    /**
+     * @generated from protobuf field: repeated string for_subject_ids = 2;
+     */
+    forSubjectIds: string[];
+    /**
+     * @generated from protobuf field: repeated string missing_context_params = 3;
+     */
+    missingContextParams: string[];
+}
+/**
+ * @generated from protobuf message dispatch.v1.DispatchLookupResources2Response
+ */
+export interface DispatchLookupResources2Response {
+    /**
+     * @generated from protobuf field: dispatch.v1.PossibleResource resource = 1;
+     */
+    resource?: PossibleResource;
+    /**
+     * @generated from protobuf field: dispatch.v1.ResponseMeta metadata = 2;
+     */
+    metadata?: ResponseMeta;
+    /**
+     * @generated from protobuf field: dispatch.v1.Cursor after_response_cursor = 3;
+     */
+    afterResponseCursor?: Cursor;
 }
 /**
  * @generated from protobuf message dispatch.v1.DispatchReachableResourcesRequest
@@ -434,6 +537,15 @@ export interface ResolverMeta {
      * @generated from protobuf field: uint32 depth_remaining = 2;
      */
     depthRemaining: number;
+    /**
+     * @deprecated
+     * @generated from protobuf field: string request_id = 3 [deprecated = true];
+     */
+    requestId: string;
+    /**
+     * @generated from protobuf field: bytes traversal_bloom = 4;
+     */
+    traversalBloom: Uint8Array;
 }
 /**
  * @generated from protobuf message dispatch.v1.ResponseMeta
@@ -522,11 +634,12 @@ class DispatchCheckRequest$Type extends MessageType<DispatchCheckRequest> {
             { no: 3, name: "resource_ids", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
             { no: 4, name: "subject", kind: "message", T: () => ObjectAndRelation, options: { "validate.rules": { message: { required: true } } } },
             { no: 5, name: "results_setting", kind: "enum", T: () => ["dispatch.v1.DispatchCheckRequest.ResultsSetting", DispatchCheckRequest_ResultsSetting] },
-            { no: 6, name: "debug", kind: "enum", T: () => ["dispatch.v1.DispatchCheckRequest.DebugSetting", DispatchCheckRequest_DebugSetting] }
+            { no: 6, name: "debug", kind: "enum", T: () => ["dispatch.v1.DispatchCheckRequest.DebugSetting", DispatchCheckRequest_DebugSetting] },
+            { no: 7, name: "check_hints", kind: "message", repeat: 1 /*RepeatType.PACKED*/, T: () => CheckHint }
         ]);
     }
     create(value?: PartialMessage<DispatchCheckRequest>): DispatchCheckRequest {
-        const message = { resourceIds: [], resultsSetting: 0, debug: 0 };
+        const message = { resourceIds: [], resultsSetting: 0, debug: 0, checkHints: [] };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<DispatchCheckRequest>(this, message, value);
@@ -554,6 +667,9 @@ class DispatchCheckRequest$Type extends MessageType<DispatchCheckRequest> {
                     break;
                 case /* dispatch.v1.DispatchCheckRequest.DebugSetting debug */ 6:
                     message.debug = reader.int32();
+                    break;
+                case /* repeated dispatch.v1.CheckHint check_hints */ 7:
+                    message.checkHints.push(CheckHint.internalBinaryRead(reader, reader.uint32(), options));
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -585,6 +701,9 @@ class DispatchCheckRequest$Type extends MessageType<DispatchCheckRequest> {
         /* dispatch.v1.DispatchCheckRequest.DebugSetting debug = 6; */
         if (message.debug !== 0)
             writer.tag(6, WireType.Varint).int32(message.debug);
+        /* repeated dispatch.v1.CheckHint check_hints = 7; */
+        for (let i = 0; i < message.checkHints.length; i++)
+            CheckHint.internalBinaryWrite(message.checkHints[i], writer.tag(7, WireType.LengthDelimited).fork(), options).join();
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -595,6 +714,74 @@ class DispatchCheckRequest$Type extends MessageType<DispatchCheckRequest> {
  * @generated MessageType for protobuf message dispatch.v1.DispatchCheckRequest
  */
 export const DispatchCheckRequest = new DispatchCheckRequest$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class CheckHint$Type extends MessageType<CheckHint> {
+    constructor() {
+        super("dispatch.v1.CheckHint", [
+            { no: 1, name: "resource", kind: "message", T: () => ObjectAndRelation },
+            { no: 2, name: "subject", kind: "message", T: () => ObjectAndRelation },
+            { no: 3, name: "ttu_computed_userset_relation", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "result", kind: "message", T: () => ResourceCheckResult }
+        ]);
+    }
+    create(value?: PartialMessage<CheckHint>): CheckHint {
+        const message = { ttuComputedUsersetRelation: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<CheckHint>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: CheckHint): CheckHint {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* core.v1.ObjectAndRelation resource */ 1:
+                    message.resource = ObjectAndRelation.internalBinaryRead(reader, reader.uint32(), options, message.resource);
+                    break;
+                case /* core.v1.ObjectAndRelation subject */ 2:
+                    message.subject = ObjectAndRelation.internalBinaryRead(reader, reader.uint32(), options, message.subject);
+                    break;
+                case /* string ttu_computed_userset_relation */ 3:
+                    message.ttuComputedUsersetRelation = reader.string();
+                    break;
+                case /* dispatch.v1.ResourceCheckResult result */ 4:
+                    message.result = ResourceCheckResult.internalBinaryRead(reader, reader.uint32(), options, message.result);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: CheckHint, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* core.v1.ObjectAndRelation resource = 1; */
+        if (message.resource)
+            ObjectAndRelation.internalBinaryWrite(message.resource, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.ObjectAndRelation subject = 2; */
+        if (message.subject)
+            ObjectAndRelation.internalBinaryWrite(message.subject, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* string ttu_computed_userset_relation = 3; */
+        if (message.ttuComputedUsersetRelation !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.ttuComputedUsersetRelation);
+        /* dispatch.v1.ResourceCheckResult result = 4; */
+        if (message.result)
+            ResourceCheckResult.internalBinaryWrite(message.result, writer.tag(4, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message dispatch.v1.CheckHint
+ */
+export const CheckHint = new CheckHint$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class DispatchCheckResponse$Type extends MessageType<DispatchCheckResponse> {
     constructor() {
@@ -899,6 +1086,224 @@ class Cursor$Type extends MessageType<Cursor> {
  * @generated MessageType for protobuf message dispatch.v1.Cursor
  */
 export const Cursor = new Cursor$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class DispatchLookupResources2Request$Type extends MessageType<DispatchLookupResources2Request> {
+    constructor() {
+        super("dispatch.v1.DispatchLookupResources2Request", [
+            { no: 1, name: "metadata", kind: "message", T: () => ResolverMeta, options: { "validate.rules": { message: { required: true } } } },
+            { no: 2, name: "resource_relation", kind: "message", T: () => RelationReference, options: { "validate.rules": { message: { required: true } } } },
+            { no: 3, name: "subject_relation", kind: "message", T: () => RelationReference, options: { "validate.rules": { message: { required: true } } } },
+            { no: 4, name: "subject_ids", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 5, name: "terminal_subject", kind: "message", T: () => ObjectAndRelation, options: { "validate.rules": { message: { required: true } } } },
+            { no: 6, name: "context", kind: "message", T: () => Struct },
+            { no: 7, name: "optional_cursor", kind: "message", T: () => Cursor },
+            { no: 8, name: "optional_limit", kind: "scalar", T: 13 /*ScalarType.UINT32*/ }
+        ]);
+    }
+    create(value?: PartialMessage<DispatchLookupResources2Request>): DispatchLookupResources2Request {
+        const message = { subjectIds: [], optionalLimit: 0 };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<DispatchLookupResources2Request>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: DispatchLookupResources2Request): DispatchLookupResources2Request {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* dispatch.v1.ResolverMeta metadata */ 1:
+                    message.metadata = ResolverMeta.internalBinaryRead(reader, reader.uint32(), options, message.metadata);
+                    break;
+                case /* core.v1.RelationReference resource_relation */ 2:
+                    message.resourceRelation = RelationReference.internalBinaryRead(reader, reader.uint32(), options, message.resourceRelation);
+                    break;
+                case /* core.v1.RelationReference subject_relation */ 3:
+                    message.subjectRelation = RelationReference.internalBinaryRead(reader, reader.uint32(), options, message.subjectRelation);
+                    break;
+                case /* repeated string subject_ids */ 4:
+                    message.subjectIds.push(reader.string());
+                    break;
+                case /* core.v1.ObjectAndRelation terminal_subject */ 5:
+                    message.terminalSubject = ObjectAndRelation.internalBinaryRead(reader, reader.uint32(), options, message.terminalSubject);
+                    break;
+                case /* google.protobuf.Struct context */ 6:
+                    message.context = Struct.internalBinaryRead(reader, reader.uint32(), options, message.context);
+                    break;
+                case /* dispatch.v1.Cursor optional_cursor */ 7:
+                    message.optionalCursor = Cursor.internalBinaryRead(reader, reader.uint32(), options, message.optionalCursor);
+                    break;
+                case /* uint32 optional_limit */ 8:
+                    message.optionalLimit = reader.uint32();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: DispatchLookupResources2Request, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* dispatch.v1.ResolverMeta metadata = 1; */
+        if (message.metadata)
+            ResolverMeta.internalBinaryWrite(message.metadata, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.RelationReference resource_relation = 2; */
+        if (message.resourceRelation)
+            RelationReference.internalBinaryWrite(message.resourceRelation, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* core.v1.RelationReference subject_relation = 3; */
+        if (message.subjectRelation)
+            RelationReference.internalBinaryWrite(message.subjectRelation, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        /* repeated string subject_ids = 4; */
+        for (let i = 0; i < message.subjectIds.length; i++)
+            writer.tag(4, WireType.LengthDelimited).string(message.subjectIds[i]);
+        /* core.v1.ObjectAndRelation terminal_subject = 5; */
+        if (message.terminalSubject)
+            ObjectAndRelation.internalBinaryWrite(message.terminalSubject, writer.tag(5, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Struct context = 6; */
+        if (message.context)
+            Struct.internalBinaryWrite(message.context, writer.tag(6, WireType.LengthDelimited).fork(), options).join();
+        /* dispatch.v1.Cursor optional_cursor = 7; */
+        if (message.optionalCursor)
+            Cursor.internalBinaryWrite(message.optionalCursor, writer.tag(7, WireType.LengthDelimited).fork(), options).join();
+        /* uint32 optional_limit = 8; */
+        if (message.optionalLimit !== 0)
+            writer.tag(8, WireType.Varint).uint32(message.optionalLimit);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message dispatch.v1.DispatchLookupResources2Request
+ */
+export const DispatchLookupResources2Request = new DispatchLookupResources2Request$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class PossibleResource$Type extends MessageType<PossibleResource> {
+    constructor() {
+        super("dispatch.v1.PossibleResource", [
+            { no: 1, name: "resource_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 2, name: "for_subject_ids", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ },
+            { no: 3, name: "missing_context_params", kind: "scalar", repeat: 2 /*RepeatType.UNPACKED*/, T: 9 /*ScalarType.STRING*/ }
+        ]);
+    }
+    create(value?: PartialMessage<PossibleResource>): PossibleResource {
+        const message = { resourceId: "", forSubjectIds: [], missingContextParams: [] };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<PossibleResource>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: PossibleResource): PossibleResource {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string resource_id */ 1:
+                    message.resourceId = reader.string();
+                    break;
+                case /* repeated string for_subject_ids */ 2:
+                    message.forSubjectIds.push(reader.string());
+                    break;
+                case /* repeated string missing_context_params */ 3:
+                    message.missingContextParams.push(reader.string());
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: PossibleResource, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string resource_id = 1; */
+        if (message.resourceId !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.resourceId);
+        /* repeated string for_subject_ids = 2; */
+        for (let i = 0; i < message.forSubjectIds.length; i++)
+            writer.tag(2, WireType.LengthDelimited).string(message.forSubjectIds[i]);
+        /* repeated string missing_context_params = 3; */
+        for (let i = 0; i < message.missingContextParams.length; i++)
+            writer.tag(3, WireType.LengthDelimited).string(message.missingContextParams[i]);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message dispatch.v1.PossibleResource
+ */
+export const PossibleResource = new PossibleResource$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class DispatchLookupResources2Response$Type extends MessageType<DispatchLookupResources2Response> {
+    constructor() {
+        super("dispatch.v1.DispatchLookupResources2Response", [
+            { no: 1, name: "resource", kind: "message", T: () => PossibleResource },
+            { no: 2, name: "metadata", kind: "message", T: () => ResponseMeta },
+            { no: 3, name: "after_response_cursor", kind: "message", T: () => Cursor }
+        ]);
+    }
+    create(value?: PartialMessage<DispatchLookupResources2Response>): DispatchLookupResources2Response {
+        const message = {};
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<DispatchLookupResources2Response>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: DispatchLookupResources2Response): DispatchLookupResources2Response {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* dispatch.v1.PossibleResource resource */ 1:
+                    message.resource = PossibleResource.internalBinaryRead(reader, reader.uint32(), options, message.resource);
+                    break;
+                case /* dispatch.v1.ResponseMeta metadata */ 2:
+                    message.metadata = ResponseMeta.internalBinaryRead(reader, reader.uint32(), options, message.metadata);
+                    break;
+                case /* dispatch.v1.Cursor after_response_cursor */ 3:
+                    message.afterResponseCursor = Cursor.internalBinaryRead(reader, reader.uint32(), options, message.afterResponseCursor);
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: DispatchLookupResources2Response, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* dispatch.v1.PossibleResource resource = 1; */
+        if (message.resource)
+            PossibleResource.internalBinaryWrite(message.resource, writer.tag(1, WireType.LengthDelimited).fork(), options).join();
+        /* dispatch.v1.ResponseMeta metadata = 2; */
+        if (message.metadata)
+            ResponseMeta.internalBinaryWrite(message.metadata, writer.tag(2, WireType.LengthDelimited).fork(), options).join();
+        /* dispatch.v1.Cursor after_response_cursor = 3; */
+        if (message.afterResponseCursor)
+            Cursor.internalBinaryWrite(message.afterResponseCursor, writer.tag(3, WireType.LengthDelimited).fork(), options).join();
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message dispatch.v1.DispatchLookupResources2Response
+ */
+export const DispatchLookupResources2Response = new DispatchLookupResources2Response$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class DispatchReachableResourcesRequest$Type extends MessageType<DispatchReachableResourcesRequest> {
     constructor() {
@@ -1562,11 +1967,13 @@ class ResolverMeta$Type extends MessageType<ResolverMeta> {
     constructor() {
         super("dispatch.v1.ResolverMeta", [
             { no: 1, name: "at_revision", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "1024" } } } },
-            { no: 2, name: "depth_remaining", kind: "scalar", T: 13 /*ScalarType.UINT32*/, options: { "validate.rules": { uint32: { gt: 0 } } } }
+            { no: 2, name: "depth_remaining", kind: "scalar", T: 13 /*ScalarType.UINT32*/, options: { "validate.rules": { uint32: { gt: 0 } } } },
+            { no: 3, name: "request_id", kind: "scalar", T: 9 /*ScalarType.STRING*/ },
+            { no: 4, name: "traversal_bloom", kind: "scalar", T: 12 /*ScalarType.BYTES*/, options: { "validate.rules": { bytes: { maxLen: "1024" } } } }
         ]);
     }
     create(value?: PartialMessage<ResolverMeta>): ResolverMeta {
-        const message = { atRevision: "", depthRemaining: 0 };
+        const message = { atRevision: "", depthRemaining: 0, requestId: "", traversalBloom: new Uint8Array(0) };
         globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
         if (value !== undefined)
             reflectionMergePartial<ResolverMeta>(this, message, value);
@@ -1582,6 +1989,12 @@ class ResolverMeta$Type extends MessageType<ResolverMeta> {
                     break;
                 case /* uint32 depth_remaining */ 2:
                     message.depthRemaining = reader.uint32();
+                    break;
+                case /* string request_id = 3 [deprecated = true];*/ 3:
+                    message.requestId = reader.string();
+                    break;
+                case /* bytes traversal_bloom */ 4:
+                    message.traversalBloom = reader.bytes();
                     break;
                 default:
                     let u = options.readUnknownField;
@@ -1601,6 +2014,12 @@ class ResolverMeta$Type extends MessageType<ResolverMeta> {
         /* uint32 depth_remaining = 2; */
         if (message.depthRemaining !== 0)
             writer.tag(2, WireType.Varint).uint32(message.depthRemaining);
+        /* string request_id = 3 [deprecated = true]; */
+        if (message.requestId !== "")
+            writer.tag(3, WireType.LengthDelimited).string(message.requestId);
+        /* bytes traversal_bloom = 4; */
+        if (message.traversalBloom.length)
+            writer.tag(4, WireType.LengthDelimited).bytes(message.traversalBloom);
         let u = options.writeUnknownFields;
         if (u !== false)
             (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
@@ -1836,5 +2255,6 @@ export const DispatchService = new ServiceType("dispatch.v1.DispatchService", [
     { name: "DispatchExpand", options: {}, I: DispatchExpandRequest, O: DispatchExpandResponse },
     { name: "DispatchReachableResources", serverStreaming: true, options: {}, I: DispatchReachableResourcesRequest, O: DispatchReachableResourcesResponse },
     { name: "DispatchLookupResources", serverStreaming: true, options: {}, I: DispatchLookupResourcesRequest, O: DispatchLookupResourcesResponse },
-    { name: "DispatchLookupSubjects", serverStreaming: true, options: {}, I: DispatchLookupSubjectsRequest, O: DispatchLookupSubjectsResponse }
+    { name: "DispatchLookupSubjects", serverStreaming: true, options: {}, I: DispatchLookupSubjectsRequest, O: DispatchLookupSubjectsResponse },
+    { name: "DispatchLookupResources2", serverStreaming: true, options: {}, I: DispatchLookupResources2Request, O: DispatchLookupResources2Response }
 ]);

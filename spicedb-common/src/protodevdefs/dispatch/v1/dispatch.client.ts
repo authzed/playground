@@ -4,6 +4,8 @@
 import type { RpcTransport } from "@protobuf-ts/runtime-rpc";
 import type { ServiceInfo } from "@protobuf-ts/runtime-rpc";
 import { DispatchService } from "./dispatch";
+import type { DispatchLookupResources2Response } from "./dispatch";
+import type { DispatchLookupResources2Request } from "./dispatch";
 import type { DispatchLookupSubjectsResponse } from "./dispatch";
 import type { DispatchLookupSubjectsRequest } from "./dispatch";
 import type { DispatchLookupResourcesResponse } from "./dispatch";
@@ -42,6 +44,10 @@ export interface IDispatchServiceClient {
      * @generated from protobuf rpc: DispatchLookupSubjects(dispatch.v1.DispatchLookupSubjectsRequest) returns (stream dispatch.v1.DispatchLookupSubjectsResponse);
      */
     dispatchLookupSubjects(input: DispatchLookupSubjectsRequest, options?: RpcOptions): ServerStreamingCall<DispatchLookupSubjectsRequest, DispatchLookupSubjectsResponse>;
+    /**
+     * @generated from protobuf rpc: DispatchLookupResources2(dispatch.v1.DispatchLookupResources2Request) returns (stream dispatch.v1.DispatchLookupResources2Response);
+     */
+    dispatchLookupResources2(input: DispatchLookupResources2Request, options?: RpcOptions): ServerStreamingCall<DispatchLookupResources2Request, DispatchLookupResources2Response>;
 }
 /**
  * @generated from protobuf service dispatch.v1.DispatchService
@@ -86,5 +92,12 @@ export class DispatchServiceClient implements IDispatchServiceClient, ServiceInf
     dispatchLookupSubjects(input: DispatchLookupSubjectsRequest, options?: RpcOptions): ServerStreamingCall<DispatchLookupSubjectsRequest, DispatchLookupSubjectsResponse> {
         const method = this.methods[4], opt = this._transport.mergeOptions(options);
         return stackIntercept<DispatchLookupSubjectsRequest, DispatchLookupSubjectsResponse>("serverStreaming", this._transport, method, opt, input);
+    }
+    /**
+     * @generated from protobuf rpc: DispatchLookupResources2(dispatch.v1.DispatchLookupResources2Request) returns (stream dispatch.v1.DispatchLookupResources2Response);
+     */
+    dispatchLookupResources2(input: DispatchLookupResources2Request, options?: RpcOptions): ServerStreamingCall<DispatchLookupResources2Request, DispatchLookupResources2Response> {
+        const method = this.methods[5], opt = this._transport.mergeOptions(options);
+        return stackIntercept<DispatchLookupResources2Request, DispatchLookupResources2Response>("serverStreaming", this._transport, method, opt, input);
     }
 }

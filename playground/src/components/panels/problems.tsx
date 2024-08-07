@@ -1,6 +1,6 @@
 import TabLabel from '@code/playground-ui/src/TabLabel';
 import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
@@ -11,7 +11,7 @@ import { Link } from 'react-router-dom';
 import { DataStorePaths } from '../../services/datastore';
 import { TourElementClass } from '../GuidedTour';
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from './base/common';
-import { DeveloperErrorDisplay, DeveloperSourceDisplay } from './errordisplays';
+import { DeveloperErrorDisplay, DeveloperSourceDisplay, DeveloperWarningDisplay, DeveloperWarningSourceDisplay } from './errordisplays';
 import { PlaygroundPanelLocation } from './panels';
 
 var _ = React;
@@ -51,24 +51,32 @@ export function ProblemsSummary(
   props: PanelSummaryProps<PlaygroundPanelLocation>
 ) {
   const classes = useSummaryStyles();
-  const problemCount = props.services.problemService.problemCount;
+  const errorCount = props.services.problemService.errorCount;
+  const warningCount = props.services.problemService.warnings.length;
 
   return (
     <div className={clsx(classes.problemTab, TourElementClass.problems)}>
       <TabLabel
         icon={
           <ErrorOutlineIcon
-            htmlColor={props.services.problemService.hasProblems ? '' : 'grey'}
+            htmlColor={props.services.problemService.errorCount > 0 ? '' : 'grey'}
           />
         }
         title="Problems"
       />
       <span
         className={clsx(classes.badge, {
-          [classes.failBadge]: problemCount > 0,
+          [classes.failBadge]: errorCount > 0,
         })}
       >
-        {problemCount}
+        {errorCount}
+      </span>
+      <span
+        className={clsx(classes.badge, {
+          [classes.warningBadge]: warningCount > 0,
+        })}
+      >
+        {warningCount}
       </span>
     </div>
   );
@@ -85,7 +93,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
       {props.services.problemService.invalidRelationships.map(
         (invalid: RelationshipFound, index: number) => {
           if (!('errorMessage' in invalid.parsed)) {
-            return;
+            return <div/>;
           }
 
           return (
@@ -117,6 +125,18 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
               <div>
                 <DeveloperSourceDisplay error={de} />
                 <DeveloperErrorDisplay error={de} />
+              </div>
+            </Paper>
+          );
+        }
+      )}
+      {props.services.problemService.warnings.map(
+        (dw: DeveloperWarning, index: number) => {
+          return (
+            <Paper className={classes.errorContainer} key={`dw${index}`}>
+              <div>
+                <DeveloperWarningSourceDisplay warning={dw} />
+                <DeveloperWarningDisplay warning={dw} />
               </div>
             </Paper>
           );

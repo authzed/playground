@@ -5,7 +5,8 @@
   "scripts": {
     "test": "react-scripts test",
     "lint": "../node_modules/.bin/eslint src",
-    "lint-fix": "../node_modules/.bin/eslint --fix src"
+    "lint-fix": "../node_modules/.bin/eslint --fix src",
+    "regen-protos": "./buf.dev.gen.yaml"
   },
   "author": "",
   "eslintConfig": {

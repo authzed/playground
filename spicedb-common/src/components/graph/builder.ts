@@ -615,6 +615,9 @@ function collectUnionedRelations(
         nodes: [...left.nodes, ...right.nodes],
         edges: [...left.edges, ...right.edges],
       };
+    
+    case 'namedarrow':
+        // fallthrough
 
     case 'arrow':
       const { nodes, edges } = generateExpressionGraph(

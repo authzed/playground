@@ -4,6 +4,7 @@ import {
   CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
+  DeveloperWarning,
 } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import {
   DeveloperService,
@@ -47,6 +48,7 @@ export interface LiveCheckRunState {
   lastRun?: Date;
   requestErrors?: DeveloperError[];
   serverErr?: DeveloperServiceError;
+  warnings?: DeveloperWarning[];
 }
 
 export interface LiveCheckService {
@@ -73,7 +75,7 @@ function runEditCheckWasm(
   developerService: DeveloperService,
   datastore: DataStore,
   items: LiveCheckItem[]
-): DeveloperResponse | undefined {
+): [DeveloperResponse, DeveloperWarning[]] | undefined {
   const schema =
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
     '';
@@ -85,6 +87,12 @@ function runEditCheckWasm(
   if (request === undefined) {
     return;
   }
+
+  // Add a check for warnings.
+  let warnings: DeveloperWarning[] = [];
+  request.schemaWarnings((result) => {
+    warnings = result.warnings;
+  });
 
   // Build the relationships to be checked, validating as we go.
   items.forEach((item: LiveCheckItem) => {
@@ -130,7 +138,7 @@ function runEditCheckWasm(
     );
   });
 
-  return request.execute();
+  return [request.execute(), warnings];
 }
 
 /**
@@ -154,12 +162,12 @@ export function useLiveCheckService(
       }
 
       setState({ status: LiveCheckStatus.CHECKING });
-      const response = runEditCheckWasm(
+      const r = runEditCheckWasm(
         developerService,
         datastore,
         itemsToCheck
       );
-      if (response === undefined) {
+      if (r === undefined) {
         setState({ status: LiveCheckStatus.NOT_CHECKING });
 
         if (itemsToCheck.length > 0) {
@@ -174,6 +182,7 @@ export function useLiveCheckService(
         return;
       }
 
+      const [response, warnings] = r;
       const serverErr: string | undefined = response.internalError || undefined;
       const devErrs: DeveloperError[] = response.developerErrors
         ? response.developerErrors.inputErrors
@@ -189,6 +198,7 @@ export function useLiveCheckService(
         lastRun: new Date(),
         requestErrors: devErrs,
         serverErr: serverErr,
+        warnings: warnings,
       });
     },
     [developerService, devServiceStatus, datastore]
