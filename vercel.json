@@ -9,7 +9,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' $HEADER_CONTENT_SECURITY_POLICY;"
         }
       ]
     },
@@ -22,7 +22,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' $HEADER_CONTENT_SECURITY_POLICY;"
         }
       ]
     },
@@ -35,7 +35,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' $HEADER_CONTENT_SECURITY_POLICY;"
         }
       ]
     },
@@ -48,7 +48,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' $HEADER_CONTENT_SECURITY_POLICY;"
         }
       ]
     },
@@ -57,7 +57,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' $HEADER_CONTENT_SECURITY_POLICY;"
         }
       ]
     }

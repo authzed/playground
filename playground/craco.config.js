@@ -3,6 +3,9 @@ const CracoEsbuildPlugin = require('craco-esbuild');
 const path = require('path');
 const { DefinePlugin } = require('webpack');
 
+const HEADER_CONTENT_SECURITY_POLICY =
+  process.env.HEADER_CONTENT_SECURITY_POLICY || '';
+
 const resolvePackage = (relativePath) => {
   return path.resolve(__dirname, relativePath);
 };
@@ -14,7 +17,7 @@ module.exports = {
       return webpackConfig;
     },
     headers: {
-      'Content-Security-Policy': "frame-ancestors 'self'",
+      'Content-Security-Policy': `frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY}`,
     },
   },
   plugins: [
