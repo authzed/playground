@@ -20,27 +20,27 @@ http {
         etag on;
         location / {
             try_files $uri $uri/ /index.html;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
         location /static/ {
             add_header Cache-Control max-age=31536000;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
         location /index.html {
             add_header Cache-Control no-cache;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
         location /config.json {
             add_header Cache-Control no-cache;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
         location /config-env.js {
             add_header Cache-Control no-cache;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
         location ~ ^/s/([^/]+)/download$ {
             rewrite ^/s/([^/]+)/download$ ${PLAYGROUND_DEVELOPER_API_DOWNLOAD_ENDPOINT}/$1;
-            add_header Content-Security-Policy "frame-ancestors 'self';" always;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
     }
 }

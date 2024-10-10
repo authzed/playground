@@ -9,7 +9,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
         }
       ]
     },
@@ -22,7 +22,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
         }
       ]
     },
@@ -35,7 +35,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
         }
       ]
     },
@@ -48,7 +48,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
         }
       ]
     },
@@ -57,7 +57,7 @@
       "headers": [
         {
           "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self';"
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
         }
       ]
     }
