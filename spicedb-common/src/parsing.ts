@@ -279,7 +279,7 @@ export const convertRelationshipToString = (rel: Relationship) => {
   let caveatString = '';
   if (rel.caveat) {
     caveatString = `[${rel.caveat.caveatName}${
-      rel.caveat.context ? `:${Struct.toJsonString(rel.caveat.context)}` : ''
+      rel.caveat.context && Object.keys(Struct.toJson(rel.caveat.context) ?? {}).length > 0 ? `:${Struct.toJsonString(rel.caveat.context)}` : ''
     }]`;
   }
 
