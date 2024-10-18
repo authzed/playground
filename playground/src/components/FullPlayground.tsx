@@ -1115,7 +1115,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
             <Button
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#writing-assertions"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
               target="_blank"
               startIcon={<DescriptionIcon />}
             >
@@ -1126,7 +1126,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
             <Button
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#writing-expected-relations"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
               target="_blank"
               startIcon={<DescriptionIcon />}
             >
