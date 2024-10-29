@@ -99,7 +99,7 @@ The project contains prebuilt WASM files for versions of both SpiceDB and zed. T
 
 > ℹ️ [jq] is required and must be installed.
 
-[wasm-config.json]: https://github.com/authzed/playground/blob/wasm-caching/spicedb-common/wasm-config.json
+[wasm-config.json]: https://github.com/authzed/playground/blob/spicedb-common/wasm-config.json
 [jq]: https://jqlang.github.io/jq/
 
 ## Developing your own schema
