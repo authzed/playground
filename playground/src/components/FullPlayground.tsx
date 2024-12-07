@@ -3,8 +3,6 @@ import { useConfirmDialog } from '@code/playground-ui/src/ConfirmDialogProvider'
 import { DiscordChatCrate } from '@code/playground-ui/src/DiscordChatCrate';
 import { useGoogleAnalytics } from '@code/playground-ui/src/GoogleAnalyticsHook';
 import TabLabel from '@code/playground-ui/src/TabLabel';
-import { AuthnProvider } from '@code/spicedb-common/src/authn/provider';
-import { useAuthentication } from '@code/spicedb-common/src/authn/useauthentication';
 import { Example } from '@code/spicedb-common/src/examples';
 import { DeveloperServiceClient } from '@code/spicedb-common/src/protodefs/authzed/api/v0/DeveloperServiceClientPb';
 import {
@@ -20,7 +18,6 @@ import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import TextField from '@material-ui/core/TextField';
-import Typography from '@material-ui/core/Typography';
 import {
   Theme,
   createStyles,
@@ -29,7 +26,6 @@ import {
 } from '@material-ui/core/styles';
 import { alpha } from '@material-ui/core/styles/colorManipulator';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import AccountCircleIcon from '@material-ui/icons/AccountCircle';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import CodeIcon from '@material-ui/icons/Code';
 import CompareIcon from '@material-ui/icons/Compare';
@@ -56,9 +52,7 @@ import sjcl from 'sjcl';
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts';
 import { ReactComponent as DISCORD } from '../assets/discord.svg';
 import { useLiveCheckService } from '../services/check';
-import AppConfig, {
-  IsAuthzedInteractionEnabled,
-} from '../services/configservice';
+import AppConfig from '../services/configservice';
 import {
   RelationshipsEditorType,
   useCookieService,
@@ -89,7 +83,6 @@ import { GuidedTour, TourElementClass } from './GuidedTour';
 import { AT, ET, NS, VL } from './KindIcons';
 import { NormalLogo, SmallLogo } from './Logos';
 import { ShareLoader } from './ShareLoader';
-import { UserDisplayAndDeploy } from './UserDisplayAndDeploy';
 import { ValidateButton } from './ValidationButton';
 import { Panel, useSummaryStyles } from './panels/base/common';
 import { ReflexedPanelDisplay } from './panels/base/reflexed';
@@ -372,23 +365,13 @@ interface SharingState {
 }
 
 export function FullPlayground(props: { withRouter?: any }) {
-  return (
-    <AuthnProvider config={AppConfig()}>
-      <AuthedPlayground {...props} />
-    </AuthnProvider>
-  );
-}
-
-export function AuthedPlayground(props: { withRouter?: any }) {
-  return (
-    <>
+  return  <>
       <DiscordChatCrate
         serverId={AppConfig().discord.serverId}
         channelId={AppConfig().discord.channelId}
       />
       <ApolloedPlayground withRouter={props.withRouter} />
     </>
-  );
 }
 
 function ApolloedPlayground(props: { withRouter?: any }) {
@@ -424,13 +407,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const datastore = props.datastore;
 
-  const {
-    user,
-    isLoading: isAuthnLoading,
-    loginWithPopup,
-    logout,
-  } = useAuthentication();
-
   const developerService = useDeveloperService();
   const localParseService = useLocalParseService(datastore);
   const liveCheckService = useLiveCheckService(developerService, datastore);
@@ -455,18 +431,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const [cookies, setCookie] = useCookies(['dismiss-tour']);
   const [showTour, setShowTour] = useState(cookies['dismiss-tour'] !== 'true');
-
-  const handleLogin = () => {
-    (async () => {
-      await loginWithPopup();
-    })();
-  };
-
-  const handleLogout = () => {
-    (async () => {
-      await logout();
-    })();
-  };
 
   useKeyboardShortcuts([
     {
@@ -770,7 +734,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const appConfig = AppConfig();
   const isSharingEnabled = !!appConfig.authzed?.developerEndpoint;
-  const isAuthzedInteractionEnabled = IsAuthzedInteractionEnabled(appConfig);
 
   return (
     <div className={classes.root}>
@@ -892,29 +855,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             >
               Load From File
             </Button>
-            {isAuthnLoading && isAuthzedInteractionEnabled && (
-              <Typography color="textSecondary">Signing in...</Typography>
-            )}
-            {!isAuthnLoading && isAuthzedInteractionEnabled && (
-              <div>
-                {user !== undefined && (
-                  <UserDisplayAndDeploy
-                    problemService={problemService}
-                    user={user}
-                    datastore={datastore}
-                    handleLogout={handleLogout}
-                  />
-                )}
-                {!user && (
-                  <Button
-                    startIcon={<AccountCircleIcon />}
-                    onClick={handleLogin}
-                  >
-                    Sign In To Import
-                  </Button>
-                )}
-              </div>
-            )}
           </>
         )}
       </AppBar>
