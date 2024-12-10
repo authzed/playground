@@ -2,14 +2,13 @@ import { AlertProvider } from '@code/playground-ui/src/AlertProvider';
 import { ConfirmDialogProvider } from '@code/playground-ui/src/ConfirmDialogProvider';
 import { useGoogleAnalytics } from '@code/playground-ui/src/GoogleAnalyticsHook';
 import PlaygroundUIThemed from '@code/playground-ui/src/PlaygroundUIThemed';
-import { AuthnProvider } from '@code/spicedb-common/src/authn/provider';
 import React from 'react';
 import 'react-reflex/styles.css';
 import { BrowserRouter } from 'react-router-dom';
 import 'typeface-roboto-mono'; // Import the Roboto Mono font.
 import './App.css';
 import { EmbeddedPlayground } from './components/EmbeddedPlayground';
-import { AuthedPlayground, FullPlayground } from './components/FullPlayground';
+import { FullPlayground } from './components/FullPlayground';
 import { InlinePlayground } from './components/InlinePlayground';
 import AppConfig from './services/configservice';
 import { PLAYGROUND_UI_COLORS } from './theme';
@@ -29,7 +28,7 @@ export interface AppProps {
 }
 
 function ForTesting() {
-  return <AuthedPlayground />;
+  return <FullPlayground />;
 }
 
 function ThemedApp(props: {
@@ -54,13 +53,7 @@ function ThemedApp(props: {
 
   if (props.forTesting) {
     return (
-      <AuthnProvider
-        config={{
-          authentication: 'none',
-        }}
-      >
         <ForTesting />
-      </AuthnProvider>
     );
   } else {
     return <FullPlayground withRouter={props.withRouter} />;
