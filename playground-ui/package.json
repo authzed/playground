@@ -16,7 +16,7 @@
     "@apollo/client": "^3.3.21",
     "@material-ui/core": "^4.12.3",
     "@material-ui/icons": "^4.12.3",
-    "@material-ui/labs": "^4.12.3",
+    "@material-ui/lab": "^4.0.0-alpha.61",
     "@types/d3-scale-chromatic": "^2.0.0",
     "@types/lodash": "^4.14.171",
     "d3-scale-chromatic": "^2.0.0",
