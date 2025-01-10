@@ -1,7 +1,6 @@
 // craco.config.js
 const CracoEsbuildPlugin = require('craco-esbuild');
 const path = require('path');
-const { DefinePlugin } = require('webpack');
 
 const HEADER_CONTENT_SECURITY_POLICY =
   process.env.HEADER_CONTENT_SECURITY_POLICY || '';
@@ -14,6 +13,11 @@ module.exports = {
   webpack: {
     plugins: [],
     configure: (webpackConfig, { env, paths }) => {
+      webpackConfig.module.rules.push({
+          test: /\.mjs$/,
+          include: /node_modules/,
+          type: 'javascript/auto',
+        });
       return webpackConfig;
     },
     headers: {
