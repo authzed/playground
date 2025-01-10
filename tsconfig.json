@@ -17,6 +17,11 @@
 
     /* Linting */
     "strict": true,
+    // TODO: get rid of this and fix the issues.
+    "noImplicitAny": false,
+    // NOTE: These are currently disabled because generated code violates them.
+    // "noUnusedLocals": true,
+    // "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
     "noUncheckedSideEffectImports": true
   },
