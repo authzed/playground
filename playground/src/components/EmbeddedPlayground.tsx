@@ -1,4 +1,4 @@
-import { useAlert } from '@code/playground-ui/src/AlertProvider';
+import { useAlert } from '../playground-ui/AlertProvider';
 import { DS_EMBED_DARK_THEME_NAME } from '@code/spicedb-common/src/lang/dslang';
 import {
   RelationshipFound,

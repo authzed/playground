@@ -165,7 +165,7 @@ export default function VisNetworkGraph<N extends VisNode = VisNode, E extends V
         }
     };
 
-    const { run: runUpdate, isActive: isActive } = useDebouncedChecker(250, async (graph: VisGraphDefinition<N, E>) => {
+    const { run: runUpdate, isActive } = useDebouncedChecker(250, async (graph: VisGraphDefinition<N, E>) => {
         // Check for in-place changes.
         if (networkRef.current && applyChangesInPlace(nodeDataSetRef.current, edgeDataSetRef.current, currentGraphRef.current!, graph)) {
             updateSelection(props.selected);

@@ -325,15 +325,15 @@ function getSelectedTextWithin(el: Element) {
         range.selectNodeContents(el);
         selRange = sel.getRangeAt(i);
         if (
-          selRange.compareBoundaryPoints(range.START_TO_END, range) == 1 &&
-          selRange.compareBoundaryPoints(range.END_TO_START, range) == -1
+          selRange.compareBoundaryPoints(range.START_TO_END, range) === 1 &&
+          selRange.compareBoundaryPoints(range.END_TO_START, range) === -1
         ) {
           if (
-            selRange.compareBoundaryPoints(range.START_TO_START, range) == 1
+            selRange.compareBoundaryPoints(range.START_TO_START, range) === 1
           ) {
             range.setStart(selRange.startContainer, selRange.startOffset);
           }
-          if (selRange.compareBoundaryPoints(range.END_TO_END, range) == -1) {
+          if (selRange.compareBoundaryPoints(range.END_TO_END, range) === -1) {
             range.setEnd(selRange.endContainer, selRange.endOffset);
           }
           selectedText += range.toString();

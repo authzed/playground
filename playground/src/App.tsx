@@ -1,7 +1,7 @@
-import { AlertProvider } from '@code/playground-ui/src/AlertProvider';
-import { ConfirmDialogProvider } from '@code/playground-ui/src/ConfirmDialogProvider';
-import { useGoogleAnalytics } from '@code/playground-ui/src/GoogleAnalyticsHook';
-import PlaygroundUIThemed from '@code/playground-ui/src/PlaygroundUIThemed';
+import { AlertProvider } from './playground-ui/AlertProvider';
+import { ConfirmDialogProvider } from './playground-ui/ConfirmDialogProvider';
+import { useGoogleAnalytics } from './playground-ui/GoogleAnalyticsHook';
+import PlaygroundUIThemed from './playground-ui/PlaygroundUIThemed';
 import React from 'react';
 import 'react-reflex/styles.css';
 import { BrowserRouter } from 'react-router-dom';

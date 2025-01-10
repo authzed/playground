@@ -1,7 +1,7 @@
 import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
 import { DeveloperService } from '@code/spicedb-common/src/services/developerservice';
-import { useAlert } from '@code/playground-ui/src/AlertProvider';
-import { useGoogleAnalytics } from '@code/playground-ui/src/GoogleAnalyticsHook';
+import { useAlert } from '../playground-ui/AlertProvider';
+import { useGoogleAnalytics } from '../playground-ui/GoogleAnalyticsHook';
 import { useTheme } from '@material-ui/core/styles';
 import { useState } from 'react';
 import 'react-reflex/styles.css';

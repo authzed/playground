@@ -1,4 +1,4 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
+import TabLabel from '../playground-ui/TabLabel';
 import TenantGraph from '@code/spicedb-common/src/components/graph/TenantGraph';
 import { parseSchema } from '@code/spicedb-common/src/parsers/dsl/dsl';
 import { parseRelationships } from '@code/spicedb-common/src/parsing';
