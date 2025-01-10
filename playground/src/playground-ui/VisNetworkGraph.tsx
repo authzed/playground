@@ -2,7 +2,7 @@ import { CircularProgress } from '@material-ui/core';
 import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { dequal } from 'dequal';
-import React, { useRef, useState } from 'react';
+import { useRef, useState } from 'react';
 import 'react-reflex/styles.css';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import vis from 'visjs-network';

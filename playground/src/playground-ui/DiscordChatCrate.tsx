@@ -1,5 +1,5 @@
 import { useTheme } from '@material-ui/core/styles';
-import React, { useEffect, useRef } from 'react';
+import { useEffect, useRef } from 'react';
 
 export interface DiscordChatCrateProps {
   serverId: string;
