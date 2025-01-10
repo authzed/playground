@@ -85,14 +85,16 @@
   },
   "scripts": {
     "start": "HTTPS=true craco start",
-    "build": "craco build",
+    "build": "craco build && ./scripts/copy-build.sh",
     "postbuild": "./scripts/setup-config.sh",
     "test": "craco test",
     "eject": "craco eject",
     "lint": "../node_modules/.bin/eslint src",
     "lint-fix": "../node_modules/.bin/eslint --fix src",
     "cy:run": "yarn cypress run --browser chrome",
-    "cy:open": "yarn cypress open"
+    "cy:open": "yarn cypress open",
+    "update:spicedb": "./scripts/update-spicedb.sh",
+    "update:zed": "./scripts/update-zed.sh"
   },
   "eslintConfig": {
     "extends": "react-app"
