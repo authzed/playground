@@ -764,6 +764,11 @@
   resolved "https://registry.yarnpkg.com/@floating-ui/utils/-/utils-0.2.9.tgz#50dea3616bc8191fb8e112283b49eaff03e78429"
   integrity sha512-MDWhGtE+eHw5JW7lq4qhc5yRLS11ERl1c7Z6Xd0a58DozHES6EnNNwUWbMiG4J9Cgj053Bhk8zvlhFYKVhULwg==
 
+"@fontsource/roboto@^5.1.1":
+  version "5.1.1"
+  resolved "https://registry.yarnpkg.com/@fontsource/roboto/-/roboto-5.1.1.tgz#64b3f819baf8d3bcfb48c0437ddc7e4118a6ab14"
+  integrity sha512-XwVVXtERDQIM7HPUIbyDe0FP4SRovpjF7zMI8M7pbqFp3ahLJsJTd18h+E6pkar6UbV3btbwkKjYARr5M+SQow==
+
 "@fortawesome/fontawesome-common-types@6.7.2":
   version "6.7.2"
   resolved "https://registry.yarnpkg.com/@fortawesome/fontawesome-common-types/-/fontawesome-common-types-6.7.2.tgz#7123d74b0c1e726794aed1184795dbce12186470"
@@ -3143,11 +3148,6 @@ flatted@^3.2.9:
   version "3.3.2"
   resolved "https://registry.yarnpkg.com/flatted/-/flatted-3.3.2.tgz#adba1448a9841bec72b42c532ea23dbbedef1a27"
   integrity sha512-AiwGJM8YcNOaobumgtng+6NHuOqC3A7MixFeDafM3X9cIUM+xUXoS5Vfgf+OihAYe20fxqNM9yPBXJzRtZ/4eA==
-
-fontsource-roboto@^4.0.0:
-  version "4.0.0"
-  resolved "https://registry.yarnpkg.com/fontsource-roboto/-/fontsource-roboto-4.0.0.tgz#35eacd4fb8d90199053c0eec9b34a57fb79cd820"
-  integrity sha512-zD6L8nvdWRcwSgp4ojxFchG+MPj8kXXQKDEAH9bfhbxy+lkpvpC1WgAK0lCa4dwobv+hvAe0uyHaawcgH7WH/g==
 
 for-each@^0.3.3:
   version "0.3.3"
