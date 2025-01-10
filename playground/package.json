@@ -44,6 +44,7 @@
     "string.prototype.replaceall": "^1.0.6",
     "styled-components": "^5.3.6",
     "typeface-roboto-mono": "^1.1.13",
+    "use-deep-compare": "^1.1.0",
     "use-deep-compare-effect": "^1.8.1",
     "use-keyboard-shortcuts": "^2.2.2",
     "visjs-network": "^4.24.11",
