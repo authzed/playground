@@ -69,11 +69,13 @@
     "@types/styled-components": "^5.1.26",
     "@types/use-deep-compare-effect": "^1.5.1",
     "@types/uuid": "^9.0.1",
+    "@vitejs/plugin-react": "^4.3.4",
     "cypress": "^12.9.0",
     "cypress-wait-until": "^1.7.2",
     "postcss-safe-parser": "7.0.0",
     "typescript": "~5.7.3",
     "vite": "^6.0.7",
+    "vite-plugin-svgr": "^4.3.0",
     "vitest": "^2.1.8"
   },
   "scripts": {
