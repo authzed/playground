@@ -51,8 +51,6 @@
     "yaml": "^2.0.1"
   },
   "devDependencies": {
-    "@craco/craco": "^6.4.3",
-    "@testing-library/jest-dom": "^5.16.5",
     "@testing-library/react": "^14.0.0",
     "@testing-library/user-event": "^14.4.3",
     "@types/color-hash": "^1.0.2",
@@ -71,33 +69,22 @@
     "@types/styled-components": "^5.1.26",
     "@types/use-deep-compare-effect": "^1.5.1",
     "@types/uuid": "^9.0.1",
-    "craco-babel-loader": "^1.0.3",
-    "craco-esbuild": "^0.4.5",
     "cypress": "^12.9.0",
     "cypress-wait-until": "^1.7.2",
     "postcss-safe-parser": "7.0.0",
-    "react-scripts": "^4.0.3",
     "typescript": "~5.0.3"
-  },
-  "resolutions": {
-    "*/ua-parser-js": "0.7.26",
-    "postcss-safe-parser": "7.0.0"
   },
   "scripts": {
     "start": "HTTPS=true craco start",
     "build": "craco build && ./scripts/copy-build.sh",
     "postbuild": "./scripts/setup-config.sh",
     "test": "craco test",
-    "eject": "craco eject",
     "lint": "../node_modules/.bin/eslint src",
     "lint-fix": "../node_modules/.bin/eslint --fix src",
     "cy:run": "yarn cypress run --browser chrome",
     "cy:open": "yarn cypress open",
     "update:spicedb": "./scripts/update-spicedb.sh",
     "update:zed": "./scripts/update-zed.sh"
-  },
-  "eslintConfig": {
-    "extends": "react-app"
   },
   "browserslist": {
     "production": [
