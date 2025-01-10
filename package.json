@@ -10,7 +10,6 @@
   },
   "workspaces": [
     "spicedb-common",
-    "playground-ui",
     "playground"
   ],
   "dependencies": {}
