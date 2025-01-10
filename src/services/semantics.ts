@@ -53,7 +53,7 @@ export const getStorableRelations = (
     return [];
   }
 
-  const found = [];
+  const found: {[key: string]: string}[] = [];
   while (true) {
     const matched = TYPE_AND_OBJECT_REGEX.exec(onrs);
     if (!matched || !matched?.groups) {

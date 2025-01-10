@@ -145,9 +145,10 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
             return colorSet(1 - (valueSet.indexOf(value) / 9));
         };
 
-        const possibleObjectTypes = [];
-        possibleObjectTypes.push(...resourceTypes);
-        possibleObjectTypes.push(...subjectTypes);
+        const possibleObjectTypes = [
+            ...resourceTypes,
+            ...subjectTypes,
+        ];
 
         const objectTypes = Array.from(new Set(possibleObjectTypes));
 

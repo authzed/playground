@@ -118,7 +118,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
 
         const zeroIndexedCol = col - 1; // +1 for the checkbox column.
 
-        const dataKind = COLUMNS[zeroIndexedCol].dataKind;
+        const dataKind: DataKind = COLUMNS[zeroIndexedCol].dataKind;
         if (dataValue === "" && DataTitle[dataKind]) {
           ctx.save();
           ctx.fillStyle = "gray";
@@ -146,7 +146,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         const selectedCaveatName: SelectedCaveatName | undefined =
           props.selected.selectedCaveatName;
 
-        let similarColor = undefined;
+        let similarColor: string | undefined = undefined;
         if (props.similarHighlighting) {
           switch (dataKind) {
             case DataKind.RESOURCE_TYPE:
@@ -247,7 +247,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         ctx.restore();
         return true;
       },
-      provideEditor: (cell) => (p) => {
+      provideEditor: () => (p) => {
         const { onChange, value, initialValue, onFinishedEditing } = p;
         return (
           <FieldCellEditor<T, Q>
@@ -286,7 +286,7 @@ const FieldCellEditor = <
   // the contents completely.
   // We could probably work around this by setting a defaultValue, but that has odd
   // interactions with the Autocomplete, so we use this approach instead.
-  let editableValue = edited.current
+  const editableValue = edited.current
     ? props.value.data.dataValue
     : props.value.data.dataValue || props.initialValue;
 
@@ -297,7 +297,7 @@ const FieldCellEditor = <
     return <Popper {...props} className="click-outside-ignore" />;
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+  const handleKeyDown = () => {
     // Mark that a user edit has occurred.
     edited.current = true;
   };

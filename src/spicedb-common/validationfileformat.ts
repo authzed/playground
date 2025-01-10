@@ -73,7 +73,8 @@ export const parseValidationYAML = (
     };
   }
 
-  return parsed as ParsedValidation;
+  // TODO: type this better
+  return parsed as unknown as ParsedValidation;
 };
 
 /**
