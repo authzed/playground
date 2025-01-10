@@ -72,17 +72,19 @@
     "cypress": "^12.9.0",
     "cypress-wait-until": "^1.7.2",
     "postcss-safe-parser": "7.0.0",
-    "typescript": "~5.0.3"
+    "typescript": "~5.7.3",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.8"
   },
   "scripts": {
-    "start": "HTTPS=true craco start",
-    "build": "craco build && ./scripts/copy-build.sh",
+    "dev": "HTTPS=true vite",
+    "build": "tsc -b && vite build && ./scripts/copy-build.sh",
     "postbuild": "./scripts/setup-config.sh",
-    "test": "craco test",
-    "lint": "../node_modules/.bin/eslint src",
-    "lint-fix": "../node_modules/.bin/eslint --fix src",
-    "cy:run": "yarn cypress run --browser chrome",
-    "cy:open": "yarn cypress open",
+    "test": "vitest",
+    "lint": "eslint .",
+    "lint-fix": "eslint --fix .",
+    "cy:run": "cypress run --browser chrome",
+    "cy:open": "cypress open",
     "update:spicedb": "./scripts/update-spicedb.sh",
     "update:zed": "./scripts/update-zed.sh"
   },
