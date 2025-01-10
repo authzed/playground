@@ -1,3 +1,4 @@
+# TODO: this doesn't doesn't currently refer to anything
 #!/usr/bin/env -S buf generate ../../spicedb/proto/internal/developer/v1/developer.proto --template
 ---
 version: 'v1'
