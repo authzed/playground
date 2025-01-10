@@ -2,7 +2,7 @@ import {
   DeveloperError,
   DeveloperError_Source,
   DeveloperWarning,
-} from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+} from '../../spicedb-common/protodevdefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
 import React from 'react';

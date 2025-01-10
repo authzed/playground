@@ -4,11 +4,11 @@ import {
   CheckDebugTrace,
   CheckDebugTrace_Permissionship,
   CheckDebugTrace_PermissionType,
-} from '@code/spicedb-common/src/protodevdefs/authzed/api/v1/debug';
+} from '../spicedb-common/protodevdefs/authzed/api/v1/debug';
 import {
   Struct,
   Value,
-} from '@code/spicedb-common/src/protodevdefs/google/protobuf/struct';
+} from '../spicedb-common/protodevdefs/google/protobuf/struct';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';

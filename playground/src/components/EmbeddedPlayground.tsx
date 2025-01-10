@@ -1,19 +1,19 @@
 import { useAlert } from '../playground-ui/AlertProvider';
-import { DS_EMBED_DARK_THEME_NAME } from '@code/spicedb-common/src/lang/dslang';
+import { DS_EMBED_DARK_THEME_NAME } from '../spicedb-common/lang/dslang';
 import {
   RelationshipFound,
   parseRelationship,
-} from '@code/spicedb-common/src/parsing';
-import { DeveloperServiceClient } from '@code/spicedb-common/src/protodefs/authzed/api/v0/DeveloperServiceClientPb';
+} from '../spicedb-common/parsing';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
 import {
   ShareRequest,
   ShareResponse,
-} from '@code/spicedb-common/src/protodefs/authzed/api/v0/developer_pb';
+} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
 import {
   CheckOperationsResult,
   CheckOperationsResult_Membership,
-} from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
-import { useDeveloperService } from '@code/spicedb-common/src/services/developerservice';
+} from '../spicedb-common/protodevdefs/developer/v1/developer';
+import { useDeveloperService } from '../spicedb-common/services/developerservice';
 import {
   faCaretDown,
   faDatabase,
@@ -45,7 +45,7 @@ import { DatastoreRelationshipEditor } from './DatastoreRelationshipEditor';
 import { EditorDisplay } from './EditorDisplay';
 import { ShareLoader } from './ShareLoader';
 
-import { ParsedObjectDefinition } from '@code/spicedb-common/src/parsers/dsl/dsl';
+import { ParsedObjectDefinition } from '../spicedb-common/parsers/dsl/dsl';
 import './fonts.css';
 
 const useStyles = makeStyles((theme: Theme) =>

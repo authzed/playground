@@ -1,5 +1,5 @@
-import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodevdefs/core/v1/core';
-import { VisEdge, VisNode } from '@code/playground-ui/src/VisNetworkGraph';
+import { RelationTuple as Relationship } from '../../protodevdefs/core/v1/core';
+import { VisEdge, VisNode } from '../../../playground-ui/VisNetworkGraph';
 import { emphasize } from '@material-ui/core/styles';
 import { schemeCategory10 } from 'd3-scale-chromatic';
 import {

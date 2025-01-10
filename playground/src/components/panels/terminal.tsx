@@ -1,6 +1,6 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
-import { mergeRelationshipsStringAndComments } from '@code/spicedb-common/src/parsing';
-import { TerminalSection } from '@code/spicedb-common/src/services/zedterminalservice';
+import TabLabel from '../../playground-ui/TabLabel';
+import { mergeRelationshipsStringAndComments } from '../../spicedb-common/parsing';
+import { TerminalSection } from '../../spicedb-common/services/zedterminalservice';
 import { faTerminal } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Input from '@material-ui/core/Input';

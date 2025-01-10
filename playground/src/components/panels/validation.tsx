@@ -1,5 +1,5 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
-import { DeveloperError } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import TabLabel from '../../playground-ui/TabLabel';
+import { DeveloperError } from '../../spicedb-common/protodevdefs/developer/v1/developer';
 import { Paper } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';

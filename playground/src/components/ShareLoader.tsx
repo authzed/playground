@@ -1,11 +1,11 @@
-import { useAlert } from '@code/playground-ui/src/AlertProvider';
-import { useConfirmDialog } from '@code/playground-ui/src/ConfirmDialogProvider';
-import LoadingView from '@code/playground-ui/src/LoadingView';
-import { DeveloperServiceClient } from '@code/spicedb-common/src/protodefs/authzed/api/v0/DeveloperServiceClientPb';
+import { useAlert } from '../playground-ui/AlertProvider';
+import { useConfirmDialog } from '../playground-ui/ConfirmDialogProvider';
+import LoadingView from '../playground-ui/LoadingView';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
 import {
   LookupShareRequest,
   LookupShareResponse,
-} from '@code/spicedb-common/src/protodefs/authzed/api/v0/developer_pb';
+} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
 import Alert from '@material-ui/lab/Alert';
 import * as grpcWeb from 'grpc-web';
 import React, { useEffect, useState } from 'react';

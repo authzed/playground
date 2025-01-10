@@ -1,5 +1,5 @@
-import { DeveloperService } from '@code/spicedb-common/src/services/developerservice';
-import { ZedTerminalService } from '@code/spicedb-common/src/services/zedterminalservice';
+import { DeveloperService } from '../spicedb-common/services/developerservice';
+import { ZedTerminalService } from '../spicedb-common/services/zedterminalservice';
 import { LiveCheckService } from './check';
 import { LocalParseService } from './localparse';
 

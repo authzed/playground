@@ -1,11 +1,11 @@
 import {
   findReferenceNode,
   parse,
-} from '@code/spicedb-common/src/parsers/dsl/dsl';
+} from '../parsers/dsl/dsl';
 import {
   ResolvedReference,
   Resolver,
-} from '@code/spicedb-common/src/parsers/dsl/resolution';
+} from '../parsers/dsl/resolution';
 import {
   CancellationToken,
   Position,

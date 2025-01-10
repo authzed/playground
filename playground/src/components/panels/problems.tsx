@@ -1,6 +1,6 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
-import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import TabLabel from '../../playground-ui/TabLabel';
+import { RelationshipFound } from '../../spicedb-common/parsing';
+import { DeveloperError, DeveloperWarning } from '../../spicedb-common/protodevdefs/developer/v1/developer';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';

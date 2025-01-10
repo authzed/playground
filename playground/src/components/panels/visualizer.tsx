@@ -1,8 +1,8 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
-import TenantGraph from '@code/spicedb-common/src/components/graph/TenantGraph';
-import { TextRange } from '@code/spicedb-common/src/include/protobuf-parser';
-import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodevdefs/core/v1/core';
+import TabLabel from '../../playground-ui/TabLabel';
+import TenantGraph from '../../spicedb-common/components/graph/TenantGraph';
+import { TextRange } from '../../spicedb-common/include/protobuf-parser';
+import { RelationshipFound } from '../../spicedb-common/parsing';
+import { RelationTuple as Relationship } from '../../spicedb-common/protodevdefs/core/v1/core';
 import {
   createStyles,
   darken,

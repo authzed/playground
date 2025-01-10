@@ -1,16 +1,16 @@
-import { parseRelationship } from '@code/spicedb-common/src/parsing';
-import { DebugInformation } from '@code/spicedb-common/src/protodevdefs/authzed/api/v1/debug';
+import { parseRelationship } from '../spicedb-common/parsing';
+import { DebugInformation } from '../spicedb-common/protodevdefs/authzed/api/v1/debug';
 import {
   CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
   DeveloperWarning,
-} from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/protodevdefs/developer/v1/developer';
 import {
   DeveloperService,
   DeveloperServiceError,
-} from '@code/spicedb-common/src/services/developerservice';
-import { useDebouncedChecker } from '@code/playground-ui/src/debouncer';
+} from '../spicedb-common/services/developerservice';
+import { useDebouncedChecker } from '../playground-ui/debouncer';
 import { useCallback, useEffect, useState } from 'react';
 import { v4 as uuidv4 } from 'uuid';
 import { DataStore, DataStoreItemKind } from './datastore';

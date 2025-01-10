@@ -2,11 +2,11 @@ import {
   ParsedPermission,
   ParsedRelation,
   TypeRef,
-} from '../../../spicedb-common/src/parsers/dsl/dsl';
+} from '../spicedb-common/parsers/dsl/dsl';
 import {
   ResolvedCaveatDefinition,
   ResolvedDefinition,
-} from '../../../spicedb-common/src/parsers/dsl/resolution';
+} from '../spicedb-common/parsers/dsl/resolution';
 import { LocalParseState } from './localparse';
 
 const TYPE_AND_OBJECT_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)(#?)/g;

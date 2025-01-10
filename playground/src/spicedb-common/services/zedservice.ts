@@ -1,4 +1,4 @@
-import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../protodevdefs/core/v1/core';
 import { useCallback, useEffect, useState } from 'react';
 import { parseRelationships } from '../parsing';
 import { RequestContext } from '../protodevdefs/developer/v1/developer';

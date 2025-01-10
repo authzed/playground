@@ -1,16 +1,16 @@
 import {
   ParsedSchema,
   parseSchema,
-} from '@code/spicedb-common/src/parsers/dsl/dsl';
+} from '../spicedb-common/parsers/dsl/dsl';
 import {
   ResolvedDefinition,
   Resolver,
-} from '@code/spicedb-common/src/parsers/dsl/resolution';
+} from '../spicedb-common/parsers/dsl/resolution';
 import {
   parseRelationshipsWithErrors,
   RelationshipFound,
-} from '@code/spicedb-common/src/parsing';
-import { useDebouncedChecker } from '@code/playground-ui/src/debouncer';
+} from '../spicedb-common/parsing';
+import { useDebouncedChecker } from '../playground-ui/debouncer';
 import { useEffect, useMemo, useState } from 'react';
 import { DataStore, DataStoreItemKind } from './datastore';
 

@@ -1,8 +1,8 @@
 import TabLabel from '../playground-ui/TabLabel';
-import TenantGraph from '@code/spicedb-common/src/components/graph/TenantGraph';
-import { parseSchema } from '@code/spicedb-common/src/parsers/dsl/dsl';
-import { parseRelationships } from '@code/spicedb-common/src/parsing';
-import { useDeveloperService } from '@code/spicedb-common/src/services/developerservice';
+import TenantGraph from '../spicedb-common/components/graph/TenantGraph';
+import { parseSchema } from '../spicedb-common/parsers/dsl/dsl';
+import { parseRelationships } from '../spicedb-common/parsing';
+import { useDeveloperService } from '../spicedb-common/services/developerservice';
 import AppBar from '@material-ui/core/AppBar';
 import Button from '@material-ui/core/Button';
 import {

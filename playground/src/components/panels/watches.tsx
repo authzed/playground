@@ -1,10 +1,10 @@
-import TabLabel from '@code/playground-ui/src/TabLabel';
+import TabLabel from '../../playground-ui/TabLabel';
 import {
   ParsedPermission,
   ParsedRelation,
-} from '@code/spicedb-common/src/parsers/dsl/dsl';
-import { parseRelationships } from '@code/spicedb-common/src/parsing';
-import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodevdefs/core/v1/core';
+} from '../../spicedb-common/parsers/dsl/dsl';
+import { parseRelationships } from '../../spicedb-common/parsing';
+import { RelationTuple as Relationship } from '../../spicedb-common/protodevdefs/core/v1/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';

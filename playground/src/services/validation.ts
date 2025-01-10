@@ -1,5 +1,5 @@
-import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
-import { DeveloperService } from '@code/spicedb-common/src/services/developerservice';
+import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodevdefs/developer/v1/developer';
+import { DeveloperService } from '../spicedb-common/services/developerservice';
 import { useAlert } from '../playground-ui/AlertProvider';
 import { useGoogleAnalytics } from '../playground-ui/GoogleAnalyticsHook';
 import { useTheme } from '@material-ui/core/styles';

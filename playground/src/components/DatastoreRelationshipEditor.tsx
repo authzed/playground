@@ -1,22 +1,22 @@
-import { useDebouncedChecker } from '@code/playground-ui/src/debouncer';
+import { useDebouncedChecker } from '../playground-ui/debouncer';
 import {
   RelationTupleHighlight,
   RelationshipEditor,
-} from '@code/spicedb-common/src/components/relationshipeditor/RelationshipEditor';
-import { CommentCellPrefix } from '@code/spicedb-common/src/components/relationshipeditor/columns';
+} from '../spicedb-common/components/relationshipeditor/RelationshipEditor';
+import { CommentCellPrefix } from '../spicedb-common/components/relationshipeditor/columns';
 import {
   RelationshipDatum,
   relationshipToDatum,
   toFullRelationshipString,
-} from '@code/spicedb-common/src/components/relationshipeditor/data';
+} from '../spicedb-common/components/relationshipeditor/data';
 import {
   RelationshipOrComment,
   parseRelationshipsAndComments,
-} from '@code/spicedb-common/src/parsing';
+} from '../spicedb-common/parsing';
 import {
   DeveloperError,
   DeveloperError_Source,
-} from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/protodevdefs/developer/v1/developer';
 import { Theme } from '@glideapps/glide-data-grid';
 import React, { useCallback, useMemo, useState } from 'react';
 import useDeepCompareEffect from 'use-deep-compare-effect';

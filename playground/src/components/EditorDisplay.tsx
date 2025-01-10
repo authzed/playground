@@ -2,11 +2,11 @@ import registerDSLanguage, {
   DS_DARK_THEME_NAME,
   DS_LANGUAGE_NAME,
   DS_THEME_NAME,
-} from '@code//spicedb-common/src/lang/dslang';
-import { useDebouncedChecker } from '@code/playground-ui/src/debouncer';
-import { TextRange } from '@code/spicedb-common/src/include/protobuf-parser';
-import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/lang/dslang';
+import { useDebouncedChecker } from '../playground-ui/debouncer';
+import { TextRange } from '../spicedb-common/include/protobuf-parser';
+import { RelationshipFound } from '../spicedb-common/parsing';
+import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodevdefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';

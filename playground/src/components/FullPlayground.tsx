@@ -3,15 +3,15 @@ import { useConfirmDialog } from '../playground-ui/ConfirmDialogProvider';
 import { DiscordChatCrate } from '../playground-ui/DiscordChatCrate';
 import { useGoogleAnalytics } from '../playground-ui/GoogleAnalyticsHook';
 import TabLabel from '../playground-ui/TabLabel';
-import { Example } from '@code/spicedb-common/src/examples';
-import { DeveloperServiceClient } from '@code/spicedb-common/src/protodefs/authzed/api/v0/DeveloperServiceClientPb';
+import { Example } from '../spicedb-common/examples';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
 import {
   ShareRequest,
   ShareResponse,
-} from '@code/spicedb-common/src/protodefs/authzed/api/v0/developer_pb';
-import { useDeveloperService } from '@code/spicedb-common/src/services/developerservice';
-import { useZedTerminalService } from '@code/spicedb-common/src/services/zedterminalservice';
-import { parseValidationYAML } from '@code/spicedb-common/src/validationfileformat';
+} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
+import { useDeveloperService } from '../spicedb-common/services/developerservice';
+import { useZedTerminalService } from '../spicedb-common/services/zedterminalservice';
+import { parseValidationYAML } from '../spicedb-common/validationfileformat';
 import { LinearProgress, Tab, Tabs, Tooltip } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import Box from '@material-ui/core/Box';

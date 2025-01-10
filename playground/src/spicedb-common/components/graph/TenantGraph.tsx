@@ -1,6 +1,6 @@
-import VisNetworkGraph from '@code/playground-ui/src/VisNetworkGraph';
-import { ParsedSchema } from '@code/spicedb-common/src/parsers/dsl/dsl';
-import { RelationTuple as Relationship } from '@code/spicedb-common/src/protodevdefs/core/v1/core';
+import VisNetworkGraph from '../../../playground-ui/VisNetworkGraph';
+import { ParsedSchema } from '../../parsers/dsl/dsl';
+import { RelationTuple as Relationship } from '../../protodevdefs/core/v1/core';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import React from 'react';

@@ -1,5 +1,5 @@
-import { RelationshipFound } from '@code/spicedb-common/src/parsing';
-import { DeveloperError, DeveloperWarning } from '@code/spicedb-common/src/protodevdefs/developer/v1/developer';
+import { RelationshipFound } from '../spicedb-common/parsing';
+import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodevdefs/developer/v1/developer';
 import { ERROR_SOURCE_TO_ITEM } from '../components/panels/errordisplays';
 import { LiveCheckService, LiveCheckStatus } from './check';
 import { DataStoreItemKind } from './datastore';

@@ -1,4 +1,4 @@
-import { Example, LoadExamples } from '@code/spicedb-common/src/examples';
+import { Example, LoadExamples } from '../spicedb-common/examples';
 import { faCaretDown } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { CircularProgress, MenuItem } from '@material-ui/core';

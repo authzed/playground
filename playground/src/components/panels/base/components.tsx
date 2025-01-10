@@ -1,4 +1,4 @@
-import TabPanel from '@code/playground-ui/src/TabPanel';
+import TabPanel from '../../../playground-ui/TabPanel';
 import { Button, Tooltip, Typography } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
 import CircularProgress from '@material-ui/core/CircularProgress';

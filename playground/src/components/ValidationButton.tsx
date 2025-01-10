@@ -1,4 +1,4 @@
-import { DeveloperService } from '@code/spicedb-common/src/services/developerservice';
+import { DeveloperService } from '../spicedb-common/services/developerservice';
 import Button from '@material-ui/core/Button';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import { fade } from '@material-ui/core/styles/colorManipulator';

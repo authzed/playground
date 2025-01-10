@@ -1,7 +1,7 @@
 import {
   AssertionData,
   ValidationData,
-} from '@code/spicedb-common/src/validationfileformat';
+} from '../spicedb-common/validationfileformat';
 import yaml from 'yaml';
 import { DataStore, DataStoreItemKind } from './datastore';
 

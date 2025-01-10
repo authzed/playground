@@ -2,7 +2,7 @@ import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
   parseRelationshipWithError,
-} from '@code/spicedb-common/src/parsing';
+} from '../../parsing';
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
