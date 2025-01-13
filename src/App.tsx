@@ -2,18 +2,15 @@ import { AlertProvider } from './playground-ui/AlertProvider';
 import { ConfirmDialogProvider } from './playground-ui/ConfirmDialogProvider';
 import { useGoogleAnalytics } from './playground-ui/GoogleAnalyticsHook';
 import PlaygroundUIThemed from './playground-ui/PlaygroundUIThemed';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { BrowserRouter } from 'react-router-dom';
-import 'typeface-roboto-mono'; // Import the Roboto Mono font.
+import 'typeface-roboto-mono/index.css'; // Import the Roboto Mono font.
 import './App.css';
 import { EmbeddedPlayground } from './components/EmbeddedPlayground';
 import { FullPlayground } from './components/FullPlayground';
 import { InlinePlayground } from './components/InlinePlayground';
 import AppConfig from './services/configservice';
 import { PLAYGROUND_UI_COLORS } from './theme';
-
-var _ = React;
 
 export interface AppProps {
   /**
@@ -37,6 +34,7 @@ function ThemedApp(props: {
 }) {
   if (window.location.pathname.indexOf('/i/') >= 0) {
     return (
+        // @ts-expect-error RRv5 types are jank
       <BrowserRouter>
         <InlinePlayground />
       </BrowserRouter>
@@ -45,6 +43,7 @@ function ThemedApp(props: {
 
   if (window.location.pathname.indexOf('/e/') >= 0) {
     return (
+        // @ts-expect-error RRv5 types are jank
       <BrowserRouter>
         <EmbeddedPlayground />
       </BrowserRouter>
