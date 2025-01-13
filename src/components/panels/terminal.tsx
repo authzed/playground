@@ -9,14 +9,13 @@ import LinearProgress from '@material-ui/core/LinearProgress';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import { Alert, Color } from '@material-ui/lab';
 import Convert from 'ansi-to-html';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from 'react';
 import 'react-reflex/styles.css';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { DataStoreItemKind } from '../../services/datastore';
 import { PanelProps, PanelSummaryProps } from './base/common';
 import { PlaygroundPanelLocation } from './panels';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -87,7 +86,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
     }
   }, [zts.outputSections]);
 
-  const handleKeyUp = (e: React.KeyboardEvent) => {
+  const handleKeyUp = (e: KeyboardEvent) => {
     if (e.key.toLowerCase() === 'arrowup') {
       const updatedHistoryIndex = historyIndex - 1;
       if (updatedHistoryIndex < 0) {
@@ -137,7 +136,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
     }
   };
 
-  const handleCommandChanged = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCommandChanged = (e: ChangeEvent<HTMLInputElement>) => {
     setCommand(e.target.value);
   };
 
@@ -184,7 +183,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
     inputRef.current?.focus();
   };
 
-  const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
     const hasSelection = !!getSelectedTextWithin(event.target as Element);
     if (!hasSelection) {
       inputRef.current?.focus();
@@ -265,6 +264,8 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
   }
 
   const output =
+      // TODO: rewrite this to remove use of replaceAll
+      // @ts-expect-error replaceAll comes from a string polyfill.
     convert.toHtml(o.replaceAll(' ', '\xa0').replaceAll('\t', '\xa0\xa0')) ||
     '&nbsp;';
   return <div dangerouslySetInnerHTML={{ __html: output }}></div>;
@@ -280,7 +281,7 @@ function TerminalOutputDisplay(props: {
     escapeXML: true,
   });
   const children = props.sections.flatMap(
-    (section: TerminalSection): React.ReactNode => {
+    (section: TerminalSection): ReactNode => {
       if ('command' in section) {
         return <div>$ {section.command}</div>;
       } else {
@@ -296,7 +297,7 @@ function TerminalOutputDisplay(props: {
       }
     }
   );
-  const handleMouseUp = (event: React.MouseEvent<HTMLDivElement>) => {
+  const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
     const hasSelection = !!getSelectedTextWithin(event.target as Element);
     if (props.onRefocus && !hasSelection) {
       props.onRefocus();

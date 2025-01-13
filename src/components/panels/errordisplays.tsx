@@ -5,12 +5,9 @@ import {
 } from '../../spicedb-common/protodevdefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import Alert from '@material-ui/lab/Alert';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { Link } from 'react-router-dom';
 import { DataStoreItemKind, DataStorePaths } from '../../services/datastore';
-
-var _ = React;
 
 export const ERROR_SOURCE_TO_ITEM = {
   [DeveloperError_Source.SCHEMA]: DataStoreItemKind.SCHEMA,
@@ -115,18 +112,20 @@ const useSourceDisplayStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export function DeveloperWarningSourceDisplay(props: {warning: DeveloperWarning}) {
-  const vw = props.warning;
+export function DeveloperWarningSourceDisplay({ warning }: {warning: DeveloperWarning}) {
   const classes = useSourceDisplayStyles();
 
-  return <div className={classes.validationErrorContext}>
-  In{' '}
-  <Link className={classes.link} to={DataStorePaths.Schema()}>
-    Schema
-  </Link>
-  :
-    
-</div>
+  return (
+      <div className={classes.validationErrorContext}>
+          In{' '}
+      {/* @ts-expect-error RRv5 types are jank */}
+      <Link className={classes.link} to={DataStorePaths.Schema()}>
+      Schema
+      </Link>
+      {/* NOTE: this is a guess; I think this was an unintentional omission. */}
+          : {warning.message}
+      </div>
+  )
 }
 
 export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
@@ -139,6 +138,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       {ve.source === DeveloperError_Source.SCHEMA && (
         <div className={classes.validationErrorContext}>
           In{' '}
+          {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Schema()}>
             Schema
           </Link>
@@ -148,6 +148,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       {ve.source === DeveloperError_Source.ASSERTION && (
         <div className={classes.validationErrorContext}>
           In{' '}
+          {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Assertions()}>
             Assertions
           </Link>
@@ -157,6 +158,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       {ve.source === DeveloperError_Source.RELATIONSHIP && (
         <div className={classes.validationErrorContext}>
           In{' '}
+          {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Relationships()}>
             Test Data
           </Link>
@@ -166,6 +168,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       {ve.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className={classes.validationErrorContext}>
           In{' '}
+          {/* @ts-expect-error RRv5 types are jank */}
           <Link
             className={classes.link}
             to={DataStorePaths.ExpectedRelations()}

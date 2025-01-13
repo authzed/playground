@@ -5,7 +5,6 @@ import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import clsx from 'clsx';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { Link } from 'react-router-dom';
 import { DataStorePaths } from '../../services/datastore';
@@ -13,8 +12,6 @@ import { TourElementClass } from '../GuidedTour';
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from './base/common';
 import { DeveloperErrorDisplay, DeveloperSourceDisplay, DeveloperWarningDisplay, DeveloperWarningSourceDisplay } from './errordisplays';
 import { PlaygroundPanelLocation } from './panels';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -101,6 +98,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
               <div>
                 <div className={classes.validationErrorContext}>
                   In{' '}
+                  {/* @ts-expect-error RRv5 TS definitions are jank */}
                   <Link
                     className={classes.link}
                     to={DataStorePaths.Relationships()}
