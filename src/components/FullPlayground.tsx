@@ -50,7 +50,7 @@ import 'react-reflex/styles.css';
 import { useHistory, useLocation } from 'react-router-dom';
 import sjcl from 'sjcl';
 import { useKeyboardShortcuts } from 'use-keyboard-shortcuts';
-import { ReactComponent as DISCORD } from '../assets/discord.svg';
+import DISCORD from '../assets/discord.svg?react';
 import { useLiveCheckService } from '../services/check';
 import AppConfig from '../services/configservice';
 import {
@@ -435,7 +435,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   useKeyboardShortcuts([
     {
       keys: ['ctrl', 's'],
-      onEvent: (event) => {
+      onEvent: () => {
         // Do nothing. We save automatically.
       },
     },
@@ -802,8 +802,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               <Button
                 className={classes.hideTextOnMed}
                 size="small"
-                target="_blank"
-                rel="noreferrer noopener"
                 href={AppConfig().discord.inviteUrl}
                 startIcon={
                   <DISCORD
