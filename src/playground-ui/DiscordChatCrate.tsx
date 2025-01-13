@@ -2,8 +2,8 @@ import { useTheme } from '@material-ui/core/styles';
 import { useEffect, useRef } from 'react';
 
 export interface DiscordChatCrateProps {
-  serverId: string;
-  channelId: string;
+  serverId?: string;
+  channelId?: string;
 }
 
 // Copied from: https://github.com/widgetbot-io/crate/blob/f34b7d18429326a8ce3073ae27fa7a3ae5c914b5/src/types/options.d.ts#L7
@@ -51,6 +51,7 @@ interface Crate {
 // Copied from: https://github.com/widgetbot-io/crate/blob/master/src/util/cdn.ts#L3
 const CDN_URL = `https://cdn.jsdelivr.net/npm/@widgetbot/crate@3`;
 
+// TODO: replace with a script loader
 const loadFromCDN = () =>
   new Promise<new (options: Options) => Crate>((resolve, reject) => {
     const script = document.createElement('script');
@@ -64,7 +65,7 @@ const loadFromCDN = () =>
 /**
  * DiscordChatCrate creates a WidgetBot.io crate for a Discord channel.
  */
-export const DiscordChatCrate = (props: DiscordChatCrateProps) => {
+export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps) => {
   const crate = useRef<Crate | undefined>(undefined);
   const injected = useRef(false);
 
@@ -79,19 +80,18 @@ export const DiscordChatCrate = (props: DiscordChatCrateProps) => {
     if (
       crate.current !== undefined ||
       injected.current ||
-      !props.serverId ||
-      !props.channelId
+      !serverId ||
+      !channelId
     ) {
       return;
     }
-
     (async () => {
       injected.current = true;
 
       const CrateConstructor = await loadFromCDN();
       const created = new CrateConstructor({
-        server: props.serverId,
-        channel: props.channelId,
+        server: serverId,
+        channel: channelId,
         glyph: [glyph.uri, glyph.size],
         defer: true,
         color: color,
@@ -105,7 +105,7 @@ export const DiscordChatCrate = (props: DiscordChatCrateProps) => {
     // is currently no way to dispose of the older Crate and create a new one. This does mean
     // that once a crate is added, it *cannot* be changed, but that should be okay.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [props]);
+  }, [serverId, channelId]);
 
   return <span key="discord-crate" />;
 };
