@@ -7,4 +7,4 @@ plugins:
       - long_type_string
       - generate_dependencies
 inputs:
-  - module: "buf.build/authzed/api:v1.39.2"
+  - module: "buf.build/authzed/api:v1.38.0"
