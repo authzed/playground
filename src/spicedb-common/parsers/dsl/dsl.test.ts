@@ -8,6 +8,7 @@ import {
   ParsedRelationRefExpression,
   parseSchema,
 } from './dsl';
+import { describe, it, expect } from 'vitest';
 
 describe('parsing', () => {
   it('parses empty schema', () => {

@@ -1,4 +1,5 @@
 import { parseValidationYAML } from "./validationfileformat";
+import { describe, it, expect } from 'vitest'
 
 describe("parsing validation YAML", () => {
   it("returns undefined for an empty file", () => {

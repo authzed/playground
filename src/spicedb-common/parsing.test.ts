@@ -5,6 +5,7 @@ import {
   parseRelationshipWithError,
 } from './parsing';
 import { Struct } from './protodevdefs/google/protobuf/struct';
+import { describe, it, expect } from 'vitest';
 
 describe('converting relationships', () => {
   it('converts relationships properly to strings', () => {

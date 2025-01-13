@@ -1,4 +1,5 @@
 import { parseCELExpression } from './cel';
+import { describe, it, expect } from 'vitest';
 
 describe('parsing', () => {
   it('parses basic CEL expression', () => {

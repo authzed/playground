@@ -1,5 +1,6 @@
 import { mapParsedSchema, ParsedNode, ParsedSchema, parseSchema } from "./dsl";
 import { rewriteSchema } from "./generator";
+import { describe, it, expect } from 'vitest';
 
 const stripRange = (schema: ParsedSchema | undefined) => {
   if (schema === undefined) {
