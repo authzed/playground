@@ -13,8 +13,8 @@ import DataEditor, {
   GridSelection,
   Rectangle,
   Theme,
+  type Highlight,
 } from '@glideapps/glide-data-grid';
-import { Highlight } from '@glideapps/glide-data-grid/dist/ts/data-grid/data-grid-render';
 import {
   Checkbox,
   FormControlLabel,
@@ -31,12 +31,14 @@ import {
 } from '@material-ui/core/styles';
 import { Assignment, Comment, Delete } from '@material-ui/icons';
 import Alert from '@material-ui/lab/Alert';
-import React, {
+import {
   useCallback,
   useEffect,
   useMemo,
   useRef,
   useState,
+  type ReactNode,
+  type KeyboardEvent,
 } from 'react';
 import { useCookies } from 'react-cookie';
 import { ThemeProvider } from 'styled-components';
@@ -581,7 +583,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     [data]
   );
 
-  const getCellsForSelection = React.useCallback(
+  const getCellsForSelection = useCallback(
     (selection: Rectangle): readonly (readonly GridCell[])[] => {
       const result: GridCell[][] = [];
       for (let y = selection.y; y < selection.y + selection.height; y++) {
@@ -790,7 +792,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     }
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+  const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
     if (props.isReadOnly) {
       return;
     }
@@ -820,7 +822,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     }
   };
 
-  const [tooltip, setTooltip] = React.useState<TooltipData | undefined>();
+  const [tooltip, setTooltip] = useState<TooltipData | undefined>();
 
   const handleItemHovered = useCallback(
     (args: GridMouseEventArgs) => {
@@ -929,8 +931,9 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     props.isReadOnly
   );
 
+  // TODO: get JSX out of state.
   const [snackbarMessage, setSnackbarMessage] = useState<
-    React.ReactChild | undefined
+    ReactNode | undefined
   >(undefined);
 
   return (

@@ -1,5 +1,4 @@
 import { CustomCell } from "@glideapps/glide-data-grid";
-import { CustomCellRenderer } from "@glideapps/glide-data-grid-cells/dist/ts/types";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 import { Column, CommentCellPrefix } from "./columns";
@@ -92,7 +91,7 @@ const CommentCellEditor = (props: {
 
 export const CommentCellRenderer = (
   props: MutableRefObject<FieldCellRendererProps>
-): CustomCellRenderer<CommentCell> => {
+) => {
   return {
     isMatch: (cell: CustomCell): cell is CommentCell =>
       (cell.data as any).kind === COMMENT_CELL_KIND,
@@ -113,7 +112,7 @@ export const CommentCellRenderer = (
       ctx.restore();
       return true;
     },
-    provideEditor: () => (p) => {
+    provideEditor: (cell: any) => (p) => {
       const { onChange, value, initialValue } = p;
       return (
         <CommentCellEditor

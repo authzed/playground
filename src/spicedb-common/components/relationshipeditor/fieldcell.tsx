@@ -1,9 +1,8 @@
 import { CustomCell, GridSelection } from "@glideapps/glide-data-grid";
-import { CustomCellRenderer } from "@glideapps/glide-data-grid-cells/dist/ts/types";
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete from "@material-ui/lab/Autocomplete";
-import React, { MutableRefObject, useRef } from "react";
+import { MutableRefObject, useRef } from "react";
 import stc from "string-to-color";
 import { ResolvedDefinition, Resolver } from "../../parsers/dsl/resolution";
 import { RelationshipsService } from "../../services/relationshipsservice";
@@ -95,9 +94,7 @@ type GetAutocompleteOptions<Q extends FieldCellProps> = (
 function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   kind: string,
   getAutocompleteOptions: GetAutocompleteOptions<Q>
-): (
-  propsRefs: MutableRefObject<FieldCellRendererProps>
-) => CustomCellRenderer<T> {
+) {
   return (propsRefs: MutableRefObject<FieldCellRendererProps>) => {
     return {
       isMatch: (cell: CustomCell): cell is T =>
