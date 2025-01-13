@@ -982,7 +982,6 @@ export interface StringRules {
     maxLen?: string;
     /**
      * LenBytes specifies that this field must be the specified number of bytes
-     * at a minimum
      *
      * @generated from protobuf field: optional uint64 len_bytes = 20;
      */

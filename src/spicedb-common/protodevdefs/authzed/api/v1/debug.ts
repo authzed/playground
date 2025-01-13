@@ -13,6 +13,7 @@ import { MESSAGE_TYPE } from "@protobuf-ts/runtime";
 import { MessageType } from "@protobuf-ts/runtime";
 import { PartialCaveatInfo } from "./core";
 import { Struct } from "../../../google/protobuf/struct";
+import { Duration } from "../../../google/protobuf/duration";
 import { SubjectReference } from "./core";
 import { ObjectReference } from "./core";
 /**
@@ -83,6 +84,12 @@ export interface CheckDebugTrace {
      * @generated from protobuf field: authzed.api.v1.CaveatEvalInfo caveat_evaluation_info = 8;
      */
     caveatEvaluationInfo?: CaveatEvalInfo;
+    /**
+     * duration holds the time spent executing this Check operation.
+     *
+     * @generated from protobuf field: google.protobuf.Duration duration = 9;
+     */
+    duration?: Duration;
     /**
      * @generated from protobuf oneof: resolution
      */
@@ -280,6 +287,7 @@ class CheckDebugTrace$Type extends MessageType<CheckDebugTrace> {
             { no: 4, name: "subject", kind: "message", T: () => SubjectReference, options: { "validate.rules": { message: { required: true } } } },
             { no: 5, name: "result", kind: "enum", T: () => ["authzed.api.v1.CheckDebugTrace.Permissionship", CheckDebugTrace_Permissionship, "PERMISSIONSHIP_"], options: { "validate.rules": { enum: { definedOnly: true, notIn: [0] } } } },
             { no: 8, name: "caveat_evaluation_info", kind: "message", T: () => CaveatEvalInfo },
+            { no: 9, name: "duration", kind: "message", T: () => Duration },
             { no: 6, name: "was_cached_result", kind: "scalar", oneof: "resolution", T: 8 /*ScalarType.BOOL*/ },
             { no: 7, name: "sub_problems", kind: "message", oneof: "resolution", T: () => CheckDebugTrace_SubProblems }
         ]);
@@ -313,6 +321,9 @@ class CheckDebugTrace$Type extends MessageType<CheckDebugTrace> {
                     break;
                 case /* authzed.api.v1.CaveatEvalInfo caveat_evaluation_info */ 8:
                     message.caveatEvaluationInfo = CaveatEvalInfo.internalBinaryRead(reader, reader.uint32(), options, message.caveatEvaluationInfo);
+                    break;
+                case /* google.protobuf.Duration duration */ 9:
+                    message.duration = Duration.internalBinaryRead(reader, reader.uint32(), options, message.duration);
                     break;
                 case /* bool was_cached_result */ 6:
                     message.resolution = {
@@ -356,6 +367,9 @@ class CheckDebugTrace$Type extends MessageType<CheckDebugTrace> {
         /* authzed.api.v1.CaveatEvalInfo caveat_evaluation_info = 8; */
         if (message.caveatEvaluationInfo)
             CaveatEvalInfo.internalBinaryWrite(message.caveatEvaluationInfo, writer.tag(8, WireType.LengthDelimited).fork(), options).join();
+        /* google.protobuf.Duration duration = 9; */
+        if (message.duration)
+            Duration.internalBinaryWrite(message.duration, writer.tag(9, WireType.LengthDelimited).fork(), options).join();
         /* bool was_cached_result = 6; */
         if (message.resolution.oneofKind === "wasCachedResult")
             writer.tag(6, WireType.Varint).bool(message.resolution.wasCachedResult);

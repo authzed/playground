@@ -46,7 +46,6 @@ export interface Relationship {
     optionalCaveat?: ContextualizedCaveat;
 }
 /**
- * *
  * ContextualizedCaveat represents a reference to a caveat to be used by caveated relationships.
  * The context consists of key-value pairs that will be injected at evaluation time.
  * The keys must match the arguments defined on the caveat in the schema.
@@ -55,13 +54,13 @@ export interface Relationship {
  */
 export interface ContextualizedCaveat {
     /**
-     * * caveat_name is the name of the caveat expression to use, as defined in the schema *
+     * caveat_name is the name of the caveat expression to use, as defined in the schema
      *
      * @generated from protobuf field: string caveat_name = 1;
      */
     caveatName: string;
     /**
-     * * context consists of any named values that are defined at write time for the caveat expression *
+     * context consists of any named values that are defined at write time for the caveat expression
      *
      * @generated from protobuf field: google.protobuf.Struct context = 2;
      */
@@ -108,6 +107,18 @@ export interface ObjectReference {
  * @generated from protobuf message authzed.api.v1.ZedToken
  */
 export interface ZedToken {
+    /**
+     * @generated from protobuf field: string token = 1;
+     */
+    token: string;
+}
+/**
+ * Cursor is used to provide resumption of listing between calls to APIs
+ * such as LookupResources.
+ *
+ * @generated from protobuf message authzed.api.v1.Cursor
+ */
+export interface Cursor {
     /**
      * @generated from protobuf field: string token = 1;
      */
@@ -444,8 +455,8 @@ export const SubjectReference = new SubjectReference$Type();
 class ObjectReference$Type extends MessageType<ObjectReference> {
     constructor() {
         super("authzed.api.v1.ObjectReference", [
-            { no: 1, name: "object_type", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "128", pattern: "^([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]$" } } } },
-            { no: 2, name: "object_id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "128", pattern: "^(([a-zA-Z0-9_][a-zA-Z0-9/_|-]{0,127})|\\*)$" } } } }
+            { no: 1, name: "object_type", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "128", pattern: "^([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$" } } } },
+            { no: 2, name: "object_id", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { maxBytes: "1024", pattern: "^(([a-zA-Z0-9/_|\\-=+]{1,})|\\*)$" } } } }
         ]);
     }
     create(value?: PartialMessage<ObjectReference>): ObjectReference {
@@ -541,6 +552,53 @@ class ZedToken$Type extends MessageType<ZedToken> {
  * @generated MessageType for protobuf message authzed.api.v1.ZedToken
  */
 export const ZedToken = new ZedToken$Type();
+// @generated message type with reflection information, may provide speed optimized methods
+class Cursor$Type extends MessageType<Cursor> {
+    constructor() {
+        super("authzed.api.v1.Cursor", [
+            { no: 1, name: "token", kind: "scalar", T: 9 /*ScalarType.STRING*/, options: { "validate.rules": { string: { minBytes: "1", maxBytes: "102400" } } } }
+        ]);
+    }
+    create(value?: PartialMessage<Cursor>): Cursor {
+        const message = { token: "" };
+        globalThis.Object.defineProperty(message, MESSAGE_TYPE, { enumerable: false, value: this });
+        if (value !== undefined)
+            reflectionMergePartial<Cursor>(this, message, value);
+        return message;
+    }
+    internalBinaryRead(reader: IBinaryReader, length: number, options: BinaryReadOptions, target?: Cursor): Cursor {
+        let message = target ?? this.create(), end = reader.pos + length;
+        while (reader.pos < end) {
+            let [fieldNo, wireType] = reader.tag();
+            switch (fieldNo) {
+                case /* string token */ 1:
+                    message.token = reader.string();
+                    break;
+                default:
+                    let u = options.readUnknownField;
+                    if (u === "throw")
+                        throw new globalThis.Error(`Unknown field ${fieldNo} (wire type ${wireType}) for ${this.typeName}`);
+                    let d = reader.skip(wireType);
+                    if (u !== false)
+                        (u === true ? UnknownFieldHandler.onRead : u)(this.typeName, message, fieldNo, wireType, d);
+            }
+        }
+        return message;
+    }
+    internalBinaryWrite(message: Cursor, writer: IBinaryWriter, options: BinaryWriteOptions): IBinaryWriter {
+        /* string token = 1; */
+        if (message.token !== "")
+            writer.tag(1, WireType.LengthDelimited).string(message.token);
+        let u = options.writeUnknownFields;
+        if (u !== false)
+            (u == true ? UnknownFieldHandler.onWrite : u)(this.typeName, message, writer);
+        return writer;
+    }
+}
+/**
+ * @generated MessageType for protobuf message authzed.api.v1.Cursor
+ */
+export const Cursor = new Cursor$Type();
 // @generated message type with reflection information, may provide speed optimized methods
 class RelationshipUpdate$Type extends MessageType<RelationshipUpdate> {
     constructor() {
