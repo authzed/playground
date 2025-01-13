@@ -1,0 +1,5 @@
+- [x] Fix tests
+- [ ] Fix environment variable setting in dockerfile
+- [ ] Fix environment variable setting in vercel
+- [ ] Fix build
+- [ ] Fix buf.gen.yaml
