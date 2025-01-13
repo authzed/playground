@@ -2,17 +2,7 @@ import CircularProgress from '@material-ui/core/CircularProgress';
 import Paper from '@material-ui/core/Paper';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import Typography from '@material-ui/core/Typography';
-import React from "react";
-
-/**
- * Properties for the LoadingView.
- */
-interface LoadingViewProps {
-    /**
-     * The loading message content.
-     */
-    message: React.ComponentType<any> | React.ReactElement | string;
-}
+import type { ReactNode } from "react";
 
 const useStyles = makeStyles((theme: Theme) =>
     createStyles({
@@ -43,13 +33,13 @@ const useStyles = makeStyles((theme: Theme) =>
  * LoadingView displays a full page throbber and message for loading.
  * @param props The properties for the loading view.
  */
-export default function LoadingView(props: LoadingViewProps) {
+export default function LoadingView({ message }: { message: ReactNode }) {
     const classes = useStyles();
     return <div className={classes.root}>
         <Paper className={classes.paper}>
             <CircularProgress className={classes.throbber} />
             <Typography>
-                {props.message}
+                {message}
             </Typography>
         </Paper></div>;
 }
