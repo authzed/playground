@@ -1,9 +1,6 @@
 import useMediaQuery from '@material-ui/core/useMediaQuery';
-import React from 'react';
-import { ReactComponent as AUTHZED_DM_SMALL_LOGO } from '../assets/favicon-dark-mode.svg';
-import { ReactComponent as AUTHZED_SMALL_LOGO } from '../assets/favicon.svg';
-
-var _ = React;
+import AUTHZED_DM_SMALL_LOGO from '../assets/favicon-dark-mode.svg?react';
+import AUTHZED_SMALL_LOGO from '../assets/favicon.svg?react';
 
 export function NormalLogo() {
   const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
