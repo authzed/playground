@@ -4,7 +4,7 @@ import {
   ParsedRelation,
 } from '../../spicedb-common/parsers/dsl/dsl';
 import { parseRelationships } from '../../spicedb-common/parsing';
-import { RelationTuple as Relationship } from '../../spicedb-common/protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../../spicedb-common/protodefs/core/v1/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import IconButton from '@material-ui/core/IconButton';
 import Paper from '@material-ui/core/Paper';
@@ -42,7 +42,7 @@ import {
   interpolateOranges,
   interpolatePurples,
 } from 'd3-scale-chromatic';
-import React, { useMemo, useState } from 'react';
+import { useMemo, useState } from 'react';
 import 'react-reflex/styles.css';
 import {
   LiveCheckItem,
@@ -57,8 +57,6 @@ import { TourElementClass } from '../GuidedTour';
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from './base/common';
 import { ReflexedPanelLocation } from './base/reflexed';
 import { PlaygroundPanelLocation } from './panels';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

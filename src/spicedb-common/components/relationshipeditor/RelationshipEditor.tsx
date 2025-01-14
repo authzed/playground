@@ -44,7 +44,7 @@ import { useCookies } from 'react-cookie';
 import { ThemeProvider } from 'styled-components';
 import { useDeepCompareEffect, useDeepCompareMemo } from 'use-deep-compare';
 import { Resolver } from '../../parsers/dsl/resolution';
-import { RelationTuple as Relationship } from '../../protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
 import { useRelationshipsService } from '../../services/relationshipsservice';
 import {
   Column,

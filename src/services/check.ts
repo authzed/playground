@@ -1,11 +1,11 @@
 import { parseRelationship } from '../spicedb-common/parsing';
-import { DebugInformation } from '../spicedb-common/protodevdefs/authzed/api/v1/debug';
+import { DebugInformation } from '../spicedb-common/protodefs/authzed/api/v1/debug';
 import {
   CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
   DeveloperWarning,
-} from '../spicedb-common/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/protodefs/developer/v1/developer';
 import {
   DeveloperService,
   DeveloperServiceError,

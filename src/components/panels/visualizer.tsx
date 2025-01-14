@@ -2,7 +2,7 @@ import TabLabel from '../../playground-ui/TabLabel';
 import TenantGraph from '../../spicedb-common/components/graph/TenantGraph';
 import { TextRange } from '../../spicedb-common/include/protobuf-parser';
 import { RelationshipFound } from '../../spicedb-common/parsing';
-import { RelationTuple as Relationship } from '../../spicedb-common/protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../../spicedb-common/protodefs/core/v1/core';
 import {
   createStyles,
   darken,
@@ -11,7 +11,6 @@ import {
 } from '@material-ui/core/styles';
 import BubbleChartIcon from '@material-ui/icons/BubbleChart';
 import monaco from 'monaco-editor-core';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { useHistory } from 'react-router-dom';
 import {
@@ -21,8 +20,6 @@ import {
 } from '../../services/datastore';
 import { PanelProps, PanelSummaryProps } from './base/common';
 import { PlaygroundPanelLocation } from './panels';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

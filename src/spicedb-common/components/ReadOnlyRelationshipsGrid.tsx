@@ -4,8 +4,7 @@ import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
-import React from "react";
-import { RelationTuple as Relationship } from "../protodevdefs/core/v1/core";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

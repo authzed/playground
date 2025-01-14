@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from 'react';
 import { parseRelationships } from '../parsing';
-import { RelationTuple as Relationship } from '../protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../protodefs/core/v1/core';
 import {
   CheckOperationParameters,
   CheckOperationsResult,
@@ -16,7 +16,7 @@ import {
   RunValidationResult,
   SchemaWarningsParameters,
   SchemaWarningsResult,
-} from '../protodevdefs/developer/v1/developer';
+} from '../protodefs/developer/v1/developer';
 import wasmConfig from '../../wasm-config.json';
 
 const WASM_FILE = `${process.env.PUBLIC_URL}/static/main.wasm`;

@@ -1,8 +1,8 @@
 import {
   ContextualizedCaveat,
   RelationTuple as Relationship,
-} from './protodevdefs/core/v1/core';
-import { Struct } from './protodevdefs/google/protobuf/struct';
+} from './protodefs/core/v1/core';
+import { Struct } from './protodefs/google/protobuf/struct';
 
 export const CAVEAT_NAME_EXPR =
   '([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]';

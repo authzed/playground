@@ -1,4 +1,4 @@
-import { RelationTuple as Relationship } from '../../protodevdefs/core/v1/core';
+import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
 import {
   ObjectOrCaveatDefinition,
   ParsedObjectDefinition,

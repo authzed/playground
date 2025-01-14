@@ -1,18 +1,15 @@
 import TabLabel from '../../playground-ui/TabLabel';
-import { DeveloperError } from '../../spicedb-common/protodevdefs/developer/v1/developer';
+import { DeveloperError } from '../../spicedb-common/protodefs/developer/v1/developer';
 import { Paper } from '@material-ui/core';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
 import clsx from 'clsx';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { ValidationStatus } from '../../services/validation';
 import { PanelProps, PanelSummaryProps } from './base/common';
 import { DeveloperErrorDisplay, DeveloperSourceDisplay } from './errordisplays';
 import { PlaygroundPanelLocation } from './panels';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

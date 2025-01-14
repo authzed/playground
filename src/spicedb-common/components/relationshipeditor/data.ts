@@ -1,6 +1,6 @@
 import { RelationshipWithComments } from '../../parsing';
-import { RelationTuple as Relationship } from '../../protodevdefs/core/v1/core';
-import { Struct } from '../../protodevdefs/google/protobuf/struct';
+import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
+import { Struct } from '../../protodefs/google/protobuf/struct';
 import { COLUMNS } from './columns';
 
 /**
