@@ -1,5 +1,6 @@
 - [x] Fix tests
 - [ ] Fix environment variable setting in dockerfile
 - [ ] Fix environment variable setting in vercel
-- [ ] Fix build
-- [ ] Fix buf.gen.yaml
+- [x] Fix build
+- [x] Fix buf.gen.yaml
+- [ ] Get local instance working without errors
