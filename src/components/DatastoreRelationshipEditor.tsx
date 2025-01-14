@@ -16,14 +16,13 @@ import {
 import {
   DeveloperError,
   DeveloperError_Source,
-} from '../spicedb-common/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/protodefs/developer/v1/developer';
 import { Theme } from '@glideapps/glide-data-grid';
-import React, { useCallback, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { DataStore, DataStoreItemKind } from '../services/datastore';
 import { Services } from '../services/services';
 
-var _ = React;
 
 const partialRelationshipCommentPrefix = 'partial relationship: ';
 

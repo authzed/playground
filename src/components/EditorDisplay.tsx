@@ -6,13 +6,13 @@ import registerDSLanguage, {
 import { useDebouncedChecker } from '../playground-ui/debouncer';
 import { TextRange } from '../spicedb-common/include/protobuf-parser';
 import { RelationshipFound } from '../spicedb-common/parsing';
-import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodevdefs/developer/v1/developer';
+import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodefs/developer/v1/developer';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
 import lineColumn from 'line-column';
 import monaco from 'monaco-editor-core';
-import React, { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import 'react-reflex/styles.css';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -30,8 +30,6 @@ import registerTupleLanguage, {
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
 } from './tuplelang';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -82,8 +80,6 @@ export function EditorDisplay(props: EditorDisplayProps) {
       registerTupleLanguage(monacoRef, () => localParseState.current);
       setMonacoReady(true);
     }
-    // NOTE: We only care if the monacoRef changes; the datastore is simply a reference.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [monacoRef]);
 
   useEffect(() => {
@@ -134,7 +130,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
         console.log(`Unknown item kind ${currentItem?.kind} in theme name`);
         return 'vs';
     }
-  }, [prefersDarkMode, currentItem?.kind]);
+  }, [prefersDarkMode, currentItem?.kind, props.themeName]);
 
   const languageName = useMemo(() => {
     switch (currentItem?.kind) {

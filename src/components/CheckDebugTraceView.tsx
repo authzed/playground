@@ -4,11 +4,11 @@ import {
   CheckDebugTrace,
   CheckDebugTrace_Permissionship,
   CheckDebugTrace_PermissionType,
-} from '../spicedb-common/protodevdefs/authzed/api/v1/debug';
+} from '../spicedb-common/protodefs/authzed/api/v1/debug';
 import {
   Struct,
   Value,
-} from '../spicedb-common/protodevdefs/google/protobuf/struct';
+} from '../spicedb-common/protodefs/google/protobuf/struct';
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ChevronRightIcon from '@material-ui/icons/ChevronRight';
@@ -18,10 +18,7 @@ import HighlightOffIcon from '@material-ui/icons/HighlightOff';
 import TreeItem from '@material-ui/lab/TreeItem';
 import TreeView from '@material-ui/lab/TreeView';
 import clsx from 'clsx';
-import React from 'react';
 import { LocalParseService } from '../services/localparse';
-
-var _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
