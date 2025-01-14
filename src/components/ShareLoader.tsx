@@ -3,9 +3,7 @@ import { useConfirmDialog } from '../playground-ui/ConfirmDialogProvider';
 import LoadingView from '../playground-ui/LoadingView';
 import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
 import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
-import {
-  LookupShareResponse_LookupStatus,
-} from '../spicedb-common/protodefs/authzed/api/v0/developer';
+import { LookupShareResponse_LookupStatus, } from '../spicedb-common/protodefs/authzed/api/v0/developer';
 import { RpcError } from "@protobuf-ts/runtime-rpc"
 import Alert from '@material-ui/lab/Alert';
 import React, { useEffect, useState } from 'react';
