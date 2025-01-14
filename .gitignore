@@ -3,5 +3,5 @@ yarn-debug.log
 yarn-error.log
 spicedb
 zed
-build
+dist
 .vercel
