@@ -1,13 +1,13 @@
 import { useAlert } from '../playground-ui/AlertProvider';
 import { useConfirmDialog } from '../playground-ui/ConfirmDialogProvider';
 import LoadingView from '../playground-ui/LoadingView';
-import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
+import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
 import {
-  LookupShareRequest,
-  LookupShareResponse,
-} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
+  LookupShareResponse_LookupStatus,
+} from '../spicedb-common/protodefs/authzed/api/v0/developer';
+import { RpcError } from "@protobuf-ts/runtime-rpc"
 import Alert from '@material-ui/lab/Alert';
-import * as grpcWeb from 'grpc-web';
 import React, { useEffect, useState } from 'react';
 import 'react-reflex/styles.css';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -64,13 +64,13 @@ export function ShareLoader(props: {
 
     // Load the shared data.
     (async () => {
-      const service = new DeveloperServiceClient(
-        AppConfig().authzed!.developerEndpoint!,
-        null,
-        null
-      );
+        const endpoint = AppConfig().authzed.developerEndpoint;
+        if (!endpoint) {
+            return;
+        }
+        const service = new DeveloperServiceClient(new GrpcWebFetchTransport({ baseUrl: endpoint }));
 
-      const pieces = location.pathname.substr(urlPrefix.length).split('/');
+      const pieces = location.pathname.slice(0, urlPrefix.length).split('/');
       if (pieces.length < 1 && !props.sharedRequired) {
         history.push('/');
         return;
@@ -78,19 +78,11 @@ export function ShareLoader(props: {
 
       const shareReference = pieces[0];
 
-      const request = new LookupShareRequest();
-      request.setShareReference(shareReference);
-
-      service.lookupShared(
-        request,
-        {},
-        (err: grpcWeb.RpcError, response: LookupShareResponse) => {
-          const handler = async () => {
-            // Error handling.
+      try {
+          const { response, status } = await service.lookupShared({ shareReference });
             if (
-              err ||
-              response.getStatus() ===
-                LookupShareResponse.LookupStatus.FAILED_TO_LOOKUP
+              status.code ===
+                LookupShareResponse_LookupStatus.FAILED_TO_LOOKUP.toString()
             ) {
               setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
               if (props.sharedRequired) {
@@ -99,7 +91,7 @@ export function ShareLoader(props: {
 
               await showAlert({
                 title: 'Error loading shared playground',
-                content: err ? err.message : 'Invalid sharing reference',
+                content: 'Invalid sharing reference',
                 buttonTitle: 'Okay',
               });
               history.replace('/');
@@ -108,8 +100,8 @@ export function ShareLoader(props: {
 
             // Unknown reference.
             if (
-              response.getStatus() ===
-              LookupShareResponse.LookupStatus.UNKNOWN_REFERENCE
+              status.code ===
+              LookupShareResponse_LookupStatus.UNKNOWN_REFERENCE.toString()
             ) {
               setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
               if (props.sharedRequired) {
@@ -147,28 +139,35 @@ export function ShareLoader(props: {
 
             if (updateDatastore) {
               datastore.load({
-                schema: response.getSchema(),
-                relationshipsYaml: response.getRelationshipsYaml(),
-                assertionsYaml: response.getAssertionsYaml(),
-                verificationYaml: response.getValidationYaml(),
+                schema: response.schema,
+                relationshipsYaml: response.relationshipsYaml,
+                assertionsYaml: response.assertionsYaml,
+                verificationYaml: response.validationYaml,
               });
             }
 
             if (!props.sharedRequired) {
               history.replace(
-                location.pathname.substr(
+                location.pathname.slice(
+                    0, 
                   urlPrefix.length + shareReference.length
                 )
               );
             }
 
             setLoadingStatus(SharedLoadingStatus.LOADED);
-          };
-
-          handler();
-        }
-      );
-    })();
+      } catch (error: unknown) {
+          if (error instanceof RpcError)
+              await showAlert({
+                title: 'Error loading shared playground',
+                content: error?.message,
+                buttonTitle: 'Okay',
+              });
+              history.replace('/');
+              return;
+      }
+          }
+      )();
   }, [
     location.pathname,
     loadingStatus,

@@ -4,11 +4,9 @@ import { DiscordChatCrate } from '../playground-ui/DiscordChatCrate';
 import { useGoogleAnalytics } from '../playground-ui/GoogleAnalyticsHook';
 import TabLabel from '../playground-ui/TabLabel';
 import { Example } from '../spicedb-common/examples';
-import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
-import {
-  ShareRequest,
-  ShareResponse,
-} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
+import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
+import { RpcError } from "@protobuf-ts/runtime-rpc"
 import { useDeveloperService } from '../spicedb-common/services/developerservice';
 import { useZedTerminalService } from '../spicedb-common/services/zedterminalservice';
 import { parseValidationYAML } from '../spicedb-common/validationfileformat';
@@ -43,7 +41,6 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import clsx from 'clsx';
 import { saveAs } from 'file-saver';
 import { fileDialog } from 'file-select-dialog';
-import * as grpcWeb from 'grpc-web';
 import React, { useEffect, useMemo, useState } from 'react';
 import { useCookies } from 'react-cookie';
 import 'react-reflex/styles.css';
@@ -505,14 +502,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     request?.execute();
   };
 
-  const conductSharing = (callback?: (reference: string) => void) => {
+  const conductSharing = async () => {
     const developerEndpoint = AppConfig().authzed?.developerEndpoint;
     if (!developerEndpoint) {
-      return;
-    }
-
-    if (callback !== undefined && sharingState.shareReference !== undefined) {
-      callback(sharingState.shareReference);
       return;
     }
 
@@ -520,7 +512,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       status: SharingStatus.SHARING,
     });
 
-    const service = new DeveloperServiceClient(developerEndpoint, null, null);
+    const service = new DeveloperServiceClient(new GrpcWebFetchTransport({ baseUrl: developerEndpoint }));
 
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA)
       .editableContents!;
@@ -535,29 +527,14 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     ).editableContents!;
 
     // Invoke sharing.
-    const request = new ShareRequest();
-    request.setSchema(schema);
-    request.setRelationshipsYaml(relationshipsYaml);
-    request.setAssertionsYaml(assertionsYaml);
-    request.setValidationYaml(validationYaml);
-
-    service.share(
-      request,
-      {},
-      (err: grpcWeb.RpcError, response: ShareResponse) => {
-        if (err) {
-          showAlert({
-            title: 'Error sharing',
-            content: err.message,
-            buttonTitle: 'Okay',
-          });
-          setSharingState({
-            status: SharingStatus.SHARE_ERROR,
-          });
-          return;
-        }
-
-        const reference = response.getShareReference();
+    try {
+    const { response } = await service.share({
+        schema,
+        relationshipsYaml,
+        assertionsYaml,
+        validationYaml,
+    });
+        const reference = response.shareReference;
         pushEvent('shared', {
           reference: reference,
         });
@@ -567,12 +544,20 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           shareReference: reference,
         });
 
-        if (callback !== undefined) {
-          callback(reference);
+    } catch (error: unknown) {
+        if (error instanceof RpcError) {
+          showAlert({
+            title: 'Error sharing',
+            content: error.message,
+            buttonTitle: 'Okay',
+          });
+          setSharingState({
+            status: SharingStatus.SHARE_ERROR,
+          });
+          return;
         }
-      }
-    );
-  };
+    }
+  }
 
   const datastoreUpdated = () => {
     if (sharingState.status !== SharingStatus.NOT_RUN) {

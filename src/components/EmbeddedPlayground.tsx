@@ -4,15 +4,13 @@ import {
   RelationshipFound,
   parseRelationship,
 } from '../spicedb-common/parsing';
-import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/DeveloperServiceClientPb';
-import {
-  ShareRequest,
-  ShareResponse,
-} from '../spicedb-common/protodefs/authzed/api/v0/developer_pb';
+import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
+import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
+import { RpcError } from "@protobuf-ts/runtime-rpc"
 import {
   CheckOperationsResult,
   CheckOperationsResult_Membership,
-} from '../spicedb-common/protodevdefs/developer/v1/developer';
+} from '../spicedb-common/protodefs/developer/v1/developer';
 import { useDeveloperService } from '../spicedb-common/services/developerservice';
 import {
   faCaretDown,
@@ -28,7 +26,6 @@ import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
 import clsx from 'clsx';
-import * as grpcWeb from 'grpc-web';
 import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react';
 import { useLiveCheckService } from '../services/check';
 import AppConfig from '../services/configservice';
@@ -278,13 +275,13 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
 
   const { showAlert } = useAlert();
 
-  const shareAndOpen = () => {
+  const shareAndOpen = async () => {
     const developerEndpoint = AppConfig().authzed?.developerEndpoint;
     if (!developerEndpoint) {
       return;
     }
 
-    const service = new DeveloperServiceClient(developerEndpoint, null, null);
+    const service = new DeveloperServiceClient(new GrpcWebFetchTransport({ baseUrl: developerEndpoint }));
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA)
       .editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
@@ -298,29 +295,25 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
     ).editableContents!;
 
     // Invoke sharing.
-    const request = new ShareRequest();
-    request.setSchema(schema);
-    request.setRelationshipsYaml(relationshipsYaml);
-    request.setAssertionsYaml(assertionsYaml);
-    request.setValidationYaml(validationYaml);
-
-    service.share(
-      request,
-      {},
-      (err: grpcWeb.RpcError, response: ShareResponse) => {
-        if (err) {
+    try {
+    const { response } = await service.share({
+            schema,
+            relationshipsYaml,
+            assertionsYaml,
+            validationYaml,
+        });
+        const reference = response.shareReference;
+        window.open(`${window.location.origin}/s/${reference}`);
+    } catch (error: unknown) {
+        if (error instanceof RpcError) {
           showAlert({
             title: 'Error sharing',
-            content: err.message,
+            content: error.message,
             buttonTitle: 'Okay',
           });
           return;
         }
-
-        const reference = response.getShareReference();
-        window.open(`${window.location.origin}/s/${reference}`);
-      }
-    );
+    }
   };
 
   return (
