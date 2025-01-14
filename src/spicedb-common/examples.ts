@@ -13,7 +13,7 @@ async function get(path: string): Promise<string> {
   return await result.text();
 }
 
-const prefix = `${process.env.PUBLIC_URL}/static/schemas`;
+const prefix = `/static/schemas`;
 
 /**
  * LoadExamples loads the examples defined statically and compiled in.

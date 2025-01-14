@@ -4,7 +4,7 @@ import { parseRelationships } from '../parsing';
 import { RequestContext } from '../protodefs/developer/v1/developer';
 import wasmConfig from '../../wasm-config.json';
 
-const WASM_FILE = `${process.env.PUBLIC_URL}/static/zed.wasm`;
+const WASM_FILE = `/static/zed.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
 const ENTRYPOINT_FUNCTION = 'runZedCommand';
 

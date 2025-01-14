@@ -375,7 +375,7 @@ function ApolloedPlayground(props: { withRouter?: any }) {
   const datastore = usePlaygroundDatastore();
   const Router = props.withRouter ? props.withRouter : Box;
   return (
-    <Router basename={process.env.PUBLIC_URL}>
+    <Router>
       <ShareLoader
         datastore={datastore}
         shareUrlRoot="s"
@@ -776,7 +776,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               {sharingState.status === SharingStatus.SHARED && (
                 <TextField
                   className={classes.shareUrl}
-                  value={`${window.location.protocol}//${window.location.host}${process.env.PUBLIC_URL}/s/${sharingState.shareReference}${location.pathname}`}
+                  value={`${window.location.protocol}//${window.location.host}/s/${sharingState.shareReference}${location.pathname}`}
                   inputProps={{
                     readOnly: true,
                   }}

@@ -19,7 +19,7 @@ import {
 } from '../protodefs/developer/v1/developer';
 import wasmConfig from '../../wasm-config.json';
 
-const WASM_FILE = `${process.env.PUBLIC_URL}/static/main.wasm`;
+const WASM_FILE = `/static/main.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes
 const ENTRYPOINT_FUNCTION = 'runSpiceDBDeveloperRequest';
 
