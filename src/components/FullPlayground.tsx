@@ -722,7 +722,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   return (
     <div className={classes.root}>
-      {!global.WebAssembly && (
+      {!WebAssembly && (
         <Alert severity="error">
           WebAssembly is disabled but is required for Playground debugging. All
           debugging tools will be disabled.
@@ -1203,7 +1203,7 @@ function MainPanel(
         datastore={datastore}
         services={props.services}
         panels={panels}
-        disabled={!global.WebAssembly}
+        disabled={!WebAssembly}
         overrideSummaryDisplay={devServerStatusDisplay}
       >
         {props.currentItem?.kind === DataStoreItemKind.RELATIONSHIPS &&

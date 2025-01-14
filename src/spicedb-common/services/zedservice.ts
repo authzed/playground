@@ -143,14 +143,14 @@ export function useZedService(): ZedService {
 
       case 'initializing':
         const initialized = (window as any)[ENTRYPOINT_FUNCTION];
-        if (!!initialized) {
+        if (initialized) {
           setState({
             status: 'ready',
           });
           return;
         }
 
-        if (!global.WebAssembly || !(window as any).Go) {
+        if (!WebAssembly || !(window as any).Go) {
           console.error('WebAssembly is not supported in your browser');
           setState({
             status: 'unsupported',
