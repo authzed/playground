@@ -10,6 +10,4 @@ inputs:
   - module: "buf.build/authzed/api:v1.38.0"
     paths:
       - "authzed/api/v0"
-  - git_repo: "https://github.com/authzed/spicedb"
-    branch: "v1.38.0"
-    subdir: "proto/internal/developer/v1"
+  - directory: "./proto"
