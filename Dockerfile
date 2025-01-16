@@ -5,6 +5,15 @@ WORKDIR /app
 # Bring in everything not ignored by the dockerignore
 COPY . .
 ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
+
+# App environment variables
+ENV VITE_AUTHZED_DEVELOPER_GATEWAY_ENDPOINT
+ENV VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID
+
+ENV VITE_DISCORD_CHANNEL_ID
+ENV VITE_DISCORD_INVITE_URL=https://authzed.com/discord
+ENV VITE_DISCORD_SERVER_ID
+
 RUN yarn install --frozen-lockfile --non-interactive --network-timeout 1000000
 
 RUN yarn build
