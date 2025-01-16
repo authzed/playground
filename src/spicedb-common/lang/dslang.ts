@@ -41,7 +41,6 @@ export default function registerDSLanguage(monaco: any) {
         // e.g. /** | */
         // eslint-disable-next-line
         beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
-        // eslint-disable-next-line
         afterText: /^\s*\*\/$/,
         action: {
           indentAction: monaco.languages.IndentAction.IndentOutdent,
@@ -328,7 +327,6 @@ export default function registerDSLanguage(monaco: any) {
         // eslint-disable-next-line
         [/[^\/*]+/, 'comment'],
 
-        // eslint-disable-next-line
         [/\*\//, 'comment', '@pop'],
 
         // eslint-disable-next-line
@@ -338,7 +336,6 @@ export default function registerDSLanguage(monaco: any) {
         // eslint-disable-next-line
         [/[^\/*]+/, 'comment.doc'],
 
-        // eslint-disable-next-line
         [/\*\//, 'comment.doc', '@pop'],
 
         // eslint-disable-next-line
@@ -701,6 +698,9 @@ export default function registerDSLanguage(monaco: any) {
     base: 'vs-dark',
     inherit: true,
     rules: DARK_RULES,
+    colors: {
+      'editor.background': '#0e0d11',
+    },
   });
   monaco.editor.defineTheme(DS_EMBED_DARK_THEME_NAME, {
     base: 'vs-dark',
