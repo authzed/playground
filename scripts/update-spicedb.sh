@@ -18,4 +18,4 @@ git fetch
 git checkout ${VERSION}
 cd pkg/development/wasm
 GOOS=js GOARCH=wasm go build -o main.wasm
-mv main.wasm ../../../../wasm
+mv main.wasm ../../../../public/wasm

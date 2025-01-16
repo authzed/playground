@@ -3,6 +3,5 @@
 # instead of a script
 
 mkdir -p dist/static/schemas
-cp wasm/*.wasm  dist/static
 cp -R examples/schemas/* dist/static/schemas
 ls dist/static/schemas > dist/static/schemas/_all
