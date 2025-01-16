@@ -842,8 +842,11 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         )}
       </AppBar>
       <AppBar className={classes.toolBar} position="static" color="default">
+        {currentItem?.id && (
+            // NOTE: Tabs doesn't like having an undefined value, so we wait to render
+            // until we've got it.
         <Tabs
-          value={currentItem?.id}
+          value={currentItem.id}
           onChange={handleChangeTab}
           indicatorColor="primary"
           textColor="primary"
@@ -904,6 +907,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             }
           />
         </Tabs>
+        )}
 
         <div className={classes.contextToolbar}>
           <div className={classes.contextTools}>
