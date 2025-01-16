@@ -3,5 +3,5 @@
 # instead of a script
 
 mkdir -p dist/static/schemas
-cp -R examples/schemas/* dist/static/schemas
-ls dist/static/schemas > dist/static/schemas/_all
+cp -R examples/schemas/* build/static/schemas
+ls dist/static/schemas > build/static/schemas/_all
