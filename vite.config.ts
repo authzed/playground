@@ -7,6 +7,7 @@ import svgr from "vite-plugin-svgr";
 export default defineConfig({
   plugins: [react(), svgr(),],
   build: {
+      // This matches Vercel's expectations.
       outDir: "build",
   },
 })
