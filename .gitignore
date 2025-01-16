@@ -5,3 +5,4 @@ spicedb
 zed
 build
 .vercel
+.env
