@@ -17,4 +17,4 @@ git fetch
 git checkout ${VERSION}
 cd pkg/wasm
 GOOS=js GOARCH=wasm go build -o zed.wasm
-mv zed.wasm ../../../public/static/wasm
+mv zed.wasm ../../../public/static
