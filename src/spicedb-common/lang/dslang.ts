@@ -647,6 +647,7 @@ export default function registerDSLanguage(monaco: any) {
       { token: 'identifier.permission', foreground: '000000' },
       { token: 'identifier.relation', foreground: '000000' },
     ],
+    colors: {},
   });
 
   const DARK_RULES = [
