@@ -30,14 +30,6 @@ http {
             add_header Cache-Control no-cache;
             add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
         }
-        location /config.json {
-            add_header Cache-Control no-cache;
-            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
-        }
-        location /config-env.js {
-            add_header Cache-Control no-cache;
-            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
-        }
         location ~ ^/s/([^/]+)/download$ {
             rewrite ^/s/([^/]+)/download$ ${PLAYGROUND_DEVELOPER_API_DOWNLOAD_ENDPOINT}/$1;
             add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
