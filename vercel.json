@@ -35,5 +35,11 @@
         }
       ]
     }
+  ],
+  "rewrites": [
+    {
+      "source": "/s/:path([^/]+)/download",
+      "destination": "https://download.developer.authzed.com/:path*"
+    }
   ]
 }
