@@ -1,7 +1,6 @@
 /// <reference types="vite/client" />
 
 interface ImportMetaEnv {
-  readonly VITE_OIDC_URL_PREFIX?: string;
   readonly VITE_AUTHENTICATION_ENGINE?: string;
 
   readonly VITE_AUTHZED_DEVELOPER_GATEWAY_ENDPOINT?: string | undefined | null;
