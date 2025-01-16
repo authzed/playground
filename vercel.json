@@ -27,6 +27,15 @@
       ]
     },
     {
+      "source": "/s/:path([^/]+)/download",
+      "headers": [
+        {
+          "key": "Content-Security-Policy",
+          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
+        }
+      ]
+    },
+    {
       "source": "/(.*)",
       "headers": [
         {
