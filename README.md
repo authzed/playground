@@ -102,6 +102,14 @@ The project contains prebuilt WASM files for versions of both SpiceDB and zed. T
 [wasm-config.json]: https://github.com/authzed/playground/blob/main/spicedb-common/wasm-config.json
 [jq]: https://jqlang.github.io/jq/
 
+## Updating the generated protobuf code
+
+This project uses generated gRPC code to talk to the download API. To regenerate:
+
+1. Install [buf](https://buf.build/docs/installation/) if you haven't already
+1. Run `buf generate`
+1. Commit the changes
+
 ## Developing your own schema
 
 You can try both [SpiceDB](https://github.com/authzed/spicedb) and [zed](https://github.com/authzed/zed) entirely in your browser on a SpiceDB Playground deployment thanks to the power of [WebAssembly](https://authzed.com/blog/some-assembly-required).
