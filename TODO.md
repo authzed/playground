@@ -3,4 +3,4 @@
 - [ ] Fix environment variable setting in vercel
 - [x] Fix build
 - [x] Fix buf.gen.yaml
-- [ ] Get local instance working without errors
+- [x] Get local instance working without errors
