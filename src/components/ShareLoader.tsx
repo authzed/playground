@@ -68,7 +68,7 @@ export function ShareLoader(props: {
         }
         const service = new DeveloperServiceClient(new GrpcWebFetchTransport({ baseUrl: endpoint }));
 
-      const pieces = location.pathname.slice(0, urlPrefix.length).split('/');
+      const pieces = location.pathname.replace(urlPrefix, "").split('/');
       if (pieces.length < 1 && !props.sharedRequired) {
         history.push('/');
         return;
