@@ -1,0 +1,38 @@
+daemon off;
+
+events {
+}
+
+http {
+    # default set of files and their content types
+    include      mime.types;
+    # prompt user for download for any undeclared file format
+    default_type application/octet-stream;
+    # optimization when serving static files
+    sendfile     on;
+
+    server {
+        listen 3000;
+        root /usr/share/nginx/html;
+        gzip on;
+        gzip_types text/css application/javascript application/json image/svg+xml application/wasm application/octet-stream;
+        gzip_comp_level 9;
+        etag on;
+        location / {
+            try_files $uri $uri/ /index.html;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
+        }
+        location /static/ {
+            add_header Cache-Control max-age=31536000;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
+        }
+        location /index.html {
+            add_header Cache-Control no-cache;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
+        }
+        location ~ ^/s/([^/]+)/download$ {
+            rewrite ^/s/([^/]+)/download$ ${PLAYGROUND_DEVELOPER_API_DOWNLOAD_ENDPOINT}/$1;
+            add_header Content-Security-Policy "frame-ancestors 'self' ${HEADER_CONTENT_SECURITY_POLICY};" always;
+        }
+    }
+}

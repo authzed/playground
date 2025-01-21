@@ -27,32 +27,6 @@
       ]
     },
     {
-      "source": "/config.json",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache;"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
-        }
-      ]
-    },
-    {
-      "source": "/config-env.js",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache;"
-        },
-        {
-          "key": "Content-Security-Policy",
-          "value": "frame-ancestors 'self' docs.authzed.com authzed.com www.authzed.com;"
-        }
-      ]
-    },
-    {
       "source": "/s/:path([^/]+)/download",
       "headers": [
         {

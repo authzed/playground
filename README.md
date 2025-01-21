@@ -58,7 +58,7 @@ Deploy an instance hosted on Vercel
 or using the Vercel CLI
 
 ```command
-NODE_OPTIONS=--openssl-legacy-provider vercel build
+vercel build
 vercel deploy --prebuilt
 ```
 
@@ -73,7 +73,7 @@ The `build` directory in the project root directory after running `yarn build` w
 For example:
 
 ```command
-NODE_OPTIONS=--openssl-legacy-provider yarn global install serve
+yarn global install serve
 cd build
 serve
 ```
@@ -86,8 +86,9 @@ Run `yarn install` in the _root_ project directory.
 
 ## Running for development
 
-1. Copy the files in the `wasm` root directory into `playground/public/static`
-2. Run `yarn start` from the `playground` subdirectory
+```
+yarn run dev
+```
 
 ## Updating wasm dependencies
 
@@ -101,6 +102,26 @@ The project contains prebuilt WASM files for versions of both SpiceDB and zed. T
 
 [wasm-config.json]: https://github.com/authzed/playground/blob/main/spicedb-common/wasm-config.json
 [jq]: https://jqlang.github.io/jq/
+
+## Updating the generated protobuf code
+
+This project uses generated gRPC code to talk to the download API. To regenerate:
+
+1. Install [buf](https://buf.build/docs/installation/) if you haven't already
+1. Run `buf generate`
+1. Commit the changes
+
+## Building the Docker Container
+
+```
+docker build . -t tag-for-playground-image
+```
+
+Build args can be specified for the build-time environment variables:
+
+```
+docker build --build-arg VITE_AUTHZED_DEVELOPER_GATEWAY_ENDPOINT=https://my.developer.endpoint . -t tag-for-playground-image
+```
 
 ## Developing your own schema
 
