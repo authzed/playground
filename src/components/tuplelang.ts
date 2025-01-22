@@ -143,14 +143,14 @@ export default function registerTupleLanguage(
     ) {
       // Based on: https://gist.github.com/mwrouse/05d8c11cd3872c19c684bd1904a2202e
       // Split everything the user has typed on the current line up at each space, and only look at the last word
-      var lastChars = model.getValueInRange({
+      const lastChars = model.getValueInRange({
         startLineNumber: position.lineNumber,
         startColumn: 0,
         endLineNumber: position.lineNumber,
         endColumn: position.column,
       });
-      var words = lastChars.replace('\t', '').split(' ');
-      var activeTyping = words[words.length - 1]; // What the user is currently typing (everything after the last space)
+      const words = lastChars.replace('\t', '').split(' ');
+      const activeTyping = words[words.length - 1]; // What the user is currently typing (everything after the last space)
 
       switch (activeTyping[activeTyping.length - 1]) {
         case '/':
@@ -254,6 +254,7 @@ export default function registerTupleLanguage(
 
       { token: 'userset.start', foreground: '000000', fontStyle: 'bold' },
     ],
+    colors: {},
   });
 
   monaco.editor.defineTheme(TUPLE_DARK_THEME_NAME, {
@@ -285,5 +286,8 @@ export default function registerTupleLanguage(
 
       { token: 'userset.start', foreground: 'ffffff', fontStyle: 'bold' },
     ],
+    colors: {
+      'editor.background': '#0e0d11',
+    },
   });
 }
