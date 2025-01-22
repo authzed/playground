@@ -79,7 +79,7 @@ function runEditCheckWasm(
   const schema =
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
     '';
-  let relationshipsString = datastore.getSingletonByKind(
+  const relationshipsString = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS
   ).editableContents;
 

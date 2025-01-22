@@ -116,7 +116,7 @@ export function useZedService(): ZedService {
     }
 
     // Refetch, which should be from cache.
-    const go = new (window as any).Go();
+    const go = new window.Go();
     const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
 
     try {
@@ -137,12 +137,12 @@ export function useZedService(): ZedService {
   }, [setState]);
 
   useEffect(() => {
+      const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
       case 'standby':
         return;
 
       case 'initializing':
-        const initialized = (window as any)[ENTRYPOINT_FUNCTION];
         if (initialized) {
           setState({
             status: 'ready',
@@ -150,7 +150,7 @@ export function useZedService(): ZedService {
           return;
         }
 
-        if (!WebAssembly || !(window as any).Go) {
+        if (!WebAssembly || !window.Go) {
           console.error('WebAssembly is not supported in your browser');
           setState({
             status: 'unsupported',
@@ -202,7 +202,7 @@ export function useZedService(): ZedService {
       const contextJSONString = RequestContext.toJsonString(reqContext);
 
       const result = JSON.parse(
-        (window as any)[ENTRYPOINT_FUNCTION](contextJSONString, args)
+        window[ENTRYPOINT_FUNCTION](contextJSONString, args)
       );
       const updatedContext = result.updated_context
         ? RequestContext.fromJsonString(result.updated_context)

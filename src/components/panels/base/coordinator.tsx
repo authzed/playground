@@ -290,7 +290,7 @@ export function usePanelsCoordinator<L extends string>(props: PanelCoordinatorPr
             }
         };
 
-        let updatedLocations = { ...updatedState.panelLocations };
+        const updatedLocations = { ...updatedState.panelLocations };
         Object.keys(coordinatorState.panelLocations).forEach((panelId: string) => {
             if (coordinatorState.panelLocations[panelId] === location) {
                 updatedLocations[panelId] = props.defaultLocation;

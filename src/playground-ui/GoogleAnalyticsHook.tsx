@@ -41,7 +41,7 @@ export const useGoogleAnalytics = (measurementId?: string) => {
             window.gtag('config', measurementId);
 
             // Install the Google Tags Manager.
-            let script = document.createElement('script');
+            const script = document.createElement('script');
             script.src = `https://www.googletagmanager.com/gtag/js?id=${measurementId}`;
             script.async = true;
 

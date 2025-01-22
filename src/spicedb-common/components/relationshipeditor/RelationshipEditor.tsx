@@ -396,7 +396,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     if (selection.rows) {
       const adjustedData = Array.from(data);
       for (
-        var row = selection.rows.last() ?? 0;
+        let row = selection.rows.last() ?? 0;
         row >= (selection.rows.first() ?? 1);
         row--
       ) {
