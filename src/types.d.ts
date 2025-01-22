@@ -1,3 +1,5 @@
+// NOTE: the bare export here makes the typescript compiler aware
+// of the global type declarations.
 export {}
 
 declare module '*.yaml' {
