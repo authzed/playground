@@ -32,10 +32,3 @@ declare global {
     Crate: new (options: Options) => Crate;
   }
 }
-
-declare global {
-    interface Window {
-        // TODO: type this based on what's in wasm_exec.js
-        Go: any;
-    }
-}

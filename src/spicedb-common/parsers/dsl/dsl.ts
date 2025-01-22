@@ -112,17 +112,17 @@ export function flatMapExpression<T>(
       return arrowResult ? [...childResults, arrowResult] : childResults;
     }
 
-    case 'nil': {
+    case "nil": {
       const nilResult = walker(expr);
       return nilResult ? [nilResult] : [];
     }
 
-    case 'relationref': {
+    case "relationref": {
       const result = walker(expr);
       return result ? [result] : [];
     }
 
-    case 'binary': {
+    case "binary": {
       const binResult = walker(expr);
       const leftResults = flatMapExpression<T>(expr.left, walker);
       const rightResults = flatMapExpression<T>(expr.right, walker);
@@ -447,7 +447,7 @@ const typeRef = Parsimmon.seqMap(
       path: data[0][0],
       relationName: isWildcard ? undefined : data[0][1][0],
       wildcard: isWildcard,
-      withCaveat: (data[1]).length > 0 ? data[1][0] : undefined,
+      withCaveat: data[1].length > 0 ? data[1][0] : undefined,
       range: { startIndex: startIndex, endIndex: endIndex },
     };
   },
@@ -599,13 +599,16 @@ const table: {
 ];
 
 const tableParser: Parser<ParsedBinaryExpression> = table.reduce(
-  (acc: Parser<ParsedBinaryExpression>, level: (typeof table)[0]): Parser<ParsedBinaryExpression> => level.type(level.ops, acc),
-    // TODO: there's probably a better way to type this.
-      // BINARY_LEFT returns a Parser<ParsedBinaryExpression>, and the types
-      // are compatible as seen in the parsing tests passing, but we have to
-      // cast here because there isn't a broader type that works well
-      // in this context.
-  parensExpr as unknown as Parser<ParsedBinaryExpression>
+  (
+    acc: Parser<ParsedBinaryExpression>,
+    level: (typeof table)[0],
+  ): Parser<ParsedBinaryExpression> => level.type(level.ops, acc),
+  // TODO: there's probably a better way to type this.
+  // BINARY_LEFT returns a Parser<ParsedBinaryExpression>, and the types
+  // are compatible as seen in the parsing tests passing, but we have to
+  // cast here because there isn't a broader type that works well
+  // in this context.
+  parensExpr as unknown as Parser<ParsedBinaryExpression>,
 );
 
 const expr = tableParser.trim(whitespace);

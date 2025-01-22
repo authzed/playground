@@ -138,12 +138,12 @@ export function useZedService(): ZedService {
   }, [setState]);
 
   useEffect(() => {
-      const initialized = window[ENTRYPOINT_FUNCTION];
+    const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
       case "standby":
         return;
 
-       case 'initializing':
+      case "initializing":
         if (initialized) {
           setState({
             status: "ready",
