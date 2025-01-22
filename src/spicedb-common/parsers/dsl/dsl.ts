@@ -1,4 +1,4 @@
-import Parsimmon from 'parsimmon';
+import Parsimmon, { type Parser } from 'parsimmon';
 import { celExpression } from '../cel/cel';
 
 /**
@@ -105,26 +105,30 @@ export function flatMapExpression<T>(
     case 'namedarrow':
       // fallthrough
       
-    case 'arrow':
+    case 'arrow': {
       const arrowResult = walker(expr);
       const childResults = flatMapExpression<T>(expr.sourceRelation, walker);
       return arrowResult ? [...childResults, arrowResult] : childResults;
+    }
 
-    case 'nil':
+    case 'nil': {
       const nilResult = walker(expr);
       return nilResult ? [nilResult] : [];
+    }
 
-    case 'relationref':
+    case 'relationref': {
       const result = walker(expr);
       return result ? [result] : [];
+    }
 
-    case 'binary':
+    case 'binary': {
       const binResult = walker(expr);
       const leftResults = flatMapExpression<T>(expr.left, walker);
       const rightResults = flatMapExpression<T>(expr.right, walker);
       return binResult
         ? [...leftResults, ...rightResults, binResult]
         : [...leftResults, ...rightResults];
+    }
   }
 }
 
@@ -348,7 +352,7 @@ const multiLineComment = regex(/\/\*((((?!\*\/).)|\r|\n)*)\*\//).then(
 
 const comment = singleLineComment.or(multiLineComment);
 const whitespace = optWhitespace.then(comment.atLeast(0));
-const lexeme = function (p: any) {
+const lexeme = function (p: Parser<string>) {
   return p.skip(whitespace);
 };
 
@@ -372,10 +376,10 @@ const hash = lexeme(string('#'));
 const comma = lexeme(string(','));
 const dot = lexeme(string('.'));
 
-const terminator: any = newline.or(semicolon);
+const terminator = newline.or(semicolon);
 
 // Type reference and expression.
-const withCaveat: any = Parsimmon.seqMap(
+const withCaveat = Parsimmon.seqMap(
   Parsimmon.index,
   seq(lexeme(string('with')), path),
   Parsimmon.index,
@@ -388,7 +392,7 @@ const withCaveat: any = Parsimmon.seqMap(
   }
 );
 
-const typeRef: any = Parsimmon.seqMap(
+const typeRef = Parsimmon.seqMap(
   Parsimmon.index,
   seq(
     seq(path, colon, lexeme(string('*'))).or(
@@ -404,19 +408,19 @@ const typeRef: any = Parsimmon.seqMap(
       path: data[0][0],
       relationName: isWildcard ? undefined : data[0][1][0],
       wildcard: isWildcard,
-      withCaveat: (data[1] as any[]).length > 0 ? data[1][0] : undefined,
+      withCaveat: (data[1]).length > 0 ? data[1][0] : undefined,
       range: { startIndex: startIndex, endIndex: endIndex },
     };
   }
 );
 
-const typeExpr: any = Parsimmon.lazy(() => {
+const typeExpr = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(typeRef, pipedTypeExpr.atLeast(0)),
     Parsimmon.index,
     function (startIndex, data, endIndex) {
-      const remaining: any[] = data[1];
+      const remaining = data[1];
       return {
         kind: 'typeexpr',
         types: [data[0], ...remaining],
@@ -426,11 +430,11 @@ const typeExpr: any = Parsimmon.lazy(() => {
   );
 });
 
-const pipedTypeExpr: any = pipe.then(typeRef);
+const pipedTypeExpr = pipe.then(typeRef);
 
 // Permission expression.
 // Based on: https://github.com/jneen/parsimmon/blob/93648e20f40c5c0335ac6506b39b0ca58b87b1d9/examples/math.js#L29
-const relationReference: any = Parsimmon.lazy(() => {
+const relationReference = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(identifier),
@@ -445,7 +449,7 @@ const relationReference: any = Parsimmon.lazy(() => {
   );
 });
 
-const arrowExpr: any = Parsimmon.lazy(() => {
+const arrowExpr = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(relationReference, arrow, identifier),
@@ -462,7 +466,7 @@ const arrowExpr: any = Parsimmon.lazy(() => {
 });
 
 
-const namedArrowExpr: any = Parsimmon.lazy(() => {
+const namedArrowExpr = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(relationReference, dot, identifier, lparen, identifier, rparen),
@@ -479,7 +483,7 @@ const namedArrowExpr: any = Parsimmon.lazy(() => {
   );
 });
 
-const nilExpr: any = Parsimmon.lazy(() => {
+const nilExpr = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     string('nil'),
@@ -494,7 +498,7 @@ const nilExpr: any = Parsimmon.lazy(() => {
   );
 });
 
-const parensExpr: any = Parsimmon.lazy(() =>
+const parensExpr = Parsimmon.lazy(() =>
   string('(')
     .then(expr)
     .skip(string(')'))
@@ -504,16 +508,19 @@ const parensExpr: any = Parsimmon.lazy(() =>
     .or(relationReference)
 );
 
-function BINARY_LEFT(operatorsParser: any, nextParser: any) {
+function BINARY_LEFT(operatorsParser: Parser<string>, nextParser: Parser<ParsedBinaryExpression>) {
   return seqMap(
     nextParser,
     seq(operatorsParser, nextParser).many(),
-    (first: any, rest: any) => {
-      return rest.reduce((acc: any, ch: any) => {
+    (first: ParsedBinaryExpression, rest: [string, ParsedBinaryExpression][]) => {
+      return rest.reduce((acc: ParsedBinaryExpression, ch: [string, ParsedBinaryExpression]): ParsedBinaryExpression => {
         const [op, another] = ch;
         return {
           kind: 'binary',
-          operator: op,
+          // NOTE: this as is necessary because the table below where
+          // these parsers are defined defines them statically, but
+          // typescript doesn't know that they're limited to this union.
+          operator: op as ("union" | "intersection" | "exclusion"),
           left: acc,
           right: another,
           range: {
@@ -529,24 +536,32 @@ function BINARY_LEFT(operatorsParser: any, nextParser: any) {
 function operators(ops: Record<string, string>) {
   const keys = Object.keys(ops).sort();
   const ps = keys.map((k) => string(ops[k]).trim(optWhitespace).result(k));
-  return alt.apply(null, ps);
+  return alt(...ps);
 }
 
-const table = [
+const table: {
+    type: typeof BINARY_LEFT,
+    ops: Parser<string>
+}[] = [
   { type: BINARY_LEFT, ops: operators({ union: '+' }) },
   { type: BINARY_LEFT, ops: operators({ intersection: '&' }) },
   { type: BINARY_LEFT, ops: operators({ exclusion: '-' }) },
 ];
 
-const tableParser: any = table.reduce(
-  (acc: any, level: any) => level.type(level.ops, acc),
-  parensExpr
+const tableParser: Parser<ParsedBinaryExpression> = table.reduce(
+  (acc: Parser<ParsedBinaryExpression>, level: (typeof table)[0]): Parser<ParsedBinaryExpression> => level.type(level.ops, acc),
+    // TODO: there's probably a better way to type this.
+      // BINARY_LEFT returns a Parser<ParsedBinaryExpression>, and the types
+      // are compatible as seen in the parsing tests passing, but we have to
+      // cast here because there isn't a broader type that works well
+      // in this context.
+  parensExpr as unknown as Parser<ParsedBinaryExpression>
 );
 
 const expr = tableParser.trim(whitespace);
 
 // Definitions members.
-const permission: any = Parsimmon.seqMap(
+const permission = Parsimmon.seqMap(
   Parsimmon.index,
   seq(
     lexeme(string('permission')),
@@ -564,7 +579,7 @@ const permission: any = Parsimmon.seqMap(
   }
 );
 
-const relation: any = Parsimmon.seqMap(
+const relation = Parsimmon.seqMap(
   Parsimmon.index,
   seq(
     lexeme(string('relation')),
@@ -585,7 +600,7 @@ const relation: any = Parsimmon.seqMap(
 const relationOrPermission = relation.or(permission);
 
 // Object Definitions.
-const definition: any = Parsimmon.seqMap(
+const definition = Parsimmon.seqMap(
   Parsimmon.index,
   seq(
     lexeme(string('definition')),
@@ -610,7 +625,7 @@ const definition: any = Parsimmon.seqMap(
 );
 
 // Caveats.
-const caveatParameterTypeExpr: any = Parsimmon.lazy(() => {
+const caveatParameterTypeExpr = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(
@@ -629,7 +644,7 @@ const caveatParameterTypeExpr: any = Parsimmon.lazy(() => {
   );
 });
 
-const caveatParameter: any = Parsimmon.lazy(() => {
+const caveatParameter = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(identifier, caveatParameterTypeExpr),
@@ -645,13 +660,13 @@ const caveatParameter: any = Parsimmon.lazy(() => {
   );
 });
 
-const caveatParameters: any = Parsimmon.lazy(() => {
+const caveatParameters = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(lparen, caveatParameter, commaedParameter.atLeast(0), rparen),
     Parsimmon.index,
     function (startIndex, data, endIndex) {
-      const remaining: any[] = data[2];
+      const remaining = data[2];
       return {
         kind: 'caveatParameters',
         parameters: [data[1], ...remaining],
@@ -661,9 +676,9 @@ const caveatParameters: any = Parsimmon.lazy(() => {
   );
 });
 
-const commaedParameter: any = comma.then(caveatParameter);
+const commaedParameter = comma.then(caveatParameter);
 
-const caveatExpression: any = Parsimmon.seqMap(
+const caveatExpression = Parsimmon.seqMap(
   Parsimmon.index,
   seq(celExpression),
   Parsimmon.index,
@@ -675,7 +690,7 @@ const caveatExpression: any = Parsimmon.seqMap(
   }
 );
 
-const caveat: any = Parsimmon.seqMap(
+const caveat = Parsimmon.seqMap(
   Parsimmon.index,
   seq(
     lexeme(string('caveat')),
@@ -690,7 +705,7 @@ const caveat: any = Parsimmon.seqMap(
     return {
       kind: 'caveatDef',
       name: data[1],
-      parameters: (data[2] as any).parameters,
+      parameters: data[2].parameters,
       expression: data[4],
       range: { startIndex: startIndex, endIndex: endIndex },
     };
