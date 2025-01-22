@@ -235,10 +235,10 @@ class DeveloperServiceRequest {
     });
     if (this.operations.length > 0 && response.operationsResults) {
       this.operations.forEach((osc, index) => {
-        const result = response.operationsResults?.results[index];
-        if (result) {
-          osc.callback(result);
-        }
+          const result = response.operationsResults?.results[index]
+          if (result) {
+              osc.callback(result);
+          }
       });
     }
     return response;
@@ -329,7 +329,7 @@ export function useDeveloperService(): DeveloperService {
   useEffect(() => {
     const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
-      case "initializing":
+       case 'initializing':
         if (initialized) {
           setState({
             status: "ready",
