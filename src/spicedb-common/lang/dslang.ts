@@ -10,7 +10,7 @@ import {
   Position,
   editor,
   languages,
-} from 'monaco-editor-core';
+} from 'monaco-editor';
 import * as monacoEditor from 'monaco-editor';
 
 export const DS_LANGUAGE_NAME = 'dsl';
