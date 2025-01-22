@@ -12,10 +12,11 @@ const multiLineComment = regex(/\/\*((((?!\*\/).)|\r|\n)*)\*\//).then(
 
 const comment = singleLineComment.or(multiLineComment);
 const whitespace = optWhitespace.then(comment.atLeast(0));
-const lexeme = function (p: any) {
+const lexeme = function (p: Parser<string>) {
   return p.skip(whitespace);
 };
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const reserved = [
   'in',
   'as',
@@ -134,7 +135,7 @@ const exprList = expression.then(seq(comma, expression).atLeast(0));
 
 // Member         = Primary | Member "." IDENT ["(" [ExprList] ")"] | Member "[" Expr "]"
 // NOTE: reordered here to allow for parsing by Parsimmon
-const member: Parser<any> = seq(
+const member = seq(
   primary.then(
     seq(
       dot,
@@ -149,7 +150,7 @@ const member: Parser<any> = seq(
 );
 
 // Unary          = Member | "!" {"!"} Member | "-" {"-"} Member
-const unary: Parser<any> = seq(
+const unary = seq(
   member.or(bang.atLeast(1).then(member)).or(dash.atLeast(1).then(member))
 );
 
@@ -158,7 +159,7 @@ const unary: Parser<any> = seq(
 const multiplicationOp = lexeme(string('*'))
   .or(lexeme(string('/')))
   .or(lexeme(string('%')));
-const multiplication: Parser<any> = seq(
+const multiplication = seq(
   unary,
   seq(
     multiplicationOp,
@@ -171,7 +172,7 @@ const multiplication: Parser<any> = seq(
 // Addition       = [Addition ("+" | "-")] Multiplication ;
 // NOTE: reordered here to allow for parsing by Parsimmon
 const additionOp = lexeme(string('+')).or(lexeme(string('-')));
-const addition: Parser<any> = seq(
+const addition = seq(
   multiplication,
   seq(
     additionOp,
@@ -192,7 +193,7 @@ const relOp = lexeme(string('<'))
 
 // Relation       = [Relation Relop] Addition ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const relation: Parser<any> = seq(
+const relation = seq(
   addition,
   seq(
     relOp,
@@ -204,7 +205,7 @@ const relation: Parser<any> = seq(
 
 // ConditionalAnd = [ConditionalAnd "&&"] Relation ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const conditionalAnd: Parser<any> = seq(
+const conditionalAnd = seq(
   relation,
   seq(
     andToken,
@@ -216,7 +217,7 @@ const conditionalAnd: Parser<any> = seq(
 
 // ConditionalOr  = [ConditionalOr "||"] ConditionalAnd ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const conditionalOr: Parser<any> = seq(
+const conditionalOr = seq(
   conditionalAnd,
   seq(
     orToken,
@@ -227,7 +228,7 @@ const conditionalOr: Parser<any> = seq(
 );
 
 // Expr = ConditionalOr ["?" ConditionalOr ":" Expr] ;
-export const celExpression: Parser<any> = conditionalOr.then(
+export const celExpression = conditionalOr.then(
   seq(
     questionMark,
     conditionalOr,

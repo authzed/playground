@@ -1,7 +1,7 @@
 import { CustomCell, GridSelection } from "@glideapps/glide-data-grid";
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
-import Autocomplete from "@material-ui/lab/Autocomplete";
+import Autocomplete, { type AutocompleteRenderInputParams } from "@material-ui/lab/Autocomplete";
 import { MutableRefObject, useRef } from "react";
 import stc from "string-to-color";
 import { ResolvedDefinition, Resolver } from "../../parsers/dsl/resolution";
@@ -98,7 +98,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   return (propsRefs: MutableRefObject<FieldCellRendererProps>) => {
     return {
       isMatch: (cell: CustomCell): cell is T =>
-        (cell.data as any).kind === kind,
+        cell.data.kind === kind,
       draw: (args, cell) => {
         const { ctx, rect, row, col, theme, highlighted } = args;
         let { dataValue } = cell.data;
@@ -340,7 +340,7 @@ const FieldCellEditor = <
         });
       }}
       inputValue={editableValue ?? ""}
-      renderInput={(params: any) => (
+      renderInput={(params: AutocompleteRenderInputParams) => (
         <TextField
           {...params}
           autoFocus={true}
@@ -431,7 +431,7 @@ export const CaveatNameCellRenderer = fieldCellRenderer<
   CaveatNameCellProps
 >(
   CAVEATNAME_CELL_KIND,
-  (props: FieldCellRendererProps, cellProps: CaveatNameCellProps) => {
+  (props: FieldCellRendererProps) => {
     if (props.resolver === undefined) {
       return [];
     }
@@ -451,7 +451,7 @@ export const CaveatContextCellRenderer = fieldCellRenderer<
   CaveatContextCellProps
 >(
   CAVEATCONTEXT_CELL_KIND,
-  (props: FieldCellRendererProps, cellProps: CaveatContextCellProps) => {
+  () => {
     // No autocomplete support
     return [];
   }
