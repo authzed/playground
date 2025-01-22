@@ -209,7 +209,7 @@ export function generateTenantGraph(
     });
     */
 
-  // Filter out any duplicate nodes or edges to prevent errors from being raised
+  // Filter out any duplicate nodes or edges to prevent errors from being raised
   // by the visualizer.
   const seenNodeIDs = new Set<string | number>();
   const seenEdgeIDs = new Set<string>();
@@ -403,7 +403,7 @@ function generateExpressionGraph(
   const edges: LocalEdge[] = [];
 
   switch (expression.kind) {
-    case 'relationref':
+    case 'relationref': {
       const found = typeHandle.lookupRelationOrPermission(
         expression.relationName
       );
@@ -423,8 +423,9 @@ function generateExpressionGraph(
       }
 
       break;
+    }
 
-    case 'arrow':
+    case 'arrow': {
       const resolved = typeHandle.lookupRelation(
         expression.sourceRelation.relationName
       );
@@ -479,8 +480,9 @@ function generateExpressionGraph(
         });
       }
       break;
+    }
 
-    case 'binary':
+    case 'binary': {
       const unionedRelations = collectUnionedRelations(
         expression,
         parentNodeID,
@@ -561,6 +563,7 @@ function generateExpressionGraph(
         edges.push(...rEdges);
       }
       break;
+    }
   }
 
   return {
@@ -583,7 +586,7 @@ function collectUnionedRelations(
     }
   | undefined {
   switch (expr.kind) {
-    case 'binary':
+    case 'binary': {
       if (expr.operator !== 'union') {
         return undefined;
       }
@@ -615,11 +618,12 @@ function collectUnionedRelations(
         nodes: [...left.nodes, ...right.nodes],
         edges: [...left.edges, ...right.edges],
       };
+    }
     
     case 'namedarrow':
         // fallthrough
 
-    case 'arrow':
+    case 'arrow': {
       const { nodes, edges } = generateExpressionGraph(
         expr,
         parentNodeID,
@@ -632,6 +636,7 @@ function collectUnionedRelations(
         nodes: nodes,
         edges: edges,
       };
+    }
 
     case 'nil':
       return undefined;

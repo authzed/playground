@@ -8,6 +8,7 @@ import {
   ParsedRelationRefExpression,
   parseSchema,
 } from './dsl';
+import { assert } from '../../../test/utils'
 import { describe, it, expect } from 'vitest';
 
 describe('parsing', () => {
@@ -91,11 +92,13 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
-    const relation = definition.relations[0]!;
+    const relation = definition.relations[0];
     expect(relation.name).toEqual('barrel');
     expect(relation.allowedTypes.types.length).toEqual(1);
     expect(relation.allowedTypes.types[0].path).toEqual('something');
@@ -109,7 +112,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
@@ -131,7 +136,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
@@ -153,7 +160,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
@@ -173,7 +182,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
@@ -192,7 +203,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(1);
 
@@ -213,7 +226,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(2);
 
@@ -236,7 +251,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(0);
     expect(definition.permissions.length).toEqual(1);
@@ -253,7 +270,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(0);
     expect(definition.permissions.length).toEqual(1);
@@ -276,7 +295,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(0);
     expect(definition.permissions.length).toEqual(1);
@@ -314,7 +335,9 @@ describe('parsing', () => {
 
     expect(parsed?.definitions?.length).toEqual(1);
 
-    const definition = parsed?.definitions[0]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[0];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('foo');
     expect(definition.relations.length).toEqual(0);
     expect(definition.permissions.length).toEqual(2);
@@ -435,7 +458,9 @@ describe('parsing', () => {
     const parsed = parseSchema(schema);
     expect(parsed?.definitions?.length).toEqual(3);
 
-    const definition = parsed?.definitions[2]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[2];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('document');
     expect(definition.relations.length).toEqual(2);
     expect(definition.permissions.length).toEqual(1);
@@ -471,7 +496,9 @@ describe('parsing', () => {
     const parsed = parseSchema(schema);
     expect(parsed?.definitions?.length).toEqual(3);
 
-    const definition = parsed?.definitions[2]! as ParsedObjectDefinition;
+    const definition = parsed?.definitions[2];
+    assert(definition)
+    assert("relations" in definition)
     expect(definition.name).toEqual('document');
     expect(definition.relations.length).toEqual(2);
     expect(definition.permissions.length).toEqual(1);

@@ -242,7 +242,7 @@ export function useLiveCheckService(
       ];
       setItems(newItems);
     },
-    itemUpdated: (item: LiveCheckItem) => {
+    itemUpdated: () => {
       check(items);
     },
     removeItem: (item: LiveCheckItem) => {

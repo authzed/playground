@@ -1,5 +1,5 @@
 import { CircularProgress } from '@material-ui/core';
-import { createStyles, makeStyles, Theme, useTheme } from '@material-ui/core/styles';
+import { createStyles, makeStyles, useTheme } from '@material-ui/core/styles';
 import clsx from 'clsx';
 import { dequal } from 'dequal';
 import { useRef, useState } from 'react';
@@ -58,6 +58,15 @@ interface VisGraphDefinition<N extends VisNode, E extends VisEdge> {
     nodes: N[], edges: E[]
 }
 
+interface VisDataSet {
+    update: (data: object) => void
+    get: (name: string | number) => object
+}
+
+interface VisNetwork {
+    setSelection: (nodesAndEdges: object, opts: object) => void
+}
+
 /**
  * simplify the graph for comparison. We only include fields that affect the shape of
  * the graph.
@@ -79,7 +88,7 @@ function simplify<N extends VisNode, E extends VisEdge>(graph: VisGraphDefinitio
     }
 }
 
-function applyChangesInPlace<N extends VisNode, E extends VisEdge>(visNodeSet: any, visEdgeSet: any, existingGraph: VisGraphDefinition<N, E>, graph: VisGraphDefinition<N, E>) {
+function applyChangesInPlace<N extends VisNode, E extends VisEdge>(visNodeSet: VisDataSet, visEdgeSet: VisDataSet, existingGraph: VisGraphDefinition<N, E>, graph: VisGraphDefinition<N, E>) {
     // Check if the only changes are to the metadata of the nodes and edges. If so, they can
     // be applied without recreating the entire network.
     if (existingGraph.edges.length !== graph.edges.length ||
@@ -111,7 +120,7 @@ function applyChangesInPlace<N extends VisNode, E extends VisEdge>(visNodeSet: a
     return true;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
     createStyles({
         graph: {
             width: '100%', height: '100%',
@@ -143,10 +152,10 @@ export default function VisNetworkGraph<N extends VisNode = VisNode, E extends V
     const classes = useStyles();
 
     const divRef = useRef(null);
-    const networkRef = useRef<any>();
+    const networkRef = useRef<VisNetwork>();
     const currentGraphRef = useRef<VisGraphDefinition<N, E> | undefined>();
-    const nodeDataSetRef = useRef<any>();
-    const edgeDataSetRef = useRef<any>();
+    const nodeDataSetRef = useRef<VisDataSet>();
+    const edgeDataSetRef = useRef<VisDataSet>();
     const [isLoaded, setIsLoaded] = useState(false);
 
     const updateSelection = (selection: VisNetworkGraphSelection<N, E> | undefined) => {
@@ -157,8 +166,8 @@ export default function VisNetworkGraph<N extends VisNode = VisNode, E extends V
         const network = networkRef.current;
         if (network !== undefined && nodeDataSetRef.current && edgeDataSetRef.current) {
             network.setSelection({
-                nodes: selection.nodes.map((node: N) => node.id).filter((nodeID: string | number) => !!nodeDataSetRef.current.get(nodeID)),
-                edges: selection.edges.map((edge: E) => edge.id).filter((edgeID: string) => !!edgeDataSetRef.current.get(edgeID))
+                nodes: selection.nodes.map((node: N) => node.id).filter((nodeID: string | number) => !!nodeDataSetRef.current?.get(nodeID)),
+                edges: selection.edges.map((edge: E) => edge.id).filter((edgeID: string) => !!edgeDataSetRef.current?.get(edgeID))
             }, {
                 highlightEdges: false
             });
@@ -167,7 +176,11 @@ export default function VisNetworkGraph<N extends VisNode = VisNode, E extends V
 
     const { run: runUpdate, isActive } = useDebouncedChecker(250, async (graph: VisGraphDefinition<N, E>) => {
         // Check for in-place changes.
-        if (networkRef.current && applyChangesInPlace(nodeDataSetRef.current, edgeDataSetRef.current, currentGraphRef.current!, graph)) {
+        if (networkRef.current
+            && nodeDataSetRef.current
+        && edgeDataSetRef.current
+        && currentGraphRef.current
+        && applyChangesInPlace(nodeDataSetRef.current, edgeDataSetRef.current, currentGraphRef.current, graph)) {
             updateSelection(props.selected);
             return;
         }

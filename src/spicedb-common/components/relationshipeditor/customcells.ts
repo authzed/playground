@@ -231,7 +231,7 @@ export function useCustomCells(
       if (cell.kind !== GridCellKind.Custom) return false;
       for (const r of renderers) {
         if (r.isMatch(cell)) {
-          return r.draw(args, cell as any);
+          return r.draw(args, cell);
         }
       }
       return false;
@@ -245,7 +245,7 @@ export function useCustomCells(
 
       for (const r of renderers) {
         if (r.isMatch(cell)) {
-          return r.provideEditor(cell as any) as ReturnType<
+          return r.provideEditor(cell) as ReturnType<
             ProvideEditorCallback<GridCell>
           >;
         }
