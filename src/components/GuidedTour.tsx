@@ -2,7 +2,7 @@ import { Theme, useTheme } from '@material-ui/core/styles';
 import React from 'react';
 import Joyride, { ACTIONS, EVENTS, Step } from 'react-joyride';
 
-var _ = React;
+const _ = React;
 
 export const TourElementClass = {
   schema: 'tec-schema',

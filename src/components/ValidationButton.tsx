@@ -13,7 +13,7 @@ import { DataStore } from '../services/datastore';
 import { ValidationState, ValidationStatus } from '../services/validation';
 import { TourElementClass } from './GuidedTour';
 
-var _ = React;
+const _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

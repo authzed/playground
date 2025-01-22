@@ -510,7 +510,7 @@ function BINARY_LEFT(operatorsParser: any, nextParser: any) {
     seq(operatorsParser, nextParser).many(),
     (first: any, rest: any) => {
       return rest.reduce((acc: any, ch: any) => {
-        let [op, another] = ch;
+        const [op, another] = ch;
         return {
           kind: 'binary',
           operator: op,

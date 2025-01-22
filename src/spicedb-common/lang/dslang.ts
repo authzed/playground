@@ -21,7 +21,7 @@ export const DS_EMBED_DARK_THEME_NAME = 'dsl-theme-embed-dark';
 export default function registerDSLanguage(monaco: any) {
   // Based on: https://github.com/microsoft/monaco-languages/blob/main/src/typescript/typescript.ts
   const richEditConfiguration = {
-    // eslint-disable-next-line
+     
     wordPattern:
       /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
 

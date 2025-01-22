@@ -272,7 +272,7 @@ export class ResolvedDefinition {
       return rel.allowedTypes.types.find((ref) => ref.withCaveat);
     });
 
-    let names: string[] = [];
+    const names: string[] = [];
     withCaveats.forEach((rel) => {
       rel.allowedTypes.types.forEach((ref) => {
         if (ref.withCaveat) {

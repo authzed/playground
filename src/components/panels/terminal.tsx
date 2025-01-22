@@ -316,12 +316,12 @@ function TerminalOutputDisplay(props: {
 
 // Based on: https://stackoverflow.com/a/5801903
 function getSelectedTextWithin(el: Element) {
-  var selectedText = '';
+  let selectedText = '';
   if (typeof window.getSelection != 'undefined') {
-    var sel = window.getSelection(),
+    let sel = window.getSelection(),
       rangeCount;
     if (sel && (rangeCount = sel.rangeCount) > 0) {
-      var range = document.createRange();
+      const range = document.createRange();
       for (var i = 0, selRange; i < rangeCount; ++i) {
         range.selectNodeContents(el);
         selRange = sel.getRangeAt(i);
