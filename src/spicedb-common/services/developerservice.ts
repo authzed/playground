@@ -220,7 +220,7 @@ class DeveloperServiceRequest {
       ),
     };
 
-    const encodedResponse: string = (window as any)[ENTRYPOINT_FUNCTION](
+    const encodedResponse: string = (window)[ENTRYPOINT_FUNCTION](
       DeveloperRequest.toJsonString(request)
     );
 
@@ -229,7 +229,10 @@ class DeveloperServiceRequest {
     });
     if (this.operations.length > 0 && response.operationsResults) {
       this.operations.forEach((osc, index) => {
-        osc.callback(response.operationsResults?.results[index]!);
+          const result = response.operationsResults?.results[index]
+          if (result) {
+              osc.callback(result);
+          }
       });
     }
     return response;
@@ -297,7 +300,7 @@ export function useDeveloperService(): DeveloperService {
     }
 
     // Refetch, which should be from cache.
-    const go = new (window as any).Go();
+    const go = new window.Go();
     const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
 
     try {
@@ -318,9 +321,9 @@ export function useDeveloperService(): DeveloperService {
   }, [setState]);
 
   useEffect(() => {
+      const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
       case 'initializing':
-        const initialized = (window as any)[ENTRYPOINT_FUNCTION];
         if (initialized) {
           setState({
             status: 'ready',
@@ -328,7 +331,7 @@ export function useDeveloperService(): DeveloperService {
           return;
         }
 
-        if (!WebAssembly || !(window as any).Go) {
+        if (!WebAssembly || !window.Go) {
           console.error('WebAssembly is not supported in your browser');
           setState({
             status: 'unsupported',
@@ -360,7 +363,7 @@ export function useDeveloperService(): DeveloperService {
   return {
     state: state,
     newRequest: (schema: string, relationshipsString: string) => {
-      if (!(window as any)[ENTRYPOINT_FUNCTION]) {
+      if (!window[ENTRYPOINT_FUNCTION]) {
         return undefined;
       }
 
