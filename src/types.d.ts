@@ -17,3 +17,10 @@ declare module 'visjs-network' {
     const data: any
     export default data
 }
+
+declare global {
+    interface Window {
+        // TODO: type this based on what's in wasm_exec.js
+        Go: any;
+    }
+}
