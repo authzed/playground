@@ -22,7 +22,7 @@ export type TypeRefResolution = {
   definition: ParsedObjectDefinition | undefined;
 
   /**
-   * relation is the (optional) relation which is referred by this type reference. For refs
+   * relation is the (optional) relation which is referred by this type reference. For refs
    * without relations, this will be undefined. This will *also* be undefined for unresolvable
    * refs, so make sure to check the expression to see if it has a relation reference.
    */
