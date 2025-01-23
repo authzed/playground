@@ -1,62 +1,62 @@
-import { useAlert } from '../playground-ui/AlertProvider';
-import { DS_EMBED_DARK_THEME_NAME } from '../spicedb-common/lang/dslang';
+import { useAlert } from "../playground-ui/AlertProvider";
+import { DS_EMBED_DARK_THEME_NAME } from "../spicedb-common/lang/dslang";
 import {
   RelationshipFound,
   parseRelationship,
-} from '../spicedb-common/parsing';
-import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
-import { GrpcWebFetchTransport } from '@protobuf-ts/grpcweb-transport';
-import { RpcError } from "@protobuf-ts/runtime-rpc"
+} from "../spicedb-common/parsing";
+import { DeveloperServiceClient } from "../spicedb-common/protodefs/authzed/api/v0/developer.client";
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import { RpcError } from "@protobuf-ts/runtime-rpc";
 import {
   CheckOperationsResult,
   CheckOperationsResult_Membership,
-} from '../spicedb-common/protodefs/developer/v1/developer';
-import { useDeveloperService } from '../spicedb-common/services/developerservice';
+} from "../spicedb-common/protodefs/developer/v1/developer";
+import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import {
   faCaretDown,
   faDatabase,
   faFile,
   faThumbsUp,
   faUser,
-} from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Button, CircularProgress, Menu, MenuItem } from '@material-ui/core';
-import { createStyles, makeStyles } from '@material-ui/core/styles';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import clsx from 'clsx';
-import React, { PropsWithChildren, useEffect, useMemo, useState } from 'react';
-import { useLiveCheckService } from '../services/check';
-import AppConfig from '../services/configservice';
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { Button, CircularProgress, Menu, MenuItem } from "@material-ui/core";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import clsx from "clsx";
+import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { useLiveCheckService } from "../services/check";
+import AppConfig from "../services/configservice";
 import {
   DataStore,
   DataStoreItemKind,
   useReadonlyDatastore,
-} from '../services/datastore';
-import { useLocalParseService } from '../services/localparse';
-import { useProblemService } from '../services/problem';
-import { Services } from '../services/services';
-import { useValidationService } from '../services/validation';
-import { DatastoreRelationshipEditor } from './DatastoreRelationshipEditor';
-import { EditorDisplay } from './EditorDisplay';
-import { ShareLoader } from './ShareLoader';
+} from "../services/datastore";
+import { useLocalParseService } from "../services/localparse";
+import { useProblemService } from "../services/problem";
+import { Services } from "../services/services";
+import { useValidationService } from "../services/validation";
+import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
+import { EditorDisplay } from "./EditorDisplay";
+import { ShareLoader } from "./ShareLoader";
 
-import { ParsedObjectDefinition } from '../spicedb-common/parsers/dsl/dsl';
-import './fonts.css';
+import { ParsedObjectDefinition } from "../spicedb-common/parsers/dsl/dsl";
+import "./fonts.css";
 
 const useStyles = makeStyles(() =>
   createStyles({
     root: {
-      backgroundColor: 'rgb(14,13,17)',
-      height: '100vh',
-      width: '100vw',
-      display: 'flex',
-      alignItems: 'center',
-      justifyContent: 'center',
-      position: 'relative',
-      '&:hover': {
-        '& $openButton': {
+      backgroundColor: "rgb(14,13,17)",
+      height: "100vh",
+      width: "100vw",
+      display: "flex",
+      alignItems: "center",
+      justifyContent: "center",
+      position: "relative",
+      "&:hover": {
+        "& $openButton": {
           opacity: 1,
         },
       },
@@ -64,141 +64,141 @@ const useStyles = makeStyles(() =>
         'Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"',
     },
     openButton: {
-      position: 'absolute',
-      bottom: '10px',
-      right: '10px',
+      position: "absolute",
+      bottom: "10px",
+      right: "10px",
       opacity: 0,
-      transition: 'opacity ease-in-out 200ms',
+      transition: "opacity ease-in-out 200ms",
     },
     loadedroot: {
-      border: '1px outset #6d49ac',
-      borderRadius: '16px',
-      height: '100vh',
-      width: '100vw',
-      display: 'grid',
-      gridTemplateColumns: '1fr 1px 1fr',
-      columnGap: '10px',
-      padding: '24px',
+      border: "1px outset #6d49ac",
+      borderRadius: "16px",
+      height: "100vh",
+      width: "100vw",
+      display: "grid",
+      gridTemplateColumns: "1fr 1px 1fr",
+      columnGap: "10px",
+      padding: "24px",
     },
     column: {
-      display: 'grid',
-      gridTemplateRows: 'auto 1fr',
+      display: "grid",
+      gridTemplateRows: "auto 1fr",
     },
     header: {
-      fontSize: '85%',
-      display: 'inline-grid',
-      gridTemplateColumns: 'auto auto auto',
-      columnGap: '6px',
-      alignItems: 'center',
-      marginBottom: '16px',
+      fontSize: "85%",
+      display: "inline-grid",
+      gridTemplateColumns: "auto auto auto",
+      columnGap: "6px",
+      alignItems: "center",
+      marginBottom: "16px",
       border: `1px solid rgba(232, 232, 232, 0.21)`,
-      borderRadius: '8px',
-      textTransform: 'uppercase',
-      padding: '8px',
+      borderRadius: "8px",
+      textTransform: "uppercase",
+      padding: "8px",
       background:
-        'linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)',
+        "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
     },
     queryBox: {
-      border: '1px outset #6d49ac',
-      borderRadius: '16px',
-      marginBottom: '16px',
-      padding: '8px',
-      display: 'grid',
-      gridTemplateColumns: '6px 1fr',
-      columnGap: '10px',
+      border: "1px outset #6d49ac",
+      borderRadius: "16px",
+      marginBottom: "16px",
+      padding: "8px",
+      display: "grid",
+      gridTemplateColumns: "6px 1fr",
+      columnGap: "10px",
     },
     queryBoxColor: {
-      borderRadius: '16px',
-      backgroundColor: '#444',
+      borderRadius: "16px",
+      backgroundColor: "#444",
     },
     queryEditor: {
-      padding: '6px',
+      padding: "6px",
     },
     resultBoxColor: {
-      borderRadius: '16px',
-      backgroundColor: '#ccc',
+      borderRadius: "16px",
+      backgroundColor: "#ccc",
     },
     selector: {
-      fontSize: '85%',
-      display: 'inline-grid',
-      gridTemplateColumns: 'auto auto auto',
-      columnGap: '6px',
-      alignItems: 'center',
-      marginLeft: '0.5em',
-      marginRight: '0.5em',
+      fontSize: "85%",
+      display: "inline-grid",
+      gridTemplateColumns: "auto auto auto",
+      columnGap: "6px",
+      alignItems: "center",
+      marginLeft: "0.5em",
+      marginRight: "0.5em",
       border: `1px solid rgba(232, 232, 232, 0.21)`,
-      borderRadius: '8px',
-      padding: '8px',
+      borderRadius: "8px",
+      padding: "8px",
       background:
-        'linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)',
-      verticalAlign: 'middle',
-      cursor: 'pointer',
-      '&:hover': {
+        "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
+      verticalAlign: "middle",
+      cursor: "pointer",
+      "&:hover": {
         borderColor: `rgba(232, 232, 232, 0.21) !important`,
       },
     },
     resource: {
-      borderColor: '#E9786E',
+      borderColor: "#E9786E",
     },
     permission: {
-      borderColor: '#1acc92',
+      borderColor: "#1acc92",
     },
     subject: {
-      borderColor: '#cec2f3',
+      borderColor: "#cec2f3",
     },
     indeterminate: {
-      backgroundColor: '#aaa',
+      backgroundColor: "#aaa",
     },
     noPermission: {
-      backgroundColor: '#f44336',
+      backgroundColor: "#f44336",
     },
     hasPermission: {
-      backgroundColor: '#4caf50',
+      backgroundColor: "#4caf50",
     },
     hasPermissionIcon: {
-      color: '#4caf50',
+      color: "#4caf50",
     },
     maybePermission: {
-      backgroundColor: '#8787ff',
+      backgroundColor: "#8787ff",
     },
     maybePermissionIcon: {
-      color: '#8787ff',
+      color: "#8787ff",
     },
     noPermissionIcon: {
-      color: '#f44336',
+      color: "#f44336",
     },
     queryResult: {
-      display: 'grid',
-      gridTemplateColumns: 'auto 1fr',
-      alignItems: 'center',
-      columnGap: '6px',
+      display: "grid",
+      gridTemplateColumns: "auto 1fr",
+      alignItems: "center",
+      columnGap: "6px",
     },
     caret: {
       opacity: 0.5,
     },
     buttonHeader: {
-      cursor: 'pointer',
+      cursor: "pointer",
     },
     menuItem: {
-      display: 'grid',
-      gridTemplateColumns: 'auto 1fr',
-      alignItems: 'center',
-      columnGap: '6px',
+      display: "grid",
+      gridTemplateColumns: "auto 1fr",
+      alignItems: "center",
+      columnGap: "6px",
     },
     display: {},
     resourceDisplay: {
-      color: '#E9786E',
+      color: "#E9786E",
     },
     permissionDisplay: {
-      color: '#1acc92',
+      color: "#1acc92",
     },
     subjectDisplay: {
-      color: '#cec2f3',
+      color: "#cec2f3",
     },
     caveatFieldDisplay: {
-      color: '#8787ff',
+      color: "#8787ff",
     },
-  })
+  }),
 );
 
 export function EmbeddedPlayground() {
@@ -224,7 +224,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
   const problemService = useProblemService(
     localParseService,
     liveCheckService,
-    validationService
+    validationService,
   );
   const zedTerminalService = undefined; // not used
 
@@ -241,7 +241,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
     useState(true);
 
   const schema = datastore.getById(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id
+    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
   );
   const [resizeIndex, setResizeIndex] = useState(0);
 
@@ -251,9 +251,9 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       setResizeIndex(resizeIndex + 1);
     };
 
-    window.addEventListener('resize', handler);
+    window.addEventListener("resize", handler);
     return () => {
-      window.removeEventListener('resize', handler);
+      window.removeEventListener("resize", handler);
     };
   }, [resizeIndex, setResizeIndex]);
 
@@ -267,8 +267,8 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
     setAnchorEl(event.currentTarget);
   };
 
-  const [mode, setMode] = useState<'schema' | 'relationships'>('schema');
-  const setCurrentMode = (mode: 'schema' | 'relationships') => {
+  const [mode, setMode] = useState<"schema" | "relationships">("schema");
+  const setCurrentMode = (mode: "schema" | "relationships") => {
     setMode(mode);
     setAnchorEl(null);
   };
@@ -281,38 +281,41 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       return;
     }
 
-    const service = new DeveloperServiceClient(new GrpcWebFetchTransport({ baseUrl: developerEndpoint }));
-    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA)
-      .editableContents!;
+    const service = new DeveloperServiceClient(
+      new GrpcWebFetchTransport({ baseUrl: developerEndpoint }),
+    );
+    const schema = datastore.getSingletonByKind(
+      DataStoreItemKind.SCHEMA,
+    ).editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.RELATIONSHIPS
+      DataStoreItemKind.RELATIONSHIPS,
     ).editableContents!;
     const assertionsYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.ASSERTIONS
+      DataStoreItemKind.ASSERTIONS,
     ).editableContents!;
     const validationYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.EXPECTED_RELATIONS
+      DataStoreItemKind.EXPECTED_RELATIONS,
     ).editableContents!;
 
     // Invoke sharing.
     try {
-    const { response } = await service.share({
-            schema,
-            relationshipsYaml,
-            assertionsYaml,
-            validationYaml,
-        });
-        const reference = response.shareReference;
-        window.open(`${window.location.origin}/s/${reference}`);
+      const { response } = await service.share({
+        schema,
+        relationshipsYaml,
+        assertionsYaml,
+        validationYaml,
+      });
+      const reference = response.shareReference;
+      window.open(`${window.location.origin}/s/${reference}`);
     } catch (error: unknown) {
-        if (error instanceof RpcError) {
-          showAlert({
-            title: 'Error sharing',
-            content: error.message,
-            buttonTitle: 'Okay',
-          });
-          return;
-        }
+      if (error instanceof RpcError) {
+        showAlert({
+          title: "Error sharing",
+          content: error.message,
+          buttonTitle: "Okay",
+        });
+        return;
+      }
     }
   };
 
@@ -327,25 +330,25 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
         open={Boolean(anchorEl)}
         onClose={handleCloseMenu}
         getContentAnchorEl={null}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
         PaperProps={{
           style: {
-            maxHeight: '300px',
-            maxWidth: '500px',
+            maxHeight: "300px",
+            maxWidth: "500px",
           },
         }}
       >
         <MenuItem
           className={classes.menuItem}
-          onClick={() => setCurrentMode('schema')}
+          onClick={() => setCurrentMode("schema")}
         >
           <SchemaIcon />
           Definitions
         </MenuItem>
         <MenuItem
           className={classes.menuItem}
-          onClick={() => setCurrentMode('relationships')}
+          onClick={() => setCurrentMode("relationships")}
         >
           <RelationshipsIcon />
           Relationships
@@ -361,13 +364,13 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
               className={clsx(classes.header, classes.buttonHeader)}
               onClick={handleOpenMenu}
             >
-              {mode === 'schema' && (
+              {mode === "schema" && (
                 <>
                   <SchemaIcon />
                   Example Definitions
                 </>
               )}
-              {mode === 'relationships' && (
+              {mode === "relationships" && (
                 <>
                   <RelationshipsIcon />
                   Example Relationships
@@ -379,7 +382,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
             </div>
           </div>
           <>
-            {mode === 'schema' && (
+            {mode === "schema" && (
               <EditorDisplay
                 services={services}
                 datastore={datastore}
@@ -395,7 +398,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
                 hideMinimap
               />
             )}
-            {mode === 'relationships' && (
+            {mode === "relationships" && (
               <DatastoreRelationshipEditor
                 datastore={datastore}
                 services={services}
@@ -406,28 +409,28 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
                   height: document.body.clientHeight - 120,
                 }}
                 themeOverrides={{
-                  bgCell: 'rgb(14,13,17)',
-                  bgCellMedium: '#1f1f23',
-                  bgHeader: '#1f1f23',
+                  bgCell: "rgb(14,13,17)",
+                  bgCellMedium: "#1f1f23",
+                  bgHeader: "#1f1f23",
                 }}
               />
             )}
           </>
         </div>
-        <div style={{ backgroundColor: '#444' }} />
+        <div style={{ backgroundColor: "#444" }} />
         <div className={classes.column}>
           <div>
             <div className={classes.header}>
               <div
                 style={{
-                  position: 'relative',
-                  width: '16px',
-                  height: '16px',
-                  overflow: 'hidden',
+                  position: "relative",
+                  width: "16px",
+                  height: "16px",
+                  overflow: "hidden",
                 }}
               >
                 <svg
-                  style={{ position: 'absolute', top: '-10px', left: '-6px' }}
+                  style={{ position: "absolute", top: "-10px", left: "-6px" }}
                   width="30"
                   height="30"
                   viewBox="0 0 30 30"
@@ -454,16 +457,16 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
 
 function EmbeddedQuery(props: { services: Services }) {
   const classes = useStyles();
-  const [subject, setSubject] = useState('');
-  const [permission, setPermission] = useState('');
-  const [resource, setResource] = useState('');
+  const [subject, setSubject] = useState("");
+  const [permission, setPermission] = useState("");
+  const [resource, setResource] = useState("");
 
   const schemaText = props.services.localParseService.state.schemaText;
   const relsText = props.services.localParseService.state.relsText;
 
   const devService = props.services.developerService;
   const queryResult: CheckOperationsResult | undefined = useMemo(() => {
-    if (devService.state.status !== 'ready') {
+    if (devService.state.status !== "ready") {
       return undefined;
     }
 
@@ -472,7 +475,7 @@ function EmbeddedQuery(props: { services: Services }) {
     }
 
     const relationship = parseRelationship(
-      `${resource}#${permission}@${subject}`
+      `${resource}#${permission}@${subject}`,
     );
     if (relationship === undefined) {
       return undefined;
@@ -489,7 +492,7 @@ function EmbeddedQuery(props: { services: Services }) {
       },
       (r: CheckOperationsResult) => {
         checkResult = r;
-      }
+      },
     );
     if (
       request?.execute().developerErrors ||
@@ -505,20 +508,20 @@ function EmbeddedQuery(props: { services: Services }) {
       <div className={classes.queryBox}>
         <span className={classes.queryBoxColor} />
         <div className={classes.queryEditor}>
-          Can{' '}
+          Can{" "}
           <Selector
             type="subject"
             currentValue={subject}
             services={props.services}
             onChange={(v) => setSubject(v)}
-          />{' '}
+          />{" "}
           <Selector
             type="permission"
             currentValue={permission}
             currentResource={resource}
             services={props.services}
             onChange={(v) => setPermission(v)}
-          />{' '}
+          />{" "}
           <Selector
             type="resource"
             currentValue={resource}
@@ -544,27 +547,27 @@ function EmbeddedQuery(props: { services: Services }) {
           })}
         />
         <div className={classes.queryResult}>
-          {devService.state.status === 'loading' && (
+          {devService.state.status === "loading" && (
             <>
               <CircularProgress size="sm" color="primary" />
               Loading developer system
             </>
           )}
-          {(devService.state.status === 'loaderror' ||
-            devService.state.status === 'unsupported') && (
+          {(devService.state.status === "loaderror" ||
+            devService.state.status === "unsupported") && (
             <>
-              Sorry, could not load the developer system. Please try the{' '}
+              Sorry, could not load the developer system. Please try the{" "}
               <a
                 href="https://play.authzed.com"
                 target="_blank"
                 rel="noopener nofollow noreferrer"
-                style={{ color: 'white' }}
+                style={{ color: "white" }}
               >
                 standalone Playground
               </a>
             </>
           )}
-          {devService.state.status === 'ready' && !queryResult && (
+          {devService.state.status === "ready" && !queryResult && (
             <>
               Sorry, there is an issue in the provided schema, relationships or
               query
@@ -582,7 +585,7 @@ function EmbeddedQuery(props: { services: Services }) {
               <ErrorOutlineIcon className={classes.noPermissionIcon} />
               <div>
                 <Display kind="subject">{subject}</Display> does not have
-                permission <Display kind="permission">{permission}</Display> on{' '}
+                permission <Display kind="permission">{permission}</Display> on{" "}
                 <Display kind="resource">{resource}</Display>
               </div>
             </>
@@ -592,8 +595,8 @@ function EmbeddedQuery(props: { services: Services }) {
             <>
               <CheckCircleIcon className={classes.hasPermissionIcon} />
               <div>
-                <Display kind="subject">{subject}</Display> has permission{' '}
-                <Display kind="permission">{permission}</Display> on{' '}
+                <Display kind="subject">{subject}</Display> has permission{" "}
+                <Display kind="permission">{permission}</Display> on{" "}
                 <Display kind="resource">{resource}</Display>
               </div>
             </>
@@ -604,12 +607,12 @@ function EmbeddedQuery(props: { services: Services }) {
               <HelpOutlineIcon className={classes.maybePermissionIcon} />
               <div>
                 <Display kind="subject">{subject}</Display> might have
-                permission <Display kind="permission">{permission}</Display> on{' '}
+                permission <Display kind="permission">{permission}</Display> on{" "}
                 <Display kind="resource">{resource}</Display> depending on the
-                value(s) of{' '}
+                value(s) of{" "}
                 <Display kind="caveatfields">
                   {queryResult.partialCaveatInfo?.missingRequiredContext.join(
-                    ', '
+                    ", ",
                   )}
                 </Display>
               </div>
@@ -623,8 +626,8 @@ function EmbeddedQuery(props: { services: Services }) {
 
 function Display(
   props: PropsWithChildren<{
-    kind: 'subject' | 'permission' | 'resource' | 'caveatfields';
-  }>
+    kind: "subject" | "permission" | "resource" | "caveatfields";
+  }>,
 ) {
   const classes = useStyles();
   const kindClass = useMemo(() => {
@@ -642,7 +645,7 @@ function Display(
 }
 
 function Selector(props: {
-  type: 'subject' | 'permission' | 'resource';
+  type: "subject" | "permission" | "resource";
   services: Services;
   currentValue: string;
   currentResource?: string;
@@ -664,7 +667,7 @@ function Selector(props: {
   const resources = useMemo(() => {
     return filter(
       relationships.map((r: RelationshipFound) => {
-        if ('resourceAndRelation' in r.parsed) {
+        if ("resourceAndRelation" in r.parsed) {
           const onr = r.parsed.resourceAndRelation;
           if (onr === undefined) {
             return null;
@@ -672,25 +675,25 @@ function Selector(props: {
           return `${onr.namespace}:${onr.objectId}`;
         }
         return null;
-      })
+      }),
     );
   }, [relationships]);
 
   const subjects = useMemo(() => {
     return filter(
       relationships.map((r: RelationshipFound) => {
-        if ('resourceAndRelation' in r.parsed) {
+        if ("resourceAndRelation" in r.parsed) {
           const onr = r.parsed.subject;
           if (onr === undefined) {
             return null;
           }
-          if (onr.relation !== '...') {
+          if (onr.relation !== "...") {
             return `${onr.namespace}:${onr.objectId}#${onr.relation}`;
           }
           return `${onr.namespace}:${onr.objectId}`;
         }
         return null;
-      })
+      }),
     );
   }, [relationships]);
 
@@ -700,27 +703,27 @@ function Selector(props: {
   const permissions = useMemo(() => {
     const hasPermission = (resourceType: string, permission: string) => {
       const found = parsedSchema?.definitions
-        .filter((def) => def.kind === 'objectDef')
+        .filter((def) => def.kind === "objectDef")
         .find((def) => def.name === resourceType);
       if (!found) {
         return false;
       }
       return !!(found as ParsedObjectDefinition).permissions.find(
-        (p) => p.name === permission
+        (p) => p.name === permission,
       );
     };
 
     const unfilteredPermissions =
       parsedSchema?.definitions.flatMap((def) => {
-        if (def.kind === 'objectDef') {
+        if (def.kind === "objectDef") {
           return def.permissions.map((p) => p.name);
         }
         return [];
       }) ?? [];
 
     const [resourceType] = currentResource
-      ? currentResource.split(':', 2)
-      : [''];
+      ? currentResource.split(":", 2)
+      : [""];
 
     return unfilteredPermissions.filter((p) => {
       return !resourceType || hasPermission(resourceType, p);
@@ -736,7 +739,7 @@ function Selector(props: {
   const current = props.currentValue;
 
   useEffect(() => {
-    if (current === '' && values.length > 0) {
+    if (current === "" && values.length > 0) {
       props.onChange(values[0]);
     }
   }, [current, values, props]);
@@ -786,12 +789,12 @@ function Selector(props: {
         open={Boolean(anchorEl)}
         onClose={handleClose}
         getContentAnchorEl={null}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'left' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'left' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
+        transformOrigin={{ vertical: "top", horizontal: "left" }}
         PaperProps={{
           style: {
-            maxHeight: '300px',
-            maxWidth: '500px',
+            maxHeight: "300px",
+            maxWidth: "500px",
           },
         }}
       >

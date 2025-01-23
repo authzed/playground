@@ -23,14 +23,14 @@ export async function LoadExamples(): Promise<Example[]> {
   // and matches the tree structure found in https://github.com/authzed/examples/tree/main/schemas.
   // `_all` is added by the Dockerfile at build time.
   const exampleNames = (await get(`${prefix}/_all`))
-    .split('\n')
-    .filter((n) => !!n && n !== '_all');
+    .split("\n")
+    .filter((n) => !!n && n !== "_all");
   const examples: Example[] = [];
   for (const n of exampleNames) {
     const documentation = await get(`${prefix}/${n}/README.md`);
     const data = await get(`${prefix}/${n}/schema-and-data.yaml`);
-    const title = documentation.split('\n')[0].trim().substring(1).trim(); // Strip the # for the markdown header
-    const subtitle = documentation.split('\n')[2].trim();
+    const title = documentation.split("\n")[0].trim().substring(1).trim(); // Strip the # for the markdown header
+    const subtitle = documentation.split("\n")[2].trim();
 
     examples.push({
       id: n,

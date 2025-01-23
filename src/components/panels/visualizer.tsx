@@ -1,49 +1,49 @@
-import TabLabel from '../../playground-ui/TabLabel';
-import TenantGraph from '../../spicedb-common/components/graph/TenantGraph';
-import { TextRange } from '../../spicedb-common/include/protobuf-parser';
-import { RelationshipFound } from '../../spicedb-common/parsing';
-import { RelationTuple as Relationship } from '../../spicedb-common/protodefs/core/v1/core';
+import TabLabel from "../../playground-ui/TabLabel";
+import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
+import { TextRange } from "../../spicedb-common/include/protobuf-parser";
+import { RelationshipFound } from "../../spicedb-common/parsing";
+import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core";
 import {
   createStyles,
   darken,
   makeStyles,
   Theme,
-} from '@material-ui/core/styles';
-import BubbleChartIcon from '@material-ui/icons/BubbleChart';
-import monaco from 'monaco-editor';
-import 'react-reflex/styles.css';
-import { useHistory } from 'react-router-dom';
+} from "@material-ui/core/styles";
+import BubbleChartIcon from "@material-ui/icons/BubbleChart";
+import monaco from "monaco-editor";
+import "react-reflex/styles.css";
+import { useHistory } from "react-router-dom";
 import {
   DataStoreItem,
   DataStoreItemKind,
   DataStorePaths,
-} from '../../services/datastore';
-import { PanelProps } from './base/common';
-import { PlaygroundPanelLocation } from './panels';
+} from "../../services/datastore";
+import { PanelProps } from "./base/common";
+import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     tenantGraphContainer: {
-      width: '100%',
-      height: '100%',
+      width: "100%",
+      height: "100%",
       backgroundColor: theme.palette.background.default,
-      backgroundSize: '20px 20px',
+      backgroundSize: "20px 20px",
       backgroundImage: `
               linear-gradient(to right, ${darken(
                 theme.palette.background.default,
-                0.1
+                0.1,
               )} 1px, transparent 1px),
               linear-gradient(to bottom, ${darken(
                 theme.palette.background.default,
-                0.1
+                0.1,
               )} 1px, transparent 1px)
             `,
     },
-  })
+  }),
 );
 
 export function VisualizerSummary() {
-    return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
+  return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
 }
 
 export function VisualizerPanel(
@@ -52,7 +52,7 @@ export function VisualizerPanel(
   } & {
     editorPosition?: monaco.Position | undefined;
     currentItem?: DataStoreItem | undefined;
-  }
+  },
 ) {
   const classes = useStyles();
   const currentItem = props.currentItem;
@@ -65,7 +65,7 @@ export function VisualizerPanel(
   };
 
   const relationships = props.services.localParseService.state.relationships
-    .filter((tf: RelationshipFound) => !('errorMessage' in tf.parsed))
+    .filter((tf: RelationshipFound) => !("errorMessage" in tf.parsed))
     .map((tf: RelationshipFound) => tf.parsed) as Relationship[];
 
   return (

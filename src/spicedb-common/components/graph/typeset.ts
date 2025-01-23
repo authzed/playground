@@ -1,4 +1,4 @@
-import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import {
   ObjectOrCaveatDefinition,
   ParsedObjectDefinition,
@@ -6,7 +6,7 @@ import {
   ParsedRelation,
   ParsedSchema,
   TextRange,
-} from '../../parsers/dsl/dsl';
+} from "../../parsers/dsl/dsl";
 
 export interface RelationLink {
   key: string;
@@ -28,16 +28,16 @@ export class TypeSet {
 
   constructor(
     private schema: ParsedSchema,
-    private relationships: Relationship[] | undefined
+    private relationships: Relationship[] | undefined,
   ) {
     const objectDefs = this.schema.definitions.filter(
-      (def) => def.kind === 'objectDef'
+      (def) => def.kind === "objectDef",
     );
 
     this.types = Object.fromEntries(
       objectDefs.map((def: ObjectOrCaveatDefinition, index: number) => {
         return [def.name, new TypeHandle(def as ParsedObjectDefinition, index)];
-      })
+      }),
     );
     this.tracker = new RelationTracker(relationships, this);
   }
@@ -77,7 +77,7 @@ export class RelationTracker {
 
   constructor(
     relationships: Relationship[] | undefined,
-    private typeSet: TypeSet
+    private typeSet: TypeSet,
   ) {
     if (!relationships?.length) {
       return;
@@ -119,14 +119,14 @@ export class RelationTracker {
     }
 
     const subjectRelation =
-      rightRelation && rightRelation !== '...'
+      rightRelation && rightRelation !== "..."
         ? subjectType.lookupRelationOrPermission(rightRelation)
         : undefined;
     const key = `${objectRelation.key()}=>${subjectType.key()}${
-      subjectRelation ? `#${subjectRelation}` : ''
+      subjectRelation ? `#${subjectRelation}` : ""
     }`;
     const existing = this.inferredLinks.find(
-      (link: RelationLink) => link.key === key
+      (link: RelationLink) => link.key === key,
     );
     if (existing !== undefined) {
       existing.relationships.push(rel);
@@ -156,19 +156,22 @@ export class TypeHandle {
    */
   public permissions: Record<string, PermissionHandle>;
 
-  constructor(public definition: ParsedObjectDefinition, public index: number) {
+  constructor(
+    public definition: ParsedObjectDefinition,
+    public index: number,
+  ) {
     let relOrPermCounter = 0;
     this.relations = Object.fromEntries(
       definition.relations.map((rel: ParsedRelation) => {
         relOrPermCounter += 1;
         return [rel.name, new RelationHandle(rel, this, relOrPermCounter)];
-      })
+      }),
     );
     this.permissions = Object.fromEntries(
       definition.permissions.map((perm: ParsedPermission) => {
         relOrPermCounter += 1;
         return [perm.name, new PermissionHandle(perm, this, relOrPermCounter)];
-      })
+      }),
     );
   }
 
@@ -199,7 +202,7 @@ export class TypeHandle {
    * or undefined if none.
    */
   public lookupRelationOrPermission(
-    name: string
+    name: string,
   ): RelationOrPermissionHandle | undefined {
     const relation = this.lookupRelation(name);
     if (relation !== undefined) {
@@ -221,13 +224,13 @@ export class TypeHandle {
  * RelationHandle is a reference to a defined relation.
  */
 export class RelationHandle {
-  public kind = 'relation';
+  public kind = "relation";
   public range: TextRange;
 
   constructor(
     public relation: ParsedRelation,
     public parentType: TypeHandle,
-    public index: number
+    public index: number,
   ) {
     this.range = relation.range;
   }
@@ -244,13 +247,13 @@ export class RelationHandle {
  * PermissionHandle is a reference to a defined permission.
  */
 export class PermissionHandle {
-  public kind = 'permission';
+  public kind = "permission";
   public range: TextRange;
 
   constructor(
     public permission: ParsedPermission,
     public parentType: TypeHandle,
-    public index: number
+    public index: number,
   ) {
     this.range = permission.range;
   }

@@ -1,39 +1,27 @@
-import {
-  findReferenceNode,
-  parse,
-} from '../parsers/dsl/dsl';
-import {
-  ResolvedReference,
-  Resolver,
-} from '../parsers/dsl/resolution';
-import {
-  Position,
-  editor,
-  languages,
-} from 'monaco-editor';
-import * as monacoEditor from 'monaco-editor';
+import { findReferenceNode, parse } from "../parsers/dsl/dsl";
+import { ResolvedReference, Resolver } from "../parsers/dsl/resolution";
+import { Position, editor, languages } from "monaco-editor";
+import * as monacoEditor from "monaco-editor";
 
-export const DS_LANGUAGE_NAME = 'dsl';
-export const DS_THEME_NAME = 'dsl-theme';
-export const DS_DARK_THEME_NAME = 'dsl-theme-dark';
-export const DS_EMBED_DARK_THEME_NAME = 'dsl-theme-embed-dark';
+export const DS_LANGUAGE_NAME = "dsl";
+export const DS_THEME_NAME = "dsl-theme";
+export const DS_DARK_THEME_NAME = "dsl-theme-dark";
+export const DS_EMBED_DARK_THEME_NAME = "dsl-theme-embed-dark";
 
 export default function registerDSLanguage(monaco: typeof monacoEditor) {
   // Based on: https://github.com/microsoft/monaco-languages/blob/main/src/typescript/typescript.ts
   const richEditConfiguration = {
-     
-    wordPattern:
-      /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
+    wordPattern: /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
 
     comments: {
-      lineComment: '//',
-      blockComment: ['/*', '*/'] satisfies [string, string],
+      lineComment: "//",
+      blockComment: ["/*", "*/"] satisfies [string, string],
     },
 
     brackets: [
-      ['{', '}'] satisfies [string, string],
-      ['[', ']'] satisfies [string, string],
-      ['(', ')'] satisfies [string, string],
+      ["{", "}"] satisfies [string, string],
+      ["[", "]"] satisfies [string, string],
+      ["(", ")"] satisfies [string, string],
     ],
 
     onEnterRules: [
@@ -43,7 +31,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         afterText: /^\s*\*\/$/,
         action: {
           indentAction: monaco.languages.IndentAction.IndentOutdent,
-          appendText: ' * ',
+          appendText: " * ",
         },
       },
       {
@@ -51,7 +39,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         beforeText: /^\s*\/\*\*(?!\/)([^*]|\*(?!\/))*$/,
         action: {
           indentAction: monaco.languages.IndentAction.None,
-          appendText: ' * ',
+          appendText: " * ",
         },
       },
       {
@@ -59,7 +47,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         beforeText: /^(\t|( {2}))* \*( ([^*]|\*(?!\/))*)?$/,
         action: {
           indentAction: monaco.languages.IndentAction.None,
-          appendText: '* ',
+          appendText: "* ",
         },
       },
       {
@@ -73,20 +61,20 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     ],
 
     autoClosingPairs: [
-      { open: '{', close: '}' },
-      { open: '[', close: ']' },
-      { open: '(', close: ')' },
-      { open: '"', close: '"', notIn: ['string'] },
-      { open: "'", close: "'", notIn: ['string', 'comment'] },
-      { open: '`', close: '`', notIn: ['string', 'comment'] },
-      { open: '/**', close: ' */', notIn: ['string'] },
+      { open: "{", close: "}" },
+      { open: "[", close: "]" },
+      { open: "(", close: ")" },
+      { open: '"', close: '"', notIn: ["string"] },
+      { open: "'", close: "'", notIn: ["string", "comment"] },
+      { open: "`", close: "`", notIn: ["string", "comment"] },
+      { open: "/**", close: " */", notIn: ["string"] },
     ],
   };
 
   monaco.languages.register({ id: DS_LANGUAGE_NAME });
   monaco.languages.setLanguageConfiguration(
     DS_LANGUAGE_NAME,
-    richEditConfiguration
+    richEditConfiguration,
   );
   monaco.languages.setMonarchTokensProvider(DS_LANGUAGE_NAME, {
     keywords: [],
@@ -98,36 +86,36 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         [
           /definition/,
           {
-            token: 'keyword.definition',
-            bracket: '@open',
-            next: '@definition',
+            token: "keyword.definition",
+            bracket: "@open",
+            next: "@definition",
           },
         ],
         [
           /caveat/,
-          { token: 'keyword.caveat', bracket: '@open', next: '@caveat' },
+          { token: "keyword.caveat", bracket: "@open", next: "@caveat" },
         ],
         [
           /permission/,
           {
-            token: 'keyword.permission',
-            bracket: '@open',
-            next: '@permission',
+            token: "keyword.permission",
+            bracket: "@open",
+            next: "@permission",
           },
         ],
         [
           /relation/,
-          { token: 'keyword.relation', bracket: '@open', next: '@relation' },
+          { token: "keyword.relation", bracket: "@open", next: "@relation" },
         ],
-        { include: '@whitespace' },
+        { include: "@whitespace" },
 
         // delimiters and operators
-        [/[{}]/, '@brackets'],
+        [/[{}]/, "@brackets"],
         [
           /@symbols/,
           {
             cases: {
-              '@default': '',
+              "@default": "",
             },
           },
         ],
@@ -135,219 +123,219 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
       caveat: [
         [
           /([a-z0-9_]+\/)+/,
-          { token: 'identifier.caveat-prefix', next: '@subcav' },
+          { token: "identifier.caveat-prefix", next: "@subcav" },
         ],
-        [/[a-z0-9_]+/, { token: 'identifier.caveat', next: '@caveatparams' }],
+        [/[a-z0-9_]+/, { token: "identifier.caveat", next: "@caveatparams" }],
       ],
       subcav: [
-        [/[a-z0-9_]+/, { token: 'identifier.caveat', next: '@caveatparams' }],
+        [/[a-z0-9_]+/, { token: "identifier.caveat", next: "@caveatparams" }],
       ],
-      caveatparams: [[/\(/, { token: '@rematch', next: '@caveatparam' }]],
+      caveatparams: [[/\(/, { token: "@rematch", next: "@caveatparam" }]],
       caveatparam: [
         [
           /[a-z0-9_]+/,
-          { token: 'identifier.caveat-param-name', next: '@caveattype' },
+          { token: "identifier.caveat-param-name", next: "@caveattype" },
         ],
       ],
       caveattype: [
         [
           /[a-z0-9_]+/,
           {
-            token: 'identifier.caveat-param-type-name',
-            next: '@genericsornextcaveatparam',
+            token: "identifier.caveat-param-type-name",
+            next: "@genericsornextcaveatparam",
           },
         ],
       ],
       genericsornextcaveatparam: [
-        [/</, { token: 'open', next: '@caveattype' }],
-        [/>/, { token: 'close', next: '@genericsornextcaveatparam' }],
-        [/,/, { token: 'comma', next: '@caveatparam' }],
-        [/\)/, { token: '@rematch', next: '@caveatexprblock' }],
+        [/</, { token: "open", next: "@caveattype" }],
+        [/>/, { token: "close", next: "@genericsornextcaveatparam" }],
+        [/,/, { token: "comma", next: "@caveatparam" }],
+        [/\)/, { token: "@rematch", next: "@caveatexprblock" }],
       ],
       caveatexprblock: [
-        [/$/, { token: 'close', next: '@popall', nextEmbedded: '@pop' }],
+        [/$/, { token: "close", next: "@popall", nextEmbedded: "@pop" }],
         [
           /{/,
           {
-            token: 'open',
-            next: '@caveatexpr',
-            bracket: '@open',
-            nextEmbedded: 'cel',
+            token: "open",
+            next: "@caveatexpr",
+            bracket: "@open",
+            nextEmbedded: "cel",
           },
         ],
         [
           /}/,
           {
-            token: '@rematch',
-            next: '@popall',
-            bracket: '@close',
-            nextEmbedded: '@pop',
+            token: "@rematch",
+            next: "@popall",
+            bracket: "@close",
+            nextEmbedded: "@pop",
           },
         ],
       ],
       caveatexpr: [
-        [/$/, { token: 'close', next: '@popall', nextEmbedded: '@pop' }],
+        [/$/, { token: "close", next: "@popall", nextEmbedded: "@pop" }],
         [
           /{/,
           {
-            token: 'open',
-            next: '@caveatexpr',
-            bracket: '@open',
+            token: "open",
+            next: "@caveatexpr",
+            bracket: "@open",
           },
         ],
         [
           /}/,
           {
-            token: '@rematch',
-            next: '@pop',
-            bracket: '@close',
+            token: "@rematch",
+            next: "@pop",
+            bracket: "@close",
           },
         ],
         [
           /\(/,
           {
-            token: 'open',
-            next: '@caveatexpr',
-            bracket: '@open',
+            token: "open",
+            next: "@caveatexpr",
+            bracket: "@open",
           },
         ],
         [
           /\)/,
           {
-            token: '@rematch',
-            next: '@pop',
-            bracket: '@close',
+            token: "@rematch",
+            next: "@pop",
+            bracket: "@close",
           },
         ],
         [
           /[a-z0-9_]+/,
           {
-            token: 'identifier.caveat-usage',
-            next: '@caveatexpr',
+            token: "identifier.caveat-usage",
+            next: "@caveatexpr",
           },
         ],
         [
           /./,
           {
-            token: 'othercaveattoken',
-            next: '@caveatexpr',
+            token: "othercaveattoken",
+            next: "@caveatexpr",
           },
         ],
         [
           /[ \t\r\n]+/,
           {
-            token: 'whitespace',
-            next: '@caveatexpr',
+            token: "whitespace",
+            next: "@caveatexpr",
           },
         ],
       ],
       definition: [
         [
           /([a-z0-9_]+\/)+/,
-          { token: 'identifier.definition-prefix', next: '@subdef' },
+          { token: "identifier.definition-prefix", next: "@subdef" },
         ],
-        [/[a-z0-9_]+/, { token: 'identifier.definition', next: '@popall' }],
+        [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
       ],
       subdef: [
-        [/[a-z0-9_]+/, { token: 'identifier.definition', next: '@popall' }],
+        [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
       ],
       permission: [
-        [/[a-z0-9_]+/, { token: 'identifier.permission', next: '@expr' }],
+        [/[a-z0-9_]+/, { token: "identifier.permission", next: "@expr" }],
       ],
       expr: [
-        [/$/, { token: 'close', next: '@popall' }],
-        [/}/, { token: '@rematch', next: '@popall' }],
-        [/relation/, { token: '@rematch', next: '@popall' }],
-        [/permission/, { token: '@rematch', next: '@popall' }],
-        [/any/, { token: 'keyword.any', next: '@arrowopen' }],
-        [/all/, { token: 'keyword.all', next: '@arrowopen' }],
-        [/nil/, { token: 'keyword.nil' }],
-        [/\w+/, { token: 'identifier.relorperm' }],
-        { include: '@whitespace' },
+        [/$/, { token: "close", next: "@popall" }],
+        [/}/, { token: "@rematch", next: "@popall" }],
+        [/relation/, { token: "@rematch", next: "@popall" }],
+        [/permission/, { token: "@rematch", next: "@popall" }],
+        [/any/, { token: "keyword.any", next: "@arrowopen" }],
+        [/all/, { token: "keyword.all", next: "@arrowopen" }],
+        [/nil/, { token: "keyword.nil" }],
+        [/\w+/, { token: "identifier.relorperm" }],
+        { include: "@whitespace" },
       ],
       arrowopen: [
-        [/$/, { token: 'close', next: '@popall' }],
-        [/}/, { token: '@rematch', next: '@popall' }],
-        [/\)/, { token: 'close', next: '@pop' }],
-        [/\(/, { token: '@rematch', next: '@arrowrel' }],
-        { include: '@whitespace' },
+        [/$/, { token: "close", next: "@popall" }],
+        [/}/, { token: "@rematch", next: "@popall" }],
+        [/\)/, { token: "close", next: "@pop" }],
+        [/\(/, { token: "@rematch", next: "@arrowrel" }],
+        { include: "@whitespace" },
       ],
       arrowrel: [
-        [/$/, { token: 'close', next: '@popall' }],
-        [/}/, { token: '@rematch', next: '@popall' }],
-        [/\)/, { token: 'close', next: '@pop' }],
-        [/\w+/, { token: 'identifier.relorperm' }],
-        { include: '@whitespace' },
+        [/$/, { token: "close", next: "@popall" }],
+        [/}/, { token: "@rematch", next: "@popall" }],
+        [/\)/, { token: "close", next: "@pop" }],
+        [/\w+/, { token: "identifier.relorperm" }],
+        { include: "@whitespace" },
       ],
       relation: [
-        [/[a-z0-9_]+/, { token: 'identifier.relation', next: '@allowed' }],
+        [/[a-z0-9_]+/, { token: "identifier.relation", next: "@allowed" }],
       ],
-      allowed: [[/:/, { token: 'allowed', next: '@typedef' }]],
+      allowed: [[/:/, { token: "allowed", next: "@typedef" }]],
       typedef: [
-        [/$/, { token: 'close', next: '@popall' }],
-        [/}/, { token: '@rematch', next: '@popall' }],
-        [/relation/, { token: '@rematch', next: '@popall' }],
-        [/permission/, { token: '@rematch', next: '@popall' }],
+        [/$/, { token: "close", next: "@popall" }],
+        [/}/, { token: "@rematch", next: "@popall" }],
+        [/relation/, { token: "@rematch", next: "@popall" }],
+        [/permission/, { token: "@rematch", next: "@popall" }],
         [
           /([a-z0-9_]+\/)+/,
-          { token: 'identifier.type-prefix', next: '@typedef' },
+          { token: "identifier.type-prefix", next: "@typedef" },
         ],
-        [/\w+#/, { token: '@rematch', next: '@relationref' }],
-        [/\w+:/, { token: '@rematch', next: '@wildcardref' }],
-        [/\w+/, { token: 'type.identifier' }],
-        { include: '@whitespace' },
+        [/\w+#/, { token: "@rematch", next: "@relationref" }],
+        [/\w+:/, { token: "@rematch", next: "@wildcardref" }],
+        [/\w+/, { token: "type.identifier" }],
+        { include: "@whitespace" },
       ],
       relationref: [
-        [/\w+/, { token: 'type.identifier', next: '@relsymbol' }],
-        [/./, { token: '@rematch', next: '@pop' }],
-        [/$/, { token: 'close', next: '@popall' }],
+        [/\w+/, { token: "type.identifier", next: "@relsymbol" }],
+        [/./, { token: "@rematch", next: "@pop" }],
+        [/$/, { token: "close", next: "@popall" }],
       ],
       relsymbol: [
-        [/#/, { token: 'type.relsymbol', next: '@relvalue' }],
-        [/./, { token: '@rematch', next: '@pop' }],
-        [/$/, { token: 'close', next: '@popall' }],
+        [/#/, { token: "type.relsymbol", next: "@relvalue" }],
+        [/./, { token: "@rematch", next: "@pop" }],
+        [/$/, { token: "close", next: "@popall" }],
       ],
-      relvalue: [[/\w+/, { token: 'type.relation', next: '@pop' }]],
+      relvalue: [[/\w+/, { token: "type.relation", next: "@pop" }]],
       wildcardref: [
-        [/\w+/, { token: 'type.identifier', next: '@wildcardsymbol' }],
-        [/./, { token: '@rematch', next: '@pop' }],
-        [/$/, { token: 'close', next: '@popall' }],
+        [/\w+/, { token: "type.identifier", next: "@wildcardsymbol" }],
+        [/./, { token: "@rematch", next: "@pop" }],
+        [/$/, { token: "close", next: "@popall" }],
       ],
       wildcardsymbol: [
-        [/:/, { token: 'type.wildcardsymbol', next: '@wildcardvalue' }],
-        [/./, { token: '@rematch', next: '@pop' }],
-        [/$/, { token: 'close', next: '@popall' }],
+        [/:/, { token: "type.wildcardsymbol", next: "@wildcardvalue" }],
+        [/./, { token: "@rematch", next: "@pop" }],
+        [/$/, { token: "close", next: "@popall" }],
       ],
-      wildcardvalue: [[/\*/, { token: 'type.wildcard', next: '@pop' }]],
+      wildcardvalue: [[/\*/, { token: "type.wildcard", next: "@pop" }]],
       comment: [
         // eslint-disable-next-line
-        [/[^\/*]+/, 'comment'],
+        [/[^\/*]+/, "comment"],
 
-        [/\*\//, 'comment', '@pop'],
+        [/\*\//, "comment", "@pop"],
 
         // eslint-disable-next-line
-        [/[\/*]/, 'comment'],
+        [/[\/*]/, "comment"],
       ],
       doccomment: [
         // eslint-disable-next-line
-        [/[^\/*]+/, 'comment.doc'],
+        [/[^\/*]+/, "comment.doc"],
 
-        [/\*\//, 'comment.doc', '@pop'],
+        [/\*\//, "comment.doc", "@pop"],
 
         // eslint-disable-next-line
-        [/[\/*]/, 'comment.doc'],
+        [/[\/*]/, "comment.doc"],
       ],
       whitespace: [
-        [/[ \t\r\n]+/, ''],
-        [/\/\*\*(?!\/)/, 'comment.doc', '@doccomment'],
-        [/\/\*/, 'comment', '@comment'],
-        [/\/\/.*$/, 'comment'],
+        [/[ \t\r\n]+/, ""],
+        [/\/\*\*(?!\/)/, "comment.doc", "@doccomment"],
+        [/\/\*/, "comment", "@comment"],
+        [/\/\/.*$/, "comment"],
       ],
     },
   });
 
   monaco.languages.registerCompletionItemProvider(DS_LANGUAGE_NAME, {
-    triggerCharacters: [':', '=', '+', '-', '&', '(', '|', '#'],
+    triggerCharacters: [":", "=", "+", "-", "&", "(", "|", "#"],
 
     provideCompletionItems: function () {
       //const lastChars = model.getValueInRange({ startLineNumber: position.lineNumber, startColumn: 0, endLineNumber: position.lineNumber, endColumn: position.column });
@@ -371,7 +359,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
       const found = findReferenceNode(
         parserResult.schema!,
         position.lineNumber,
-        position.column
+        position.column,
       );
       if (!found) {
         return;
@@ -379,12 +367,12 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
 
       const resolution = new Resolver(parserResult.schema!);
       switch (found.node?.kind) {
-        case 'typeref': {
+        case "typeref": {
           const def = resolution.lookupDefinition(found.node.path);
           if (def) {
             if (found.node.relationName) {
               const relation = def.lookupRelationOrPermission(
-                found.node.relationName
+                found.node.relationName,
               );
               if (relation) {
                 return {
@@ -412,10 +400,10 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
           break;
         }
 
-        case 'relationref': {
+        case "relationref": {
           const relation = resolution.resolveRelationOrPermission(
             found.node,
-            found.def
+            found.def,
           );
           if (relation) {
             return {
@@ -440,13 +428,13 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     getLegend: function (): languages.SemanticTokensLegend {
       return {
         tokenTypes: [
-          'type',
-          'property',
-          'member',
-          'type.unknown',
-          'member.unknown',
+          "type",
+          "property",
+          "member",
+          "type.unknown",
+          "member.unknown",
         ],
-        tokenModifiers: ['declaration'],
+        tokenModifiers: ["declaration"],
       };
     },
     provideDocumentSemanticTokens: function (
@@ -476,14 +464,14 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         colPosition: number,
         length: number,
         tokenType: number,
-        modifierIndex: number
+        modifierIndex: number,
       ) => {
         data.push(
           lineNumber - prevLine,
           prevLine === lineNumber ? colPosition - prevChar : colPosition,
           length,
           tokenType,
-          modifierIndex
+          modifierIndex,
         );
 
         prevLine = lineNumber;
@@ -498,14 +486,14 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         const colPosition = resolved.reference.range.startIndex.column - 1;
 
         switch (resolved.kind) {
-          case 'type':
+          case "type":
             if (resolved.referencedTypeAndRelation === undefined) {
               appendData(
                 lineNumber,
                 colPosition,
                 resolved.reference.path.length,
                 /* type.unknown */ 3,
-                0
+                0,
               );
               return;
             }
@@ -515,7 +503,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
               colPosition,
               resolved.reference.path.length,
               /* type */ 0,
-              0
+              0,
             );
 
             if (resolved.reference.relationName) {
@@ -525,7 +513,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
                   colPosition + 1 + resolved.reference.path.length,
                   resolved.reference.relationName.length,
                   /* member */ 2,
-                  0
+                  0,
                 );
               } else if (
                 resolved.referencedTypeAndRelation.permission !== undefined
@@ -535,7 +523,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
                   colPosition + 1 + resolved.reference.path.length,
                   resolved.reference.relationName.length,
                   /* property */ 1,
-                  0
+                  0,
                 );
               } else {
                 appendData(
@@ -543,40 +531,40 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
                   colPosition + 1 + resolved.reference.path.length,
                   resolved.reference.relationName.length,
                   /* member.unknown */ 3,
-                  0
+                  0,
                 );
               }
             }
             break;
 
-          case 'expression':
+          case "expression":
             if (resolved.resolvedRelationOrPermission === undefined) {
               appendData(
                 lineNumber,
                 colPosition,
                 resolved.reference.relationName.length,
                 /* property.unknown */ 4,
-                0
+                0,
               );
             } else {
               switch (resolved.resolvedRelationOrPermission.kind) {
-                case 'permission':
+                case "permission":
                   appendData(
                     lineNumber,
                     colPosition,
                     resolved.reference.relationName.length,
                     /* property */ 1,
-                    0
+                    0,
                   );
                   break;
 
-                case 'relation':
+                case "relation":
                   appendData(
                     lineNumber,
                     colPosition,
                     resolved.reference.relationName.length,
                     /* member */ 2,
-                    0
+                    0,
                   );
                   break;
               }
@@ -594,112 +582,112 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
   });
 
   monaco.editor.defineTheme(DS_THEME_NAME, {
-    base: 'vs',
+    base: "vs",
     inherit: true,
     rules: [
-      { token: 'comment', foreground: '608b4e' },
-      { token: 'comment.doc', foreground: '64bf3b' },
-      { token: 'keyword', foreground: '8787ff' },
+      { token: "comment", foreground: "608b4e" },
+      { token: "comment.doc", foreground: "64bf3b" },
+      { token: "keyword", foreground: "8787ff" },
 
-      { token: 'type', foreground: '4242ff' },
-      { token: 'type.unknown', foreground: 'ff0000' },
+      { token: "type", foreground: "4242ff" },
+      { token: "type.unknown", foreground: "ff0000" },
 
-      { token: 'type.relation', foreground: '883425' },
-      { token: 'type.identifier', foreground: '4242ff' },
-      { token: 'type.relsymbol', foreground: '000000' },
+      { token: "type.relation", foreground: "883425" },
+      { token: "type.identifier", foreground: "4242ff" },
+      { token: "type.relsymbol", foreground: "000000" },
 
-      { token: 'type.wildcard', foreground: '00cfba', fontStyle: 'bold' },
-      { token: 'type.wildcardsymbol', foreground: '000000' },
+      { token: "type.wildcard", foreground: "00cfba", fontStyle: "bold" },
+      { token: "type.wildcardsymbol", foreground: "000000" },
 
-      { token: 'member', foreground: '883425' },
-      { token: 'member.unknown', foreground: 'ff0000' },
+      { token: "member", foreground: "883425" },
+      { token: "member.unknown", foreground: "ff0000" },
 
-      { token: 'property', foreground: '158a64' },
-      { token: 'property.unknown', foreground: 'ff0000' },
+      { token: "property", foreground: "158a64" },
+      { token: "property.unknown", foreground: "ff0000" },
 
-      { token: 'identifier.relorperm', foreground: '666666' },
+      { token: "identifier.relorperm", foreground: "666666" },
 
-      { token: 'keyword.permission', foreground: '158a64' },
-      { token: 'keyword.relation', foreground: '883425' },
-      { token: 'keyword.definition', foreground: '4242ff' },
-      { token: 'keyword.caveat', foreground: 'ff4271' },
-      { token: 'keyword.nil', foreground: '999999' },
-      { token: 'keyword.any', foreground: '23974d' },
-      { token: 'keyword.all', foreground: '972323' },
-  
-      { token: 'identifier.type-prefix', foreground: 'aaaaaa' },
-      { token: 'identifier.definition-prefix', foreground: 'aaaaaa' },
+      { token: "keyword.permission", foreground: "158a64" },
+      { token: "keyword.relation", foreground: "883425" },
+      { token: "keyword.definition", foreground: "4242ff" },
+      { token: "keyword.caveat", foreground: "ff4271" },
+      { token: "keyword.nil", foreground: "999999" },
+      { token: "keyword.any", foreground: "23974d" },
+      { token: "keyword.all", foreground: "972323" },
 
-      { token: 'identifier.caveat', foreground: '000000' },
-      { token: 'identifier.caveat-param-name', foreground: '9eb4df' },
-      { token: 'identifier.caveat-usage', foreground: '000000' },
+      { token: "identifier.type-prefix", foreground: "aaaaaa" },
+      { token: "identifier.definition-prefix", foreground: "aaaaaa" },
 
-      { token: 'identifier.definition', foreground: '000000' },
-      { token: 'identifier.permission', foreground: '000000' },
-      { token: 'identifier.relation', foreground: '000000' },
+      { token: "identifier.caveat", foreground: "000000" },
+      { token: "identifier.caveat-param-name", foreground: "9eb4df" },
+      { token: "identifier.caveat-usage", foreground: "000000" },
+
+      { token: "identifier.definition", foreground: "000000" },
+      { token: "identifier.permission", foreground: "000000" },
+      { token: "identifier.relation", foreground: "000000" },
     ],
     colors: {},
   });
 
   const DARK_RULES = [
-    { token: 'comment', foreground: '608b4e' },
-    { token: 'comment.doc', foreground: '64bf3b' },
-    { token: 'keyword', foreground: '8787ff' },
+    { token: "comment", foreground: "608b4e" },
+    { token: "comment.doc", foreground: "64bf3b" },
+    { token: "keyword", foreground: "8787ff" },
 
-    { token: 'type', foreground: 'cec2f3' },
-    { token: 'type.unknown', foreground: 'ff0000' },
+    { token: "type", foreground: "cec2f3" },
+    { token: "type.unknown", foreground: "ff0000" },
 
-    { token: 'type.relation', foreground: 'f9cdbd' },
-    { token: 'type.identifier', foreground: 'cec2f3' },
-    { token: 'type.relsymbol', foreground: 'ffffff' },
+    { token: "type.relation", foreground: "f9cdbd" },
+    { token: "type.identifier", foreground: "cec2f3" },
+    { token: "type.relsymbol", foreground: "ffffff" },
 
-    { token: 'type.wildcard', foreground: '00ffe5', fontStyle: 'bold' },
-    { token: 'type.wildcardsymbol', foreground: 'ffffff' },
+    { token: "type.wildcard", foreground: "00ffe5", fontStyle: "bold" },
+    { token: "type.wildcardsymbol", foreground: "ffffff" },
 
-    { token: 'member', foreground: 'f9cdbd' },
-    { token: 'member.unknown', foreground: 'ff0000' },
+    { token: "member", foreground: "f9cdbd" },
+    { token: "member.unknown", foreground: "ff0000" },
 
-    { token: 'property', foreground: '95ffce' },
-    { token: 'property.unknown', foreground: 'ff0000' },
+    { token: "property", foreground: "95ffce" },
+    { token: "property.unknown", foreground: "ff0000" },
 
-    { token: 'identifier.relorperm', foreground: 'cccccc' },
+    { token: "identifier.relorperm", foreground: "cccccc" },
 
-    { token: 'keyword.permission', foreground: '1acc92' },
-    { token: 'keyword.relation', foreground: 'ffa887' },
-    { token: 'keyword.definition', foreground: '8787ff' },
-    { token: 'keyword.caveat', foreground: 'ff87a6' },
-    { token: 'keyword.nil', foreground: 'cccccc' },
-    { token: 'keyword.any', foreground: 'abe5ff' },
-    { token: 'keyword.all', foreground: 'ffabab' },
+    { token: "keyword.permission", foreground: "1acc92" },
+    { token: "keyword.relation", foreground: "ffa887" },
+    { token: "keyword.definition", foreground: "8787ff" },
+    { token: "keyword.caveat", foreground: "ff87a6" },
+    { token: "keyword.nil", foreground: "cccccc" },
+    { token: "keyword.any", foreground: "abe5ff" },
+    { token: "keyword.all", foreground: "ffabab" },
 
-    { token: 'identifier.type-prefix', foreground: 'aaaaaa' },
-    { token: 'identifier.definition-prefix', foreground: 'aaaaaa' },
+    { token: "identifier.type-prefix", foreground: "aaaaaa" },
+    { token: "identifier.definition-prefix", foreground: "aaaaaa" },
 
-    { token: 'identifier.caveat-param-type-name', foreground: 'cec2f3' },
+    { token: "identifier.caveat-param-type-name", foreground: "cec2f3" },
 
-    { token: 'identifier.caveat', foreground: 'ffffff' },
-    { token: 'identifier.caveat-param-name', foreground: '9eb4df' },
-    { token: 'identifier.caveat-usage', foreground: 'ffffff' },
+    { token: "identifier.caveat", foreground: "ffffff" },
+    { token: "identifier.caveat-param-name", foreground: "9eb4df" },
+    { token: "identifier.caveat-usage", foreground: "ffffff" },
 
-    { token: 'identifier.definition', foreground: 'ffffff' },
-    { token: 'identifier.permission', foreground: 'ffffff' },
-    { token: 'identifier.relation', foreground: 'ffffff' },
+    { token: "identifier.definition", foreground: "ffffff" },
+    { token: "identifier.permission", foreground: "ffffff" },
+    { token: "identifier.relation", foreground: "ffffff" },
   ];
 
   monaco.editor.defineTheme(DS_DARK_THEME_NAME, {
-    base: 'vs-dark',
+    base: "vs-dark",
     inherit: true,
     rules: DARK_RULES,
     colors: {
-      'editor.background': '#0e0d11',
+      "editor.background": "#0e0d11",
     },
   });
   monaco.editor.defineTheme(DS_EMBED_DARK_THEME_NAME, {
-    base: 'vs-dark',
+    base: "vs-dark",
     inherit: true,
     rules: DARK_RULES,
     colors: {
-      'editor.background': '#0e0d11',
+      "editor.background": "#0e0d11",
     },
   });
 }

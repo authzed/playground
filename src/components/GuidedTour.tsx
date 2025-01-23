@@ -1,66 +1,66 @@
-import { Theme, useTheme } from '@material-ui/core/styles';
-import Joyride, { ACTIONS, EVENTS, type Step } from 'react-joyride';
+import { Theme, useTheme } from "@material-ui/core/styles";
+import Joyride, { ACTIONS, EVENTS, type Step } from "react-joyride";
 
 export const TourElementClass = {
-  schema: 'tec-schema',
-  browse: 'tec-browse',
-  testrel: 'tec-testrel',
-  assert: 'tec-assert',
-  run: 'tec-run',
-  problems: 'tec-problems',
-  checkwatch: 'tec-checkwatch',
-  share: 'tec-share',
+  schema: "tec-schema",
+  browse: "tec-browse",
+  testrel: "tec-testrel",
+  assert: "tec-assert",
+  run: "tec-run",
+  problems: "tec-problems",
+  checkwatch: "tec-checkwatch",
+  share: "tec-share",
 };
 
 const steps: Step[] = [
   {
     target: `.${TourElementClass.schema}`,
-    title: 'Welcome!',
+    title: "Welcome!",
     content: "Begin by editing permission system's schema here...",
     disableBeacon: true,
   },
   {
     target: `.${TourElementClass.browse}`,
-    title: 'Browse',
-    content: '...or start with a pre-built example',
+    title: "Browse",
+    content: "...or start with a pre-built example",
   },
   {
     target: `.${TourElementClass.testrel}`,
-    title: 'Test Relationships',
-    content: 'Add test relationships into your database...',
+    title: "Test Relationships",
+    content: "Add test relationships into your database...",
   },
   {
     target: `.${TourElementClass.assert}`,
-    title: 'Assertions',
+    title: "Assertions",
     content:
-      '...and then define assertions to validate your schema and relationships',
+      "...and then define assertions to validate your schema and relationships",
   },
   {
     target: `.${TourElementClass.run}`,
-    title: 'Validate',
+    title: "Validate",
     content:
-      'Click Run to test your assertions against your permissions system',
+      "Click Run to test your assertions against your permissions system",
   },
   {
     target: `.${TourElementClass.problems}`,
-    title: 'Problems',
-    content: 'Any problems in your schema or assertions will appear here',
+    title: "Problems",
+    content: "Any problems in your schema or assertions will appear here",
   },
   {
     target: `.${TourElementClass.checkwatch}`,
-    title: 'Check Watches',
-    content: 'Permission checks can also be evaluated live by adding them here',
+    title: "Check Watches",
+    content: "Permission checks can also be evaluated live by adding them here",
   },
   {
     target: `.${TourElementClass.share}`,
-    title: 'Share',
+    title: "Share",
     content:
-      'Click Share to get a shareable link. Contact us with any questions as your build out your system!',
+      "Click Share to get a shareable link. Contact us with any questions as your build out your system!",
   },
   {
     target: `.${TourElementClass.schema}`,
-    title: 'Start editing!',
-    content: 'You are all ready to start editing your permission schema!',
+    title: "Start editing!",
+    content: "You are all ready to start editing your permission schema!",
   },
 ];
 
@@ -82,7 +82,7 @@ const styles = (theme: Theme) => {
 const handleEvents = (
   onSkip: () => void,
   onTourEnd: () => void,
-  onEnterStep: (className: string) => void
+  onEnterStep: (className: string) => void,
 ) => {
   return (data: {
     action: string;
@@ -103,9 +103,9 @@ const handleEvents = (
     }
     // Tour before step
     if (ACTIONS.NEXT === action && EVENTS.STEP_BEFORE === type) {
-        if (typeof step.target === "string") {
-            onEnterStep(step.target);
-        }
+      if (typeof step.target === "string") {
+        onEnterStep(step.target);
+      }
     }
     // Tour step
     if (ACTIONS.UPDATE === action && EVENTS.TOOLTIP === type) {

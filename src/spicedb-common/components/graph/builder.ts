@@ -1,7 +1,7 @@
-import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
-import { VisEdge, VisNode } from '../../../playground-ui/VisNetworkGraph';
-import { emphasize } from '@material-ui/core/styles';
-import { schemeCategory10 } from 'd3-scale-chromatic';
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
+import { VisEdge, VisNode } from "../../../playground-ui/VisNetworkGraph";
+import { emphasize } from "@material-ui/core/styles";
+import { schemeCategory10 } from "d3-scale-chromatic";
 import {
   ParsedArrowExpression,
   ParsedBinaryExpression,
@@ -10,7 +10,7 @@ import {
   ParsedSchema,
   TextRange,
   TypeRef,
-} from '../../parsers/dsl/dsl';
+} from "../../parsers/dsl/dsl";
 import {
   PermissionHandle,
   RelationHandle,
@@ -18,7 +18,7 @@ import {
   RelationOrPermissionHandle,
   TypeHandle,
   TypeSet,
-} from './typeset';
+} from "./typeset";
 
 export interface ActiveInfo {
   isSchema?: boolean;
@@ -31,30 +31,30 @@ export interface ActiveInfo {
 export type LocalNode = VisNode & WithSourceInfo;
 export type LocalEdge = VisEdge & WithSourceInfo;
 
-export const RELATIONSHIP_TABLE_CLASS_NAME = 'relationship-table';
+export const RELATIONSHIP_TABLE_CLASS_NAME = "relationship-table";
 
 export const COLORS = {
-  tenant: '#aaaaaa11',
-  type: '#8787ff',
-  relation: '#ffa887',
-  typetorelation: '#ffa88722',
-  permission: '#1acc92',
-  typetopermission: '#1acc9222',
-  userset: '#ab00a4',
+  tenant: "#aaaaaa11",
+  type: "#8787ff",
+  relation: "#ffa887",
+  typetorelation: "#ffa88722",
+  permission: "#1acc92",
+  typetopermission: "#1acc9222",
+  userset: "#ab00a4",
   highlight: (color: string) => emphasize(color, 0.4),
-  dataref: '#fff',
+  dataref: "#fff",
 };
 
 const REWRITE_COLORS = {
-  union: 'green',
-  intersection: 'orange',
-  exclusion: 'red',
+  union: "green",
+  intersection: "orange",
+  exclusion: "red",
 };
 
 const REWRITE_OPS = {
-  union: '+',
-  intersection: '&',
-  exclusion: '-',
+  union: "+",
+  intersection: "&",
+  exclusion: "-",
 };
 
 const exprId = (expr: ParsedExpression) => {
@@ -69,7 +69,7 @@ const NodeIDs = {
     `perm-${ref.index}-${ref.parentType.index}`,
   RelationOrPermission: (ref: RelationOrPermissionHandle) => {
     switch (ref.kind) {
-      case 'relation':
+      case "relation":
         return NodeIDs.Relation(ref as RelationHandle);
 
       default:
@@ -89,7 +89,7 @@ const EdgeIDs = {
     `${NodeIDs.ObjectType(ref.parentType)}->${NodeIDs.Permission(ref)}`,
   ReferencedRelationOrPermission: (
     startNodeID: string,
-    ref: RelationOrPermissionHandle
+    ref: RelationOrPermissionHandle,
   ) => `${startNodeID}->${NodeIDs.RelationOrPermission(ref)}`,
   RelationToDataType: (ref: RelationHandle, typeRef: TypeHandle) =>
     `${NodeIDs.Relation(ref)}-->${NodeIDs.ObjectType(typeRef)}`,
@@ -97,7 +97,7 @@ const EdgeIDs = {
     `${parentNodeID}-e->${exprNodeID}`,
   ArrowRelationOutward: (
     expr: ParsedArrowExpression,
-    target: RelationOrPermissionHandle
+    target: RelationOrPermissionHandle,
   ) => `${NodeIDs.Arrow(expr)}->${NodeIDs.RelationOrPermission(target)}}`,
 };
 
@@ -115,7 +115,7 @@ interface WithSourceInfo {
  */
 export function findActive<T extends WithSourceInfo>(
   items: T[],
-  active: ActiveInfo | undefined
+  active: ActiveInfo | undefined,
 ): T[] | undefined {
   if (!active?.isSchema) {
     return undefined;
@@ -165,7 +165,7 @@ export function findActive<T extends WithSourceInfo>(
  */
 export function generateTenantGraph(
   schema: ParsedSchema | undefined,
-  relationships: Relationship[] | undefined
+  relationships: Relationship[] | undefined,
 ) {
   if (schema === undefined) {
     return {
@@ -191,7 +191,7 @@ export function generateTenantGraph(
     const { nodes: defNodes, edges: defEdges } = generateTypeSubgraph(
       type,
       typeSet,
-      getTuplesetPathColor
+      getTuplesetPathColor,
     );
     nodes.push(...defNodes);
     edges.push(...defEdges);
@@ -235,7 +235,7 @@ export function generateTenantGraph(
 function generateTypeSubgraph(
   typeHandle: TypeHandle,
   typeSet: TypeSet,
-  getTuplesetPathColor: () => string
+  getTuplesetPathColor: () => string,
 ) {
   const nodes: LocalNode[] = [];
   const edges: LocalEdge[] = [];
@@ -247,8 +247,8 @@ function generateTypeSubgraph(
       nodes.push({
         id: NodeIDs.Relation(relationHandle),
         label: relationHandle.relation.name,
-        group: 'relation',
-        shape: 'diamond',
+        group: "relation",
+        shape: "diamond",
         color: {
           background: COLORS.relation,
           border: COLORS.relation,
@@ -288,20 +288,22 @@ function generateTypeSubgraph(
                     <td><code>:</code></td>
                     <td><code>${rel.subject?.objectId}</code></td>
                     <td class="${
-                      link.subjectRelation?.kind === 'permission'
-                        ? 'target-permission'
-                        : 'target-relation'
+                      link.subjectRelation?.kind === "permission"
+                        ? "target-permission"
+                        : "target-relation"
                     }"><code>${
-              rel.subject?.relation === '...' ? '' : `#${rel.subject?.relation}`
-            }</code></td>
+                      rel.subject?.relation === "..."
+                        ? ""
+                        : `#${rel.subject?.relation}`
+                    }</code></td>
                         ${
                           rel.caveat?.caveatName
                             ? `<td><code>[${rel.caveat.caveatName}]</code></td>`
-                            : ''
+                            : ""
                         }
                 </tr>`;
           })
-          .join('');
+          .join("");
 
         const relationshipListStr = `<table class="${RELATIONSHIP_TABLE_CLASS_NAME}">${tableContents}</table>`;
         edges.push({
@@ -321,7 +323,7 @@ function generateTypeSubgraph(
           },
         });
       });
-    }
+    },
   );
 
   // Add nodes for each permission.
@@ -331,10 +333,10 @@ function generateTypeSubgraph(
       nodes.push({
         id: NodeIDs.Permission(permissionHandle),
         label: permissionHandle.permission.name,
-        group: 'permission',
-        shape: 'diamond',
+        group: "permission",
+        shape: "diamond",
         color: {
-          background: 'transparent',
+          background: "transparent",
           border: COLORS.permission,
         },
         sourceInfo: {
@@ -348,7 +350,7 @@ function generateTypeSubgraph(
         NodeIDs.Permission(permissionHandle),
         typeHandle,
         typeSet,
-        getTuplesetPathColor
+        getTuplesetPathColor,
       );
       nodes.push(...exNodes);
       edges.push(...exEdges);
@@ -363,14 +365,14 @@ function generateTypeSubgraph(
           parserRange: permissionHandle.permission.range,
         },
       });
-    }
+    },
   );
 
   // Add the type's node.
   nodes.push({
     id: NodeIDs.ObjectType(typeHandle),
     label: typeHandle.definition.name,
-    group: 'objecttype',
+    group: "objecttype",
     color: COLORS.type,
     title: `definition ${typeHandle.definition.name}`,
     sourceInfo: {
@@ -397,15 +399,15 @@ function generateExpressionGraph(
   parentNodeID: string,
   typeHandle: TypeHandle,
   typeSet: TypeSet,
-  getTuplesetPathColor: () => string
+  getTuplesetPathColor: () => string,
 ) {
   const nodes: LocalNode[] = [];
   const edges: LocalEdge[] = [];
 
   switch (expression.kind) {
-    case 'relationref': {
+    case "relationref": {
       const found = typeHandle.lookupRelationOrPermission(
-        expression.relationName
+        expression.relationName,
       );
       if (found) {
         edges.push({
@@ -425,9 +427,9 @@ function generateExpressionGraph(
       break;
     }
 
-    case 'arrow': {
+    case "arrow": {
       const resolved = typeHandle.lookupRelation(
-        expression.sourceRelation.relationName
+        expression.sourceRelation.relationName,
       );
       if (resolved !== undefined) {
         const arrowColor = getTuplesetPathColor();
@@ -455,7 +457,7 @@ function generateExpressionGraph(
           }
 
           const resolvdRelOrPerm = resolvedType.lookupRelationOrPermission(
-            expression.targetRelationOrPermission
+            expression.targetRelationOrPermission,
           );
           if (resolvdRelOrPerm === undefined) {
             return;
@@ -482,25 +484,25 @@ function generateExpressionGraph(
       break;
     }
 
-    case 'binary': {
+    case "binary": {
       const unionedRelations = collectUnionedRelations(
         expression,
         parentNodeID,
         typeHandle,
         typeSet,
-        getTuplesetPathColor
+        getTuplesetPathColor,
       );
       if (unionedRelations) {
         const { relations, nodes: urNodes, edges: urEdges } = unionedRelations;
         relations.forEach((expr: ParsedRelationRefExpression) => {
           const referenced = typeHandle.lookupRelationOrPermission(
-            expr.relationName
+            expr.relationName,
           );
           if (referenced) {
             edges.push({
               id: EdgeIDs.ExpressionChild(
                 NodeIDs.RelationOrPermission(referenced),
-                parentNodeID
+                parentNodeID,
               ),
               from: parentNodeID,
               to: NodeIDs.RelationOrPermission(referenced),
@@ -520,9 +522,9 @@ function generateExpressionGraph(
         nodes.push({
           id: NodeIDs.Binary(expression),
           label: REWRITE_OPS[expression.operator],
-          group: 'expr',
+          group: "expr",
           color: {
-            background: 'transparent',
+            background: "transparent",
             border: REWRITE_COLORS[expression.operator],
           },
           sourceInfo: {
@@ -547,14 +549,14 @@ function generateExpressionGraph(
           NodeIDs.Binary(expression),
           typeHandle,
           typeSet,
-          getTuplesetPathColor
+          getTuplesetPathColor,
         );
         const { nodes: rNodes, edges: rEdges } = generateExpressionGraph(
           expression.right,
           NodeIDs.Binary(expression),
           typeHandle,
           typeSet,
-          getTuplesetPathColor
+          getTuplesetPathColor,
         );
         nodes.push(...lNodes);
         nodes.push(...rNodes);
@@ -577,7 +579,7 @@ function collectUnionedRelations(
   parentNodeID: string,
   typeHandle: TypeHandle,
   typeSet: TypeSet,
-  getTuplesetPathColor: () => string
+  getTuplesetPathColor: () => string,
 ):
   | {
       relations: ParsedRelationRefExpression[];
@@ -586,8 +588,8 @@ function collectUnionedRelations(
     }
   | undefined {
   switch (expr.kind) {
-    case 'binary': {
-      if (expr.operator !== 'union') {
+    case "binary": {
+      if (expr.operator !== "union") {
         return undefined;
       }
 
@@ -596,7 +598,7 @@ function collectUnionedRelations(
         parentNodeID,
         typeHandle,
         typeSet,
-        getTuplesetPathColor
+        getTuplesetPathColor,
       );
       if (left === undefined) {
         return undefined;
@@ -607,7 +609,7 @@ function collectUnionedRelations(
         parentNodeID,
         typeHandle,
         typeSet,
-        getTuplesetPathColor
+        getTuplesetPathColor,
       );
       if (right === undefined) {
         return undefined;
@@ -619,17 +621,17 @@ function collectUnionedRelations(
         edges: [...left.edges, ...right.edges],
       };
     }
-    
-    case 'namedarrow':
-        // fallthrough
 
-    case 'arrow': {
+    case "namedarrow":
+    // fallthrough
+
+    case "arrow": {
       const { nodes, edges } = generateExpressionGraph(
         expr,
         parentNodeID,
         typeHandle,
         typeSet,
-        getTuplesetPathColor
+        getTuplesetPathColor,
       );
       return {
         relations: [],
@@ -638,7 +640,7 @@ function collectUnionedRelations(
       };
     }
 
-    case 'nil':
+    case "nil":
       return undefined;
 
     default:

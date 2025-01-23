@@ -14,15 +14,15 @@
 // ***********************************************************
 
 // Import commands.js using ES2015 syntax:
-import './commands';
+import "./commands";
 
 // Handle uncaught exceptions
-Cypress.on('uncaught:exception', (err) => {
+Cypress.on("uncaught:exception", (err) => {
   // TODO: Ignore transient network errors until either browser caching
   // or js fixtures are supported
   // https://github.com/cypress-io/cypress/issues/18335
   // https://github.com/cypress-io/cypress/issues/1271
-  if (err.message.includes('Uncaught NetworkError')) {
+  if (err.message.includes("Uncaught NetworkError")) {
     return false;
   }
 });

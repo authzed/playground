@@ -1,22 +1,30 @@
-import TabLabel from '../../playground-ui/TabLabel';
-import { RelationshipFound } from '../../spicedb-common/parsing';
-import { DeveloperError, DeveloperWarning } from '../../spicedb-common/protodefs/developer/v1/developer';
-import Paper from '@material-ui/core/Paper';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
-import clsx from 'clsx';
-import 'react-reflex/styles.css';
-import { Link } from 'react-router-dom';
-import { DataStorePaths } from '../../services/datastore';
-import { TourElementClass } from '../GuidedTour';
-import { PanelProps, PanelSummaryProps, useSummaryStyles } from './base/common';
-import { DeveloperErrorDisplay, DeveloperSourceDisplay, DeveloperWarningDisplay, DeveloperWarningSourceDisplay } from './errordisplays';
-import { PlaygroundPanelLocation } from './panels';
+import TabLabel from "../../playground-ui/TabLabel";
+import { RelationshipFound } from "../../spicedb-common/parsing";
+import {
+  DeveloperError,
+  DeveloperWarning,
+} from "../../spicedb-common/protodefs/developer/v1/developer";
+import Paper from "@material-ui/core/Paper";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
+import clsx from "clsx";
+import "react-reflex/styles.css";
+import { Link } from "react-router-dom";
+import { DataStorePaths } from "../../services/datastore";
+import { TourElementClass } from "../GuidedTour";
+import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
+import {
+  DeveloperErrorDisplay,
+  DeveloperSourceDisplay,
+  DeveloperWarningDisplay,
+  DeveloperWarningSourceDisplay,
+} from "./errordisplays";
+import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     apiOutput: {
-      fontFamily: 'Roboto Mono, monospace',
+      fontFamily: "Roboto Mono, monospace",
       padding: theme.spacing(2),
     },
     link: {
@@ -25,9 +33,9 @@ const useStyles = makeStyles((theme: Theme) =>
     errorContainer: {
       padding: theme.spacing(1),
       marginBottom: theme.spacing(1),
-      display: 'grid',
-      gridTemplateRows: '1fr auto',
-      width: '100%',
+      display: "grid",
+      gridTemplateRows: "1fr auto",
+      width: "100%",
       columnGap: theme.spacing(2),
     },
     validationErrorContext: {
@@ -38,14 +46,14 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1),
     },
     helpButton: {},
-  })
+  }),
 );
 
 /**
  * ProblemsSummary displays a summary of the problems found.
  */
 export function ProblemsSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>
+  props: PanelSummaryProps<PlaygroundPanelLocation>,
 ) {
   const classes = useSummaryStyles();
   const errorCount = props.services.problemService.errorCount;
@@ -56,7 +64,9 @@ export function ProblemsSummary(
       <TabLabel
         icon={
           <ErrorOutlineIcon
-            htmlColor={props.services.problemService.errorCount > 0 ? '' : 'grey'}
+            htmlColor={
+              props.services.problemService.errorCount > 0 ? "" : "grey"
+            }
           />
         }
         title="Problems"
@@ -89,16 +99,15 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
       )}
       {props.services.problemService.invalidRelationships.map(
         (invalid: RelationshipFound, index: number) => {
-          if (!('errorMessage' in invalid.parsed)) {
-            return <div/>;
+          if (!("errorMessage" in invalid.parsed)) {
+            return <div />;
           }
 
           return (
             <Paper className={classes.errorContainer} key={`ir${index}`}>
               <div>
                 <div className={classes.validationErrorContext}>
-                  In{' '}
-                  {/* @ts-expect-error RRv5 TS definitions are jank */}
+                  In {/* @ts-expect-error RRv5 TS definitions are jank */}
                   <Link
                     className={classes.link}
                     to={DataStorePaths.Relationships()}
@@ -108,13 +117,13 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
                   :
                 </div>
                 <div className={classes.tupleError}>
-                  Invalid relationship <code>{invalid.text}</code> on line{' '}
+                  Invalid relationship <code>{invalid.text}</code> on line{" "}
                   {invalid.lineNumber + 1}: {invalid.parsed.errorMessage}
                 </div>
               </div>
             </Paper>
           );
-        }
+        },
       )}
       {props.services.problemService.requestErrors.map(
         (de: DeveloperError, index: number) => {
@@ -126,7 +135,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
               </div>
             </Paper>
           );
-        }
+        },
       )}
       {props.services.problemService.warnings.map(
         (dw: DeveloperWarning, index: number) => {
@@ -138,7 +147,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
               </div>
             </Paper>
           );
-        }
+        },
       )}
     </div>
   );

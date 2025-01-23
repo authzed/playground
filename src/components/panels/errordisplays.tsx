@@ -2,12 +2,12 @@ import {
   DeveloperError,
   DeveloperError_Source,
   DeveloperWarning,
-} from '../../spicedb-common/protodefs/developer/v1/developer';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
-import Alert from '@material-ui/lab/Alert';
-import 'react-reflex/styles.css';
-import { Link } from 'react-router-dom';
-import { DataStoreItemKind, DataStorePaths } from '../../services/datastore';
+} from "../../spicedb-common/protodefs/developer/v1/developer";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import Alert from "@material-ui/lab/Alert";
+import "react-reflex/styles.css";
+import { Link } from "react-router-dom";
+import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
 
 export const ERROR_SOURCE_TO_ITEM = {
   [DeveloperError_Source.SCHEMA]: DataStoreItemKind.SCHEMA,
@@ -28,26 +28,26 @@ const useErrorDisplayStyles = makeStyles((theme: Theme) =>
     },
     foundViaList: {
       margin: 0,
-      fontFamily: 'Roboto Mono, monospace',
-      listStyleType: 'none',
-      '& li::after': {
+      fontFamily: "Roboto Mono, monospace",
+      listStyleType: "none",
+      "& li::after": {
         content: '" →"',
       },
-      '& li:last-child::after': {
+      "& li:last-child::after": {
         content: '""',
       },
     },
     editorContainer: {
-      display: 'grid',
-      alignItems: 'center',
-      gridTemplateColumns: 'auto 1fr',
+      display: "grid",
+      alignItems: "center",
+      gridTemplateColumns: "auto 1fr",
     },
     dot: {
-      display: 'inline-block',
+      display: "inline-block",
       marginRight: theme.spacing(1),
-      borderRadius: '50%',
-      width: '8px',
-      height: '8px',
+      borderRadius: "50%",
+      width: "8px",
+      height: "8px",
     },
     progress: {
       color: theme.palette.text.primary,
@@ -61,7 +61,7 @@ const useErrorDisplayStyles = makeStyles((theme: Theme) =>
     warning: {
       color: theme.palette.warning.main,
     },
-  })
+  }),
 );
 
 export function DeveloperErrorDisplay(props: { error: DeveloperError }) {
@@ -109,23 +109,26 @@ const useSourceDisplayStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1),
       backgroundColor: theme.palette.background.default,
     },
-  })
+  }),
 );
 
-export function DeveloperWarningSourceDisplay({ warning }: {warning: DeveloperWarning}) {
+export function DeveloperWarningSourceDisplay({
+  warning,
+}: {
+  warning: DeveloperWarning;
+}) {
   const classes = useSourceDisplayStyles();
 
   return (
-      <div className={classes.validationErrorContext}>
-          In{' '}
-      {/* @ts-expect-error RRv5 types are jank */}
+    <div className={classes.validationErrorContext}>
+      In {/* @ts-expect-error RRv5 types are jank */}
       <Link className={classes.link} to={DataStorePaths.Schema()}>
-      Schema
+        Schema
       </Link>
       {/* NOTE: this is a guess; I think this was an unintentional omission. */}
-          : {warning.message}
-      </div>
-  )
+      : {warning.message}
+    </div>
+  );
 }
 
 export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
@@ -137,8 +140,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
     <div>
       {ve.source === DeveloperError_Source.SCHEMA && (
         <div className={classes.validationErrorContext}>
-          In{' '}
-          {/* @ts-expect-error RRv5 types are jank */}
+          In {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Schema()}>
             Schema
           </Link>
@@ -147,8 +149,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.ASSERTION && (
         <div className={classes.validationErrorContext}>
-          In{' '}
-          {/* @ts-expect-error RRv5 types are jank */}
+          In {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Assertions()}>
             Assertions
           </Link>
@@ -157,8 +158,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.RELATIONSHIP && (
         <div className={classes.validationErrorContext}>
-          In{' '}
-          {/* @ts-expect-error RRv5 types are jank */}
+          In {/* @ts-expect-error RRv5 types are jank */}
           <Link className={classes.link} to={DataStorePaths.Relationships()}>
             Test Data
           </Link>
@@ -167,8 +167,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className={classes.validationErrorContext}>
-          In{' '}
-          {/* @ts-expect-error RRv5 types are jank */}
+          In {/* @ts-expect-error RRv5 types are jank */}
           <Link
             className={classes.link}
             to={DataStorePaths.ExpectedRelations()}

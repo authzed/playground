@@ -83,7 +83,7 @@ We use [yarn](https://yarnpkg.com/) to run common tasks in the project.
 
 ### Testing
 
-In order to build and test the project, a [modern version of node] and knowledge of  [React app architecture] are required.
+In order to build and test the project, a [modern version of node] and knowledge of [React app architecture] are required.
 
 [modern version of node]: https://nodejs.org/en/about/previous-releases
 [React app architecture]: https://react.dev/

@@ -1,7 +1,7 @@
-import { ParsedValidation } from '../spicedb-common/validationfileformat';
-import { useRef } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import yaml from 'yaml';
+import { ParsedValidation } from "../spicedb-common/validationfileformat";
+import { useRef } from "react";
+import { v4 as uuidv4 } from "uuid";
+import yaml from "yaml";
 
 // NOTE: Remember to set lineWidth to 0 for yaml.stringify. Important to prevent string folding.
 
@@ -10,10 +10,10 @@ import yaml from 'yaml';
  * URL path for a specific section stored in the datastore.
  */
 export const DataStorePaths = {
-  Schema: () => '/schema',
-  Relationships: () => '/relationships',
-  Assertions: () => '/assertions',
-  ExpectedRelations: () => '/expected',
+  Schema: () => "/schema",
+  Relationships: () => "/relationships",
+  Assertions: () => "/assertions",
+  ExpectedRelations: () => "/expected",
 };
 
 export enum DataStoreItemKind {
@@ -38,10 +38,10 @@ interface DataStorageData {
 }
 
 const EMPTY_STORE = {
-  editIndex: '',
+  editIndex: "",
   items: {
     [DataStorePaths.Schema()]: {
-      id: '(schema)',
+      id: "(schema)",
       kind: DataStoreItemKind.SCHEMA,
       pathname: DataStorePaths.Schema(),
       editableContents: `definition user {}
@@ -59,13 +59,13 @@ definition resource {
 `,
     },
     [DataStorePaths.ExpectedRelations()]: {
-      id: '(expected)',
+      id: "(expected)",
       kind: DataStoreItemKind.EXPECTED_RELATIONS,
       pathname: DataStorePaths.ExpectedRelations(),
       editableContents: ``,
     },
     [DataStorePaths.Relationships()]: {
-      id: '(relationships)',
+      id: "(relationships)",
       kind: DataStoreItemKind.RELATIONSHIPS,
       pathname: DataStorePaths.Relationships(),
       editableContents: `// Some example relationships
@@ -74,7 +74,7 @@ resource:someresource#writer@user:anotherguy
 resource:anotherresource#writer@user:somegal`,
     },
     [DataStorePaths.Assertions()]: {
-      id: '(asserts)',
+      id: "(asserts)",
       kind: DataStoreItemKind.ASSERTIONS,
       pathname: DataStorePaths.Assertions(),
       editableContents: `assertTrue:
@@ -160,7 +160,7 @@ export abstract class DataStore {
     const items = Object.values(deserialized.items);
     const found = items.filter((item: DataStoreItem) => item.kind === kind);
     if (found.length !== 1) {
-      throw Error('Found non-singleton');
+      throw Error("Found non-singleton");
     }
     return found[0];
   }
@@ -174,7 +174,7 @@ export abstract class DataStore {
    */
   public update(
     item: DataStoreItem,
-    newEditableContents: string
+    newEditableContents: string,
   ): DataStoreItem | undefined {
     const deserialized = this.getStored();
 
@@ -220,7 +220,7 @@ export abstract class DataStore {
 
     // Add the assertions data.
     store.items[DataStorePaths.Assertions()].editableContents =
-      assertionsYaml ?? '';
+      assertionsYaml ?? "";
 
     // Add the expected config.
     store.items[DataStorePaths.ExpectedRelations()].editableContents =
@@ -239,15 +239,15 @@ export abstract class DataStore {
       relationshipsYaml: p.relationships,
       assertionsYaml: yaml.stringify(
         p.assertions ?? { assertTrue: [], assertFalse: [] },
-        { lineWidth: 0 }
+        { lineWidth: 0 },
       ),
       verificationYaml: yaml.stringify(p.validation, { lineWidth: 0 }),
     });
   }
 }
 
-const LOCAL_STORAGE_DATASTORE_KEY_PREFIX = 'playgrounddata';
-const LOCAL_STORAGE_DATASTORE_VERSION = '0.21';
+const LOCAL_STORAGE_DATASTORE_KEY_PREFIX = "playgrounddata";
+const LOCAL_STORAGE_DATASTORE_VERSION = "0.21";
 const LOCAL_STORAGE_DATASTORE_KEY = `${LOCAL_STORAGE_DATASTORE_KEY_PREFIX}-${LOCAL_STORAGE_DATASTORE_VERSION}`;
 
 class LocalStorageDataStore extends DataStore {
@@ -256,7 +256,7 @@ class LocalStorageDataStore extends DataStore {
   getStored(): DataStorageData {
     try {
       const loaded = JSON.parse(
-        localStorage.getItem(LOCAL_STORAGE_DATASTORE_KEY) || 'null'
+        localStorage.getItem(LOCAL_STORAGE_DATASTORE_KEY) || "null",
       );
       if (loaded) {
         return loaded;

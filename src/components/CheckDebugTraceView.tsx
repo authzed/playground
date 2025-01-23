@@ -4,21 +4,21 @@ import {
   CheckDebugTrace,
   CheckDebugTrace_Permissionship,
   CheckDebugTrace_PermissionType,
-} from '../spicedb-common/protodefs/authzed/api/v1/debug';
+} from "../spicedb-common/protodefs/authzed/api/v1/debug";
 import {
   Struct,
   Value,
-} from '../spicedb-common/protodefs/google/protobuf/struct';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import ChevronRightIcon from '@material-ui/icons/ChevronRight';
-import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
-import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
-import HighlightOffIcon from '@material-ui/icons/HighlightOff';
-import TreeItem from '@material-ui/lab/TreeItem';
-import TreeView from '@material-ui/lab/TreeView';
-import clsx from 'clsx';
-import { LocalParseService } from '../services/localparse';
+} from "../spicedb-common/protodefs/google/protobuf/struct";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import ChevronRightIcon from "@material-ui/icons/ChevronRight";
+import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
+import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import HighlightOffIcon from "@material-ui/icons/HighlightOff";
+import TreeItem from "@material-ui/lab/TreeItem";
+import TreeView from "@material-ui/lab/TreeView";
+import clsx from "clsx";
+import { LocalParseService } from "../services/localparse";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -30,10 +30,10 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(0.5),
     },
     dispatchHeader: {
-      display: 'grid',
-      gridTemplateColumns: 'auto auto auto auto 1fr',
-      columnGap: '4px',
-      alignItems: 'center',
+      display: "grid",
+      gridTemplateColumns: "auto auto auto auto 1fr",
+      columnGap: "4px",
+      alignItems: "center",
     },
     success: {
       color: theme.palette.success.main,
@@ -42,23 +42,23 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: theme.spacing(2),
     },
     permission: {
-      color: '#1acc92',
+      color: "#1acc92",
     },
     relation: {
-      color: '#ffa887',
+      color: "#ffa887",
     },
     resourceType: {
-      color: '#ccc',
+      color: "#ccc",
     },
     caveat: {
-      color: '#ff4271',
+      color: "#ff4271",
     },
     subject: {
-      color: '#9676ff',
-      display: 'grid',
-      gridTemplateColumns: 'auto auto auto auto 1fr',
-      columnGap: '4px',
-      alignItems: 'center',
+      color: "#9676ff",
+      display: "grid",
+      gridTemplateColumns: "auto auto auto auto 1fr",
+      columnGap: "4px",
+      alignItems: "center",
     },
     missingRequiredContext: {
       color: theme.palette.getContrastText(theme.palette.info.dark),
@@ -68,7 +68,7 @@ const useStyles = makeStyles((theme: Theme) =>
       marginLeft: theme.spacing(3),
       marginBottom: theme.spacing(2),
     },
-  })
+  }),
 );
 
 const hasPermission = (t: CheckDebugTrace) => {
@@ -99,13 +99,13 @@ export function CheckDebugTraceView(props: {
       return;
     }
 
-    t.resource?.objectId.split(',').forEach((resourceID: string) => {
+    t.resource?.objectId.split(",").forEach((resourceID: string) => {
       defaultExpanded.push(
-        `${t.resource?.objectType}:${resourceID}#${t.permission}`
+        `${t.resource?.objectType}:${resourceID}#${t.permission}`,
       );
     });
 
-    if (t.resolution.oneofKind === 'subProblems') {
+    if (t.resolution.oneofKind === "subProblems") {
       t.resolution.subProblems.traces.forEach(appendExpanded);
     }
   };
@@ -139,13 +139,13 @@ function CheckDebugTraceItems(props: {
 
   return (
     <>
-      {props.trace.resource?.objectId.split(',').map((resourceID) => {
+      {props.trace.resource?.objectId.split(",").map((resourceID) => {
         const result = props.trace.result;
         const isMember = hasPermission(props.trace);
         const isNotMember = hasNotPermission(props.trace);
 
         const children =
-          props.trace.resolution.oneofKind === 'subProblems'
+          props.trace.resolution.oneofKind === "subProblems"
             ? props.trace.resolution.subProblems.traces.map(
                 (subTrace, index) => {
                   return (
@@ -155,7 +155,7 @@ function CheckDebugTraceItems(props: {
                       localParseService={props.localParseService}
                     />
                   );
-                }
+                },
               )
             : [];
 
@@ -183,7 +183,7 @@ function CheckDebugTraceItems(props: {
                     `#${props.trace.subject?.optionalRelation}`}
                 </div>
               }
-            />
+            />,
           );
         }
 
@@ -210,7 +210,7 @@ function CheckDebugTraceItems(props: {
                     CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
                     <HelpOutlineIcon
                       fontSize="small"
-                      style={{ color: '#8787ff' }}
+                      style={{ color: "#8787ff" }}
                     />
                   )}
                 <span>
@@ -256,7 +256,7 @@ function CaveatTreeItem(props: {
 
   return (
     <TreeItem
-      nodeId={props.nodeIDPrefix + ':' + props.evalInfo.caveatName}
+      nodeId={props.nodeIDPrefix + ":" + props.evalInfo.caveatName}
       label={
         <div className={classes.dispatchHeader}>
           {props.evalInfo.result === CaveatEvalInfo_Result.TRUE && (
@@ -267,7 +267,7 @@ function CaveatTreeItem(props: {
           )}
           {props.evalInfo.result ===
             CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
-            <HelpOutlineIcon fontSize="small" style={{ color: '#8787ff' }} />
+            <HelpOutlineIcon fontSize="small" style={{ color: "#8787ff" }} />
           )}
           <span>{props.evalInfo.caveatName}</span>
           <span className={classes.caveat}>caveat</span>
@@ -276,8 +276,8 @@ function CaveatTreeItem(props: {
     >
       {props.evalInfo.partialCaveatInfo?.missingRequiredContext && (
         <div className={classes.missingRequiredContext}>
-          Missing required caveat context fields:{' '}
-          {props.evalInfo.partialCaveatInfo.missingRequiredContext.join(', ')}
+          Missing required caveat context fields:{" "}
+          {props.evalInfo.partialCaveatInfo.missingRequiredContext.join(", ")}
         </div>
       )}
       {ContextTreeView(props.evalInfo.context)}
@@ -311,22 +311,22 @@ function ContextTreeView(context: Struct | undefined) {
 
 function ContextTreeValue(value: Value) {
   switch (value.kind.oneofKind) {
-    case 'nullValue':
+    case "nullValue":
       return [<code>null</code>, false];
 
-    case 'numberValue':
+    case "numberValue":
       return [<code>{value.kind.numberValue.toString()}</code>, false];
 
-    case 'stringValue':
+    case "stringValue":
       return [<code>{value.kind.stringValue}</code>, false];
 
-    case 'boolValue':
+    case "boolValue":
       return [<code>{value.kind.boolValue.toString()}</code>, false];
 
-    case 'structValue':
+    case "structValue":
       return [ContextTreeView(value.kind.structValue), true];
 
-    case 'listValue':
+    case "listValue":
       return [
         value.kind.listValue.values.map((v) => {
           return <TreeItem nodeId="">{ContextTreeValue(v)}</TreeItem>;

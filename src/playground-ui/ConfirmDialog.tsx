@@ -8,88 +8,89 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
 import React, { useState } from "react";
 
-export type ConfirmValue  = "undefined" | "load" | "replace" | "nevermind"
+export type ConfirmValue = "undefined" | "load" | "replace" | "nevermind";
 
 /**
  * ConfirmDialogButton is a button in the confirm dialog.
  */
 export interface ConfirmDialogButton {
-    /**
-     * title is the title of the button.
-     */
-    title: React.ReactNode
+  /**
+   * title is the title of the button.
+   */
+  title: React.ReactNode;
 
-    /**
-     * value is the value to given to the callback if the button is clicked.
-     */
-    value?: ConfirmValue
+  /**
+   * value is the value to given to the callback if the button is clicked.
+   */
+  value?: ConfirmValue;
 
-    /**
-     * color is the color of the button. Default is `default`.
-     */
-    color?: "default" | "primary" | "secondary"
+  /**
+   * color is the color of the button. Default is `default`.
+   */
+  color?: "default" | "primary" | "secondary";
 
-    /**
-     * variant is the variant of the button. Default is `text`.
-     */
-    variant?: "text" | "outlined" | "contained"
+  /**
+   * variant is the variant of the button. Default is `text`.
+   */
+  variant?: "text" | "outlined" | "contained";
 
-    /**
-     * isEnabled, if specified, is the function to run to check if the button should be enabled.
-     */
-    isEnabled?: (promptValue?: string) => boolean
+  /**
+   * isEnabled, if specified, is the function to run to check if the button should be enabled.
+   */
+  isEnabled?: (promptValue?: string) => boolean;
 }
 
-export type ConfirmCallback = (value: ConfirmValue, promptValue?: string) => void;
+export type ConfirmCallback = (
+  value: ConfirmValue,
+  promptValue?: string,
+) => void;
 
 /**
  * ConfirmDialogProps are the props for the confirm dialog.
  */
 export interface ConfirmDialogProps {
-    /**
-     * isOpen indicates whether the ConfirmDialog is currently open.
-     */
-    isOpen: boolean
+  /**
+   * isOpen indicates whether the ConfirmDialog is currently open.
+   */
+  isOpen: boolean;
 
-    /**
-     * handleComplete sets the state that is bound to `isOpen` to false and
-     * returns the value clicked. If the [X] is clicked, the `value` will be
-     * undefined.
-     */
-    handleComplete: ConfirmCallback
+  /**
+   * handleComplete sets the state that is bound to `isOpen` to false and
+   * returns the value clicked. If the [X] is clicked, the `value` will be
+   * undefined.
+   */
+  handleComplete: ConfirmCallback;
 
-    /**
-     * title is the title of the confirm.
-     */
-    title: React.ReactNode
+  /**
+   * title is the title of the confirm.
+   */
+  title: React.ReactNode;
 
-    /**
-     * content is the content of the confirm.
-     */
-    content: React.ReactNode
+  /**
+   * content is the content of the confirm.
+   */
+  content: React.ReactNode;
 
-    /**
-     * buttons are the buttons on the confirm dialog.
-     */
-    buttons: ConfirmDialogButton[]
+  /**
+   * buttons are the buttons on the confirm dialog.
+   */
+  buttons: ConfirmDialogButton[];
 
-
-    /**
-     * withPrompt, if specified, indicates a prompt should be displayed with
-     * the given string as the placeholder.
-     */
-    withPrompt?: string;
+  /**
+   * withPrompt, if specified, indicates a prompt should be displayed with
+   * the given string as the placeholder.
+   */
+  withPrompt?: string;
 }
 
-
 const useStyles = makeStyles((theme: Theme) =>
-    createStyles({
-        prompt: {
-            marginTop: theme.spacing(1),
-            width: '100%',
-        },
-    }));
-
+  createStyles({
+    prompt: {
+      marginTop: theme.spacing(1),
+      width: "100%",
+    },
+  }),
+);
 
 /**
  * ConfigDialog provides a simple confirm-style dialog.
@@ -100,43 +101,56 @@ const useStyles = makeStyles((theme: Theme) =>
  *                         buttons={[{"title": "Close", "value": undefined}]}/>
  */
 export function ConfirmDialog(props: ConfirmDialogProps) {
-    const [promptValue, setPromptValue] = useState('');
-    const classes = useStyles();
+  const [promptValue, setPromptValue] = useState("");
+  const classes = useStyles();
 
-    const handleComplete = (value: ConfirmValue | undefined) => {
-        if (value) {
-            props.handleComplete(value, promptValue);
-            setPromptValue('');
-        }
-    };
+  const handleComplete = (value: ConfirmValue | undefined) => {
+    if (value) {
+      props.handleComplete(value, promptValue);
+      setPromptValue("");
+    }
+  };
 
-    return <Dialog
-        open={props.isOpen}
-        onClose={() => handleComplete(undefined)}
-    >
-        <DialogTitle>{props.title}</DialogTitle>
-        <DialogContent>
-            <DialogContentText>
-                {props.content}
-                {props.withPrompt !== undefined &&
-                    <TextField placeholder={props.withPrompt}
-                        className={classes.prompt}
-                        variant="outlined"
-                        value={promptValue}
-                        onChange={(event: React.ChangeEvent<HTMLInputElement>) => setPromptValue(event.target.value)} />
-                }
-            </DialogContentText>
-        </DialogContent>
-        <DialogActions>
-            {props.buttons.map((button: ConfirmDialogButton, index: number) => {
-                return <Button key={index} variant={button.variant}
-                    onClick={() => handleComplete(button.value)}
-                    color={button.color}
-                    disabled={!!props.withPrompt && (!promptValue.length || (button.isEnabled && !button.isEnabled(promptValue))) && !!button.value}
-                    autoFocus={button.color === 'primary'}>
-                    {button.title}
-                </Button>;
-            })}
-        </DialogActions>
-    </Dialog>;
+  return (
+    <Dialog open={props.isOpen} onClose={() => handleComplete(undefined)}>
+      <DialogTitle>{props.title}</DialogTitle>
+      <DialogContent>
+        <DialogContentText>
+          {props.content}
+          {props.withPrompt !== undefined && (
+            <TextField
+              placeholder={props.withPrompt}
+              className={classes.prompt}
+              variant="outlined"
+              value={promptValue}
+              onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
+                setPromptValue(event.target.value)
+              }
+            />
+          )}
+        </DialogContentText>
+      </DialogContent>
+      <DialogActions>
+        {props.buttons.map((button: ConfirmDialogButton, index: number) => {
+          return (
+            <Button
+              key={index}
+              variant={button.variant}
+              onClick={() => handleComplete(button.value)}
+              color={button.color}
+              disabled={
+                !!props.withPrompt &&
+                (!promptValue.length ||
+                  (button.isEnabled && !button.isEnabled(promptValue))) &&
+                !!button.value
+              }
+              autoFocus={button.color === "primary"}
+            >
+              {button.title}
+            </Button>
+          );
+        })}
+      </DialogActions>
+    </Dialog>
+  );
 }

@@ -1,15 +1,18 @@
-import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodefs/developer/v1/developer';
-import { DeveloperService } from '../spicedb-common/services/developerservice';
-import { useAlert } from '../playground-ui/AlertProvider';
-import { useGoogleAnalytics } from '../playground-ui/GoogleAnalyticsHook';
-import { useTheme } from '@material-ui/core/styles';
-import { useState } from 'react';
-import 'react-reflex/styles.css';
-import { DataStore, DataStoreItemKind } from '../services/datastore';
+import {
+  DeveloperError,
+  DeveloperWarning,
+} from "../spicedb-common/protodefs/developer/v1/developer";
+import { DeveloperService } from "../spicedb-common/services/developerservice";
+import { useAlert } from "../playground-ui/AlertProvider";
+import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
+import { useTheme } from "@material-ui/core/styles";
+import { useState } from "react";
+import "react-reflex/styles.css";
+import { DataStore, DataStoreItemKind } from "../services/datastore";
 import {
   buildAssertionsYaml,
   buildValidationBlockYaml,
-} from './validationfileformat';
+} from "./validationfileformat";
 
 export enum ValidationStatus {
   NOT_RUN = 0,
@@ -35,7 +38,7 @@ export interface ValidationResult {
 
 export type ValidationCallback = (
   validated: boolean,
-  response: ValidationResult
+  response: ValidationResult,
 ) => boolean;
 
 /**
@@ -46,7 +49,7 @@ function runValidation(
   datastore: DataStore,
   developerService: DeveloperService,
   callback: ValidationCallback,
-  setValidationState: (state: ValidationState) => void
+  setValidationState: (state: ValidationState) => void,
 ) {
   setValidationState({
     status: ValidationStatus.RUNNING,
@@ -56,9 +59,9 @@ function runValidation(
 
   const schema =
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
-    '';
+    "";
   const relationshipsString = datastore.getSingletonByKind(
-    DataStoreItemKind.RELATIONSHIPS
+    DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
   const request = developerService.newRequest(schema, relationshipsString);
   if (request === undefined) {
@@ -98,7 +101,7 @@ function runValidation(
   let warnings: DeveloperWarning[] = [];
   request.schemaWarnings((result) => {
     warnings = result.warnings;
-  })
+  });
 
   const response = request.execute();
   if (response.internalError) {
@@ -140,7 +143,7 @@ export interface ValidationService {
 
 export function useValidationService(
   developerService: DeveloperService,
-  datastore: DataStore
+  datastore: DataStore,
 ): ValidationService {
   const theme = useTheme();
 
@@ -149,9 +152,9 @@ export function useValidationService(
   });
 
   const validationStatusColor = {
-    [ValidationStatus.NOT_RUN]: 'grey',
-    [ValidationStatus.CALL_ERROR]: 'grey',
-    [ValidationStatus.RUNNING]: 'white',
+    [ValidationStatus.NOT_RUN]: "grey",
+    [ValidationStatus.CALL_ERROR]: "grey",
+    [ValidationStatus.RUNNING]: "white",
     [ValidationStatus.VALIDATED]: theme.palette.success.main,
     [ValidationStatus.VALIDATION_ERROR]: theme.palette.error.main,
   }[validationState.status];
@@ -164,7 +167,7 @@ export function useValidationService(
       datastore,
       developerService,
       (validated: boolean, result: ValidationResult) => {
-        pushEvent('conduct-validation', {
+        pushEvent("conduct-validation", {
           success: validated,
         });
         return callback(validated, result);
@@ -173,12 +176,12 @@ export function useValidationService(
         setValidationState(state);
         if (state.runError) {
           showAlert({
-            title: 'Error running validation',
+            title: "Error running validation",
             content: state.runError,
-            buttonTitle: 'Okay',
+            buttonTitle: "Okay",
           });
         }
-      }
+      },
     );
   };
 

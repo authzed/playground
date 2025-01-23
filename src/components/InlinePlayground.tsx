@@ -1,35 +1,35 @@
-import TabLabel from '../playground-ui/TabLabel';
-import TenantGraph from '../spicedb-common/components/graph/TenantGraph';
-import { parseSchema } from '../spicedb-common/parsers/dsl/dsl';
-import { parseRelationships } from '../spicedb-common/parsing';
-import { useDeveloperService } from '../spicedb-common/services/developerservice';
-import AppBar from '@material-ui/core/AppBar';
-import Button from '@material-ui/core/Button';
+import TabLabel from "../playground-ui/TabLabel";
+import TenantGraph from "../spicedb-common/components/graph/TenantGraph";
+import { parseSchema } from "../spicedb-common/parsers/dsl/dsl";
+import { parseRelationships } from "../spicedb-common/parsing";
+import { useDeveloperService } from "../spicedb-common/services/developerservice";
+import AppBar from "@material-ui/core/AppBar";
+import Button from "@material-ui/core/Button";
 import {
   createStyles,
   darken,
   makeStyles,
   Theme,
-} from '@material-ui/core/styles';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import BubbleChartIcon from '@material-ui/icons/BubbleChart';
-import LaunchIcon from '@material-ui/icons/Launch';
-import clsx from 'clsx';
-import React, { useState } from 'react';
-import { useLiveCheckService } from '../services/check';
+} from "@material-ui/core/styles";
+import Tab from "@material-ui/core/Tab";
+import Tabs from "@material-ui/core/Tabs";
+import BubbleChartIcon from "@material-ui/icons/BubbleChart";
+import LaunchIcon from "@material-ui/icons/Launch";
+import clsx from "clsx";
+import React, { useState } from "react";
+import { useLiveCheckService } from "../services/check";
 import {
   DataStore,
   DataStoreItemKind,
   useReadonlyDatastore,
-} from '../services/datastore';
-import { useLocalParseService } from '../services/localparse';
-import { useProblemService } from '../services/problem';
-import { useValidationService } from '../services/validation';
-import { DatastoreRelationshipEditor } from './DatastoreRelationshipEditor';
-import { EditorDisplay } from './EditorDisplay';
-import { AT, ET, NS, VL } from './KindIcons';
-import { ShareLoader } from './ShareLoader';
+} from "../services/datastore";
+import { useLocalParseService } from "../services/localparse";
+import { useProblemService } from "../services/problem";
+import { useValidationService } from "../services/validation";
+import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
+import { EditorDisplay } from "./EditorDisplay";
+import { AT, ET, NS, VL } from "./KindIcons";
+import { ShareLoader } from "./ShareLoader";
 
 export function InlinePlayground() {
   const datastore = useReadonlyDatastore();
@@ -43,48 +43,48 @@ export function InlinePlayground() {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     tabBar: {
-      display: 'grid',
-      gridTemplateColumns: '1fr auto auto',
+      display: "grid",
+      gridTemplateColumns: "1fr auto auto",
       columnGap: theme.spacing(0.25),
     },
     buttonContainer: {
       padding: theme.spacing(1),
     },
     root: {
-      display: 'grid',
-      gridTemplateRows: 'auto 1fr',
-      height: '100vh',
+      display: "grid",
+      gridTemplateRows: "auto 1fr",
+      height: "100vh",
     },
     tabPanel: {
-      height: '100%',
-      '& > div': {
-        height: '100%',
+      height: "100%",
+      "& > div": {
+        height: "100%",
       },
-      '& > div > div': {
-        height: '100%',
+      "& > div > div": {
+        height: "100%",
       },
     },
     tabRoot: {
-      minWidth: '0px',
+      minWidth: "0px",
     },
     graphTab: {},
     tenantGraphContainer: {
-      width: '100%',
-      height: '98vh',
+      width: "100%",
+      height: "98vh",
       backgroundColor: theme.palette.background.default,
-      backgroundSize: '20px 20px',
+      backgroundSize: "20px 20px",
       backgroundImage: `
               linear-gradient(to right, ${darken(
                 theme.palette.background.default,
-                0.1
+                0.1,
               )} 1px, transparent 1px),
               linear-gradient(to bottom, ${darken(
                 theme.palette.background.default,
-                0.1
+                0.1,
               )} 1px, transparent 1px)
             `,
     },
-  })
+  }),
 );
 
 function InlinePlaygroundUI(props: { datastore: DataStore }) {
@@ -98,7 +98,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const problemService = useProblemService(
     localParseService,
     liveCheckService,
-    validationService
+    validationService,
   );
   const zedTerminalService = undefined; // not used
 
@@ -114,23 +114,23 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] =
     useState(true);
   const [currentTabName, setCurrentTabName] = useState(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id
+    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
   );
 
   const handleChangeTab = (
     _event: React.ChangeEvent<object>,
-    selectedTabName: string
+    selectedTabName: string,
   ) => {
     setCurrentTabName(selectedTabName);
   };
 
   const currentItem = datastore.getById(currentTabName);
   const parsedSchema = parseSchema(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!
+    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!,
   );
   const relationships = parseRelationships(
     datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
-      .editableContents!
+      .editableContents!,
   );
   const [resizeIndex, setResizeIndex] = useState(0);
 
@@ -140,9 +140,9 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
       setResizeIndex(resizeIndex + 1);
     };
 
-    window.addEventListener('resize', handler);
+    window.addEventListener("resize", handler);
     return () => {
-      window.removeEventListener('resize', handler);
+      window.removeEventListener("resize", handler);
     };
   }, [resizeIndex, setResizeIndex]);
 
@@ -173,7 +173,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
           <Tab
             classes={{ root: clsx(classes.tabRoot, classes.graphTab) }}
-            value={'$graph'}
+            value={"$graph"}
             label={<TabLabel icon={<BubbleChartIcon />} title="Graph" />}
           />
           <Tab
@@ -196,7 +196,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           <Button
             variant="contained"
             color="primary"
-            href={window.location.toString().replace('/i/', '/s/')}
+            href={window.location.toString().replace("/i/", "/s/")}
             target="_blank"
             startIcon={<LaunchIcon />}
           >
@@ -205,7 +205,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         </div>
       </AppBar>
 
-      {currentTabName === '$graph' && (
+      {currentTabName === "$graph" && (
         <div className={classes.tenantGraphContainer}>
           <TenantGraph schema={parsedSchema} relationships={relationships} />
         </div>

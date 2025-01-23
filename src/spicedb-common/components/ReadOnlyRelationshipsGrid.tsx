@@ -21,7 +21,7 @@ const useStyles = makeStyles((theme: Theme) =>
       fontWeight: "bold",
       width: "16%",
     },
-  })
+  }),
 );
 
 export function ReadOnlyRelationshipsGrid(props: {

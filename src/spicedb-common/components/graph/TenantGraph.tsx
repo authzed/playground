@@ -1,9 +1,9 @@
-import VisNetworkGraph from '../../../playground-ui/VisNetworkGraph';
-import { ParsedSchema } from '../../parsers/dsl/dsl';
-import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import useMediaQuery from '@material-ui/core/useMediaQuery';
-import { TextRange } from '../../parsers/dsl/dsl';
+import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
+import { ParsedSchema } from "../../parsers/dsl/dsl";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import { TextRange } from "../../parsers/dsl/dsl";
 import {
   ActiveInfo,
   findActive,
@@ -11,7 +11,7 @@ import {
   LocalEdge,
   LocalNode,
   RELATIONSHIP_TABLE_CLASS_NAME,
-} from './builder';
+} from "./builder";
 
 export interface TenantGraphProps {
   /**
@@ -44,70 +44,70 @@ interface StyleProps {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     graph: {
-      '& .vis-tooltip': {
+      "& .vis-tooltip": {
         backgroundColor: theme.palette.background.paper,
         color: theme.palette.text.primary,
       },
       [`& .${RELATIONSHIP_TABLE_CLASS_NAME}`]: {
-        borderCollapse: 'collapse',
-        '& td': {
+        borderCollapse: "collapse",
+        "& td": {
           padding: 0,
           margin: 0,
           color: (props: StyleProps) =>
             props.prefersDarkMode
               ? theme.palette.grey[500]
               : theme.palette.grey[700],
-          fontSize: '85%',
-          '&:nth-child(1)': {
+          fontSize: "85%",
+          "&:nth-child(1)": {
             color: (props: StyleProps) =>
-              props.prefersDarkMode ? '#8787ff' : '#4242ff',
+              props.prefersDarkMode ? "#8787ff" : "#4242ff",
           },
-          '&:nth-child(3)': {
+          "&:nth-child(3)": {
             color: theme.palette.text.primary,
-            fontSize: '95%',
-            fontWeight: 'bold',
+            fontSize: "95%",
+            fontWeight: "bold",
           },
-          '&:nth-child(5)': {
+          "&:nth-child(5)": {
             color: (props: StyleProps) =>
-              props.prefersDarkMode ? '#ffa887' : '#883425',
+              props.prefersDarkMode ? "#ffa887" : "#883425",
           },
-          '&:nth-child(7)': {
+          "&:nth-child(7)": {
             color: (props: StyleProps) =>
-              props.prefersDarkMode ? '#8787ff' : '#4242ff',
+              props.prefersDarkMode ? "#8787ff" : "#4242ff",
           },
-          '&:nth-child(9)': {
+          "&:nth-child(9)": {
             color: theme.palette.text.primary,
-            fontSize: '95%',
-            fontWeight: 'bold',
+            fontSize: "95%",
+            fontWeight: "bold",
           },
-          '&:nth-child(11)': {
+          "&:nth-child(11)": {
             color: theme.palette.text.secondary,
-            fontSize: '95%',
+            fontSize: "95%",
           },
-          '&.target-permission': {
+          "&.target-permission": {
             color: (props: StyleProps) =>
-              props.prefersDarkMode ? '#1acc92' : '#1acc92',
-            fontSize: '95%',
+              props.prefersDarkMode ? "#1acc92" : "#1acc92",
+            fontSize: "95%",
           },
-          '&.target-relation': {
+          "&.target-relation": {
             color: (props: StyleProps) =>
-              props.prefersDarkMode ? '#ffa887' : '#883425',
-            fontSize: '95%',
+              props.prefersDarkMode ? "#ffa887" : "#883425",
+            fontSize: "95%",
           },
         },
       },
     },
     graphContainer: {
-      width: '100%',
-      height: '100%',
-      position: 'relative',
+      width: "100%",
+      height: "100%",
+      position: "relative",
     },
     toggle: {
-      position: 'absolute',
+      position: "absolute",
       bottom: theme.spacing(1),
       right: theme.spacing(1),
     },
-  })
+  }),
 );
 
 /**
@@ -140,7 +140,7 @@ export default function TenantGraph(props: TenantGraphProps) {
     edges: findActive<LocalEdge>(edges, props.active) ?? [],
   };
 
-  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
+  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const classes = useStyles({ prefersDarkMode });
 
   return (

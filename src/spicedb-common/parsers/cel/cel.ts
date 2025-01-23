@@ -1,4 +1,4 @@
-import Parsimmon, { Parser } from 'parsimmon';
+import Parsimmon, { Parser } from "parsimmon";
 
 const regex = Parsimmon.regex;
 const string = Parsimmon.string;
@@ -7,7 +7,7 @@ const optWhitespace = Parsimmon.optWhitespace;
 
 const singleLineComment = regex(/\/\/.*/).then(optWhitespace.atMost(1));
 const multiLineComment = regex(/\/\*((((?!\*\/).)|\r|\n)*)\*\//).then(
-  optWhitespace.atMost(1)
+  optWhitespace.atMost(1),
 );
 
 const comment = singleLineComment.or(multiLineComment);
@@ -18,68 +18,68 @@ const lexeme = function (p: Parser<string>) {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const reserved = [
-  'in',
-  'as',
-  'break',
-  'const',
-  'continue',
-  'else',
-  'for',
-  'function',
-  'if',
-  'import',
-  'let',
-  'loop',
-  'package',
-  'namespace',
-  'return',
-  'var',
-  'void',
-  'while',
+  "in",
+  "as",
+  "break",
+  "const",
+  "continue",
+  "else",
+  "for",
+  "function",
+  "if",
+  "import",
+  "let",
+  "loop",
+  "package",
+  "namespace",
+  "return",
+  "var",
+  "void",
+  "while",
 ];
 
 const identifier = lexeme(regex(/[a-zA-Z_][0-9a-zA-Z_+]*/));
 
-const questionMark = lexeme(string('?'));
-const colon = lexeme(string(':'));
-const orToken = lexeme(string('||'));
-const andToken = lexeme(string('&&'));
-const bang = lexeme(string('!'));
-const dot = lexeme(string('.'));
-const dash = lexeme(string('-'));
-const lbracket = lexeme(string('['));
-const rbracket = lexeme(string(']'));
-const lbrace = lexeme(string('{'));
-const rbrace = lexeme(string('}'));
-const lparen = lexeme(string('('));
-const rparen = lexeme(string(')'));
-const comma = lexeme(string(','));
+const questionMark = lexeme(string("?"));
+const colon = lexeme(string(":"));
+const orToken = lexeme(string("||"));
+const andToken = lexeme(string("&&"));
+const bang = lexeme(string("!"));
+const dot = lexeme(string("."));
+const dash = lexeme(string("-"));
+const lbracket = lexeme(string("["));
+const rbracket = lexeme(string("]"));
+const lbrace = lexeme(string("{"));
+const rbrace = lexeme(string("}"));
+const lparen = lexeme(string("("));
+const rparen = lexeme(string(")"));
+const comma = lexeme(string(","));
 
 // Based on: https://github.com/google/cel-spec/blob/master/doc/langdef.md#syntax
 
 const numberLiteral = lexeme(regex(/[+-]?([0-9]*[.])?[0-9]+(u?)(e[0-9]+)?/));
-const boolLiteral = lexeme(string('true')).or(lexeme(string('false')));
-const nullLiteral = lexeme(string('null'));
+const boolLiteral = lexeme(string("true")).or(lexeme(string("false")));
+const nullLiteral = lexeme(string("null"));
 
 // STRING_LIT     ::= [rR]? ( "    ~( " | NEWLINE )*  "
 // | '    ~( ' | NEWLINE )*  '
 // | """  ~"""*              """
 // | '''  ~'''*              '''
 // )
-const regexPrefix = lexeme(string('r')).or(lexeme(string('R')));
+const regexPrefix = lexeme(string("r")).or(lexeme(string("R")));
 const singleQuotedString = lexeme(regex(/'((?:\\.|.)*?)'/));
 const doubleQuotedString = lexeme(regex(/"((?:\\.|.)*?)"/));
 const multilineString = lexeme(regex(/"""((((?!""").)|\r|\n)*)"""/)).or(
-  lexeme(regex(/'''((((?!''').)|\r|\n)*)'''/))
+  lexeme(regex(/'''((((?!''').)|\r|\n)*)'''/)),
 );
 
 const stringLiteral = seq(
   regexPrefix.atMost(1),
-  multilineString.or(singleQuotedString.or(doubleQuotedString))
+  multilineString.or(singleQuotedString.or(doubleQuotedString)),
 );
 
 // BYTES_LIT      ::= [bB] STRING_LIT
-const bytesPrefix = lexeme(string('b')).or(lexeme(string('B')));
+const bytesPrefix = lexeme(string("b")).or(lexeme(string("B")));
 const bytesLiteral = seq(bytesPrefix, stringLiteral);
 
 // LITERAL        ::= INT_LIT | UINT_LIT | FLOAT_LIT | STRING_LIT | BYTES_LIT | BOOL_LIT | NULL_LIT
@@ -98,7 +98,7 @@ const mapInits = seq(
   expression,
   colon,
   expression,
-  seq(comma, expression, colon, expression).atLeast(0)
+  seq(comma, expression, colon, expression).atLeast(0),
 );
 
 // FieldInits     = IDENT ":" Expr {"," IDENT ":" Expr} ;
@@ -106,7 +106,7 @@ const fieldInits = seq(
   identifier,
   colon,
   expression,
-  seq(comma, identifier, colon, expression).atLeast(0)
+  seq(comma, identifier, colon, expression).atLeast(0),
 );
 
 // Primary        = ["."] IDENT ["(" [ExprList] ")"]
@@ -124,8 +124,8 @@ const primary = literal
       Parsimmon.lazy(() => {
         return exprList;
       }),
-      rbracket
-    )
+      rbracket,
+    ),
   )
   .or(seq(lbrace, mapInits, rbrace))
   .or(identifier);
@@ -142,54 +142,54 @@ const member = seq(
       identifier,
       seq(lparen, exprList.atMost(1), rparen)
         .or(seq(lbrace, fieldInits, rbrace))
-        .atLeast(0)
+        .atLeast(0),
     )
       .or(seq(lbracket, expression, rbracket))
-      .atLeast(0)
-  )
+      .atLeast(0),
+  ),
 );
 
 // Unary          = Member | "!" {"!"} Member | "-" {"-"} Member
 const unary = seq(
-  member.or(bang.atLeast(1).then(member)).or(dash.atLeast(1).then(member))
+  member.or(bang.atLeast(1).then(member)).or(dash.atLeast(1).then(member)),
 );
 
 // Multiplication = [Multiplication ("*" | "/" | "%")] Unary ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const multiplicationOp = lexeme(string('*'))
-  .or(lexeme(string('/')))
-  .or(lexeme(string('%')));
+const multiplicationOp = lexeme(string("*"))
+  .or(lexeme(string("/")))
+  .or(lexeme(string("%")));
 const multiplication = seq(
   unary,
   seq(
     multiplicationOp,
     Parsimmon.lazy(() => {
       return multiplication;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 // Addition       = [Addition ("+" | "-")] Multiplication ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const additionOp = lexeme(string('+')).or(lexeme(string('-')));
+const additionOp = lexeme(string("+")).or(lexeme(string("-")));
 const addition = seq(
   multiplication,
   seq(
     additionOp,
     Parsimmon.lazy(() => {
       return addition;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 // Relop          = "<" | "<=" | ">=" | ">" | "==" | "!=" | "in" ;
-const relOp = lexeme(string('<'))
-  .or(lexeme(string('<=')))
-  .or(lexeme(string('>=')))
-  .or(lexeme(string('>')))
-  .or(lexeme(string('==')))
-  .or(lexeme(string('!=')))
-  .or(lexeme(string('in')));
+const relOp = lexeme(string("<"))
+  .or(lexeme(string("<=")))
+  .or(lexeme(string(">=")))
+  .or(lexeme(string(">")))
+  .or(lexeme(string("==")))
+  .or(lexeme(string("!=")))
+  .or(lexeme(string("in")));
 
 // Relation       = [Relation Relop] Addition ;
 // NOTE: reordered here to allow for parsing by Parsimmon
@@ -199,8 +199,8 @@ const relation = seq(
     relOp,
     Parsimmon.lazy(() => {
       return relation;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 // ConditionalAnd = [ConditionalAnd "&&"] Relation ;
@@ -211,8 +211,8 @@ const conditionalAnd = seq(
     andToken,
     Parsimmon.lazy(() => {
       return conditionalAnd;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 // ConditionalOr  = [ConditionalOr "||"] ConditionalAnd ;
@@ -223,8 +223,8 @@ const conditionalOr = seq(
     orToken,
     Parsimmon.lazy(() => {
       return conditionalOr;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 // Expr = ConditionalOr ["?" ConditionalOr ":" Expr] ;
@@ -235,8 +235,8 @@ export const celExpression = conditionalOr.then(
     colon,
     Parsimmon.lazy(() => {
       return celExpression;
-    })
-  ).atMost(1)
+    }),
+  ).atMost(1),
 );
 
 export const parseCELExpression = (value: string) => {
