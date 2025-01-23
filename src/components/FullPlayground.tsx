@@ -659,7 +659,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const validationState = validationService.state;
 
   const handleChangeTab = (
-    _event: React.ChangeEvent<HTMLElement>,
+    _event: React.ChangeEvent<object>,
     selectedTabValue: string
   ) => {
     const item = datastore.getById(selectedTabValue)!;

@@ -118,7 +118,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   );
 
   const handleChangeTab = (
-    _event: React.ChangeEvent<HTMLElement>,
+    _event: React.ChangeEvent<object>,
     selectedTabName: string
   ) => {
     setCurrentTabName(selectedTabName);

@@ -132,7 +132,7 @@ export function PanelDisplay<L extends string>(
   const currentTabName = coordinator.getActivePanel(props.location)?.id || '';
 
   const handleChangeTab = useCallback(
-    (_event: React.ChangeEvent<HTMLElement>, selectedPanelId: string) => {
+    (_event: React.ChangeEvent<object>, selectedPanelId: string) => {
       coordinator.setActivePanel(selectedPanelId, props.location);
     },
     [coordinator, props.location]
