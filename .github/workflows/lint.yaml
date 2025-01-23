@@ -1,0 +1,28 @@
+---
+name: "Run Linters and Typechecking"
+on:
+  push:
+    branches:
+      - "main"
+  pull_request:
+    branches:
+      - "*"
+jobs:
+  test:
+    name: "Run Linters and Typechecking"
+    runs-on: "ubuntu-latest"
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "authzed/action-spicedb@v1"
+        with:
+          version: "latest"
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: 22
+          cache-dependency-path: "yarn.lock"
+          cache: "yarn"
+      - uses: "bahmutov/npm-install@v1"
+      - name: "Run Eslint"
+        run: "yarn run lint"
+      - name: "Run Typescript type checking"
+        run: "yarn run tsc -b"
