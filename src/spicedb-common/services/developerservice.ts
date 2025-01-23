@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
-import { parseRelationships } from '../parsing';
-import { RelationTuple as Relationship } from '../protodefs/core/v1/core';
+import { useCallback, useEffect, useState } from "react";
+import { parseRelationships } from "../parsing";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
 import {
   CheckOperationParameters,
   CheckOperationsResult,
@@ -16,12 +16,12 @@ import {
   RunValidationResult,
   SchemaWarningsParameters,
   SchemaWarningsResult,
-} from '../protodefs/developer/v1/developer';
-import wasmConfig from '../../wasm-config.json';
+} from "../protodefs/developer/v1/developer";
+import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes
-const ENTRYPOINT_FUNCTION = 'runSpiceDBDeveloperRequest';
+const ENTRYPOINT_FUNCTION = "runSpiceDBDeveloperRequest";
 
 /**
  * DeveloperService is a helper service which invokes the developer package against a locally
@@ -39,7 +39,7 @@ export interface DeveloperService {
    */
   newRequest: (
     schema: string,
-    relationshipsString: string
+    relationshipsString: string,
   ) => DeveloperServiceRequest | undefined;
 }
 
@@ -48,10 +48,10 @@ export interface DeveloperService {
  */
 export type DeveloperServiceState =
   | {
-      status: 'initializing' | 'unsupported' | 'loaderror' | 'ready';
+      status: "initializing" | "unsupported" | "loaderror" | "ready";
     }
   | {
-      status: 'loading';
+      status: "loading";
       progress: number;
     };
 
@@ -67,35 +67,35 @@ type ResultExtractor = (result: OperationResult) => void;
 
 type OperationAndCallback =
   | {
-      operation: 'check';
+      operation: "check";
       parameters: {
         checkParameters: CheckOperationParameters;
       };
       callback: ResultExtractor;
     }
   | {
-      operation: 'runAssertions';
+      operation: "runAssertions";
       parameters: {
         assertionsParameters: RunAssertionsParameters;
       };
       callback: ResultExtractor;
     }
   | {
-      operation: 'runValidation';
+      operation: "runValidation";
       parameters: {
         validationParameters: RunValidationParameters;
       };
       callback: ResultExtractor;
     }
   | {
-      operation: 'formatSchema';
+      operation: "formatSchema";
       parameters: {
         formatSchemaParameters: FormatSchemaParameters;
       };
       callback: ResultExtractor;
     }
-    | {
-      operation: 'schemaWarnings';
+  | {
+      operation: "schemaWarnings";
       parameters: {
         schemaWarningsParameters: SchemaWarningsParameters;
       };
@@ -111,7 +111,10 @@ class DeveloperServiceRequest {
   private relationships: Relationship[] = [];
   private operations: OperationAndCallback[] = [];
 
-  constructor(private schema: string, relationshipsString: string) {
+  constructor(
+    private schema: string,
+    relationshipsString: string,
+  ) {
     this.relationships = parseRelationships(relationshipsString);
   }
 
@@ -120,7 +123,7 @@ class DeveloperServiceRequest {
    */
   public schemaWarnings(callback: DevServiceCallback<SchemaWarningsResult>) {
     this.operations.push({
-      operation: 'schemaWarnings',
+      operation: "schemaWarnings",
       parameters: {
         schemaWarningsParameters: {},
       },
@@ -130,13 +133,12 @@ class DeveloperServiceRequest {
     });
   }
 
-
   /**
    * formatSchema returns the request's schema formatted.
    */
   public formatSchema(callback: DevServiceCallback<FormatSchemaResult>) {
     this.operations.push({
-      operation: 'formatSchema',
+      operation: "formatSchema",
       parameters: {
         formatSchemaParameters: {},
       },
@@ -151,10 +153,10 @@ class DeveloperServiceRequest {
    */
   public check(
     parameters: CheckOperationParameters,
-    callback: DevServiceCallback<CheckOperationsResult>
+    callback: DevServiceCallback<CheckOperationsResult>,
   ) {
     this.operations.push({
-      operation: 'check',
+      operation: "check",
       parameters: {
         checkParameters: parameters,
       },
@@ -169,10 +171,10 @@ class DeveloperServiceRequest {
    */
   public runAssertions(
     yaml: string,
-    callback: DevServiceCallback<RunAssertionsResult>
+    callback: DevServiceCallback<RunAssertionsResult>,
   ) {
     this.operations.push({
-      operation: 'runAssertions',
+      operation: "runAssertions",
       parameters: {
         assertionsParameters: {
           assertionsYaml: yaml,
@@ -189,10 +191,10 @@ class DeveloperServiceRequest {
    */
   public runValidation(
     yaml: string,
-    callback: DevServiceCallback<RunValidationResult>
+    callback: DevServiceCallback<RunValidationResult>,
   ) {
     this.operations.push({
-      operation: 'runValidation',
+      operation: "runValidation",
       parameters: {
         validationParameters: {
           validationYaml: yaml,
@@ -216,12 +218,12 @@ class DeveloperServiceRequest {
       operations: this.operations.map(
         (opc: OperationAndCallback): Operation => {
           return opc.parameters;
-        }
+        },
       ),
     };
 
-    const encodedResponse: string = (window)[ENTRYPOINT_FUNCTION](
-      DeveloperRequest.toJsonString(request)
+    const encodedResponse: string = window[ENTRYPOINT_FUNCTION](
+      DeveloperRequest.toJsonString(request),
     );
 
     const response = DeveloperResponse.fromJsonString(encodedResponse, {
@@ -229,10 +231,10 @@ class DeveloperServiceRequest {
     });
     if (this.operations.length > 0 && response.operationsResults) {
       this.operations.forEach((osc, index) => {
-          const result = response.operationsResults?.results[index]
-          if (result) {
-              osc.callback(result);
-          }
+        const result = response.operationsResults?.results[index];
+        if (result) {
+          osc.callback(result);
+        }
       });
     }
     return response;
@@ -250,14 +252,14 @@ const wasmVersion: number | string = wasmConfig?.spicedb
  */
 export function useDeveloperService(): DeveloperService {
   const [state, setState] = useState<DeveloperServiceState>({
-    status: 'initializing',
+    status: "initializing",
   });
 
   const loadWebAssembly = useCallback(async () => {
-    console.log('Loading developer package');
+    console.log("Loading developer package");
 
     setState({
-      status: 'loading',
+      status: "loading",
       progress: 0,
     });
 
@@ -273,14 +275,14 @@ export function useDeveloperService(): DeveloperService {
     // Fetch the WASM file with progress tracking.
     const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
     const contentLength = +(
-      fetched.headers.get('Content-Length') ?? ESTIMATED_WASM_BINARY_SIZE
+      fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE
     );
 
     const reader = fetched.body?.getReader();
     if (!reader) {
-      console.warn('Failed to download developer package');
+      console.warn("Failed to download developer package");
       setState({
-        status: 'loaderror',
+        status: "loaderror",
       });
       return;
     }
@@ -294,7 +296,7 @@ export function useDeveloperService(): DeveloperService {
 
       totalDownloaded += value?.length ?? 0;
       setState({
-        status: 'loading',
+        status: "loading",
         progress: totalDownloaded / contentLength,
       });
     }
@@ -306,35 +308,35 @@ export function useDeveloperService(): DeveloperService {
     try {
       const result = await WebAssembly.instantiateStreaming(
         refetched,
-        go.importObject
+        go.importObject,
       );
       go.run(result.instance);
       setState({
-        status: 'ready',
+        status: "ready",
       });
     } catch (e) {
-      console.warn('Failed to load developer package:', e);
+      console.warn("Failed to load developer package:", e);
       setState({
-        status: 'loaderror',
+        status: "loaderror",
       });
     }
   }, [setState]);
 
   useEffect(() => {
-      const initialized = window[ENTRYPOINT_FUNCTION];
+    const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
-      case 'initializing':
+      case "initializing":
         if (initialized) {
           setState({
-            status: 'ready',
+            status: "ready",
           });
           return;
         }
 
         if (!WebAssembly || !window.Go) {
-          console.error('WebAssembly is not supported in your browser');
+          console.error("WebAssembly is not supported in your browser");
           setState({
-            status: 'unsupported',
+            status: "unsupported",
           });
           return;
         }
@@ -342,19 +344,19 @@ export function useDeveloperService(): DeveloperService {
         loadWebAssembly();
         break;
 
-      case 'ready':
+      case "ready":
         // Nothing to do.
         break;
 
-      case 'loading':
+      case "loading":
         // Working
         break;
 
-      case 'loaderror':
+      case "loaderror":
         // Nothing to do.
         break;
 
-      case 'unsupported':
+      case "unsupported":
         // Nothing to do.
         break;
     }

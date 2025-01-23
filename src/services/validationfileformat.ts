@@ -1,19 +1,19 @@
 import {
   AssertionData,
   ValidationData,
-} from '../spicedb-common/validationfileformat';
-import yaml from 'yaml';
-import { DataStore, DataStoreItemKind } from './datastore';
+} from "../spicedb-common/validationfileformat";
+import yaml from "yaml";
+import { DataStore, DataStoreItemKind } from "./datastore";
 
 /**
  * buildValidationYaml builds the YAML validation block.
  */
 export const buildValidationBlockYaml = (datastore: DataStore): string => {
   const expectedRelations = datastore.getSingletonByKind(
-    DataStoreItemKind.EXPECTED_RELATIONS
+    DataStoreItemKind.EXPECTED_RELATIONS,
   );
   const validationBlock = expectedRelations.editableContents;
-  return validationBlock || '{}';
+  return validationBlock || "{}";
 };
 
 /**
@@ -22,7 +22,7 @@ export const buildValidationBlockYaml = (datastore: DataStore): string => {
 export const buildAssertionsYaml = (datastore: DataStore): string => {
   const assertions = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS);
   const assertionsBlock = assertions.editableContents;
-  return assertionsBlock || '{}';
+  return assertionsBlock || "{}";
 };
 
 /**
@@ -30,15 +30,17 @@ export const buildAssertionsYaml = (datastore: DataStore): string => {
  * the datastore.
  */
 export const createValidationYAML = (datastore: DataStore): string => {
-  const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA)
-    .editableContents!;
-  const relationships = datastore.getSingletonByKind(
-    DataStoreItemKind.RELATIONSHIPS
+  const schema = datastore.getSingletonByKind(
+    DataStoreItemKind.SCHEMA,
   ).editableContents!;
-  const assertions = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS)
-    .editableContents!;
+  const relationships = datastore.getSingletonByKind(
+    DataStoreItemKind.RELATIONSHIPS,
+  ).editableContents!;
+  const assertions = datastore.getSingletonByKind(
+    DataStoreItemKind.ASSERTIONS,
+  ).editableContents!;
   const expectedRelations = datastore.getSingletonByKind(
-    DataStoreItemKind.EXPECTED_RELATIONS
+    DataStoreItemKind.EXPECTED_RELATIONS,
   ).editableContents!;
 
   const parsed = {
@@ -57,7 +59,7 @@ export const createValidationYAML = (datastore: DataStore): string => {
  */
 export const normalizeValidationYAML = (expectedRelations: string) => {
   if (!expectedRelations.trim()) {
-    return '';
+    return "";
   }
 
   return yaml.stringify(yaml.parse(expectedRelations) as ValidationData, {

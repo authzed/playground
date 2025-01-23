@@ -1,40 +1,40 @@
-import { DeveloperService } from '../spicedb-common/services/developerservice';
-import Button from '@material-ui/core/Button';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
-import { fade } from '@material-ui/core/styles/colorManipulator';
-import CheckCircleIcon from '@material-ui/icons/CheckCircle';
-import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
-import ErrorIcon from '@material-ui/icons/Error';
-import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
-import clsx from 'clsx';
-import 'react-reflex/styles.css';
-import { DataStore } from '../services/datastore';
-import { ValidationState, ValidationStatus } from '../services/validation';
-import { TourElementClass } from './GuidedTour';
+import { DeveloperService } from "../spicedb-common/services/developerservice";
+import Button from "@material-ui/core/Button";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import { fade } from "@material-ui/core/styles/colorManipulator";
+import CheckCircleIcon from "@material-ui/icons/CheckCircle";
+import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
+import ErrorIcon from "@material-ui/icons/Error";
+import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
+import clsx from "clsx";
+import "react-reflex/styles.css";
+import { DataStore } from "../services/datastore";
+import { ValidationState, ValidationStatus } from "../services/validation";
+import { TourElementClass } from "./GuidedTour";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     gcm: {
-      color: 'green',
-      display: 'inherit',
+      color: "green",
+      display: "inherit",
     },
     rem: {
-      color: 'red',
-      display: 'inherit',
+      color: "red",
+      display: "inherit",
     },
     gray: {
-      color: 'gray',
-      display: 'inherit',
+      color: "gray",
+      display: "inherit",
     },
     lastRun: {
-      display: 'grid',
-      gridTemplateColumns: 'auto 150px',
-      alignItems: 'center',
+      display: "grid",
+      gridTemplateColumns: "auto 150px",
+      alignItems: "center",
       columnGap: theme.spacing(1),
-      backgroundColor: 'rgba(255, 255, 255, 0.05)',
-      height: '100%',
-      padding: '4px',
-      paddingLeft: '8px',
+      backgroundColor: "rgba(255, 255, 255, 0.05)",
+      height: "100%",
+      padding: "4px",
+      paddingLeft: "8px",
     },
     validated: {
       backgroundColor: fade(theme.palette.success.light, 0.2),
@@ -43,12 +43,12 @@ const useStyles = makeStyles((theme: Theme) =>
       backgroundColor: fade(theme.palette.error.light, 0.2),
     },
     validationDisplay: {
-      display: 'grid',
-      gridTemplateColumns: 'auto auto',
-      alignItems: 'center',
+      display: "grid",
+      gridTemplateColumns: "auto auto",
+      alignItems: "center",
       columnGap: theme.spacing(1),
     },
-  })
+  }),
 );
 
 export function ValidateButton(props: {
@@ -85,22 +85,22 @@ export function ValidateButton(props: {
         />
         {upToDate &&
           props.validationState.status === ValidationStatus.VALIDATED &&
-          'Validated!'}
+          "Validated!"}
         {upToDate &&
           props.validationState.status === ValidationStatus.VALIDATION_ERROR &&
-          'Failed to Validate'}
+          "Failed to Validate"}
         {props.validationState.status === ValidationStatus.CALL_ERROR &&
-          'Dev service loading'}
+          "Dev service loading"}
         {props.validationState.status !== ValidationStatus.CALL_ERROR &&
           !upToDate &&
-          'Validation not run'}
+          "Validation not run"}
       </div>
       <Button
         variant="contained"
         startIcon={<PlayCircleFilledIcon />}
         className={TourElementClass.run}
         disabled={
-          props.developerService.state.status !== 'ready' ||
+          props.developerService.state.status !== "ready" ||
           props.validationState.status === ValidationStatus.RUNNING
         }
         onClick={props.conductValidation}

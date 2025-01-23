@@ -35,7 +35,7 @@ const CommentCellEditor = (props: {
   // From: https://github.com/mui/material-ui/issues/12779
   // Ensures that the autofocus jumps to the end of the input's value.
   const handleFocus = (
-    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
   ) => {
     const lengthOfInput = event.target.value.length;
     return event.target.setSelectionRange(lengthOfInput, lengthOfInput);
@@ -90,7 +90,7 @@ const CommentCellEditor = (props: {
 };
 
 export const CommentCellRenderer = (
-  props: MutableRefObject<FieldCellRendererProps>
+  props: MutableRefObject<FieldCellRendererProps>,
 ) => {
   return {
     isMatch: (cell: CustomCell): cell is CommentCell =>
@@ -107,7 +107,7 @@ export const CommentCellRenderer = (
         dataValue,
         rect.x + 10,
         rect.y + rect.height / 2 + 1,
-        rect.width
+        rect.width,
       );
       ctx.restore();
       return true;

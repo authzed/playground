@@ -1,18 +1,18 @@
-import TabPanel from '../../../playground-ui/TabPanel';
-import { Button, Tooltip, Typography } from '@material-ui/core';
-import AppBar from '@material-ui/core/AppBar';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import IconButton from '@material-ui/core/IconButton';
-import Tab from '@material-ui/core/Tab';
-import Tabs from '@material-ui/core/Tabs';
-import Toolbar from '@material-ui/core/Toolbar';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
-import CloseIcon from '@material-ui/icons/Close';
-import { useCallback, type ReactNode } from 'react';
-import { DataStore } from '../../../services/datastore';
-import { Services } from '../../../services/services';
-import { Panel, useSummaryStyles } from './common';
-import { LocationData, PanelsCoordinator } from './coordinator';
+import TabPanel from "../../../playground-ui/TabPanel";
+import { Button, Tooltip, Typography } from "@material-ui/core";
+import AppBar from "@material-ui/core/AppBar";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import IconButton from "@material-ui/core/IconButton";
+import Tab from "@material-ui/core/Tab";
+import Tabs from "@material-ui/core/Tabs";
+import Toolbar from "@material-ui/core/Toolbar";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import CloseIcon from "@material-ui/icons/Close";
+import { useCallback, type ReactNode } from "react";
+import { DataStore } from "../../../services/datastore";
+import { Services } from "../../../services/services";
+import { Panel, useSummaryStyles } from "./common";
+import { LocationData, PanelsCoordinator } from "./coordinator";
 
 export const SUMMARY_BAR_HEIGHT = 48; // Pixels
 
@@ -39,9 +39,7 @@ export function PanelSummaryBar<L extends string>(props: {
       <Toolbar
         className={classes.summaryBar}
         style={{
-          gridTemplateColumns: `${panels
-            .map(() => 'auto')
-            .join(' ')} 1fr auto`,
+          gridTemplateColumns: `${panels.map(() => "auto").join(" ")} 1fr auto`,
         }}
         variant="dense"
       >
@@ -75,20 +73,20 @@ export function PanelSummaryBar<L extends string>(props: {
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     validationToolBar: {
-      display: 'grid',
-      gridTemplateColumns: '1fr auto auto',
-      width: '100%',
+      display: "grid",
+      gridTemplateColumns: "1fr auto auto",
+      width: "100%",
       padding: 0,
       paddingRight: theme.spacing(1),
     },
     apiOutput: {
-      fontFamily: 'Roboto Mono, monospace',
+      fontFamily: "Roboto Mono, monospace",
       padding: theme.spacing(2),
     },
     tabContent: {
-      overflow: 'auto',
+      overflow: "auto",
       borderRadius: 0,
-      height: '100%',
+      height: "100%",
     },
     notRun: {
       color: theme.palette.grey[500],
@@ -106,9 +104,9 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     noPanels: {
       padding: theme.spacing(2),
-      textAlign: 'center',
+      textAlign: "center",
     },
-  })
+  }),
 );
 
 const TOOLBAR_HEIGHT = 48; // Pixels
@@ -124,18 +122,18 @@ export function PanelDisplay<L extends string>(
     services: Services;
   } & {
     dimensions?: { width: number; height: number };
-  }
+  },
 ) {
   const classes = useStyles();
   const coordinator = props.coordinator;
 
-  const currentTabName = coordinator.getActivePanel(props.location)?.id || '';
+  const currentTabName = coordinator.getActivePanel(props.location)?.id || "";
 
   const handleChangeTab = useCallback(
     (_event: React.ChangeEvent<object>, selectedPanelId: string) => {
       coordinator.setActivePanel(selectedPanelId, props.location);
     },
-    [coordinator, props.location]
+    [coordinator, props.location],
   );
 
   const panels = coordinator.panelsInLocation(props.location);
@@ -194,7 +192,7 @@ export function PanelDisplay<L extends string>(
                       onClick={() =>
                         coordinator.showPanel(
                           coordinator.getActivePanel(props.location)!,
-                          locData.location
+                          locData.location,
                         )
                       }
                     >
@@ -222,9 +220,9 @@ export function PanelDisplay<L extends string>(
         // it'll run hooks outside of the normal flow, which breaks things.
         const Content = panel.content;
         const height =
-          props.dimensions?.height ?? 0 >= 48
+          (props.dimensions?.height ?? 0 >= 48)
             ? (props.dimensions?.height ?? 0) - 48
-            : 'auto';
+            : "auto";
 
         return (
           <TabPanel
@@ -232,9 +230,9 @@ export function PanelDisplay<L extends string>(
             index={panel.id}
             value={currentTabName}
             style={{
-              overflow: 'auto',
-              height: height || 'auto',
-              position: 'relative',
+              overflow: "auto",
+              height: height || "auto",
+              position: "relative",
             }}
           >
             {currentTabName === panel.id && <Content {...contentProps} />}

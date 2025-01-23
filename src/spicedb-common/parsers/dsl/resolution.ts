@@ -10,7 +10,7 @@ import {
   ParsedRelationRefExpression,
   ParsedSchema,
   TypeRef,
-} from './dsl';
+} from "./dsl";
 
 /**
  * TypeRefResolution is the result of resolving a type reference.
@@ -45,7 +45,7 @@ export type ExpressionResolution = ParsedRelation | ParsedPermission;
  * ResolvedTypeReference is a type reference found in the schema, with resolution attempted.
  */
 export interface ResolvedTypeReference {
-  kind: 'type';
+  kind: "type";
   reference: TypeRef;
   referencedTypeAndRelation: TypeRefResolution | undefined;
 }
@@ -54,7 +54,7 @@ export interface ResolvedTypeReference {
  * ResolvedExprReference is a relation reference expression found in the schema, with resolution attempted.
  */
 export interface ResolvedExprReference {
-  kind: 'expression';
+  kind: "expression";
   reference: ParsedRelationRefExpression;
   resolvedRelationOrPermission: ExpressionResolution | undefined;
 }
@@ -80,12 +80,12 @@ export class Resolver {
     }
 
     this.schema.definitions.forEach((def: ObjectOrCaveatDefinition) => {
-      if (def.kind === 'objectDef') {
+      if (def.kind === "objectDef") {
         this.definitionsByName[def.name] = new ResolvedDefinition(def);
         return;
       }
 
-      if (def.kind === 'caveatDef') {
+      if (def.kind === "caveatDef") {
         this.caveatsByName[def.name] = new ResolvedCaveatDefinition(def);
         return;
       }
@@ -173,7 +173,7 @@ export class Resolver {
    */
   public resolveRelationOrPermission(
     current: ParsedRelationRefExpression,
-    def: ObjectOrCaveatDefinition
+    def: ObjectOrCaveatDefinition,
   ): ExpressionResolution | undefined {
     this.populate();
 
@@ -184,14 +184,14 @@ export class Resolver {
   private lookupAndResolveTypeReferences(): ResolvedTypeReference[] {
     this.populate();
     return this.schema.definitions.flatMap((def: ObjectOrCaveatDefinition) => {
-      if (def.kind !== 'objectDef') {
+      if (def.kind !== "objectDef") {
         return [];
       }
 
       return def.relations.flatMap((rel: ParsedRelation) => {
         return rel.allowedTypes.types.map((typeRef: TypeRef) => {
           return {
-            kind: 'type',
+            kind: "type",
             reference: typeRef,
             referencedTypeAndRelation: this.resolveTypeReference(typeRef),
           };
@@ -203,7 +203,7 @@ export class Resolver {
   private lookupAndResolveExprReferences(): ResolvedExprReference[] {
     this.populate();
     return this.schema.definitions.flatMap((def: ObjectOrCaveatDefinition) => {
-      if (def.kind !== 'objectDef') {
+      if (def.kind !== "objectDef") {
         return [];
       }
 
@@ -212,9 +212,9 @@ export class Resolver {
           perm.expr,
           (current: ParsedExpression) => {
             switch (current.kind) {
-              case 'relationref':
+              case "relationref":
                 return {
-                  kind: 'expression',
+                  kind: "expression",
                   reference: current,
                   resolvedRelationOrPermission:
                     this.resolveRelationOrPermission(current, def),
@@ -223,7 +223,7 @@ export class Resolver {
               default:
                 return undefined;
             }
-          }
+          },
         );
       });
     });
@@ -263,7 +263,7 @@ export class ResolvedDefinition {
       new Set<string>([
         ...Object.keys(this.relationsByName),
         ...Object.keys(this.permissionByName),
-      ])
+      ]),
     );
   }
 
@@ -300,7 +300,7 @@ export class ResolvedDefinition {
   }
 
   public lookupRelationOrPermission(
-    name: string
+    name: string,
   ): ParsedRelation | ParsedPermission | undefined {
     const rel = this.lookupRelation(name);
     if (rel) {

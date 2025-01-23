@@ -2,12 +2,12 @@ import {
   ParsedPermission,
   ParsedRelation,
   TypeRef,
-} from '../spicedb-common/parsers/dsl/dsl';
+} from "../spicedb-common/parsers/dsl/dsl";
 import {
   ResolvedCaveatDefinition,
   ResolvedDefinition,
-} from '../spicedb-common/parsers/dsl/resolution';
-import { LocalParseState } from './localparse';
+} from "../spicedb-common/parsers/dsl/resolution";
+import { LocalParseState } from "./localparse";
 
 const TYPE_AND_OBJECT_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)(#?)/g;
 const TYPE_OBJECT_AND_REL_REGEX =
@@ -17,7 +17,7 @@ const TYPE_OBJECT_AND_REL_REGEX =
  * getRelatableDefinitions returns the name of all definitions found in the local parse state.
  */
 export const getRelatableDefinitions = (
-  localParseState: LocalParseState
+  localParseState: LocalParseState,
 ): string[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {
@@ -46,14 +46,14 @@ export interface StorableRelation {
  */
 export const getStorableRelations = (
   onrs: string,
-  localParseState: LocalParseState
+  localParseState: LocalParseState,
 ): StorableRelation[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {
     return [];
   }
 
-  const found: {[key: string]: string}[] = [];
+  const found: { [key: string]: string }[] = [];
   while (true) {
     const matched = TYPE_AND_OBJECT_REGEX.exec(onrs);
     if (!matched || !matched?.groups) {
@@ -67,7 +67,7 @@ export const getStorableRelations = (
   }
 
   const info = found[found.length - 1]!;
-  const definition = resolver.lookupDefinition(info['typepath']);
+  const definition = resolver.lookupDefinition(info["typepath"]);
   if (definition === undefined) {
     return [];
   }
@@ -86,13 +86,13 @@ export const getStorableRelations = (
     .map((relOrPerm: ParsedPermission | ParsedRelation) => {
       return {
         name: relOrPerm.name,
-        isPermission: relOrPerm.kind === 'permission',
+        isPermission: relOrPerm.kind === "permission",
       };
     });
   if (rels.length === 0) {
     return [
       {
-        name: '...',
+        name: "...",
         isPermission: false,
       },
     ];
@@ -111,7 +111,7 @@ export interface SubjectDefinition {
  */
 export const getSubjectDefinitions = (
   objectString: string,
-  localParseState: LocalParseState
+  localParseState: LocalParseState,
 ): SubjectDefinition[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {
@@ -124,10 +124,10 @@ export const getSubjectDefinitions = (
   }
 
   // Resolve the type definition.
-  const definition = resolver.lookupDefinition(matched.groups['typepath']);
+  const definition = resolver.lookupDefinition(matched.groups["typepath"]);
   if (definition !== undefined) {
     // Resolve the relation.
-    const relation = definition.lookupRelation(matched.groups['rel']);
+    const relation = definition.lookupRelation(matched.groups["rel"]);
     if (relation !== undefined) {
       return resolver
         .listDefinitions()
@@ -164,7 +164,7 @@ export const getSubjectDefinitions = (
  * getCaveatDefinitions returns the name of all caveats found in the local parse state.
  */
 export const getCaveatDefinitions = (
-  localParseState: LocalParseState
+  localParseState: LocalParseState,
 ): string[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {

@@ -1,62 +1,62 @@
-import TabLabel from '../../playground-ui/TabLabel';
-import { mergeRelationshipsStringAndComments } from '../../spicedb-common/parsing';
-import { TerminalSection } from '../../spicedb-common/services/zedterminalservice';
-import { faTerminal } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import Input from '@material-ui/core/Input';
-import InputAdornment from '@material-ui/core/InputAdornment';
-import LinearProgress from '@material-ui/core/LinearProgress';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import { Alert, Color } from '@material-ui/lab';
-import Convert from 'ansi-to-html';
-import { useEffect, useMemo, useRef, useState } from 'react';
-import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from 'react';
-import 'react-reflex/styles.css';
-import useDeepCompareEffect from 'use-deep-compare-effect';
-import { DataStoreItemKind } from '../../services/datastore';
-import { PanelProps } from './base/common';
-import { PlaygroundPanelLocation } from './panels';
+import TabLabel from "../../playground-ui/TabLabel";
+import { mergeRelationshipsStringAndComments } from "../../spicedb-common/parsing";
+import { TerminalSection } from "../../spicedb-common/services/zedterminalservice";
+import { faTerminal } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import Input from "@material-ui/core/Input";
+import InputAdornment from "@material-ui/core/InputAdornment";
+import LinearProgress from "@material-ui/core/LinearProgress";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import { Alert, Color } from "@material-ui/lab";
+import Convert from "ansi-to-html";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from "react";
+import "react-reflex/styles.css";
+import useDeepCompareEffect from "use-deep-compare-effect";
+import { DataStoreItemKind } from "../../services/datastore";
+import { PanelProps } from "./base/common";
+import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     terminalOutputDisplay: {
-      fontFamily: 'Roboto Mono, monospace',
-      overflowY: 'auto',
+      fontFamily: "Roboto Mono, monospace",
+      overflowY: "auto",
     },
     terminalOutput: {
       padding: theme.spacing(1),
       margin: theme.spacing(1),
       backgroundColor: theme.palette.getContrastText(
-        theme.palette.text.primary
+        theme.palette.text.primary,
       ),
-      border: '1px solid transparent',
+      border: "1px solid transparent",
       borderColor: theme.palette.divider,
     },
     input: {
-      width: '100%',
-      fontFamily: 'Roboto Mono, monospace',
+      width: "100%",
+      fontFamily: "Roboto Mono, monospace",
     },
     root: {
       padding: theme.spacing(1),
-      position: 'absolute',
-      top: '0px',
-      left: '0px',
-      right: '0px',
-      bottom: '0px',
-      overflow: 'auto',
+      position: "absolute",
+      top: "0px",
+      left: "0px",
+      right: "0px",
+      bottom: "0px",
+      overflow: "auto",
     },
     loadBar: {
       padding: theme.spacing(1),
-      display: 'grid',
-      gridTemplateColumns: 'auto 1fr',
+      display: "grid",
+      gridTemplateColumns: "auto 1fr",
       columnGap: theme.spacing(1),
-      alignItems: 'center',
+      alignItems: "center",
     },
-  })
+  }),
 );
 
 export function TerminalSummary() {
-    return (
+  return (
     <TabLabel
       icon={<FontAwesomeIcon icon={faTerminal} />}
       title="Zed Terminal"
@@ -72,7 +72,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
     zts.start();
   }, [zts]);
 
-  const [command, setCommand] = useState('');
+  const [command, setCommand] = useState("");
   const [historyIndex, setHistoryIndex] = useState(zts.commandHistory.length);
 
   const datastore = props.datastore;
@@ -85,7 +85,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
   }, [zts.outputSections]);
 
   const handleKeyUp = (e: KeyboardEvent) => {
-    if (e.key.toLowerCase() === 'arrowup') {
+    if (e.key.toLowerCase() === "arrowup") {
       const updatedHistoryIndex = historyIndex - 1;
       if (updatedHistoryIndex < 0) {
         return;
@@ -95,10 +95,10 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
       setHistoryIndex(updatedHistoryIndex);
     }
 
-    if (e.key.toLowerCase() === 'arrowdown') {
+    if (e.key.toLowerCase() === "arrowdown") {
       const updatedHistoryIndex = historyIndex + 1;
       if (updatedHistoryIndex >= zts.commandHistory.length) {
-        setCommand('');
+        setCommand("");
         return;
       }
 
@@ -107,27 +107,28 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
     }
 
     const cmd = command.trim();
-    if (e.key.toLowerCase() === 'enter' && cmd.length > 0) {
-      const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA)
-        .editableContents!;
+    if (e.key.toLowerCase() === "enter" && cmd.length > 0) {
+      const schema = datastore.getSingletonByKind(
+        DataStoreItemKind.SCHEMA,
+      ).editableContents!;
       const relationshipsString = datastore.getSingletonByKind(
-        DataStoreItemKind.RELATIONSHIPS
+        DataStoreItemKind.RELATIONSHIPS,
       ).editableContents!;
       const [result, historyCount] = zts.runCommand(
         cmd,
         schema,
-        relationshipsString
+        relationshipsString,
       );
-      setCommand('');
+      setCommand("");
       setHistoryIndex(historyCount);
 
       if (result?.updatedRelationships) {
         const relItem = datastore.getSingletonByKind(
-          DataStoreItemKind.RELATIONSHIPS
+          DataStoreItemKind.RELATIONSHIPS,
         );
         const merged = mergeRelationshipsStringAndComments(
           relItem.editableContents,
-          result.updatedRelationships
+          result.updatedRelationships,
         );
         datastore.update(relItem, merged);
       }
@@ -141,10 +142,10 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
   const zedState = zts.state;
   const zedStateStatusDisplay = useMemo(() => {
     switch (zedState.status) {
-      case 'initializing':
+      case "initializing":
         return <div>Initializing Terminal</div>;
 
-      case 'loading':
+      case "loading":
         return (
           <div className={classes.loadBar}>
             Loading Terminal:
@@ -155,7 +156,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
           </div>
         );
 
-      case 'loaderror':
+      case "loaderror":
         return (
           <Alert severity="error">
             Could not start the Terminal. Please make sure you have WebAssembly
@@ -163,14 +164,14 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
           </Alert>
         );
 
-      case 'unsupported':
+      case "unsupported":
         return (
           <Alert severity="error">
             Your browser does not support WebAssembly
           </Alert>
         );
 
-      case 'ready':
+      case "ready":
         return undefined;
     }
   }, [zedState, classes.loadBar]);
@@ -196,7 +197,7 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
   return (
     <div className={classes.root} onMouseUp={handleMouseUp}>
       {zedStateStatusDisplay}
-      {zedState.status === 'ready' && (
+      {zedState.status === "ready" && (
         <>
           <TerminalOutputDisplay
             sections={zts.outputSections}
@@ -220,30 +221,30 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
 
 function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
   let isLog = false;
-  if (o.startsWith('{')) {
+  if (o.startsWith("{")) {
     try {
       const parsed = JSON.parse(o);
-      isLog = parsed['is-log'];
+      isLog = parsed["is-log"];
       if (isLog) {
         if (!showLogs) {
           return undefined;
         }
 
         const severity: Record<string, Color> = {
-          trace: 'info',
-          debug: 'info',
-          info: 'info',
-          warning: 'warning',
-          error: 'error',
+          trace: "info",
+          debug: "info",
+          info: "info",
+          warning: "warning",
+          error: "error",
         };
         return (
           <Alert
             variant="outlined"
-            severity={severity[parsed['level']]}
-            style={{ padding: 0, border: '0px' }}
+            severity={severity[parsed["level"]]}
+            style={{ padding: 0, border: "0px" }}
           >
             {Object.keys(parsed).map((k) => {
-              if (k === 'is-log') {
+              if (k === "is-log") {
                 return undefined;
               }
 
@@ -258,15 +259,15 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
       }
     } catch (e) {
       // Do nothing.
-        console.error(e)
+      console.error(e);
     }
   }
 
   const output =
-      // TODO: rewrite this to remove use of replaceAll
-      // @ts-expect-error replaceAll comes from a string polyfill.
-    convert.toHtml(o.replaceAll(' ', '\xa0').replaceAll('\t', '\xa0\xa0')) ||
-    '&nbsp;';
+    // TODO: rewrite this to remove use of replaceAll
+    // @ts-expect-error replaceAll comes from a string polyfill.
+    convert.toHtml(o.replaceAll(" ", "\xa0").replaceAll("\t", "\xa0\xa0")) ||
+    "&nbsp;";
   return <div dangerouslySetInnerHTML={{ __html: output }}></div>;
 }
 
@@ -281,20 +282,20 @@ function TerminalOutputDisplay(props: {
   });
   const children = props.sections.flatMap(
     (section: TerminalSection): ReactNode => {
-      if ('command' in section) {
+      if ("command" in section) {
         return <div>$ {section.command}</div>;
       } else {
         return (
           <div className={classes.terminalOutput}>
             {section.output
-              .split('\n')
+              .split("\n")
               .map((o) =>
-                convertStringOutput(convert, o, props.showLogs ?? false)
+                convertStringOutput(convert, o, props.showLogs ?? false),
               )}
           </div>
         );
       }
-    }
+    },
   );
   const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
     const hasSelection = !!getSelectedTextWithin(event.target as Element);
@@ -315,8 +316,8 @@ function TerminalOutputDisplay(props: {
 
 // Based on: https://stackoverflow.com/a/5801903
 function getSelectedTextWithin(el: Element) {
-  let selectedText = '';
-  if (typeof window.getSelection != 'undefined') {
+  let selectedText = "";
+  if (typeof window.getSelection != "undefined") {
     const sel = window.getSelection();
     let rangeCount: number;
     if (sel && (rangeCount = sel.rangeCount) > 0) {

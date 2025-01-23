@@ -1,20 +1,20 @@
-import TabLabel from '../../playground-ui/TabLabel';
-import { DeveloperError } from '../../spicedb-common/protodefs/developer/v1/developer';
-import { Paper } from '@material-ui/core';
-import CircularProgress from '@material-ui/core/CircularProgress';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
-import PlaylistAddCheckIcon from '@material-ui/icons/PlaylistAddCheck';
-import clsx from 'clsx';
-import 'react-reflex/styles.css';
-import { ValidationStatus } from '../../services/validation';
-import { PanelProps, PanelSummaryProps } from './base/common';
-import { DeveloperErrorDisplay, DeveloperSourceDisplay } from './errordisplays';
-import { PlaygroundPanelLocation } from './panels';
+import TabLabel from "../../playground-ui/TabLabel";
+import { DeveloperError } from "../../spicedb-common/protodefs/developer/v1/developer";
+import { Paper } from "@material-ui/core";
+import CircularProgress from "@material-ui/core/CircularProgress";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import PlaylistAddCheckIcon from "@material-ui/icons/PlaylistAddCheck";
+import clsx from "clsx";
+import "react-reflex/styles.css";
+import { ValidationStatus } from "../../services/validation";
+import { PanelProps, PanelSummaryProps } from "./base/common";
+import { DeveloperErrorDisplay, DeveloperSourceDisplay } from "./errordisplays";
+import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     apiOutput: {
-      fontFamily: 'Roboto Mono, monospace',
+      fontFamily: "Roboto Mono, monospace",
       padding: theme.spacing(2),
     },
     notRun: {
@@ -24,11 +24,11 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1),
       marginBottom: theme.spacing(1),
     },
-  })
+  }),
 );
 
 export function ValidationSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>
+  props: PanelSummaryProps<PlaygroundPanelLocation>,
 ) {
   return (
     <TabLabel
@@ -74,7 +74,7 @@ export function ValidationPanel(props: PanelProps<PlaygroundPanelLocation>) {
                   <DeveloperErrorDisplay error={de} />
                 </Paper>
               );
-            }
+            },
           )}
         </span>
       )}

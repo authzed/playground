@@ -19,7 +19,7 @@ import {
  */
 export function rewriteSchema(
   schema: string,
-  prefixSlug: string
+  prefixSlug: string,
 ): string | undefined {
   const parsed = parseSchema(schema);
   if (!parsed) {

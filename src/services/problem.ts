@@ -1,10 +1,13 @@
-import { RelationshipFound } from '../spicedb-common/parsing';
-import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodefs/developer/v1/developer';
-import { ERROR_SOURCE_TO_ITEM } from '../components/panels/errordisplays';
-import { LiveCheckService, LiveCheckStatus } from './check';
-import { DataStoreItemKind } from './datastore';
-import { LocalParseService } from './localparse';
-import { ValidationService } from './validation';
+import { RelationshipFound } from "../spicedb-common/parsing";
+import {
+  DeveloperError,
+  DeveloperWarning,
+} from "../spicedb-common/protodefs/developer/v1/developer";
+import { ERROR_SOURCE_TO_ITEM } from "../components/panels/errordisplays";
+import { LiveCheckService, LiveCheckStatus } from "./check";
+import { DataStoreItemKind } from "./datastore";
+import { LocalParseService } from "./localparse";
+import { ValidationService } from "./validation";
 
 export interface ProblemService {
   /**
@@ -65,7 +68,7 @@ interface ProblemsResult {
 export function useProblemService(
   localParseService: LocalParseService,
   liveCheckService: LiveCheckService,
-  validationService: ValidationService
+  validationService: ValidationService,
 ): ProblemService {
   // Collect the errors from the most recently run service.
   const problemsResult: ProblemsResult =
@@ -75,7 +78,7 @@ export function useProblemService(
       : validationService.state;
   const requestErrors = problemsResult.requestErrors ?? [];
   const invalidRelationships = localParseService.state.relationships.filter(
-    (rel: RelationshipFound) => 'errorMessage' in rel.parsed
+    (rel: RelationshipFound) => "errorMessage" in rel.parsed,
   );
   const errorCount = requestErrors.length + invalidRelationships.length;
 
@@ -83,7 +86,8 @@ export function useProblemService(
     const allProblems = Array.from(requestErrors);
     allProblems.push(...(validationService.state.validationErrors ?? []));
     let foundCount = allProblems.filter(
-      (problem: DeveloperError) => ERROR_SOURCE_TO_ITEM[problem.source] === kind
+      (problem: DeveloperError) =>
+        ERROR_SOURCE_TO_ITEM[problem.source] === kind,
     ).length;
     if (kind === DataStoreItemKind.RELATIONSHIPS) {
       foundCount += invalidRelationships.length;

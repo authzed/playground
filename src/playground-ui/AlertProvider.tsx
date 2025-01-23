@@ -96,7 +96,7 @@ export function useAlert() {
 
       return promise;
     },
-    [showAlertCallback]
+    [showAlertCallback],
   );
 
   return { showAlert };

@@ -1,6 +1,6 @@
 import { mapParsedSchema, ParsedNode, ParsedSchema, parseSchema } from "./dsl";
 import { rewriteSchema } from "./generator";
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect } from "vitest";
 
 const stripRange = (schema: ParsedSchema | undefined) => {
   if (schema === undefined) {
@@ -69,7 +69,7 @@ describe("rewriteSchema", () => {
     expect(rewritten).toContain("relation writer: somePrefix/user");
     expect(rewritten).toContain(" with somePrefix/some_caveat");
     expect(rewritten).toContain(
-      "caveat somePrefix/some_caveat(firstParam int, secondParam map<string>)"
+      "caveat somePrefix/some_caveat(firstParam int, secondParam map<string>)",
     );
 
     expect(stripRange(parseSchema(rewritten ?? ""))).toEqual(
@@ -91,8 +91,8 @@ definition somePrefix/document {
     relation organization: somePrefix/organization;
     permission edit = (writer + organization->admin);
     permission view = (reader + edit + nil);
-}`)
-      )
+}`),
+      ),
     );
   });
 });

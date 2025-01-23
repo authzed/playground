@@ -9,7 +9,7 @@ import {
   ConfirmCallback,
   ConfirmDialog,
   ConfirmDialogButton,
-  type ConfirmValue
+  type ConfirmValue,
 } from "./ConfirmDialog";
 
 export interface ConfirmProps {
@@ -39,21 +39,19 @@ export interface ConfirmProps {
 
 export type ShowConfirm = (
   props: ConfirmProps,
-  callback: ShowConfirmCallback
+  callback: ShowConfirmCallback,
 ) => void;
 export type ShowConfirmCallback = (
-  result: [ConfirmValue, string | undefined]
+  result: [ConfirmValue, string | undefined],
 ) => void;
 
-const ConfirmDialogContext = createContext<ShowConfirm | undefined>(
-  undefined
-);
+const ConfirmDialogContext = createContext<ShowConfirm | undefined>(undefined);
 
 /**
  * ConfirmDialogProvider provides the confirm dialog UI.
  */
 export function ConfirmDialogProvider(props: { children: ReactNode }) {
-    // TODO: this is likely derived state and should be passed through.
+  // TODO: this is likely derived state and should be passed through.
   const [confirmProps, setConfirmProps] = useState<ConfirmProps>({
     title: "",
     content: "",
@@ -66,10 +64,7 @@ export function ConfirmDialogProvider(props: { children: ReactNode }) {
   }>({ callback: undefined });
 
   // TODO: this should be memoized.
-  const showConfirm = (
-    props: ConfirmProps,
-    callback: ShowConfirmCallback
-  ) => {
+  const showConfirm = (props: ConfirmProps, callback: ShowConfirmCallback) => {
     setConfirmProps(props);
     setConfirmCallback({
       callback: (value: ConfirmValue, promptValue?: string) => {
@@ -121,15 +116,19 @@ export function useConfirmDialog() {
     (props: ConfirmProps) => {
       const promise = new Promise<[ConfirmValue, string?]>(
         (
-          resolve: (value: [ConfirmValue, string?] | PromiseLike<[ConfirmValue, string?]>) => void
+          resolve: (
+            value:
+              | [ConfirmValue, string?]
+              | PromiseLike<[ConfirmValue, string?]>,
+          ) => void,
         ) => {
           showConfirmCallback(props, resolve);
-        }
+        },
       );
 
       return promise;
     },
-    [showConfirmCallback]
+    [showConfirmCallback],
   );
 
   return { showConfirm };

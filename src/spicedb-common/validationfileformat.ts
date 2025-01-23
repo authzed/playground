@@ -56,7 +56,7 @@ export interface ParseValidationError {
  * file or undefined if invalid.
  */
 export const parseValidationYAML = (
-  contents: string
+  contents: string,
 ): ParsedValidation | ParseValidationError => {
   let parsed = undefined;
   try {
@@ -81,7 +81,7 @@ export const parseValidationYAML = (
  * getValidationBlockContents returns the contents of the validation block.
  */
 export const getValidationBlockContents = (
-  validationBlockYaml: string
+  validationBlockYaml: string,
 ): string | undefined => {
   let parsed = undefined;
   try {

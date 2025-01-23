@@ -1,19 +1,19 @@
-import { parseRelationship } from '../spicedb-common/parsing';
-import { DebugInformation } from '../spicedb-common/protodefs/authzed/api/v1/debug';
+import { parseRelationship } from "../spicedb-common/parsing";
+import { DebugInformation } from "../spicedb-common/protodefs/authzed/api/v1/debug";
 import {
   CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
   DeveloperWarning,
-} from '../spicedb-common/protodefs/developer/v1/developer';
+} from "../spicedb-common/protodefs/developer/v1/developer";
 import {
   DeveloperService,
   DeveloperServiceError,
-} from '../spicedb-common/services/developerservice';
-import { useDebouncedChecker } from '../playground-ui/debouncer';
-import { useCallback, useEffect, useState } from 'react';
-import { v4 as uuidv4 } from 'uuid';
-import { DataStore, DataStoreItemKind } from './datastore';
+} from "../spicedb-common/services/developerservice";
+import { useDebouncedChecker } from "../playground-ui/debouncer";
+import { useCallback, useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+import { DataStore, DataStoreItemKind } from "./datastore";
 
 export enum LiveCheckStatus {
   PARSE_ERROR = -2,
@@ -64,23 +64,23 @@ export interface LiveCheckService {
 
 function liveCheckItemToString(item: LiveCheckItem): string {
   let subject = item.subject;
-  if (subject.indexOf('#') < 0) {
+  if (subject.indexOf("#") < 0) {
     subject = `${subject}#...`;
   }
-  const caveat = item.context ? `[${item.context}]` : '';
+  const caveat = item.context ? `[${item.context}]` : "";
   return `${item.object}#${item.action}@${subject}${caveat}`;
 }
 
 function runEditCheckWasm(
   developerService: DeveloperService,
   datastore: DataStore,
-  items: LiveCheckItem[]
+  items: LiveCheckItem[],
 ): [DeveloperResponse, DeveloperWarning[]] | undefined {
   const schema =
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
-    '';
+    "";
   const relationshipsString = datastore.getSingletonByKind(
-    DataStoreItemKind.RELATIONSHIPS
+    DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
 
   const request = developerService.newRequest(schema, relationshipsString);
@@ -134,7 +134,7 @@ function runEditCheckWasm(
             ? LiveCheckItemStatus.FOUND
             : LiveCheckItemStatus.NOT_FOUND;
         item.errorMessage = undefined;
-      }
+      },
     );
   });
 
@@ -147,7 +147,7 @@ function runEditCheckWasm(
  */
 export function useLiveCheckService(
   developerService: DeveloperService,
-  datastore: DataStore
+  datastore: DataStore,
 ): LiveCheckService {
   const [items, setItems] = useState<LiveCheckItem[]>([]);
   const [state, setState] = useState<LiveCheckRunState>({
@@ -157,16 +157,12 @@ export function useLiveCheckService(
   const devServiceStatus = developerService.state.status;
   const runCheck = useCallback(
     async (itemsToCheck: LiveCheckItem[]) => {
-      if (devServiceStatus !== 'ready') {
+      if (devServiceStatus !== "ready") {
         return;
       }
 
       setState({ status: LiveCheckStatus.CHECKING });
-      const r = runEditCheckWasm(
-        developerService,
-        datastore,
-        itemsToCheck
-      );
+      const r = runEditCheckWasm(developerService, datastore, itemsToCheck);
       if (r === undefined) {
         setState({ status: LiveCheckStatus.NOT_CHECKING });
 
@@ -176,7 +172,7 @@ export function useLiveCheckService(
             lastRun: new Date(),
             requestErrors: [],
             serverErr:
-              'Cannot instantiate developer service. Please make sure you have WebAssembly enabled.',
+              "Cannot instantiate developer service. Please make sure you have WebAssembly enabled.",
           });
         }
         return;
@@ -190,8 +186,8 @@ export function useLiveCheckService(
       const status = serverErr
         ? LiveCheckStatus.SERVICE_ERROR
         : devErrs.length > 0
-        ? LiveCheckStatus.PARSE_ERROR
-        : LiveCheckStatus.NOT_CHECKING;
+          ? LiveCheckStatus.PARSE_ERROR
+          : LiveCheckStatus.NOT_CHECKING;
 
       setState({
         status: status,
@@ -201,7 +197,7 @@ export function useLiveCheckService(
         warnings: warnings,
       });
     },
-    [developerService, devServiceStatus, datastore]
+    [developerService, devServiceStatus, datastore],
   );
 
   const { run: check } = useDebouncedChecker(500, runCheck);
@@ -217,7 +213,7 @@ export function useLiveCheckService(
   useEffect(() => {
     if (
       state.status === LiveCheckStatus.NEVER_RUN &&
-      devServiceStatus === 'ready'
+      devServiceStatus === "ready"
     ) {
       check(items);
     }
@@ -232,10 +228,10 @@ export function useLiveCheckService(
         ...items,
         {
           id: uuidv4(),
-          object: '',
-          action: '',
-          subject: '',
-          context: '',
+          object: "",
+          action: "",
+          subject: "",
+          context: "",
           status: LiveCheckItemStatus.NOT_CHECKED,
           errorMessage: undefined,
         },

@@ -1,5 +1,5 @@
 import { parseValidationYAML } from "./validationfileformat";
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect } from "vitest";
 
 describe("parsing validation YAML", () => {
   it("returns undefined for an empty file", () => {
@@ -24,7 +24,7 @@ describe("parsing validation YAML", () => {
     expect(
       parseValidationYAML(`schema: hi
 relationships: null    
-`)
+`),
     ).toEqual({
       message: "data.relationships should be string",
     });
@@ -35,7 +35,7 @@ relationships: null
       parseValidationYAML(`schema: hi
 relationships: hello
 assertions: null    
-`)
+`),
     ).toHaveProperty("schema");
   });
 
@@ -43,7 +43,7 @@ assertions: null
     expect(
       parseValidationYAML(`schema: hi
 relationships: hello
-`)
+`),
     ).toHaveProperty("schema");
   });
 
@@ -53,7 +53,7 @@ relationships: hello
 relationships: hello
 assertions: {}
 validation: null    
-`)
+`),
     ).toHaveProperty("schema");
   });
 
@@ -62,7 +62,7 @@ validation: null
       parseValidationYAML(`schema: hi
 relationships: hello
 assertions: {}
-`)
+`),
     ).toHaveProperty("schema");
   });
 
@@ -71,7 +71,7 @@ assertions: {}
       parseValidationYAML(`schema: hi
 relationships: hello
 assertions: invalid
-`)
+`),
     ).toEqual({ message: "data.assertions should be object,null" });
   });
 
@@ -80,7 +80,7 @@ assertions: invalid
       parseValidationYAML(`schema: hi
 relationships: hello
 assertions: []
-`)
+`),
     ).toEqual({ message: "data.assertions should be object,null" });
   });
 
@@ -89,7 +89,7 @@ assertions: []
       parseValidationYAML(`schema: hi
 relationships: hello
 validation: invalid
-`)
+`),
     ).toEqual({ message: "data.validation should be object,null" });
   });
 

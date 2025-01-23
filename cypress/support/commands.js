@@ -44,7 +44,7 @@ Cypress.Commands.add("waitForWasm", () => {
       errorMsg: "WASM development package not loaded",
       timeout: 30000,
       interval: 500,
-    }
+    },
   );
   return;
 });
@@ -58,7 +58,7 @@ Cypress.Commands.add(
     list.forEach((line) => {
       cy.wrap(subject).contains(line);
     });
-  }
+  },
 );
 
 //

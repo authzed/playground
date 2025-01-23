@@ -1,12 +1,12 @@
-import { RelationTuple as Relationship } from '../protodefs/core/v1/core';
-import { useCallback, useEffect, useState } from 'react';
-import { parseRelationships } from '../parsing';
-import { RequestContext } from '../protodefs/developer/v1/developer';
-import wasmConfig from '../../wasm-config.json';
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
+import { useCallback, useEffect, useState } from "react";
+import { parseRelationships } from "../parsing";
+import { RequestContext } from "../protodefs/developer/v1/developer";
+import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/zed.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
-const ENTRYPOINT_FUNCTION = 'runZedCommand';
+const ENTRYPOINT_FUNCTION = "runZedCommand";
 
 /**
  * ZedService exposes a service for running commands against an in-memory `zed`
@@ -35,7 +35,7 @@ export interface ZedService {
   runCommand: (
     schema: string,
     relationshipsString: string,
-    args: string[]
+    args: string[],
   ) => CommandResult;
 }
 
@@ -49,14 +49,14 @@ export type CommandResult = {
 export type ZedServiceState =
   | {
       status:
-        | 'standby'
-        | 'initializing'
-        | 'unsupported'
-        | 'loaderror'
-        | 'ready';
+        | "standby"
+        | "initializing"
+        | "unsupported"
+        | "loaderror"
+        | "ready";
     }
   | {
-      status: 'loading';
+      status: "loading";
       progress: number;
     };
 
@@ -66,14 +66,14 @@ const wasmVersion: number | string = wasmConfig?.zed
 
 export function useZedService(): ZedService {
   const [state, setState] = useState<ZedServiceState>({
-    status: 'standby',
+    status: "standby",
   });
 
   const loadWebAssembly = useCallback(async () => {
-    console.log('Loading zed package');
+    console.log("Loading zed package");
 
     setState({
-      status: 'loading',
+      status: "loading",
       progress: 0,
     });
 
@@ -89,14 +89,14 @@ export function useZedService(): ZedService {
     // Fetch the WASM file with progress tracking.
     const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
     const contentLength = +(
-      fetched.headers.get('Content-Length') ?? ESTIMATED_WASM_BINARY_SIZE
+      fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE
     );
 
     const reader = fetched.body?.getReader();
     if (!reader) {
-      console.warn('Failed to download developer package');
+      console.warn("Failed to download developer package");
       setState({
-        status: 'loaderror',
+        status: "loaderror",
       });
       return;
     }
@@ -110,7 +110,7 @@ export function useZedService(): ZedService {
 
       totalDownloaded += value?.length ?? 0;
       setState({
-        status: 'loading',
+        status: "loading",
         progress: totalDownloaded / contentLength,
       });
     }
@@ -122,38 +122,38 @@ export function useZedService(): ZedService {
     try {
       const result = await WebAssembly.instantiateStreaming(
         refetched,
-        go.importObject
+        go.importObject,
       );
       go.run(result.instance);
       setState({
-        status: 'ready',
+        status: "ready",
       });
     } catch (e) {
-      console.warn('Failed to load developer package:', e);
+      console.warn("Failed to load developer package:", e);
       setState({
-        status: 'loaderror',
+        status: "loaderror",
       });
     }
   }, [setState]);
 
   useEffect(() => {
-      const initialized = window[ENTRYPOINT_FUNCTION];
+    const initialized = window[ENTRYPOINT_FUNCTION];
     switch (state.status) {
-      case 'standby':
+      case "standby":
         return;
 
-      case 'initializing':
+      case "initializing":
         if (initialized) {
           setState({
-            status: 'ready',
+            status: "ready",
           });
           return;
         }
 
         if (!WebAssembly || !window.Go) {
-          console.error('WebAssembly is not supported in your browser');
+          console.error("WebAssembly is not supported in your browser");
           setState({
-            status: 'unsupported',
+            status: "unsupported",
           });
           return;
         }
@@ -161,19 +161,19 @@ export function useZedService(): ZedService {
         loadWebAssembly();
         break;
 
-      case 'ready':
+      case "ready":
         // Nothing to do.
         break;
 
-      case 'loading':
+      case "loading":
         // Working
         break;
 
-      case 'loaderror':
+      case "loaderror":
         // Nothing to do.
         break;
 
-      case 'unsupported':
+      case "unsupported":
         // Nothing to do.
         break;
     }
@@ -182,9 +182,9 @@ export function useZedService(): ZedService {
   return {
     state: state,
     start: () => {
-      if (state.status === 'standby') {
+      if (state.status === "standby") {
         setState({
-          status: 'initializing',
+          status: "initializing",
         });
         return;
       }
@@ -192,7 +192,7 @@ export function useZedService(): ZedService {
     runCommand: (
       schema: string,
       relationshipsString: string,
-      args: string[]
+      args: string[],
     ): CommandResult => {
       const reqContext = {
         schema: schema,
@@ -202,7 +202,7 @@ export function useZedService(): ZedService {
       const contextJSONString = RequestContext.toJsonString(reqContext);
 
       const result = JSON.parse(
-        window[ENTRYPOINT_FUNCTION](contextJSONString, args)
+        window[ENTRYPOINT_FUNCTION](contextJSONString, args),
       );
       const updatedContext = result.updated_context
         ? RequestContext.fromJsonString(result.updated_context)

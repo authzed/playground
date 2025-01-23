@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { CommandResult, useZedService, ZedServiceState } from './zedservice';
+import { useState } from "react";
+import { CommandResult, useZedService, ZedServiceState } from "./zedservice";
 
 /**
  * ZedTerminalService is a service which exposes a virtual terminal for running
@@ -17,7 +17,7 @@ export interface ZedTerminalService {
   runCommand: (
     cmd: string,
     schema: string,
-    relationshipsString: string
+    relationshipsString: string,
   ) => [CommandResult | undefined, number];
 
   /**
@@ -68,7 +68,7 @@ export function useZedTerminalService(): ZedTerminalService {
   const zedService = useZedService();
 
   const [terminalSections, setTerminalSections] = useState<TerminalSection[]>(
-    []
+    [],
   );
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
 
@@ -81,21 +81,23 @@ export function useZedTerminalService(): ZedTerminalService {
       const updatedSections = Array.from(terminalSections);
       updatedSections.push({ command: cmd });
 
-      if (cmd === 'clear') {
+      if (cmd === "clear") {
         setTerminalSections([]);
         return [undefined, cloned.length];
       }
 
-      if (!cmd.startsWith('zed')) {
-        updatedSections.push({ output: `Only 'zed' commands (and 'clear') are supported` });
+      if (!cmd.startsWith("zed")) {
+        updatedSections.push({
+          output: `Only 'zed' commands (and 'clear') are supported`,
+        });
         setTerminalSections(updatedSections);
         return [undefined, cloned.length];
       }
 
-      const args = cmd.substring('zed '.length).split(' ');
+      const args = cmd.substring("zed ".length).split(" ");
       const result = zedService.runCommand(schema, relationshipsString, args);
       updatedSections.push({
-        output: (result.output || result.error || '').trim(),
+        output: (result.output || result.error || "").trim(),
       });
       setTerminalSections(updatedSections);
       return [result, cloned.length];

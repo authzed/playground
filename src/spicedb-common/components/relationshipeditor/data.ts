@@ -1,7 +1,7 @@
-import { RelationshipWithComments } from '../../parsing';
-import { RelationTuple as Relationship } from '../../protodefs/core/v1/core';
-import { Struct } from '../../protodefs/google/protobuf/struct';
-import { COLUMNS } from './columns';
+import { RelationshipWithComments } from "../../parsing";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
+import { Struct } from "../../protodefs/google/protobuf/struct";
+import { COLUMNS } from "./columns";
 
 /**
  * ColumnData holds raw column data for the grid.
@@ -73,7 +73,7 @@ export function toExternalData(data: AnnotatedData): RelationshipDatum[] {
  * fromExternalData converts a simple RelationshipDatum array into the annotated data.
  */
 export function fromExternalData(
-  externalData: RelationshipDatum[] | undefined
+  externalData: RelationshipDatum[] | undefined,
 ): AnnotatedData {
   return (externalData ?? []).map(datumToAnnotated);
 }
@@ -82,20 +82,20 @@ export function fromExternalData(
  * emptyAnnotatedDatum returns an empty annotated datum for the grid, at the given index.
  */
 export function emptyAnnotatedDatum(
-  index: number
+  index: number,
 ): RelationshipDatumAndMetadata {
   return datumToAnnotated(
     {
-      resourceType: '',
-      resourceId: '',
-      relation: '',
-      subjectType: '',
-      subjectId: '',
-      subjectRelation: '',
-      caveatName: '',
-      caveatContext: '',
+      resourceType: "",
+      resourceId: "",
+      relation: "",
+      subjectType: "",
+      subjectId: "",
+      subjectRelation: "",
+      caveatName: "",
+      caveatContext: "",
     },
-    index
+    index,
   );
 }
 
@@ -104,9 +104,9 @@ export function emptyAnnotatedDatum(
  * datum is a comment or not a full relationship, returns undefined.
  */
 export function toRelationshipString(
-  annotated: RelationshipDatumAndMetadata
+  annotated: RelationshipDatumAndMetadata,
 ): string | undefined {
-  if ('comment' in annotated.datum) {
+  if ("comment" in annotated.datum) {
     return undefined;
   }
 
@@ -117,7 +117,7 @@ export function toRelationshipString(
  * toFullRelationshipString returns the full relationship found, or undefined if none.
  */
 export function toFullRelationshipString(
-  annotated: PartialRelationship
+  annotated: PartialRelationship,
 ): string | undefined {
   if (
     !annotated.resourceType ||
@@ -135,18 +135,18 @@ export function toFullRelationshipString(
  * toPartialRelationshipString returns a relationship string with the given relationship's data.
  */
 export function toPartialRelationshipString(
-  annotated: PartialRelationship
+  annotated: PartialRelationship,
 ): string | undefined {
   const caveatContext = annotated.caveatContext
     ? `:${annotated.caveatContext}`
-    : '';
+    : "";
   const caveat = annotated.caveatName
     ? `[${annotated.caveatName}${caveatContext}]`
-    : '';
+    : "";
   return `${annotated.resourceType}:${annotated.resourceId}#${
     annotated.relation
   }@${annotated.subjectType}:${annotated.subjectId}${
-    annotated.subjectRelation ? `#${annotated.subjectRelation}` : ''
+    annotated.subjectRelation ? `#${annotated.subjectRelation}` : ""
   }${caveat}`;
 }
 
@@ -155,7 +155,7 @@ export function toPartialRelationshipString(
  */
 export function datumToAnnotated(
   datum: RelationshipDatum,
-  index: number
+  index: number,
 ): RelationshipDatumAndMetadata {
   return {
     datum: datum,
@@ -168,7 +168,7 @@ export function datumToAnnotated(
  * getColumnData returns the column data for a datum.
  */
 export function getColumnData(datum: RelationshipDatum) {
-  if ('comment' in datum) {
+  if ("comment" in datum) {
     return [datum.comment];
   }
 
@@ -178,9 +178,9 @@ export function getColumnData(datum: RelationshipDatum) {
     datum.relation,
     datum.subjectType,
     datum.subjectId,
-    datum.subjectRelation ?? '',
-    datum.caveatName ?? '',
-    datum.caveatContext ?? '',
+    datum.subjectRelation ?? "",
+    datum.caveatName ?? "",
+    datum.caveatContext ?? "",
   ];
 
   return colData;
@@ -191,21 +191,21 @@ export function getColumnData(datum: RelationshipDatum) {
  */
 export function relationshipToDatum(rel: Relationship): PartialRelationship {
   let subRel = rel.subject?.relation;
-  if (subRel === '...') {
-    subRel = '';
+  if (subRel === "...") {
+    subRel = "";
   }
 
   return {
-    resourceType: rel.resourceAndRelation?.namespace ?? '',
-    resourceId: rel.resourceAndRelation?.objectId ?? '',
-    relation: rel.resourceAndRelation?.relation ?? '',
-    subjectType: rel.subject?.namespace ?? '',
-    subjectId: rel.subject?.objectId ?? '',
-    subjectRelation: subRel ?? '',
-    caveatName: rel.caveat?.caveatName ?? '',
+    resourceType: rel.resourceAndRelation?.namespace ?? "",
+    resourceId: rel.resourceAndRelation?.objectId ?? "",
+    relation: rel.resourceAndRelation?.relation ?? "",
+    subjectType: rel.subject?.namespace ?? "",
+    subjectId: rel.subject?.objectId ?? "",
+    subjectRelation: subRel ?? "",
+    caveatName: rel.caveat?.caveatName ?? "",
     caveatContext: rel.caveat?.context
       ? Struct.toJsonString(rel.caveat?.context)
-      : '',
+      : "",
   };
 }
 
@@ -213,7 +213,7 @@ export function relationshipToDatum(rel: Relationship): PartialRelationship {
  * fromColumnData converts column data into a partial relationship.
  */
 function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
-  if (columnData[0].startsWith('// ')) {
+  if (columnData[0].startsWith("// ")) {
     return {
       comment: columnData[0],
     };
@@ -225,42 +225,42 @@ function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
     relation: columnData[2],
     subjectType: columnData[3],
     subjectId: columnData[4],
-    subjectRelation: columnData[5] ?? '',
-    caveatName: columnData[6] ?? '',
-    caveatContext: columnData[7] ?? '',
+    subjectRelation: columnData[5] ?? "",
+    caveatName: columnData[6] ?? "",
+    caveatContext: columnData[7] ?? "",
   };
 }
 
 // relationshipToColumnData converts the given relationship into column data.
 export function relationshipToColumnData(
-  rel: RelationshipWithComments
+  rel: RelationshipWithComments,
 ): ColumnData | undefined {
   const relationship = rel.relationship;
   if (relationship === undefined) {
     return undefined;
   }
 
-  let userRel = relationship.subject?.relation ?? '';
-  if (userRel.trim() === '...') {
-    userRel = '';
+  let userRel = relationship.subject?.relation ?? "";
+  if (userRel.trim() === "...") {
+    userRel = "";
   }
 
   const caveatContext = relationship.caveat?.context
     ? JSON.stringify(relationship.caveat.context)
-    : '';
+    : "";
   const columnData = [
-    relationship.resourceAndRelation?.namespace ?? '',
-    relationship.resourceAndRelation?.objectId ?? '',
-    relationship.resourceAndRelation?.relation ?? '',
-    relationship.subject?.namespace ?? '',
-    relationship.subject?.objectId ?? '',
+    relationship.resourceAndRelation?.namespace ?? "",
+    relationship.resourceAndRelation?.objectId ?? "",
+    relationship.resourceAndRelation?.relation ?? "",
+    relationship.subject?.namespace ?? "",
+    relationship.subject?.objectId ?? "",
     userRel,
-    relationship.caveat?.caveatName ?? '',
+    relationship.caveat?.caveatName ?? "",
     caveatContext,
   ];
 
   if (columnData.length !== COLUMNS.length) {
-    throw Error('Missing column');
+    throw Error("Missing column");
   }
 
   return columnData;
@@ -277,7 +277,7 @@ export function updateRowInData(
   inFlightGridData: AnnotatedData,
   dataRowIndex: number,
   newColumnData: ColumnData,
-  startingColIndex?: number
+  startingColIndex?: number,
 ): AnnotatedData {
   const adjustedData = Array.from(inFlightGridData);
   if (dataRowIndex === adjustedData.length) {
@@ -298,7 +298,7 @@ export function updateRowInData(
       ...existingColumnData.slice(startingColIndex + newColumnData.length),
     ];
     for (let i = fullNewColumnData.length; i < COLUMNS.length; ++i) {
-      fullNewColumnData.push('');
+      fullNewColumnData.push("");
     }
   }
 

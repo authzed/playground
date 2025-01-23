@@ -1,4 +1,4 @@
-import { defineConfig } from 'cypress';
+import { defineConfig } from "cypress";
 
 export default defineConfig({
   retries: 1,
@@ -10,10 +10,10 @@ export default defineConfig({
   chromeWebSecurity: false,
 
   e2e: {
-    baseUrl: 'http://localhost:3000',
+    baseUrl: "http://localhost:3000",
     specPattern: [
-      'cypress/integration/**/*.spec.{js,ts}',
-      'cypress/e2e/**/*.cy.{js,jsx,ts,tsx}',
+      "cypress/integration/**/*.spec.{js,ts}",
+      "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
     ],
   },
 });

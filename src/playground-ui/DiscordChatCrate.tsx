@@ -1,5 +1,5 @@
-import { useTheme } from '@material-ui/core/styles';
-import { useEffect, useRef } from 'react';
+import { useTheme } from "@material-ui/core/styles";
+import { useEffect, useRef } from "react";
 
 export interface DiscordChatCrateProps {
   serverId?: string;
@@ -10,8 +10,8 @@ export interface DiscordChatCrateProps {
 type url = string;
 type size = string;
 
-type horizontal = 'top' | 'bottom' | number;
-type vertical = 'left' | 'right' | number;
+type horizontal = "top" | "bottom" | number;
+type vertical = "left" | "right" | number;
 
 interface Options {
   // Server + channel IDs
@@ -54,25 +54,28 @@ const CDN_URL = `https://cdn.jsdelivr.net/npm/@widgetbot/crate@3`;
 // TODO: replace with a script loader
 const loadFromCDN = () =>
   new Promise<new (options: Options) => Crate>((resolve, reject) => {
-    const script = document.createElement('script');
+    const script = document.createElement("script");
     script.src = CDN_URL;
     document.head.appendChild(script);
 
     script.onload = () => resolve(window.Crate);
-    script.onerror = () => reject('Failed to load Crate!');
+    script.onerror = () => reject("Failed to load Crate!");
   });
 
 /**
  * DiscordChatCrate creates a WidgetBot.io crate for a Discord channel.
  */
-export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps) => {
+export const DiscordChatCrate = ({
+  serverId,
+  channelId,
+}: DiscordChatCrateProps) => {
   const crate = useRef<Crate | undefined>(undefined);
   const injected = useRef(false);
 
   const theme = useTheme();
   const glyph = {
-    uri: 'data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABo0lEQVRIicWXMU8UURRGzwKBhi1MlkYTCixtiIWdhVjZaiT0NPwELGn4B5Za0RgTtNoOoqHUTgsb2GYJIUNCARQkhEMxb3V3mFn3ze7sfslrJvO+M/fOvHvv1FQmoamJUCcJnhnwvmngBbACPAOWgAZQBy6AM+AI+AHsAd+Am76Oar/VULfUU+N0GvY1irz7QdfV80hgVufBZyDwrLozJDCrneBbCK6puyOGdrSrThWBNyuCdvSuw6r5r4A8Ag6BuZhjEalr4DFw3H2ONyqGEvw3oLeAvKoY2sPpTvUFMD8G8CVQ74646jR3NAu9qW6PCXySBX8fE3g/C/4wJvBH4F4B+VJxAfmaV0AAFoCfwGIFkbaBp0AC9weBBHgJtEYMbZH28+TvFXNalrqgNkeU3mbwG7gfo75Wf5cE/gr7c72z7zhPNeA58Cak6wnFs9of0uPyCTgAis3/E3HeOuiK6kpdVZfVeoxPLPShehOgt+rbEg+OGj3erpNOnLek7e1z5P5SqX6gJuqlulY20piPC9L5+32Idpt0hh5Kg4JHron9wtwBvs6360AoQqwAAAAASUVORK5CYII=',
-    size: '30px',
+    uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABo0lEQVRIicWXMU8UURRGzwKBhi1MlkYTCixtiIWdhVjZaiT0NPwELGn4B5Za0RgTtNoOoqHUTgsb2GYJIUNCARQkhEMxb3V3mFn3ze7sfslrJvO+M/fOvHvv1FQmoamJUCcJnhnwvmngBbACPAOWgAZQBy6AM+AI+AHsAd+Am76Oar/VULfUU+N0GvY1irz7QdfV80hgVufBZyDwrLozJDCrneBbCK6puyOGdrSrThWBNyuCdvSuw6r5r4A8Ag6BuZhjEalr4DFw3H2ONyqGEvw3oLeAvKoY2sPpTvUFMD8G8CVQ74646jR3NAu9qW6PCXySBX8fE3g/C/4wJvBH4F4B+VJxAfmaV0AAFoCfwGIFkbaBp0AC9weBBHgJtEYMbZH28+TvFXNalrqgNkeU3mbwG7gfo75Wf5cE/gr7c72z7zhPNeA58Cak6wnFs9of0uPyCTgAis3/E3HeOuiK6kpdVZfVeoxPLPShehOgt+rbEg+OGj3erpNOnLek7e1z5P5SqX6gJuqlulY20piPC9L5+32Idpt0hh5Kg4JHron9wtwBvs6360AoQqwAAAAASUVORK5CYII=",
+    size: "30px",
   };
   const color = theme.palette.primary.main;
 
@@ -95,9 +98,9 @@ export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps)
         glyph: [glyph.uri, glyph.size],
         defer: true,
         color: color,
-        shard: 'https://emerald.widgetbot.io',
+        shard: "https://emerald.widgetbot.io",
       });
-      created.node.setAttribute('title', 'Chat with us');
+      created.node.setAttribute("title", "Chat with us");
       crate.current = created;
     })();
 
