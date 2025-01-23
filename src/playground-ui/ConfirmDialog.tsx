@@ -8,7 +8,7 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
 import React, { useState } from "react";
 
-export type ConfirmValue  = "undefined" | "load" | "replace"
+export type ConfirmValue  = "undefined" | "load" | "replace" | "nevermind"
 
 /**
  * ConfirmDialogButton is a button in the confirm dialog.

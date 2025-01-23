@@ -12,12 +12,12 @@ export interface TabPanelProps {
     /**
      * index is the index for which, if the value matches, the tab is displayed.
      */
-    index: any;
+    index: string;
 
     /**
      * value is the current tab value.
      */
-    value: any;
+    value: string;
 
     /**
      * className is the custom classname for the TabPanel.

@@ -58,7 +58,7 @@ const loadFromCDN = () =>
     script.src = CDN_URL;
     document.head.appendChild(script);
 
-    script.onload = () => resolve((window as any).Crate);
+    script.onload = () => resolve(window.Crate);
     script.onerror = () => reject('Failed to load Crate!');
   });
 
