@@ -17,7 +17,7 @@
 import './commands';
 
 // Handle uncaught exceptions
-Cypress.on('uncaught:exception', (err, runnable) => {
+Cypress.on('uncaught:exception', (err) => {
   // TODO: Ignore transient network errors until either browser caching
   // or js fixtures are supported
   // https://github.com/cypress-io/cypress/issues/18335

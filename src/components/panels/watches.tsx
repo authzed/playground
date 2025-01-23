@@ -42,7 +42,7 @@ import {
   interpolateOranges,
   interpolatePurples,
 } from 'd3-scale-chromatic';
-import { useMemo, useState } from 'react';
+import { useMemo, useState, type ChangeEvent } from 'react';
 import 'react-reflex/styles.css';
 import {
   LiveCheckItem,
@@ -276,7 +276,7 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
         )}
         <TableBody>
           {liveCheckService.items.length > 0 &&
-            liveCheckService.items.map((item: LiveCheckItem, index: number) => {
+            liveCheckService.items.map((item: LiveCheckItem) => {
               return (
                 <LiveCheckRow
                   key={item.id}
@@ -339,40 +339,40 @@ function LiveCheckRow(props: {
   const [actionInputValue, setActionInputValue] = useState(item.action);
   const [subjectInputValue, setSubjectInputValue] = useState(item.subject);
 
-  const handleChangeObjectInput = (event: any, newValue: string) => {
+  const handleChangeObjectInput = (_event: object, newValue: string) => {
     setObjectInputValue(newValue);
     item.object = newValue;
     liveCheckService.itemUpdated(item);
   };
 
-  const handleChangeObject = (event: any, newValue: string | null) => {
+  const handleChangeObject = (_event: object, newValue: string | null) => {
     setObject(newValue ?? '');
     item.object = newValue ?? '';
   };
 
-  const handleChangeActionInput = (event: any, newValue: string) => {
+  const handleChangeActionInput = (_event: object, newValue: string) => {
     setActionInputValue(newValue);
     item.action = newValue;
     liveCheckService.itemUpdated(item);
   };
 
-  const handleChangeAction = (event: any, newValue: string | null) => {
+  const handleChangeAction = (_event: object, newValue: string | null) => {
     setAction(newValue ?? '');
     item.action = newValue ?? '';
   };
 
-  const handleChangeSubjectInput = (event: any, newValue: string) => {
+  const handleChangeSubjectInput = (_event: object, newValue: string) => {
     setSubjectInputValue(newValue);
     item.subject = newValue;
     liveCheckService.itemUpdated(item);
   };
 
-  const handleChangeSubject = (event: any, newValue: string | null) => {
+  const handleChangeSubject = (_event: object, newValue: string | null) => {
     setSubject(newValue ?? '');
     item.subject = newValue ?? '';
   };
 
-  const handleChangeContextInput = (event: any) => {
+  const handleChangeContextInput = (event: ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
     setContext(newValue ?? '');
     // NOTE: adding a dummy caveat name to support only specifying the context with checks
@@ -567,7 +567,7 @@ function LiveCheckRow(props: {
             <Autocomplete
               freeSolo
               options={objects}
-              getOptionLabel={(option: any) => option}
+              getOptionLabel={(option: string) => option}
               renderOption={(option) =>
                 renderOption(option, objects, interpolatePurples)
               }
@@ -603,7 +603,7 @@ function LiveCheckRow(props: {
             <Autocomplete
               freeSolo
               options={actions}
-              getOptionLabel={(option: any) => option}
+              getOptionLabel={(option: string) => option}
               renderOption={(option) =>
                 renderOption(option, actions, interpolateBlues)
               }
@@ -639,7 +639,7 @@ function LiveCheckRow(props: {
             <Autocomplete
               freeSolo
               options={subjects}
-              getOptionLabel={(option: any) => option}
+              getOptionLabel={(option: string) => option}
               renderOption={(option) =>
                 renderOption(option, subjects, interpolateOranges)
               }

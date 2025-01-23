@@ -12,7 +12,6 @@ import { useZedTerminalService } from '../spicedb-common/services/zedterminalser
 import { parseValidationYAML } from '../spicedb-common/validationfileformat';
 import { LinearProgress, Tab, Tabs, Tooltip } from '@material-ui/core';
 import AppBar from '@material-ui/core/AppBar';
-import Box from '@material-ui/core/Box';
 import Button from '@material-ui/core/Button';
 import ButtonGroup from '@material-ui/core/ButtonGroup';
 import TextField from '@material-ui/core/TextField';
@@ -41,7 +40,7 @@ import ToggleButtonGroup from '@material-ui/lab/ToggleButtonGroup';
 import clsx from 'clsx';
 import { saveAs } from 'file-saver';
 import { fileDialog } from 'file-select-dialog';
-import React, { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, type ReactNode } from 'react';
 import { useCookies } from 'react-cookie';
 import 'react-reflex/styles.css';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -89,13 +88,6 @@ import { TerminalPanel, TerminalSummary } from './panels/terminal';
 import { ValidationPanel, ValidationSummary } from './panels/validation';
 import { VisualizerPanel, VisualizerSummary } from './panels/visualizer';
 import { WatchesPanel, WatchesSummary } from './panels/watches';
-
-export interface AppProps {
-  /**
-   * withRouter, it specified, is the router to wrap the application with.
-   */
-  withRouter?: any;
-}
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
 
@@ -361,21 +353,19 @@ interface SharingState {
   shareReference?: string;
 }
 
-export function FullPlayground(props: { withRouter?: any }) {
+export function FullPlayground() {
   return  <>
       <DiscordChatCrate
         serverId={AppConfig().discord.serverId}
         channelId={AppConfig().discord.channelId}
       />
-      <ApolloedPlayground withRouter={props.withRouter} />
+      <ApolloedPlayground />
     </>
 }
 
-function ApolloedPlayground(props: { withRouter?: any }) {
+function ApolloedPlayground() {
   const datastore = usePlaygroundDatastore();
-  const Router = props.withRouter ? props.withRouter : Box;
   return (
-    <Router>
       <ShareLoader
         datastore={datastore}
         shareUrlRoot="s"
@@ -383,7 +373,6 @@ function ApolloedPlayground(props: { withRouter?: any }) {
       >
         <ThemedAppView key="app" datastore={datastore} />
       </ShareLoader>
-    </Router>
   );
 }
 
@@ -615,7 +604,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
     setPreviousValidationForDiff(undefined);
     validationService.conductValidation(
-      (validated: boolean, result: ValidationResult) => {
+      (_validated: boolean, result: ValidationResult) => {
         if (result.updatedValidationYaml) {
           const updatedYaml = normalizeValidationYAML(
             result.updatedValidationYaml
@@ -670,7 +659,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const validationState = validationService.state;
 
   const handleChangeTab = (
-    event: React.ChangeEvent<{}>,
+    _event: React.ChangeEvent<object>,
     selectedTabValue: string
   ) => {
     const item = datastore.getById(selectedTabValue)!;
@@ -702,8 +691,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       return cookieService.relationshipsEditorType;
     });
   const handleChangeRelationshipEditor = (
-    event: React.MouseEvent<HTMLElement, MouseEvent>,
-    value: any
+    _event: React.MouseEvent<HTMLElement, MouseEvent>,
+    value: unknown
   ) => {
     const type = value ? value.toString() : 'grid';
     if (
@@ -713,8 +702,10 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       return;
     }
 
-    cookieService.setRelationshipsEditorType(type);
-    setRelationshipEditor(type);
+    if (type === 'grid' || type === 'code') {
+        cookieService.setRelationshipsEditorType(type);
+        setRelationshipEditor(type);
+    }
   };
 
   const appConfig = AppConfig();
@@ -1081,7 +1072,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 const TabLabelWithCount = (props: {
   problemService: ProblemService;
   kind: DataStoreItemKind;
-  icon: React.ReactChild;
+  icon: ReactNode;
   title: string;
 }) => {
   const classes = useSummaryStyles();
@@ -1262,7 +1253,7 @@ const getFileContentsAsText = async (file: File): Promise<string> => {
   return new Promise(
     (
       resolve: (value: string | PromiseLike<string>) => void,
-      reject: (reason?: any) => void
+      reject: () => void
     ) => {
       const reader = new FileReader();
       reader.onloadend = function (e: ProgressEvent<FileReader>) {

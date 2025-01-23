@@ -7,13 +7,10 @@ import CheckCircleOutlineIcon from '@material-ui/icons/CheckCircleOutline';
 import ErrorIcon from '@material-ui/icons/Error';
 import PlayCircleFilledIcon from '@material-ui/icons/PlayCircleFilled';
 import clsx from 'clsx';
-import React from 'react';
 import 'react-reflex/styles.css';
 import { DataStore } from '../services/datastore';
 import { ValidationState, ValidationStatus } from '../services/validation';
 import { TourElementClass } from './GuidedTour';
-
-const _ = React;
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

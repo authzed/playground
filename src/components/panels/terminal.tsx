@@ -14,7 +14,7 @@ import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from 'react';
 import 'react-reflex/styles.css';
 import useDeepCompareEffect from 'use-deep-compare-effect';
 import { DataStoreItemKind } from '../../services/datastore';
-import { PanelProps, PanelSummaryProps } from './base/common';
+import { PanelProps } from './base/common';
 import { PlaygroundPanelLocation } from './panels';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -55,10 +55,8 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export function TerminalSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>
-) {
-  return (
+export function TerminalSummary() {
+    return (
     <TabLabel
       icon={<FontAwesomeIcon icon={faTerminal} />}
       title="Zed Terminal"
@@ -260,6 +258,7 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
       }
     } catch (e) {
       // Do nothing.
+        console.error(e)
     }
   }
 
@@ -318,11 +317,11 @@ function TerminalOutputDisplay(props: {
 function getSelectedTextWithin(el: Element) {
   let selectedText = '';
   if (typeof window.getSelection != 'undefined') {
-    let sel = window.getSelection(),
-      rangeCount;
+    const sel = window.getSelection();
+    let rangeCount: number;
     if (sel && (rangeCount = sel.rangeCount) > 0) {
       const range = document.createRange();
-      for (var i = 0, selRange; i < rangeCount; ++i) {
+      for (let i = 0, selRange: Range; i < rangeCount; ++i) {
         range.selectNodeContents(el);
         selRange = sel.getRangeAt(i);
         if (

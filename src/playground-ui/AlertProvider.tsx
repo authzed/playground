@@ -1,8 +1,8 @@
 import React, {
-  PropsWithChildren,
   useCallback,
   useContext,
   useState,
+  type ReactNode,
 } from "react";
 import { AlertDialog } from "./AlertDialog";
 
@@ -25,14 +25,14 @@ export interface AlertProps {
 
 export type AlertCallback = () => void;
 
-export type ShowAlert = (props: AlertProps, callback: AlertCallback) => any;
+export type ShowAlert = (props: AlertProps, callback: AlertCallback) => void;
 
 const AlertContext = React.createContext<ShowAlert | undefined>(undefined);
 
 /**
  * AlertProvider provides the alert dialog UI.
  */
-export function AlertProvider(props: PropsWithChildren<any>) {
+export function AlertProvider(props: { children: ReactNode }) {
   const [alertProps, setAlertProps] = useState<AlertProps>({
     title: "",
     content: "",

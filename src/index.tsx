@@ -1,7 +1,6 @@
 import "@fontsource/roboto/index.css";
 import React from "react";
 import { createRoot } from "react-dom/client";
-import { BrowserRouter } from "react-router-dom";
 import App from "./App";
 import "./index.css";
 
@@ -11,7 +10,7 @@ createRoot(
     container
 ).render(
   <React.StrictMode>
-    <App withRouter={BrowserRouter} />
+    <App />
   </React.StrictMode>,
 );
 }

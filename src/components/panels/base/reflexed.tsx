@@ -1,7 +1,7 @@
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import { createStyles, makeStyles } from "@material-ui/core/styles";
 import HorizontalSplitIcon from "@material-ui/icons/HorizontalSplit";
 import VerticalSplitIcon from "@material-ui/icons/VerticalSplit";
-import React, { PropsWithChildren, useEffect, useState } from "react";
+import { PropsWithChildren, useEffect, useState, Children, isValidElement, cloneElement, type ReactNode } from "react";
 import {
   HandlerProps,
   ReflexContainer,
@@ -31,7 +31,7 @@ const MINIMUM_VERTICAL_FLEX = 0.2;
 const MINIMUM_HORIZONTAL_SIZE = 200;
 const MINIMUM_VERTICAL_SIZE = 200;
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     noOverflow: {
       overflow: "hidden !important",
@@ -53,7 +53,7 @@ interface PanelDefProps<E> {
   panels: Panel<ReflexedPanelLocation>[];
   extraProps?: E | undefined;
   disabled?: boolean | undefined;
-  overrideSummaryDisplay?: React.ReactChild;
+  overrideSummaryDisplay?: ReactNode;
 }
 
 interface Dimensions {
@@ -263,14 +263,14 @@ function MainDisplayAndVertical<E>(
     ? { width: props.dimensions.width, height: contentHeight }
     : undefined;
 
-  const adjustedChildren = React.Children.map(props.children, (child) => {
+  const adjustedChildren = Children.map(props.children, (child) => {
     // Based on: https://stackoverflow.com/a/55486160
-    if (!React.isValidElement<EnrichedChildren>(child)) {
+    if (!isValidElement<EnrichedChildren>(child)) {
       return child;
     }
 
     const elementChild: React.ReactElement<EnrichedChildren> = child;
-    return React.cloneElement(
+    return cloneElement(
       elementChild,
       { dimensions: contentDimensions, ...child.props },
       null
