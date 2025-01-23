@@ -92,6 +92,8 @@
     "test": "vitest",
     "lint": "eslint .",
     "lint-fix": "eslint --fix .",
+    "format": "prettier . -w",
+    "format:check": "prettier . -c",
     "cy:run": "cypress run --browser chrome",
     "cy:open": "cypress open",
     "update:spicedb": "./scripts/update-spicedb.sh",
