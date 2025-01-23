@@ -31,7 +31,7 @@
     "lodash.throttle": "^4.1.1",
     "markdown-it": "^13.0.1",
     "marked": "^4.0.10",
-    "monaco-editor-core": "^0.39.0",
+    "monaco-editor": "~0.40.0",
     "parsimmon": "^1.18.1",
     "react": "^18.3.1",
     "react-cookie": "^4.1.1",

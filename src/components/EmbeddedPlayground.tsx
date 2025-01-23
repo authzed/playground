@@ -21,7 +21,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { Button, CircularProgress, Menu, MenuItem } from '@material-ui/core';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import CheckCircleIcon from '@material-ui/icons/CheckCircle';
 import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
 import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
@@ -45,7 +45,7 @@ import { ShareLoader } from './ShareLoader';
 import { ParsedObjectDefinition } from '../spicedb-common/parsers/dsl/dsl';
 import './fonts.css';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     root: {
       backgroundColor: 'rgb(14,13,17)',
@@ -390,7 +390,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
                 defaultWidth="100%"
                 defaultHeight="100%"
                 themeName={DS_EMBED_DARK_THEME_NAME}
-                fontSize="13px"
+                fontSize={13}
                 scrollBeyondLastLine={false}
                 hideMinimap
               />
@@ -719,7 +719,7 @@ function Selector(props: {
       }) ?? [];
 
     const [resourceType] = currentResource
-      ? currentResource?.split(':', 2)
+      ? currentResource.split(':', 2)
       : [''];
 
     return unfilteredPermissions.filter((p) => {
@@ -763,7 +763,7 @@ function Selector(props: {
     props.onChange(value);
   };
 
-  const handleClose = (value: string) => {
+  const handleClose = () => {
     setAnchorEl(null);
   };
 

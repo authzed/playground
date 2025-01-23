@@ -7,11 +7,11 @@ import { useDebouncedChecker } from '../playground-ui/debouncer';
 import { TextRange } from '../spicedb-common/include/protobuf-parser';
 import { RelationshipFound } from '../spicedb-common/parsing';
 import { DeveloperError, DeveloperWarning } from '../spicedb-common/protodefs/developer/v1/developer';
-import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import useMediaQuery from '@material-ui/core/useMediaQuery';
 import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
 import lineColumn from 'line-column';
-import monaco from 'monaco-editor-core';
+import monaco from 'monaco-editor';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { flushSync } from 'react-dom';
 import 'react-reflex/styles.css';
@@ -31,7 +31,7 @@ import registerTupleLanguage, {
   TUPLE_THEME_NAME,
 } from './tuplelang';
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
   createStyles({
     editorContainer: {
       height: '100%',
@@ -52,7 +52,7 @@ export type EditorDisplayProps = {
   diff?: string | undefined;
   themeName?: string | undefined;
   hideMinimap?: boolean | undefined;
-  fontSize?: string | undefined;
+  fontSize?: number | undefined;
   scrollBeyondLastLine?: boolean | undefined;
   disableScrolling?: boolean | undefined;
   onPositionChange?: (e: monaco.editor.ICursorPositionChangedEvent) => void;
@@ -204,15 +204,16 @@ export function EditorDisplay(props: EditorDisplayProps) {
             return;
           }
 
-          
-          markers.push({
-            startLineNumber: invalid.lineNumber + 1,
-            startColumn: 0,
-            endLineNumber: invalid.lineNumber + 1,
-            endColumn: invalid.text.length + 1,
-            message: `Malformed or invalid test data relationship: ${invalid.parsed.errorMessage}`,
-            severity: monacoRef.MarkerSeverity.Error,
-          });
+          if (monacoRef) {
+              markers.push({
+                  startLineNumber: invalid.lineNumber + 1,
+                  startColumn: 0,
+                  endLineNumber: invalid.lineNumber + 1,
+                  endColumn: invalid.text.length + 1,
+                  message: `Malformed or invalid test data relationship: ${invalid.parsed.errorMessage}`,
+                  severity: monacoRef.MarkerSeverity.Error,
+              });
+          }
         }
       );
     }
@@ -227,14 +228,16 @@ export function EditorDisplay(props: EditorDisplayProps) {
         (warning: DeveloperWarning) => {
           const line = lines[warning.line -1];
           const index = line.indexOf(warning.sourceCode, warning.column - 1);
-          markers.push({
-            startLineNumber: warning.line,
-            startColumn: index + 1,
-            endLineNumber: warning.line,
-            endColumn: index + warning.sourceCode.length + 1,
-            message: warning.message,
-            severity: monacoRef.MarkerSeverity.Warning,
-          });
+          if (monacoRef) {
+              markers.push({
+                  startLineNumber: warning.line,
+                  startColumn: index + 1,
+                  endLineNumber: warning.line,
+                  endColumn: index + warning.sourceCode.length + 1,
+                  message: warning.message,
+                  severity: monacoRef.MarkerSeverity.Warning,
+              });
+          }
         }
       );
     }
@@ -298,18 +301,20 @@ export function EditorDisplay(props: EditorDisplayProps) {
         return;
       }
 
-      markers.push({
-        startLineNumber: line,
-        startColumn: column,
-        endLineNumber: line,
-        endColumn: endColumn,
-        message: de.message,
-        severity: monacoRef.MarkerSeverity.Error,
-        code: de.context,
-      });
+      if (monacoRef) {
+          markers.push({
+              startLineNumber: line,
+              startColumn: column,
+              endLineNumber: line,
+              endColumn: endColumn,
+              message: de.message,
+              severity: monacoRef.MarkerSeverity.Error,
+              code: de.context,
+          });
+      }
     });
 
-    monacoRef.editor.setModelMarkers(
+    monacoRef?.editor.setModelMarkers(
       editors[currentItem.id].getModel()!,
       'someowner',
       markers
@@ -479,6 +484,11 @@ export function EditorDisplay(props: EditorDisplayProps) {
             value={currentItem.editableContents}
             theme={themeName}
             onChange={handleEditorChange}
+            // TODO: this is weirdly typed because we're conditionally rendering
+            // a diff editor or a code editor and typescript doesn't know about that.
+            // It'd be better to separate this into two different components that
+            // reuse their internals.
+            // @ts-expect-error the mount handler is a no-op if the component is in diff mode
             onMount={handleEditorMounted}
             options={{
               readOnly: props.isReadOnly || !!props.diff,

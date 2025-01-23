@@ -10,7 +10,7 @@ import {
   Theme,
 } from '@material-ui/core/styles';
 import BubbleChartIcon from '@material-ui/icons/BubbleChart';
-import monaco from 'monaco-editor-core';
+import monaco from 'monaco-editor';
 import 'react-reflex/styles.css';
 import { useHistory } from 'react-router-dom';
 import {
@@ -18,7 +18,7 @@ import {
   DataStoreItemKind,
   DataStorePaths,
 } from '../../services/datastore';
-import { PanelProps, PanelSummaryProps } from './base/common';
+import { PanelProps } from './base/common';
 import { PlaygroundPanelLocation } from './panels';
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -42,10 +42,8 @@ const useStyles = makeStyles((theme: Theme) =>
   })
 );
 
-export function VisualizerSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>
-) {
-  return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
+export function VisualizerSummary() {
+    return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
 }
 
 export function VisualizerPanel(

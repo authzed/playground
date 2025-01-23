@@ -1,4 +1,5 @@
-import { CancellationToken, editor, Position } from 'monaco-editor-core';
+import { CancellationToken, editor, Position } from 'monaco-editor';
+import * as monacoEditor from 'monaco-editor';
 import { LocalParseState } from '../services/localparse';
 import {
   getCaveatDefinitions,
@@ -14,7 +15,7 @@ export const TUPLE_THEME_NAME = 'tuple-theme';
 export const TUPLE_DARK_THEME_NAME = 'tuple-theme-dark';
 
 export default function registerTupleLanguage(
-  monaco: any,
+  monaco: typeof monacoEditor,
   localParseState: () => LocalParseState
 ) {
   // Based on: https://raw.githubusercontent.com/Aedron/monaco-protobuf/master/index.js
@@ -136,10 +137,13 @@ export default function registerTupleLanguage(
     triggerCharacters: ['/', '#', '@', '['],
 
     // Function to generate autocompletion results
+    // TODO: add range to suggestions. The documentation suggests that this actually has a default,
+    // but the `range` field isn't listed as optional.
+    // This may also go away when we upgrade monaco.
+    // @ts-expect-error range isn't actually required
     provideCompletionItems: function (
       model: editor.ITextModel,
       position: Position,
-      token: CancellationToken
     ) {
       // Based on: https://gist.github.com/mwrouse/05d8c11cd3872c19c684bd1904a2202e
       // Split everything the user has typed on the current line up at each space, and only look at the last word

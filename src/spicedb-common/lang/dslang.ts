@@ -7,40 +7,39 @@ import {
   Resolver,
 } from '../parsers/dsl/resolution';
 import {
-  CancellationToken,
   Position,
   editor,
   languages,
-} from 'monaco-editor-core';
+} from 'monaco-editor';
+import * as monacoEditor from 'monaco-editor';
 
 export const DS_LANGUAGE_NAME = 'dsl';
 export const DS_THEME_NAME = 'dsl-theme';
 export const DS_DARK_THEME_NAME = 'dsl-theme-dark';
 export const DS_EMBED_DARK_THEME_NAME = 'dsl-theme-embed-dark';
 
-export default function registerDSLanguage(monaco: any) {
+export default function registerDSLanguage(monaco: typeof monacoEditor) {
   // Based on: https://github.com/microsoft/monaco-languages/blob/main/src/typescript/typescript.ts
   const richEditConfiguration = {
      
     wordPattern:
-      /(-?\d*\.\d\w*)|([^\`\~\!\@\#\%\^\&\*\(\)\-\=\+\[\{\]\}\\\|\;\:\'\"\,\.\<\>\/\?\s]+)/g,
+      /(-?\d*\.\d\w*)|([^`~!@#%^&*()\-=+[{\]}\\|;:'",.<>/?\s]+)/g,
 
     comments: {
       lineComment: '//',
-      blockComment: ['/*', '*/'],
+      blockComment: ['/*', '*/'] satisfies [string, string],
     },
 
     brackets: [
-      ['{', '}'],
-      ['[', ']'],
-      ['(', ')'],
+      ['{', '}'] satisfies [string, string],
+      ['[', ']'] satisfies [string, string],
+      ['(', ')'] satisfies [string, string],
     ],
 
     onEnterRules: [
       {
         // e.g. /** | */
-        // eslint-disable-next-line
-        beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+        beforeText: /^\s*\/\*\*(?!\/)([^*]|\*(?!\/))*$/,
         afterText: /^\s*\*\/$/,
         action: {
           indentAction: monaco.languages.IndentAction.IndentOutdent,
@@ -49,8 +48,7 @@ export default function registerDSLanguage(monaco: any) {
       },
       {
         // e.g. /** ...|
-        // eslint-disable-next-line
-        beforeText: /^\s*\/\*\*(?!\/)([^\*]|\*(?!\/))*$/,
+        beforeText: /^\s*\/\*\*(?!\/)([^*]|\*(?!\/))*$/,
         action: {
           indentAction: monaco.languages.IndentAction.None,
           appendText: ' * ',
@@ -58,8 +56,7 @@ export default function registerDSLanguage(monaco: any) {
       },
       {
         // e.g.  * ...|
-        // eslint-disable-next-line
-        beforeText: /^(\t|(\ \ ))*\ \*(\ ([^\*]|\*(?!\/))*)?$/,
+        beforeText: /^(\t|( {2}))* \*( ([^*]|\*(?!\/))*)?$/,
         action: {
           indentAction: monaco.languages.IndentAction.None,
           appendText: '* ',
@@ -67,8 +64,7 @@ export default function registerDSLanguage(monaco: any) {
       },
       {
         // e.g.  */|
-        // eslint-disable-next-line
-        beforeText: /^(\t|(\ \ ))*\ \*\/\s*$/,
+        beforeText: /^(\t|( {2}))* \*\/\s*$/,
         action: {
           indentAction: monaco.languages.IndentAction.None,
           removeText: 1,
@@ -353,11 +349,7 @@ export default function registerDSLanguage(monaco: any) {
   monaco.languages.registerCompletionItemProvider(DS_LANGUAGE_NAME, {
     triggerCharacters: [':', '=', '+', '-', '&', '(', '|', '#'],
 
-    provideCompletionItems: function (
-      model: editor.ITextModel,
-      position: Position,
-      token: CancellationToken
-    ) {
+    provideCompletionItems: function () {
       //const lastChars = model.getValueInRange({ startLineNumber: position.lineNumber, startColumn: 0, endLineNumber: position.lineNumber, endColumn: position.column });
       return {
         suggestions: [],
@@ -369,7 +361,6 @@ export default function registerDSLanguage(monaco: any) {
     provideDefinition: function (
       model: editor.ITextModel,
       position: Position,
-      token: CancellationToken
     ): languages.ProviderResult<languages.Definition> {
       const text = model.getValue();
       const parserResult = parse(text);
@@ -388,7 +379,7 @@ export default function registerDSLanguage(monaco: any) {
 
       const resolution = new Resolver(parserResult.schema!);
       switch (found.node?.kind) {
-        case 'typeref':
+        case 'typeref': {
           const def = resolution.lookupDefinition(found.node.path);
           if (def) {
             if (found.node.relationName) {
@@ -419,8 +410,9 @@ export default function registerDSLanguage(monaco: any) {
             }
           }
           break;
+        }
 
-        case 'relationref':
+        case 'relationref': {
           const relation = resolution.resolveRelationOrPermission(
             found.node,
             found.def
@@ -437,6 +429,7 @@ export default function registerDSLanguage(monaco: any) {
             };
           }
           break;
+        }
       }
 
       return undefined;
@@ -458,8 +451,6 @@ export default function registerDSLanguage(monaco: any) {
     },
     provideDocumentSemanticTokens: function (
       model: editor.ITextModel,
-      lastResultId: string,
-      token: CancellationToken
     ): languages.ProviderResult<languages.SemanticTokens> {
       const text = model.getValue();
       const parserResult = parse(text);
@@ -599,7 +590,7 @@ export default function registerDSLanguage(monaco: any) {
         resultId: undefined,
       };
     },
-    releaseDocumentSemanticTokens: function (resultId: string) {},
+    releaseDocumentSemanticTokens: function () {},
   });
 
   monaco.editor.defineTheme(DS_THEME_NAME, {
