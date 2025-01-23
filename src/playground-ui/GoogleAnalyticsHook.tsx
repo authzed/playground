@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 
 declare global {
     interface Window {
-        gtag: (kind: string, subkind: any, data?: Record<string, any>) => any
-        dataLayer: any[];
+        gtag: (kind: string, subkind: object | string, data?: Record<string, object | string | boolean>) => object
+        dataLayer: object[];
     }
 }
 
@@ -36,6 +36,9 @@ export const useGoogleAnalytics = (measurementId?: string) => {
         if (measurementId && !tagInjected) {
             // Configure Tags Manager.
             window.dataLayer = window.dataLayer || [];
+            // As of 2025-01 we're probably going to get rid of this file soon in favor
+            // of GTM.
+            // eslint-disable-next-line prefer-rest-params
             window.gtag = window.gtag || function () { window.dataLayer.push(arguments) };
             window.gtag('js', new Date());
             window.gtag('config', measurementId);
@@ -54,21 +57,21 @@ export const useGoogleAnalytics = (measurementId?: string) => {
         }
     });
 
-    const pushEvent = (eventName: string, eventParams: Record<string, any>) => {
+    const pushEvent = (eventName: string, eventParams: Record<string, object | string | boolean>) => {
         if (!tagInjected) {
             return
         }
         window.gtag('event', eventName, eventParams);
     };
 
-    const setValue = (valueKey: string, value: Record<string, any>) => {
+    const setValue = (valueKey: string, value: Record<string, object>) => {
         if (!tagInjected) {
             return
         }
         window.gtag('set', valueKey, value);
     };
 
-    const setUser = (userData: Record<string, any>) => {
+    const setUser = (userData: Record<string, object>) => {
         if (userSet) { return; }
         setValue('user', userData);
         userSet = true;

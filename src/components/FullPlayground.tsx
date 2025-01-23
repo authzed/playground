@@ -602,7 +602,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   >(undefined);
 
   const conductValidation = () => {
-    validationService.conductValidation((validated: boolean) => {
+    validationService.conductValidation(() => {
       return false;
     });
   };
