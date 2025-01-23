@@ -24,5 +24,7 @@ jobs:
       - uses: "bahmutov/npm-install@v1"
       - name: "Run Eslint"
         run: "yarn run lint"
+      - name: "Run formatting check"
+        run: "yarn run format:check"
       - name: "Run Typescript type checking"
         run: "yarn run tsc -b"
