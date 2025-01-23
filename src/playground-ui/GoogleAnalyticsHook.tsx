@@ -42,10 +42,10 @@ export const useGoogleAnalytics = (measurementId?: string) => {
       window.dataLayer = window.dataLayer || [];
       // As of 2025-01 we're probably going to get rid of this file soon in favor
       // of GTM.
-      // eslint-disable-next-line prefer-rest-params
       window.gtag =
         window.gtag ||
         function () {
+          // eslint-disable-next-line prefer-rest-params
           window.dataLayer.push(arguments);
         };
       window.gtag("js", new Date());
