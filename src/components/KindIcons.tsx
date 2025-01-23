@@ -1,15 +1,14 @@
 import { faDatabase } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { createStyles, makeStyles, Theme } from '@material-ui/core/styles';
+import { createStyles, makeStyles } from '@material-ui/core/styles';
 import WarningIcon from '@material-ui/icons/Warning';
-import React from 'react';
 import 'react-reflex/styles.css';
 
 interface StyleProps {
     small?: boolean
 }
 
-const useStyles = makeStyles((theme: Theme) =>
+const useStyles = makeStyles(() =>
     createStyles({
         ns: {
             fontFamily: 'Roboto Mono, monospace',

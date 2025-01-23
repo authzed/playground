@@ -18,7 +18,7 @@ export interface AlertDialogProps {
     /**
      * handleClose sets the state that is bound to `isOpen` to false.
      */
-    handleClose: () => any
+    handleClose: () => void
 
     /**
      * title is the title of the alert.

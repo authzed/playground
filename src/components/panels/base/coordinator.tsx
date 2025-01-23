@@ -165,6 +165,7 @@ export function usePanelsCoordinator<L extends string>(props: PanelCoordinatorPr
             }
         } catch (e) {
             // Do nothing.
+            console.error(e)
         }
 
         const locations: Record<string, L> = {};

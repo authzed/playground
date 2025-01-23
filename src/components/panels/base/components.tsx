@@ -8,7 +8,7 @@ import Tabs from '@material-ui/core/Tabs';
 import Toolbar from '@material-ui/core/Toolbar';
 import { Theme, createStyles, makeStyles } from '@material-ui/core/styles';
 import CloseIcon from '@material-ui/icons/Close';
-import React, { useCallback } from 'react';
+import { useCallback, type ReactNode } from 'react';
 import { DataStore } from '../../../services/datastore';
 import { Services } from '../../../services/services';
 import { Panel, useSummaryStyles } from './common';
@@ -24,7 +24,7 @@ export function PanelSummaryBar<L extends string>(props: {
   coordinator: PanelsCoordinator<L>;
   services: Services;
   disabled?: boolean | undefined;
-  overrideSummaryDisplay?: React.ReactChild;
+  overrideSummaryDisplay?: ReactNode;
 }) {
   const classes = useSummaryStyles();
 
@@ -40,7 +40,7 @@ export function PanelSummaryBar<L extends string>(props: {
         className={classes.summaryBar}
         style={{
           gridTemplateColumns: `${panels
-            .map((panel: Panel<L>) => 'auto')
+            .map(() => 'auto')
             .join(' ')} 1fr auto`,
         }}
         variant="dense"
@@ -132,7 +132,7 @@ export function PanelDisplay<L extends string>(
   const currentTabName = coordinator.getActivePanel(props.location)?.id || '';
 
   const handleChangeTab = useCallback(
-    (event: React.ChangeEvent<{}>, selectedPanelId: string) => {
+    (_event: React.ChangeEvent<HTMLElement>, selectedPanelId: string) => {
       coordinator.setActivePanel(selectedPanelId, props.location);
     },
     [coordinator, props.location]

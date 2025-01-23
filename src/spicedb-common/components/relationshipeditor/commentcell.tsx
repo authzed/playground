@@ -94,7 +94,7 @@ export const CommentCellRenderer = (
 ) => {
   return {
     isMatch: (cell: CustomCell): cell is CommentCell =>
-      (cell.data as any).kind === COMMENT_CELL_KIND,
+      cell.data.kind === COMMENT_CELL_KIND,
     draw: (args, cell) => {
       const { ctx, rect } = args;
       const { dataValue } = cell.data;
@@ -112,7 +112,7 @@ export const CommentCellRenderer = (
       ctx.restore();
       return true;
     },
-    provideEditor: (cell: any) => (p) => {
+    provideEditor: () => (p) => {
       const { onChange, value, initialValue } = p;
       return (
         <CommentCellEditor

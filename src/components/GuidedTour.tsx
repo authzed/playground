@@ -1,8 +1,5 @@
 import { Theme, useTheme } from '@material-ui/core/styles';
-import React from 'react';
-import Joyride, { ACTIONS, EVENTS, Step } from 'react-joyride';
-
-const _ = React;
+import Joyride, { ACTIONS, EVENTS, type Step } from 'react-joyride';
 
 export const TourElementClass = {
   schema: 'tec-schema',
@@ -92,11 +89,10 @@ const handleEvents = (
     index: number;
     size: number;
     type: string;
-    step: any;
+    step: Step;
   }) => {
-    const { action, index, size, type, step } = data;
+    const { action, type, step } = data;
 
-    const properties = { Step: step.title, StepIndex: index, StepsCount: size };
     // Tour start
     if (ACTIONS.START === action && EVENTS.TOUR_START === type) {
       // No-op
@@ -107,7 +103,9 @@ const handleEvents = (
     }
     // Tour before step
     if (ACTIONS.NEXT === action && EVENTS.STEP_BEFORE === type) {
-      onEnterStep(step.target);
+        if (typeof step.target === "string") {
+            onEnterStep(step.target);
+        }
     }
     // Tour step
     if (ACTIONS.UPDATE === action && EVENTS.TOOLTIP === type) {

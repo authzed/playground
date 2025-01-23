@@ -245,9 +245,7 @@ export function useCustomCells(
 
       for (const r of renderers) {
         if (r.isMatch(cell)) {
-          return r.provideEditor(cell) as ReturnType<
-            ProvideEditorCallback<GridCell>
-          >;
+          return r.provideEditor();
         }
       }
 

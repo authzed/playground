@@ -4,6 +4,7 @@ import { useGoogleAnalytics } from './playground-ui/GoogleAnalyticsHook';
 import PlaygroundUIThemed from './playground-ui/PlaygroundUIThemed';
 import 'react-reflex/styles.css';
 import { BrowserRouter } from 'react-router-dom';
+import { type ReactNode } from 'react';
 import 'typeface-roboto-mono/index.css'; // Import the Roboto Mono font.
 import './App.css';
 import { EmbeddedPlayground } from './components/EmbeddedPlayground';
@@ -13,11 +14,6 @@ import AppConfig from './services/configservice';
 import { PLAYGROUND_UI_COLORS } from './theme';
 
 export interface AppProps {
-  /**
-   * withRouter, it specified, is the router to wrap the application with.
-   */
-  withRouter?: any;
-
   /**
    * forTesting indicates whether the app is for testing.
    */
@@ -29,7 +25,7 @@ function ForTesting() {
 }
 
 function ThemedApp(props: {
-  withRouter?: any;
+  withRouter?: () => ReactNode;
   forTesting: boolean | undefined;
 }) {
   if (window.location.pathname.indexOf('/i/') >= 0) {
@@ -55,7 +51,12 @@ function ThemedApp(props: {
         <ForTesting />
     );
   } else {
-    return <FullPlayground withRouter={props.withRouter} />;
+    return (
+        // @ts-expect-error RRv5 types are jank
+      <BrowserRouter>
+<FullPlayground />
+</BrowserRouter>
+    );
   }
 }
 
@@ -72,7 +73,6 @@ function App(props: AppProps) {
       <AlertProvider>
         <ConfirmDialogProvider>
           <ThemedApp
-            withRouter={props.withRouter}
             forTesting={props.forTesting}
           />
         </ConfirmDialogProvider>
