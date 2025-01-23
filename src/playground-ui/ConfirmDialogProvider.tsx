@@ -1,78 +1,85 @@
-import React, {
-  PropsWithChildren,
+import {
   useCallback,
   useContext,
   useState,
+  createContext,
+  type ReactNode,
 } from "react";
 import {
   ConfirmCallback,
   ConfirmDialog,
   ConfirmDialogButton,
+  type ConfirmValue
 } from "./ConfirmDialog";
 
-export interface ConfirmProps<B extends string> {
+export interface ConfirmProps {
   /**
    * title is the title of the confirm.
    */
-  title: React.ReactNode;
+  title: ReactNode;
 
   /**
    * content is the content of the confirm.
    */
-  content: React.ReactNode;
+  content: ReactNode;
 
   /**
    * buttons are the buttons on the confirm dialog.
    */
-  buttons: ConfirmDialogButton<B>[];
+  buttons: ConfirmDialogButton[];
 
   /**
    * withPrompt, if specified, indicates a prompt should be displayed with
    * the given string as the placeholder.
    */
   withPrompt?: string;
+
+  children?: ReactNode;
 }
 
-export type ShowConfirm = <B extends string>(
-  props: ConfirmProps<B>,
-  callback: ShowConfirmCallback<B>
-) => any;
-export type ShowConfirmCallback<B extends string> = (
-  result: [B, string | undefined]
+export type ShowConfirm = (
+  props: ConfirmProps,
+  callback: ShowConfirmCallback
+) => void;
+export type ShowConfirmCallback = (
+  result: [ConfirmValue, string | undefined]
 ) => void;
 
-const ConfirmDialogContext = React.createContext<ShowConfirm | undefined>(
+const ConfirmDialogContext = createContext<ShowConfirm | undefined>(
   undefined
 );
 
 /**
  * ConfirmDialogProvider provides the confirm dialog UI.
  */
-export function ConfirmDialogProvider(props: PropsWithChildren<any>) {
-  const [confirmProps, setConfirmProps] = useState<ConfirmProps<string>>({
+export function ConfirmDialogProvider(props: { children: ReactNode }) {
+    // TODO: this is likely derived state and should be passed through.
+  const [confirmProps, setConfirmProps] = useState<ConfirmProps>({
     title: "",
     content: "",
     buttons: [],
   });
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
+  // TODO: this should be a useCallback, probably
   const [confirmCallback, setConfirmCallback] = useState<{
-    callback: ConfirmCallback<string> | undefined;
+    callback: ConfirmCallback | undefined;
   }>({ callback: undefined });
 
-  const showConfirm = <B extends string>(
-    props: ConfirmProps<B>,
-    callback: ShowConfirmCallback<B>
+  // TODO: this should be memoized.
+  const showConfirm = (
+    props: ConfirmProps,
+    callback: ShowConfirmCallback
   ) => {
     setConfirmProps(props);
     setConfirmCallback({
-      callback: (value: string, promptValue?: string) => {
-        callback([value as B, promptValue]);
+      callback: (value: ConfirmValue, promptValue?: string) => {
+        callback([value, promptValue]);
       },
     });
     setIsConfirmOpen(true);
   };
 
-  const handleCompleted = (value: string, promptValue?: string) => {
+  const handleCompleted = (value: ConfirmValue, promptValue?: string) => {
     if (confirmCallback.callback !== undefined) {
       confirmCallback.callback(value, promptValue);
     }
@@ -81,7 +88,7 @@ export function ConfirmDialogProvider(props: PropsWithChildren<any>) {
 
   return (
     <>
-      <ConfirmDialog<string>
+      <ConfirmDialog
         isOpen={isConfirmOpen}
         handleComplete={handleCompleted}
         {...confirmProps}
@@ -111,10 +118,10 @@ export function useConfirmDialog() {
   }
 
   const showConfirm = useCallback(
-    <B extends string>(props: ConfirmProps<B>) => {
-      const promise = new Promise<[B, string?]>(
+    (props: ConfirmProps) => {
+      const promise = new Promise<[ConfirmValue, string?]>(
         (
-          resolve: (value: [B, string?] | PromiseLike<[B, string?]>) => void
+          resolve: (value: [ConfirmValue, string?] | PromiseLike<[ConfirmValue, string?]>) => void
         ) => {
           showConfirmCallback(props, resolve);
         }

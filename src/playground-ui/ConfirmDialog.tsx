@@ -8,10 +8,12 @@ import DialogTitle from "@material-ui/core/DialogTitle";
 import TextField from "@material-ui/core/TextField";
 import React, { useState } from "react";
 
+export type ConfirmValue  = "undefined" | "load" | "replace"
+
 /**
  * ConfirmDialogButton is a button in the confirm dialog.
  */
-export interface ConfirmDialogButton<B extends string> {
+export interface ConfirmDialogButton {
     /**
      * title is the title of the button.
      */
@@ -20,7 +22,7 @@ export interface ConfirmDialogButton<B extends string> {
     /**
      * value is the value to given to the callback if the button is clicked.
      */
-    value: B
+    value?: ConfirmValue
 
     /**
      * color is the color of the button. Default is `default`.
@@ -38,12 +40,12 @@ export interface ConfirmDialogButton<B extends string> {
     isEnabled?: (promptValue?: string) => boolean
 }
 
-export type ConfirmCallback<B extends string> = (value: B, promptValue?: string) => void;
+export type ConfirmCallback = (value: ConfirmValue, promptValue?: string) => void;
 
 /**
  * ConfirmDialogProps are the props for the confirm dialog.
  */
-export interface ConfirmDialogProps<B extends string> {
+export interface ConfirmDialogProps {
     /**
      * isOpen indicates whether the ConfirmDialog is currently open.
      */
@@ -54,7 +56,7 @@ export interface ConfirmDialogProps<B extends string> {
      * returns the value clicked. If the [X] is clicked, the `value` will be
      * undefined.
      */
-    handleComplete: ConfirmCallback<B>
+    handleComplete: ConfirmCallback
 
     /**
      * title is the title of the confirm.
@@ -69,7 +71,7 @@ export interface ConfirmDialogProps<B extends string> {
     /**
      * buttons are the buttons on the confirm dialog.
      */
-    buttons: ConfirmDialogButton<B>[]
+    buttons: ConfirmDialogButton[]
 
 
     /**
@@ -97,13 +99,15 @@ const useStyles = makeStyles((theme: Theme) =>
  *                         title="My confirm" content="Hi there!"
  *                         buttons={[{"title": "Close", "value": undefined}]}/>
  */
-export function ConfirmDialog<B extends string>(props: ConfirmDialogProps<B>) {
+export function ConfirmDialog(props: ConfirmDialogProps) {
     const [promptValue, setPromptValue] = useState('');
     const classes = useStyles();
 
-    const handleComplete = (value: any) => {
-        props.handleComplete(value as B, promptValue);
-        setPromptValue('');
+    const handleComplete = (value: ConfirmValue | undefined) => {
+        if (value) {
+            props.handleComplete(value, promptValue);
+            setPromptValue('');
+        }
     };
 
     return <Dialog
@@ -124,7 +128,7 @@ export function ConfirmDialog<B extends string>(props: ConfirmDialogProps<B>) {
             </DialogContentText>
         </DialogContent>
         <DialogActions>
-            {props.buttons.map((button: ConfirmDialogButton<B>, index: number) => {
+            {props.buttons.map((button: ConfirmDialogButton, index: number) => {
                 return <Button key={index} variant={button.variant}
                     onClick={() => handleComplete(button.value)}
                     color={button.color}
