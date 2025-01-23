@@ -3,12 +3,12 @@
 export {}
 
 declare module '*.yaml' {
-    const data: any
+    const data: object
     export default data
 }
 
 declare module '*.md' {
-    const data: any
+    const data: object
     export default data
 }
 
@@ -18,13 +18,17 @@ declare module 'string.prototype.replaceall' {
 }
 
 declare module 'visjs-network' {
-    const data: any
+    const data: object
     export default data
 }
 
 declare global {
     interface Window {
         // TODO: type this based on what's in wasm_exec.js
-        Go: any;
+        Go: new () => {
+            importObject: WebAssembly.Imports;
+            run: (instance: object) => void;
+        };
+        Crate: new (options: Options) => Crate;
     }
 }
