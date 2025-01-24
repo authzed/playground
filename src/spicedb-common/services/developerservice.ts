@@ -327,7 +327,7 @@ export function useDeveloperService(): DeveloperService {
   }, [setState]);
 
   useEffect(() => {
-    const initialized = window[ENTRYPOINT_FUNCTION];
+    const initialized = window.runSpiceDBDeveloperRequest;
     switch (state.status) {
       case "initializing":
         if (initialized) {
@@ -369,7 +369,7 @@ export function useDeveloperService(): DeveloperService {
   return {
     state: state,
     newRequest: (schema: string, relationshipsString: string) => {
-      if (!window[ENTRYPOINT_FUNCTION]) {
+      if (!window.runSpiceDBDeveloperRequest) {
         return undefined;
       }
 

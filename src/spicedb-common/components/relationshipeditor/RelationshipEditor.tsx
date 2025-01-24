@@ -7,7 +7,7 @@ import DataEditor, {
   GridMouseEventArgs,
   GridSelection,
   Rectangle,
-  Theme,
+  type Theme,
   type Highlight,
 } from "@glideapps/glide-data-grid";
 import {
@@ -36,7 +36,6 @@ import {
   type ReactNode,
 } from "react";
 import { useCookies } from "react-cookie";
-import { ThemeProvider } from "styled-components";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 import { Resolver } from "../../parsers/dsl/resolution";
 import {
@@ -145,7 +144,7 @@ export type RelationshipEditorProps = {
   isReadOnly: boolean;
   dataUpdated: (updatedData: RelationshipDatum[]) => void;
   resolver?: Resolver | undefined;
-  themeOverrides?: Partial<Theme> | undefined;
+  themeOverrides?: Partial<Theme>;
 } & { dimensions?: { width: number; height: number } };
 
 interface TooltipData {
@@ -421,7 +420,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   const theme = useTheme();
   const themeOverrides = props.themeOverrides;
-  const dataEditorTheme: Theme = useMemo(() => {
+  const dataEditorTheme: Partial<Theme> = useMemo(() => {
     return {
       accentColor: theme.palette.primary.light,
       accentFg: theme.palette.getContrastText(theme.palette.action.focus),
@@ -953,7 +952,6 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   return (
     <div className={classes.root} onKeyDown={handleKeyDown}>
-      <ThemeProvider theme={dataEditorTheme}>
         <div style={{ position: "relative" }}>
           <Snackbar
             open={!!snackbarMessage}
@@ -1010,6 +1008,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           />
         </div>
         <DataEditor
+          theme={dataEditorTheme}
           keybindings={{ search: true }}
           getCellContent={getCellData}
           width={width}
@@ -1032,9 +1031,8 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           gridSelection={gridSelection}
           highlightRegions={highlightRegions}
           onGridSelectionChange={handleGridSelectionChanged}
-          onColumnResized={handleColumnResize}
+          onColumnResize={handleColumnResize}
         />
-      </ThemeProvider>
       {tooltip !== undefined && (
         <div
           className={classes.tooltip}
