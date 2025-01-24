@@ -27,4 +27,4 @@ jobs:
       - name: "Run formatting check"
         run: "yarn run format:check"
       - name: "Run Typescript type checking"
-        run: "yarn run tsc -b"
+        run: "yarn run typecheck"
