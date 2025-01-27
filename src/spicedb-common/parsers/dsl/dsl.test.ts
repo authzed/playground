@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+import { assert } from "../../../test/utils";
 import {
   ParsedArrowExpression,
   ParsedBinaryExpression,
@@ -6,10 +8,9 @@ import {
   ParsedNilExpression,
   ParsedObjectDefinition,
   ParsedRelationRefExpression,
+  ParsedUseFlag,
   parseSchema,
 } from "./dsl";
-import { assert } from "../../../test/utils";
-import { describe, it, expect } from "vitest";
 
 describe("parsing", () => {
   it("parses empty schema", () => {
@@ -19,12 +20,34 @@ describe("parsing", () => {
     expect(parsed?.definitions?.length).toEqual(0);
   });
 
+  it("parses use flag", () => {
+    const schema = `use expiration`;
+    const parsed = parseSchema(schema);
+
+    expect(parsed?.definitions?.length).toEqual(1);
+    expect((parsed?.definitions[0] as ParsedUseFlag).featureName).toEqual(
+      "expiration",
+    );
+  });
+
+  it("parses use flag and definition", () => {
+    const schema = `use expiration
+    
+    definition foo {}
+    `;
+    const parsed = parseSchema(schema);
+
+    expect(parsed?.definitions?.length).toEqual(2);
+  });
+
   it("parses empty definition", () => {
     const schema = `definition foo {}`;
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(1);
-    expect(parsed?.definitions[0].name).toEqual("foo");
+    expect((parsed?.definitions[0] as ParsedObjectDefinition).name).toEqual(
+      "foo",
+    );
   });
 
   it("parses empty definition with multiple path segements", () => {
@@ -32,7 +55,9 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(1);
-    expect(parsed?.definitions[0].name).toEqual("foo/bar/baz");
+    expect((parsed?.definitions[0] as ParsedObjectDefinition).name).toEqual(
+      "foo/bar/baz",
+    );
   });
 
   it("parses basic caveat", () => {
@@ -40,7 +65,9 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(1);
-    expect(parsed?.definitions[0].name).toEqual("foo");
+    expect((parsed?.definitions[0] as ParsedCaveatDefinition).name).toEqual(
+      "foo",
+    );
 
     const definition = parsed?.definitions[0] as ParsedCaveatDefinition;
     expect(definition.parameters.map((p) => p.name)).toEqual([
@@ -56,8 +83,9 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(1);
-    expect(parsed?.definitions[0].name).toEqual("foo");
-
+    expect((parsed?.definitions[0] as ParsedCaveatDefinition).name).toEqual(
+      "foo",
+    );
     const definition = parsed?.definitions[0] as ParsedCaveatDefinition;
     expect(definition.parameters.map((p) => p.name)).toEqual([
       "someParam",
@@ -70,7 +98,9 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(1);
-    expect(parsed?.definitions[0].name).toEqual("foo/bar");
+    expect((parsed?.definitions[0] as ParsedObjectDefinition).name).toEqual(
+      "foo/bar",
+    );
   });
 
   it("parses multiple definitions", () => {
@@ -80,8 +110,37 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
 
     expect(parsed?.definitions?.length).toEqual(2);
-    expect(parsed?.definitions[0].name).toEqual("foo");
-    expect(parsed?.definitions[1].name).toEqual("bar");
+
+    expect((parsed?.definitions[0] as ParsedCaveatDefinition).name).toEqual(
+      "foo",
+    );
+    expect((parsed?.definitions[1] as ParsedCaveatDefinition).name).toEqual(
+      "bar",
+    );
+  });
+
+  it("parses relation with expiration", () => {
+    const schema = `
+    use expiration
+
+    definition foo {
+      relation viewer: user with expiration
+    }`;
+    const parsed = parseSchema(schema);
+
+    expect(parsed?.definitions?.length).toEqual(2);
+  });
+
+  it("parses relation with caveat and expiration", () => {
+    const schema = `
+    use expiration
+
+    definition foo {
+      relation viewer: user with somecaveat and expiration
+    }`;
+    const parsed = parseSchema(schema);
+
+    expect(parsed?.definitions?.length).toEqual(2);
   });
 
   it("parses definition with relation", () => {
@@ -356,7 +415,8 @@ describe("parsing", () => {
   });
 
   it("full", () => {
-    const schema = `definition user {}
+    const schema = `use expiration    
+        definition user {}
 
         caveat somecaveat(somecondition int) {
           somecondition == 42
@@ -367,14 +427,14 @@ describe("parsing", () => {
          */
         definition document {
           relation writer: user
-          relation reader: user | user with somecaveat
+          relation reader: user | user with somecaveat | user with expiration | user with somecaveat and expiration
 
           permission writer = writer
           permission read = reader + writer // has both
         }`;
 
     const parsed = parseSchema(schema);
-    expect(parsed?.definitions?.length).toEqual(3);
+    expect(parsed?.definitions?.length).toEqual(4);
   });
 
   it("full with wildcard", () => {
@@ -394,7 +454,7 @@ describe("parsing", () => {
     const parsed = parseSchema(schema);
     expect(parsed?.definitions?.length).toEqual(2);
     const documentDef = parsed?.definitions.find(
-      (def) => def.name === "document",
+      (def) => (def as ParsedObjectDefinition).name === "document",
     ) as ParsedObjectDefinition;
     expect(documentDef?.relations.length).toEqual(2);
     expect(documentDef?.permissions.length).toEqual(2);

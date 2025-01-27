@@ -1,6 +1,5 @@
 import {
   flatMapExpression,
-  ObjectOrCaveatDefinition,
   ParsedCaveatDefinition,
   ParsedCaveatParameter,
   ParsedExpression,
@@ -9,6 +8,7 @@ import {
   ParsedRelation,
   ParsedRelationRefExpression,
   ParsedSchema,
+  TopLevelDefinition,
   TypeRef,
 } from "./dsl";
 
@@ -79,7 +79,7 @@ export class Resolver {
       return;
     }
 
-    this.schema.definitions.forEach((def: ObjectOrCaveatDefinition) => {
+    this.schema.definitions.forEach((def: TopLevelDefinition) => {
       if (def.kind === "objectDef") {
         this.definitionsByName[def.name] = new ResolvedDefinition(def);
         return;
@@ -173,9 +173,12 @@ export class Resolver {
    */
   public resolveRelationOrPermission(
     current: ParsedRelationRefExpression,
-    def: ObjectOrCaveatDefinition,
+    def: TopLevelDefinition,
   ): ExpressionResolution | undefined {
     this.populate();
+    if (def.kind === "use") {
+      return undefined;
+    }
 
     const definition = this.definitionsByName[def.name];
     return definition.lookupRelationOrPermission(current.relationName);
@@ -183,7 +186,7 @@ export class Resolver {
 
   private lookupAndResolveTypeReferences(): ResolvedTypeReference[] {
     this.populate();
-    return this.schema.definitions.flatMap((def: ObjectOrCaveatDefinition) => {
+    return this.schema.definitions.flatMap((def: TopLevelDefinition) => {
       if (def.kind !== "objectDef") {
         return [];
       }
@@ -202,7 +205,7 @@ export class Resolver {
 
   private lookupAndResolveExprReferences(): ResolvedExprReference[] {
     this.populate();
-    return this.schema.definitions.flatMap((def: ObjectOrCaveatDefinition) => {
+    return this.schema.definitions.flatMap((def: TopLevelDefinition) => {
       if (def.kind !== "objectDef") {
         return [];
       }

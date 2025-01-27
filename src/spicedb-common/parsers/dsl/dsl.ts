@@ -50,17 +50,18 @@ export const parseSchema = (value: string): ParsedSchema | undefined => {
 };
 
 /**
- * ObjectOrCaveatDefinition are the types of definitions found at the root of a schema.
+ * TopLevelDefinition are the types of definitions found at the root of a schema.
  */
-export type ObjectOrCaveatDefinition =
+export type TopLevelDefinition =
   | ParsedObjectDefinition
-  | ParsedCaveatDefinition;
+  | ParsedCaveatDefinition
+  | ParsedUseFlag;
 
 /**
  * parse performs a parse on the schema string, returning the full parse result.
  */
 export function parse(input: string): ParseResult {
-  const result = whitespace.then(definitionOrCaveat.atLeast(0)).parse(input);
+  const result = whitespace.then(topLevel.atLeast(0)).parse(input);
   return {
     error: !result.status
       ? {
@@ -73,7 +74,7 @@ export function parse(input: string): ParseResult {
       ? {
           kind: "schema",
           stringValue: input,
-          definitions: (result as Parsimmon.Success<ObjectOrCaveatDefinition[]>)
+          definitions: (result as Parsimmon.Success<TopLevelDefinition[]>)
             .value,
         }
       : undefined,
@@ -138,7 +139,7 @@ export function flatMapExpression<T>(
  */
 export interface ReferenceNode {
   node: ParsedRelationRefExpression | TypeRef | undefined;
-  def: ObjectOrCaveatDefinition;
+  def: TopLevelDefinition;
 }
 
 /**
@@ -151,7 +152,7 @@ export function findReferenceNode(
   columnPosition: number,
 ): ReferenceNode | undefined {
   const found = schema.definitions
-    .map((def: ObjectOrCaveatDefinition) => {
+    .map((def: TopLevelDefinition) => {
       if (!rangeContains(def, lineNumber, columnPosition)) {
         return undefined;
       }
@@ -177,7 +178,7 @@ export function mapParsedSchema(
     return;
   }
 
-  schema.definitions.forEach((def: ObjectOrCaveatDefinition) => {
+  schema.definitions.forEach((def: TopLevelDefinition) => {
     mapParseNodes(def, mapper);
   });
 }
@@ -189,7 +190,13 @@ export function mapParsedSchema(
 export interface ParsedSchema {
   kind: "schema";
   stringValue: string;
-  definitions: ObjectOrCaveatDefinition[];
+  definitions: TopLevelDefinition[];
+}
+
+export interface ParsedUseFlag {
+  kind: "use";
+  featureName: string;
+  range: TextRange;
 }
 
 export interface ParsedCaveatDefinition {
@@ -291,6 +298,12 @@ export interface TypeRef {
   relationName: string | undefined;
   wildcard: boolean;
   withCaveat: WithCaveat | undefined;
+  withExpiration: WithExpiration | undefined;
+  range: TextRange;
+}
+
+export interface WithExpiration {
+  kind: "withexpiration";
   range: TextRange;
 }
 
@@ -307,6 +320,7 @@ export interface TypeExpr {
 }
 
 export type ParsedNode =
+  | ParsedUseFlag
   | ParsedCaveatDefinition
   | ParsedCaveatParameter
   | ParsedCaveatParameterTypeRef
@@ -378,14 +392,40 @@ const dot = lexeme(string("."));
 const terminator = newline.or(semicolon);
 
 // Type reference and expression.
+
+const andExpiration = Parsimmon.seqMap(
+  Parsimmon.index,
+  seq(lexeme(string("and")), lexeme(string("expiration"))),
+  Parsimmon.index,
+  function (startIndex, data, endIndex) {
+    return {
+      kind: "withexpiration",
+      range: { startIndex: startIndex, endIndex: endIndex },
+    };
+  },
+);
+
 const withCaveat = Parsimmon.seqMap(
   Parsimmon.index,
-  seq(lexeme(string("with")), path),
+  seq(lexeme(string("with")), path, andExpiration.atMost(1)),
   Parsimmon.index,
   function (startIndex, data, endIndex) {
     return {
       kind: "withcaveat",
       path: data[1],
+      withExpiration: data.length > 2 ? data[2] : null,
+      range: { startIndex: startIndex, endIndex: endIndex },
+    };
+  },
+);
+
+const withExpiration = Parsimmon.seqMap(
+  Parsimmon.index,
+  seq(lexeme(string("with")), lexeme(string("expiration"))),
+  Parsimmon.index,
+  function (startIndex, data, endIndex) {
+    return {
+      kind: "withexpiration",
       range: { startIndex: startIndex, endIndex: endIndex },
     };
   },
@@ -397,7 +437,7 @@ const typeRef = Parsimmon.seqMap(
     seq(path, colon, lexeme(string("*"))).or(
       seq(path, hash.then(identifier).atMost(1)),
     ),
-    withCaveat.atMost(1),
+    withCaveat.or(withExpiration).atMost(1),
   ),
   Parsimmon.index,
   function (startIndex, data, endIndex) {
@@ -612,6 +652,20 @@ const relation = Parsimmon.seqMap(
 
 const relationOrPermission = relation.or(permission);
 
+// Use flags
+const useFlag = Parsimmon.seqMap(
+  Parsimmon.index,
+  seq(lexeme(string("use")), identifier, terminator.atMost(1)),
+  Parsimmon.index,
+  function (startIndex, data, endIndex) {
+    return {
+      kind: "use",
+      featureName: data[1],
+      range: { startIndex: startIndex, endIndex: endIndex },
+    };
+  },
+);
+
 // Object Definitions.
 const definition = Parsimmon.seqMap(
   Parsimmon.index,
@@ -725,7 +779,7 @@ const caveat = Parsimmon.seqMap(
   },
 );
 
-const definitionOrCaveat = definition.or(caveat);
+const topLevel = definition.or(caveat).or(useFlag);
 
 function findReferenceNodeInDef(
   def: ParsedObjectDefinition,

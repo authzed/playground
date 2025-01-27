@@ -1,12 +1,11 @@
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import {
-  ObjectOrCaveatDefinition,
   ParsedObjectDefinition,
   ParsedPermission,
   ParsedRelation,
   ParsedSchema,
   TextRange,
 } from "../../parsers/dsl/dsl";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 
 export interface RelationLink {
   key: string;
@@ -35,7 +34,7 @@ export class TypeSet {
     );
 
     this.types = Object.fromEntries(
-      objectDefs.map((def: ObjectOrCaveatDefinition, index: number) => {
+      objectDefs.map((def: ParsedObjectDefinition, index: number) => {
         return [def.name, new TypeHandle(def as ParsedObjectDefinition, index)];
       }),
     );
