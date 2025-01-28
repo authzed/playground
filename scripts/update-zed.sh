@@ -2,7 +2,7 @@
 
 set -e
 
-VERSION=$(jq -r '.zed' ./spicedb-common/wasm-config.json)
+VERSION=$(jq -r '.zed' ./src/wasm-config.json)
 if [ -z ${VERSION} ] ; then
     echo "zed version not defined in wasm config" >&2
     exit 1
