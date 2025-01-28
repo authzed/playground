@@ -203,9 +203,9 @@ export function useZedService(): ZedService {
         toJson(RequestContextSchema, create(RequestContextSchema, reqContext)),
       );
 
-      const resultString = window.runZedCommand?.(contextJSONString, args)
+      const resultString = window.runZedCommand?.(contextJSONString, args);
       if (!resultString) {
-          return { error: "Zed command function was undefined." }
+        return { error: "Zed command function was undefined." };
       }
       const result = JSON.parse(resultString);
       const updatedContext = result.updated_context

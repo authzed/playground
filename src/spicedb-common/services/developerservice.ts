@@ -27,7 +27,6 @@ import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes
-const ENTRYPOINT_FUNCTION = "runSpiceDBDeveloperRequest";
 
 /**
  * DeveloperService is a helper service which invokes the developer package against a locally
@@ -227,8 +226,10 @@ class DeveloperServiceRequest {
     });
 
     const developerRequest = toJsonString(DeveloperRequestSchema, request);
-    const encodedResponse: string =
-      window[ENTRYPOINT_FUNCTION](developerRequest);
+    // NOTE: the "" codepath should not be hit under normal operation; this function
+    // won't be invoked if WASM isn't available.
+    const encodedResponse =
+      window.runSpiceDBDeveloperRequest?.(developerRequest) ?? "";
 
     const response = fromJsonString(DeveloperResponseSchema, encodedResponse, {
       ignoreUnknownFields: true,

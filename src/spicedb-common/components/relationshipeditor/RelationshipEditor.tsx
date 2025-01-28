@@ -10,6 +10,8 @@ import DataEditor, {
   type Theme,
   type Highlight,
 } from "@glideapps/glide-data-grid";
+// Bring in the CSS for glide-data-grid
+import "@glideapps/glide-data-grid/dist/index.css";
 import {
   Checkbox,
   FormControlLabel,
@@ -54,11 +56,7 @@ import {
   MIN_COLUMN_WIDTH,
   validate,
 } from "./columns";
-import {
-  COMMENT_CELL_KIND,
-  CommentCell,
-  copyDataForCommentCell,
-} from "./commentcell";
+import { COMMENT_CELL_KIND, copyDataForCommentCell } from "./commentcell";
 import { RelEditorCustomCell, useCustomCells } from "./customcells";
 import {
   AnnotatedData,
@@ -77,17 +75,12 @@ import {
 } from "./data";
 import {
   CAVEATCONTEXT_CELL_KIND,
-  CaveatContextCell,
   CAVEATNAME_CELL_KIND,
-  CaveatNameCell,
   EXPIRATION_CELL_KIND,
   ExpirationCell,
   OBJECTID_CELL_KIND,
-  ObjectIdCell,
   RELATION_CELL_KIND,
-  RelationCell,
   TYPE_CELL_KIND,
-  TypeCell,
 } from "./fieldcell";
 
 const useStyles = makeStyles((theme: MuiTheme) =>
@@ -160,19 +153,28 @@ interface TooltipData {
 /**
  * RelationshipEditor defines a grid-based editor for editing relationships.
  */
-export function RelationshipEditor(props: RelationshipEditorProps) {
+export function RelationshipEditor({
+  relationshipData,
+  highlights,
+  isReadOnly,
+  dataUpdated,
+  resolver,
+  themeOverrides,
+  dimensions,
+}: RelationshipEditorProps) {
   // data holds the grid data+metadata array for the grid, indexed by row.
   const [data, setDataDirectly] = useState<AnnotatedData>(() => {
-    return fromExternalData(props.relationshipData);
+    return fromExternalData(relationshipData);
   });
 
+  // TODO: see if this memoization can live further up.
   useDeepCompareEffect(() => {
-    const converted = fromExternalData(props.relationshipData);
+    const converted = fromExternalData(relationshipData);
     setDataDirectly(converted);
-  }, [props.relationshipData]);
+  }, [relationshipData]);
 
   const setData = (data: AnnotatedData) => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return;
     }
     setDataDirectly(data);
@@ -180,7 +182,6 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   // inFlightData holds the state of the grid while being edited, before setData has been resolved.
   const inFlightData = useRef<AnnotatedData>(data);
-  const dataUpdated = props.dataUpdated;
 
   useEffect(() => {
     inFlightData.current = data;
@@ -188,6 +189,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
     // NOTE: we do not want to rerun this if the dataUpdated callback has changed (which it should
     // not, ideally).
+    // TODO: dataUpdated is currently changing on every render because the debouncer isn't memoized.
   }, [data]);
 
   // relationships holds a filtered form of the grid, containing only valid relationships.
@@ -233,7 +235,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   const relationshipsService = useRelationshipsService(relationships);
 
   const adjustData = (dataRowIndex: number, newColumnData: string[]) => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return;
     }
 
@@ -364,7 +366,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   };
 
   const handleRowAppended = async (): Promise<"bottom"> => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return "bottom";
     }
 
@@ -419,7 +421,6 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   };
 
   const theme = useTheme();
-  const themeOverrides = props.themeOverrides;
   const dataEditorTheme: Partial<Theme> = useMemo(() => {
     return {
       accentColor: theme.palette.primary.light,
@@ -491,7 +492,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           allowOverlay: true,
           copyData: copyDataForCommentCell(data[row].columnData[0]),
           span: [0, COLUMNS.length - 1],
-        } as CommentCell;
+        };
       }
 
       if (col >= data[row].columnData.length) {
@@ -516,7 +517,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
-          } as TypeCell;
+          };
 
         case DataKind.RESOURCE_ID:
         case DataKind.SUBJECT_ID:
@@ -530,7 +531,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
-          } as ObjectIdCell;
+          };
 
         case DataKind.SUBJECT_RELATION:
         case DataKind.RELATION:
@@ -544,7 +545,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
-          } as RelationCell;
+          };
 
         case DataKind.CAVEAT_NAME:
           return {
@@ -557,7 +558,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
-          } as CaveatNameCell;
+          };
 
         case DataKind.CAVEAT_CONTEXT:
           return {
@@ -570,7 +571,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
-          } as CaveatContextCell;
+          };
 
         case DataKind.EXPIRATION:
           return {
@@ -626,7 +627,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   const classes = useStyles();
   const handleRowMoved = (startIndex: number, endIndex: number) => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return;
     }
 
@@ -642,7 +643,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     target: readonly [number, number],
     values: readonly (readonly string[])[],
   ) => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return false;
     }
 
@@ -702,7 +703,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   };
 
   const highlightRegions = useDeepCompareMemo(() => {
-    return (props.highlights ?? [])
+    return (highlights ?? [])
       .map((highlight: RelationTupleHighlight) => {
         const rowIndex = data.findIndex(
           (datum: RelationshipDatumAndMetadata) => {
@@ -726,11 +727,11 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
       .filter((highlight: Highlight | undefined) => {
         return !!highlight;
       }) as Highlight[];
-  }, [props.highlights, data]);
+  }, [highlights, data]);
 
   const highlightsByRowIndex = useDeepCompareMemo(() => {
     const byRowIndex: Record<number, RelationTupleHighlight> = {};
-    (props.highlights ?? []).forEach((highlight: RelationTupleHighlight) => {
+    (highlights ?? []).forEach((highlight: RelationTupleHighlight) => {
       const rowIndex = data.findIndex((datum: RelationshipDatumAndMetadata) => {
         return toRelationshipString(datum) === highlight.tupleString;
       });
@@ -741,7 +742,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
       byRowIndex[rowIndex] = highlight;
     });
     return byRowIndex;
-  }, [props.highlights, data]);
+  }, [highlights, data]);
 
   const deleteSelectedRows = () => {
     if (gridSelection) {
@@ -807,7 +808,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   };
 
   const handleKeyDown = (e: KeyboardEvent<HTMLDivElement>) => {
-    if (props.isReadOnly) {
+    if (isReadOnly) {
       return;
     }
 
@@ -865,8 +866,8 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     [highlightsByRowIndex, setTooltip],
   );
 
-  const width = props.dimensions?.width ?? 1200;
-  const height = props.dimensions?.height ?? 300;
+  const width = dimensions?.width ?? 1200;
+  const height = dimensions?.height ?? 300;
   const toolbarHeight = 50;
   const hasCheckedRows =
     gridSelection?.rows !== undefined && gridSelection.rows.length > 0;
@@ -917,12 +918,10 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           col.id! in overriddenColumnWidths
             ? overriddenColumnWidths[col.id!]
             : defaultColWidth,
-        trailingRowOptions: props.isReadOnly
-          ? undefined
-          : col.trailingRowOptions,
+        trailingRowOptions: isReadOnly ? undefined : col.trailingRowOptions,
       };
     });
-  }, [width, overriddenColumnWidths, props.isReadOnly]);
+  }, [width, overriddenColumnWidths, isReadOnly]);
 
   const handleColumnResize = (col: GridColumn, newSize: number) => {
     if (newSize < MIN_COLUMN_WIDTH) {
@@ -939,10 +938,10 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     relationshipsService,
     data,
     gridSelection,
-    props.resolver,
+    resolver,
     similarHighlighting,
     columnsWithWidths,
-    props.isReadOnly,
+    isReadOnly,
   );
 
   // TODO: get JSX out of state.
@@ -952,87 +951,87 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   return (
     <div className={classes.root} onKeyDown={handleKeyDown}>
-        <div style={{ position: "relative" }}>
-          <Snackbar
-            open={!!snackbarMessage}
+      <div style={{ position: "relative" }}>
+        <Snackbar
+          open={!!snackbarMessage}
+          onClose={() => setSnackbarMessage(undefined)}
+        >
+          <Alert
             onClose={() => setSnackbarMessage(undefined)}
+            severity="info"
+            variant="filled"
           >
-            <Alert
-              onClose={() => setSnackbarMessage(undefined)}
-              severity="info"
-              variant="filled"
-            >
-              {snackbarMessage}
-            </Alert>
-          </Snackbar>
-        </div>
-        <div className={classes.toolbar} style={{ height: toolbarHeight }}>
-          {!props.isReadOnly && (
-            <Checkbox
-              className={classes.toolbarCheckbox}
-              checked={allRowsChecked}
-              onClick={toggleCheckedRows}
-              disabled={data.length === 0}
-            />
-          )}
-          {props.isReadOnly && <span />}
-          {hasCheckedRows && !props.isReadOnly && (
-            <span>
-              <Tooltip title="Delete Rows">
-                <IconButton onClick={deleteSelectedRows}>
-                  <Delete />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Copy Rows to Clipboard">
-                <IconButton onClick={copySelectedRows}>
-                  <Assignment />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Convert to/from comments">
-                <IconButton onClick={convertSelectedRows}>
-                  <Comment />
-                </IconButton>
-              </Tooltip>
-            </span>
-          )}
-          {(!hasCheckedRows || props.isReadOnly) && <span />}
-          <span />
-          <FormControlLabel
-            control={
-              <Checkbox
-                checked={similarHighlighting}
-                onClick={handleToggleSimilarHighlighting}
-              />
-            }
-            label="Highlight same types, objects and relations"
+            {snackbarMessage}
+          </Alert>
+        </Snackbar>
+      </div>
+      <div className={classes.toolbar} style={{ height: toolbarHeight }}>
+        {!isReadOnly && (
+          <Checkbox
+            className={classes.toolbarCheckbox}
+            checked={allRowsChecked}
+            onClick={toggleCheckedRows}
+            disabled={data.length === 0}
           />
-        </div>
-        <DataEditor
-          theme={dataEditorTheme}
-          keybindings={{ search: true }}
-          getCellContent={getCellData}
-          width={width}
-          height={height - toolbarHeight}
-          columns={columnsWithWidths}
-          rows={data.length}
-          onPaste={handlePaste}
-          drawCell={drawCell}
-          provideEditor={provideEditor}
-          getCellsForSelection={getCellsForSelection}
-          onCellEdited={props.isReadOnly ? undefined : handleCellEdited}
-          onRowAppended={props.isReadOnly ? undefined : handleRowAppended}
-          onDelete={props.isReadOnly ? undefined : handleDelete}
-          onRowMoved={props.isReadOnly ? undefined : handleRowMoved}
-          onItemHovered={handleItemHovered}
-          isDraggable={false}
-          trailingRowOptions={{ tint: !props.isReadOnly }}
-          rowMarkers={props.isReadOnly ? "number" : "both"}
-          rowSelectionMode={props.isReadOnly ? undefined : "multi"}
-          gridSelection={gridSelection}
-          highlightRegions={highlightRegions}
-          onGridSelectionChange={handleGridSelectionChanged}
-          onColumnResize={handleColumnResize}
+        )}
+        {isReadOnly && <span />}
+        {hasCheckedRows && !isReadOnly && (
+          <span>
+            <Tooltip title="Delete Rows">
+              <IconButton onClick={deleteSelectedRows}>
+                <Delete />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Copy Rows to Clipboard">
+              <IconButton onClick={copySelectedRows}>
+                <Assignment />
+              </IconButton>
+            </Tooltip>
+            <Tooltip title="Convert to/from comments">
+              <IconButton onClick={convertSelectedRows}>
+                <Comment />
+              </IconButton>
+            </Tooltip>
+          </span>
+        )}
+        {(!hasCheckedRows || isReadOnly) && <span />}
+        <span />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={similarHighlighting}
+              onClick={handleToggleSimilarHighlighting}
+            />
+          }
+          label="Highlight same types, objects and relations"
         />
+      </div>
+      <DataEditor
+        theme={dataEditorTheme}
+        keybindings={{ search: true }}
+        getCellContent={getCellData}
+        width={width}
+        height={height - toolbarHeight}
+        columns={columnsWithWidths}
+        rows={data.length}
+        onPaste={handlePaste}
+        drawCell={drawCell}
+        provideEditor={provideEditor}
+        getCellsForSelection={getCellsForSelection}
+        onCellEdited={isReadOnly ? undefined : handleCellEdited}
+        onRowAppended={isReadOnly ? undefined : handleRowAppended}
+        onDelete={isReadOnly ? undefined : handleDelete}
+        onRowMoved={isReadOnly ? undefined : handleRowMoved}
+        onItemHovered={handleItemHovered}
+        isDraggable={false}
+        trailingRowOptions={{ tint: !isReadOnly }}
+        rowMarkers={isReadOnly ? "number" : "both"}
+        rowSelectionMode={isReadOnly ? undefined : "multi"}
+        gridSelection={gridSelection}
+        highlightRegions={highlightRegions}
+        onGridSelectionChange={handleGridSelectionChanged}
+        onColumnResize={handleColumnResize}
+      />
       {tooltip !== undefined && (
         <div
           className={classes.tooltip}

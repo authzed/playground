@@ -4,7 +4,6 @@ import {
   GridCellKind,
   type GridSelection,
   type ProvideEditorCallback,
-  type CustomCell
 } from "@glideapps/glide-data-grid";
 import { useCallback, useMemo, useRef } from "react";
 import { Resolver } from "../../parsers/dsl/resolution";

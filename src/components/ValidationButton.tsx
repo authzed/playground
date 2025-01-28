@@ -1,7 +1,7 @@
 import { DeveloperService } from "../spicedb-common/services/developerservice";
 import Button from "@material-ui/core/Button";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import { fade } from "@material-ui/core/styles/colorManipulator";
+import { alpha } from "@material-ui/core/styles/colorManipulator";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
 import ErrorIcon from "@material-ui/icons/Error";
@@ -37,10 +37,10 @@ const useStyles = makeStyles((theme: Theme) =>
       paddingLeft: "8px",
     },
     validated: {
-      backgroundColor: fade(theme.palette.success.light, 0.2),
+      backgroundColor: alpha(theme.palette.success.light, 0.2),
     },
     validationError: {
-      backgroundColor: fade(theme.palette.error.light, 0.2),
+      backgroundColor: alpha(theme.palette.error.light, 0.2),
     },
     validationDisplay: {
       display: "grid",

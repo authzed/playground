@@ -2,7 +2,7 @@ import { CustomCell, DrawCellCallback } from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 import { Column, CommentCellPrefix } from "./columns";
-import { FieldCellRendererProps, type AnyCell } from "./fieldcell";
+import { FieldCellRendererProps } from "./fieldcell";
 
 export const COMMENT_CELL_KIND = "comment-cell";
 
@@ -31,7 +31,7 @@ type CommentCellEditorProps = {
   onChange: (newValue: CommentCell) => void;
   value: CommentCell;
   initialValue: string | undefined;
-}
+};
 
 const CommentCellEditor = (props: CommentCellEditorProps) => {
   // From: https://github.com/mui/material-ui/issues/12779
@@ -96,7 +96,7 @@ export const CommentCellRenderer = (
 ) => {
   return {
     isMatch: (cell: CustomCell): cell is CommentCell =>
-    // TODO: see if there's a way to do this without casting the cell
+      // TODO: see if there's a way to do this without casting the cell
       (cell as CommentCell).data.kind === COMMENT_CELL_KIND,
     draw: (args: Parameters<DrawCellCallback>[0], cell: CommentCell) => {
       const { ctx, rect } = args;

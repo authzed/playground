@@ -1,4 +1,8 @@
-import { CustomCell, DrawCellCallback, GridSelection } from "@glideapps/glide-data-grid";
+import {
+  CustomCell,
+  DrawCellCallback,
+  GridSelection,
+} from "@glideapps/glide-data-grid";
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete, {
@@ -25,7 +29,7 @@ export const CAVEATCONTEXT_CELL_KIND = "caveatcontext-field-cell";
 export const EXPIRATION_CELL_KIND = "expiration-field-cell";
 
 interface FieldCellProps {
-  readonly kind: string
+  readonly kind: string;
   readonly dataValue: string;
   readonly row: number;
   readonly col: number;
@@ -69,7 +73,12 @@ export type CaveatNameCell = CustomCell<CaveatNameCellProps>;
 export type CaveatContextCell = CustomCell<CaveatContextCellProps>;
 export type ExpirationCell = CustomCell<ExpirationCellProps>;
 
-export type AnyCell = TypeCell | ObjectIdCell | RelationCell | CaveatNameCell | CaveatContextCell;
+export type AnyCell =
+  | TypeCell
+  | ObjectIdCell
+  | RelationCell
+  | CaveatNameCell
+  | CaveatContextCell;
 
 type SelectedType = {
   type: string;
@@ -281,10 +290,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   };
 }
 
-type FieldCellEditorProps<
-  T extends CustomCell<Q>,
-  Q extends FieldCellProps,
-> = {
+type FieldCellEditorProps<T extends CustomCell<Q>, Q extends FieldCellProps> = {
   fieldPropsRef: MutableRefObject<FieldCellRendererProps>;
   onChange: (newValue: T) => void;
   value: T;
@@ -292,12 +298,11 @@ type FieldCellEditorProps<
   onFinishedEditing: (newValue?: T | undefined) => void;
   getAutocompleteOptions: GetAutocompleteOptions<Q>;
   kind: string;
-}
+};
 
-const FieldCellEditor = <
-  T extends CustomCell<Q>,
-  Q extends FieldCellProps,
->(props: FieldCellEditorProps<T, Q>) => {
+const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
+  props: FieldCellEditorProps<T, Q>,
+) => {
   const edited = useRef(false);
 
   // NOTE: In order to handle the initialValue correctly, we have to include it as
