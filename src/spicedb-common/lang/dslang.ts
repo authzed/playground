@@ -1,7 +1,7 @@
+import * as monacoEditor from "monaco-editor";
+import { Position, editor, languages } from "monaco-editor";
 import { findReferenceNode, parse } from "../parsers/dsl/dsl";
 import { ResolvedReference, Resolver } from "../parsers/dsl/resolution";
-import { Position, editor, languages } from "monaco-editor";
-import * as monacoEditor from "monaco-editor";
 
 export const DS_LANGUAGE_NAME = "dsl";
 export const DS_THEME_NAME = "dsl-theme";
@@ -95,6 +95,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
           /caveat/,
           { token: "keyword.caveat", bracket: "@open", next: "@caveat" },
         ],
+        [/use expiration$/, { token: "keyword.expiration" }],
         [
           /permission/,
           {
@@ -282,6 +283,9 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         ],
         [/\w+#/, { token: "@rematch", next: "@relationref" }],
         [/\w+:/, { token: "@rematch", next: "@wildcardref" }],
+        [/expiration/, { token: "keyword.expiration" }],
+        [/and/, { token: "keyword.and" }],
+        [/with/, { token: "keyword.with" }],
         [/\w+/, { token: "type.identifier" }],
         { include: "@whitespace" },
       ],
@@ -607,6 +611,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
 
       { token: "identifier.relorperm", foreground: "666666" },
 
+      { token: "keyword.expiration", foreground: "ddaaaa" },
       { token: "keyword.permission", foreground: "158a64" },
       { token: "keyword.relation", foreground: "883425" },
       { token: "keyword.definition", foreground: "4242ff" },
@@ -652,6 +657,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
 
     { token: "identifier.relorperm", foreground: "cccccc" },
 
+    { token: "keyword.expiration", foreground: "ddaaaa" },
     { token: "keyword.permission", foreground: "1acc92" },
     { token: "keyword.relation", foreground: "ffa887" },
     { token: "keyword.definition", foreground: "8787ff" },

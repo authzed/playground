@@ -22,6 +22,7 @@ export const OBJECTID_CELL_KIND = "objectid-field-cell";
 export const RELATION_CELL_KIND = "relation-field-cell";
 export const CAVEATNAME_CELL_KIND = "caveatname-field-cell";
 export const CAVEATCONTEXT_CELL_KIND = "caveatcontext-field-cell";
+export const EXPIRATION_CELL_KIND = "expiration-field-cell";
 
 interface FieldCellProps {
   readonly dataValue: string;
@@ -54,11 +55,17 @@ type CaveatContextCellProps = FieldCellProps & {
   readonly readonly: false;
 };
 
+type ExpirationCellProps = FieldCellProps & {
+  readonly kind: "expiration-field-cell";
+  readonly readonly: false;
+};
+
 export type TypeCell = CustomCell<TypeCellProps>;
 export type ObjectIdCell = CustomCell<ObjectIdCellProps>;
 export type RelationCell = CustomCell<RelationCellProps>;
 export type CaveatNameCell = CustomCell<CaveatNameCellProps>;
 export type CaveatContextCell = CustomCell<CaveatContextCellProps>;
+export type ExpirationCell = CustomCell<ExpirationCellProps>;
 
 type SelectedType = {
   type: string;
@@ -72,6 +79,8 @@ type SelectedCaveatName = SelectedRelation & { caveatname: string };
 
 type SelectedCaveatContext = { caveatcontext: string };
 
+type SelectedExpiration = { expiration: string };
+
 export interface FieldCellRendererProps {
   relationshipsService: RelationshipsService;
   annotatedData: AnnotatedData;
@@ -83,6 +92,7 @@ export interface FieldCellRendererProps {
     selectedRelation: SelectedRelation | undefined;
     selectedCaveatName: SelectedCaveatName | undefined;
     selectedCaveatContext: SelectedCaveatContext | undefined;
+    selectedExpiration: SelectedExpiration | undefined;
   };
   similarHighlighting: boolean;
   columnsWithWidths: Column[];
@@ -207,6 +217,9 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
               break;
             case DataKind.CAVEAT_CONTEXT:
               // No highlighting for context values
+              break;
+            case DataKind.EXPIRATION:
+              // No highlighting for expiration
               break;
           }
         }
@@ -448,6 +461,14 @@ export const CaveatContextCellRenderer = fieldCellRenderer<
   CaveatContextCell,
   CaveatContextCellProps
 >(CAVEATCONTEXT_CELL_KIND, () => {
+  // No autocomplete support
+  return [];
+});
+
+export const ExpirationCellRenderer = fieldCellRenderer<
+  ExpirationCell,
+  ExpirationCellProps
+>(EXPIRATION_CELL_KIND, () => {
   // No autocomplete support
   return [];
 });

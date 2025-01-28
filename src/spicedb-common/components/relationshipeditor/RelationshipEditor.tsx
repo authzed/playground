@@ -1,8 +1,3 @@
-import {
-  ParseRelationshipError,
-  parseRelationshipsWithComments,
-  parseRelationshipWithError,
-} from "../../parsing";
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
@@ -37,13 +32,18 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
   type KeyboardEvent,
+  type ReactNode,
 } from "react";
 import { useCookies } from "react-cookie";
 import { ThemeProvider } from "styled-components";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 import { Resolver } from "../../parsers/dsl/resolution";
+import {
+  ParseRelationshipError,
+  parseRelationshipsWithComments,
+  parseRelationshipWithError,
+} from "../../parsing";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import { useRelationshipsService } from "../../services/relationshipsservice";
 import {
@@ -81,6 +81,8 @@ import {
   CaveatContextCell,
   CAVEATNAME_CELL_KIND,
   CaveatNameCell,
+  EXPIRATION_CELL_KIND,
+  ExpirationCell,
   OBJECTID_CELL_KIND,
   ObjectIdCell,
   RELATION_CELL_KIND,
@@ -216,7 +218,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           relData.subjectRelation ? `#${relData.subjectRelation}` : ""
         }${
           relData.caveatName ? `[${relData.caveatName}${caveatContext}]` : ""
-        }`;
+        }${relData.expiration ? `[expiration:${relData.expiration}]` : ""}`;
         return parseRelationshipWithError(str);
       })
       .filter((value: Relationship | ParseRelationshipError) => {
@@ -570,6 +572,19 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             allowOverlay: true,
             copyData: data[row].columnData[col],
           } as CaveatContextCell;
+
+        case DataKind.EXPIRATION:
+          return {
+            kind: GridCellKind.Custom,
+            data: {
+              kind: EXPIRATION_CELL_KIND,
+              row: row,
+              col: col,
+              dataValue: data[row].columnData[col],
+            },
+            allowOverlay: true,
+            copyData: data[row].columnData[col],
+          } as ExpirationCell;
 
         default:
           return {

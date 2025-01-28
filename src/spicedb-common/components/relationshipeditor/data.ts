@@ -27,6 +27,7 @@ export type PartialRelationship = {
   subjectRelation: string;
   caveatName: string;
   caveatContext: string;
+  expiration: string;
 };
 
 /**
@@ -94,6 +95,7 @@ export function emptyAnnotatedDatum(
       subjectRelation: "",
       caveatName: "",
       caveatContext: "",
+      expiration: "",
     },
     index,
   );
@@ -143,11 +145,14 @@ export function toPartialRelationshipString(
   const caveat = annotated.caveatName
     ? `[${annotated.caveatName}${caveatContext}]`
     : "";
+  const expiration = annotated.expiration
+    ? `[expiration:${annotated.expiration}]`
+    : "";
   return `${annotated.resourceType}:${annotated.resourceId}#${
     annotated.relation
   }@${annotated.subjectType}:${annotated.subjectId}${
     annotated.subjectRelation ? `#${annotated.subjectRelation}` : ""
-  }${caveat}`;
+  }${caveat}${expiration}`;
 }
 
 /**
@@ -181,6 +186,7 @@ export function getColumnData(datum: RelationshipDatum) {
     datum.subjectRelation ?? "",
     datum.caveatName ?? "",
     datum.caveatContext ?? "",
+    datum.expiration ?? "",
   ];
 
   return colData;
@@ -206,6 +212,11 @@ export function relationshipToDatum(rel: Relationship): PartialRelationship {
     caveatContext: rel.caveat?.context
       ? Struct.toJsonString(rel.caveat?.context)
       : "",
+    expiration: rel.optionalExpirationTime
+      ? new Date(parseFloat(rel.optionalExpirationTime.seconds) * 1000)
+          .toISOString()
+          .replace(".000", "")
+      : "",
   };
 }
 
@@ -228,6 +239,7 @@ function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
     subjectRelation: columnData[5] ?? "",
     caveatName: columnData[6] ?? "",
     caveatContext: columnData[7] ?? "",
+    expiration: columnData[8] ?? "",
   };
 }
 
@@ -257,6 +269,11 @@ export function relationshipToColumnData(
     userRel,
     relationship.caveat?.caveatName ?? "",
     caveatContext,
+    relationship.optionalExpirationTime
+      ? new Date(parseFloat(relationship.optionalExpirationTime.seconds) * 1000)
+          .toISOString()
+          .replace(".000", "")
+      : "",
   ];
 
   if (columnData.length !== COLUMNS.length) {
