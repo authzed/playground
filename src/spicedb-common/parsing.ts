@@ -3,18 +3,28 @@ import {
   RelationTuple as Relationship,
 } from "./protodefs/core/v1/core";
 import { Struct } from "./protodefs/google/protobuf/struct";
+import { Timestamp } from "./protodefs/google/protobuf/timestamp";
 
 export const CAVEAT_NAME_EXPR =
   "([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]";
 
-const CAVEAT_REGEX = new RegExp(
-  `\\[(?<caveat_name>(${CAVEAT_NAME_EXPR}))(:(?<caveat_context>(\\{(.+)\\})))?\\]`,
-);
+const namespaceNameExpr =
+  "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
+const resourceIDExpr = "([a-zA-Z0-9/_|\\-=+]{1,})";
+const subjectIDExpr = "([a-zA-Z0-9/_|\\-=+]{1,})|\\*";
+const relationExpr = "([a-z][a-z0-9_]{1,62}[a-z0-9])";
 
-const OBJECT_AND_RELATION_REGEX =
-  /(?<namespace>[^:]+):(?<object_id>[^#]+)#(?<relation>[^@]+)/;
-const SUBJECT_REGEX =
-  /(?<namespace>[^:]+):(?<object_id>[^#]+)(#(?<relation>[^@[]+))?/;
+const resourceExpr = `(?<resourceType>${namespaceNameExpr}):(?<resourceID>${resourceIDExpr})#(?<resourceRel>${relationExpr})`;
+const subjectExpr = `(?<subjectType>${namespaceNameExpr}):(?<subjectID>${subjectIDExpr})(#(?<subjectRel>${relationExpr}|\\.\\.\\.))?`;
+const caveatNameExpr =
+  "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
+const caveatExpr = `\\[(?<caveatName>(${caveatNameExpr}))(:(?<caveatContext>(\\{(.+)\\})))?\\]`;
+
+const expirationExpr = `\\[expiration:(?<expirationDateTime>([\\d\\-\\.:TZ]+))\\]`;
+
+const RELATIONSHIP_REGEX = new RegExp(
+  `^${resourceExpr}@${subjectExpr}(${caveatExpr})?(${expirationExpr})?$`,
+);
 
 export const NAMESPACE_REGEX =
   /^([a-z][a-z0-9_]{1,61}[a-z0-9]\/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$/;
@@ -80,59 +90,21 @@ export const parseRelationshipWithError = (
   value: string,
 ): Relationship | ParseRelationshipError => {
   const trimmed = value.trim();
-  const pieces = trimmed.split("@");
-  if (pieces.length <= 1) {
-    return { errorMessage: "Relationship missing a subject" };
-  }
-
-  if (pieces.length < 2) {
-    return {
-      errorMessage: "Relationship must be of the form `resource@subject`",
-    };
-  }
-
-  const resourceString = pieces[0];
-  // Add back any '@' characters that may have been in the caveat context
-  let subjectString = pieces.slice(1).join("@");
-  let caveatString = "";
-  if (subjectString.endsWith("]")) {
-    const subjectPieces = subjectString.split("[");
-    if (subjectPieces.length < 2) {
-      return {
-        errorMessage:
-          "Relationship must be of the form `resource@subject[caveat]`",
-      };
-    }
-
-    subjectString = subjectPieces[0];
-    caveatString = "[" + subjectPieces.splice(1).join("[");
-  }
-
-  const resource = OBJECT_AND_RELATION_REGEX.exec(resourceString);
-  const subject = SUBJECT_REGEX.exec(subjectString);
-  const caveat = CAVEAT_REGEX.exec(caveatString);
-
-  if (!resource?.groups || !subject?.groups) {
+  const parsed = RELATIONSHIP_REGEX.exec(trimmed);
+  if (!parsed || !parsed.groups) {
     return {
       errorMessage:
         "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     };
   }
 
-  if (caveatString && !caveat?.groups) {
-    return {
-      errorMessage:
-        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatName]`",
-    };
-  }
+  const resourceNamespace = parsed?.groups["resourceType"] ?? "";
+  const resourceObjectId = parsed?.groups["resourceID"] ?? "";
+  const resourceRelation = parsed?.groups["resourceRel"] ?? "";
 
-  const resourceNamespace = resource?.groups["namespace"] ?? "";
-  const resourceObjectId = resource?.groups["object_id"] ?? "";
-  const resourceRelation = resource?.groups["relation"] ?? "";
-
-  const subjectNamespace = subject?.groups["namespace"] ?? "";
-  const subjectObjectId = subject?.groups["object_id"] ?? "";
-  const subjectRelation = subject?.groups["relation"] ?? "...";
+  const subjectNamespace = parsed?.groups["subjectType"] ?? "";
+  const subjectObjectId = parsed?.groups["subjectID"] ?? "";
+  const subjectRelation = parsed?.groups["subjectRel"] ?? "...";
 
   // Validate the namespaces, object ids and relation(s).
   if (!NAMESPACE_REGEX.test(resourceNamespace)) {
@@ -180,26 +152,46 @@ export const parseRelationshipWithError = (
   }
 
   let contextualizedCaveat: ContextualizedCaveat | undefined = undefined;
-  if (caveat?.groups) {
+  if (parsed.groups["caveatName"]) {
     contextualizedCaveat = {
-      caveatName: caveat.groups["caveat_name"] ?? "",
+      caveatName: parsed.groups["caveatName"] ?? "",
     };
 
-    if (caveat.groups["caveat_context"]) {
+    if (parsed.groups["caveatContext"]) {
       try {
-        const parsed = JSON.parse(caveat.groups["caveat_context"]);
+        const caveatContext = JSON.parse(parsed.groups["caveatContext"]);
         if (typeof parsed !== "object") {
           return {
             errorMessage: `Invalid value for caveat context: must be object`,
           };
         }
 
-        contextualizedCaveat.context = Struct.fromJson(parsed);
+        contextualizedCaveat.context = Struct.fromJson(caveatContext);
       } catch (e) {
         return {
           errorMessage: `Invalid caveat context: ${e}`,
         };
       }
+    }
+  }
+
+  let optionalExpirationTime: Timestamp | undefined = undefined;
+  if (parsed.groups["expirationDateTime"]) {
+    try {
+      let dtString = parsed.groups["expirationDateTime"];
+      if (!dtString.endsWith("Z")) {
+        dtString += "Z";
+      }
+
+      const milliseconds = Date.parse(dtString);
+      optionalExpirationTime = {
+        seconds: (milliseconds / 1000).toString(),
+        nanos: 0,
+      };
+    } catch (e) {
+      return {
+        errorMessage: `Invalid expiration time: ${e}`,
+      };
     }
   }
 
@@ -215,6 +207,7 @@ export const parseRelationshipWithError = (
       relation: subjectRelation,
     },
     caveat: contextualizedCaveat,
+    optionalExpirationTime: optionalExpirationTime,
   };
 };
 
@@ -286,11 +279,19 @@ export const convertRelationshipToString = (rel: Relationship) => {
     }]`;
   }
 
+  let expirationString = "";
+  if (rel.optionalExpirationTime) {
+    const datetime = new Date(
+      parseFloat(rel.optionalExpirationTime.seconds) * 1000,
+    );
+    expirationString = `[expiration:${datetime.toISOString().replace(".000", "")}]`;
+  }
+
   const subjectRelation =
     rel.subject?.relation && rel.subject.relation !== "..."
       ? `#${rel.subject.relation}`
       : "";
-  return `${rel.resourceAndRelation?.namespace}:${rel.resourceAndRelation?.objectId}#${rel.resourceAndRelation?.relation}@${rel.subject?.namespace}:${rel.subject?.objectId}${subjectRelation}${caveatString}`;
+  return `${rel.resourceAndRelation?.namespace}:${rel.resourceAndRelation?.objectId}#${rel.resourceAndRelation?.relation}@${rel.subject?.namespace}:${rel.subject?.objectId}${subjectRelation}${caveatString}${expirationString}`;
 };
 
 /**

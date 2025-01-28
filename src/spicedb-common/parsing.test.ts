@@ -1,3 +1,5 @@
+import { describe, expect, it } from "vitest";
+import { assert } from "../test/utils";
 import {
   convertRelationshipToString,
   mergeRelationshipsStringAndComments,
@@ -5,8 +7,6 @@ import {
   parseRelationshipWithError,
 } from "./parsing";
 import { Struct } from "./protodefs/google/protobuf/struct";
-import { assert } from "../test/utils";
-import { describe, it, expect } from "vitest";
 
 describe("converting relationships", () => {
   it("converts relationships properly to strings", () => {
@@ -29,13 +29,28 @@ describe("converting relationships", () => {
     const parsed = parseRelationship(relationship);
     expect(convertRelationshipToString(parsed!)).toEqual(relationship);
   });
+
+  it("converts caveated and expiration relationships properly to strings", () => {
+    const relationship =
+      'document:something#somerel@user:something[some:{"hi":"there"}][expiration:2024-01-02T12:34:56Z]';
+    const parsed = parseRelationship(relationship);
+    expect(convertRelationshipToString(parsed!)).toEqual(relationship);
+  });
+
+  it("converts expiring relationship properly to string", () => {
+    const relationship =
+      "document:something#somerel@user:something[expiration:2024-01-02T12:34:56Z]";
+    const parsed = parseRelationship(relationship);
+    expect(convertRelationshipToString(parsed!)).toEqual(relationship);
+  });
 });
 
 describe("parsing relationships", () => {
   it("returns an error for an empty relationship", () => {
     const relationship = "";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Relationship missing a subject",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
@@ -50,14 +65,16 @@ describe("parsing relationships", () => {
   it("returns an error for a relationship missing a subject", () => {
     const relationship = "somenamespace:something#somerel";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Relationship missing a subject",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
   it("returns an error for a relationship with an invalid namespace", () => {
     const relationship = "a:something#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Invalid namespace 'a': Must be alphanumeric",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
@@ -65,7 +82,7 @@ describe("parsing relationships", () => {
     const relationship = "document:some.thing#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        "Invalid resource object ID 'some.thing': Must be alphanumeric. Wildcards are not allowed",
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
@@ -73,21 +90,23 @@ describe("parsing relationships", () => {
     const relationship = "document:*#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        "Invalid resource object ID '*': Must be alphanumeric. Wildcards are not allowed",
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
   it("returns an error for a relationship with an invalid relation", () => {
     const relationship = "document:something#a@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Invalid relation 'a': Must be alphanumeric",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
   it("returns an error for a relationship with an invalid subject namespace", () => {
     const relationship = "document:something#somerel@a:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Invalid namespace 'a': Must be alphanumeric",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
@@ -95,14 +114,15 @@ describe("parsing relationships", () => {
     const relationship = "document:something#somerel@user:some.thing";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        "Invalid subject object ID 'some.thing': Must be alphanumeric",
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
   it("returns an error for a relationship with an invalid subject relation", () => {
     const relationship = "document:something#somerel@user:someuser#a";
     expect(parseRelationshipWithError(relationship)).toEqual({
-      errorMessage: "Invalid relation 'a': Must be alphanumeric",
+      errorMessage:
+        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
     });
   });
 
@@ -233,6 +253,18 @@ describe("parsing relationships", () => {
     const relationship =
       "document:--=base64YWZzZGZh-ZHNmZHPwn5iK8J+YivC/fmIrwn5iK==#view@user:veryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryveryverylong";
     expect(parseRelationship(relationship)).toBeDefined();
+  });
+
+  it("parses a correct relationship with expiration", () => {
+    const relationship =
+      "document:somedoc#viewer@user:tom[expiration:2024-01-01T12:00:00]";
+    expect(parseRelationship(relationship)).toBeDefined();
+  });
+
+  it("fails to parse a relationship with invalid expiration", () => {
+    const relationship =
+      "document:somedoc#viewer@user:tom[expiration:2024aaaa01-01T12:00:00]";
+    expect(parseRelationship(relationship)).toBeUndefined();
   });
 });
 

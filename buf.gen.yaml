@@ -8,7 +8,7 @@ plugins:
       - "generate_dependencies"
       - "optimize_code_size"
 inputs:
-  - module: "buf.build/authzed/api:v1.38.0"
+  - module: "buf.build/authzed/api:v1.40.0"
     paths:
       - "authzed/api/v0"
   - git_repo: "https://github.com/authzed/spicedb"

@@ -97,7 +97,8 @@
     "cy:run": "cypress run --browser chrome",
     "cy:open": "cypress open",
     "update:spicedb": "./scripts/update-spicedb.sh",
-    "update:zed": "./scripts/update-zed.sh"
+    "update:zed": "./scripts/update-zed.sh",
+    "update:buf": "buf generate"
   },
   "browserslist": {
     "production": [
