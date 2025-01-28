@@ -27,7 +27,7 @@ export type DataValidator = RegExp | ((input: string) => boolean);
 
 export function validate(
   validator: DataValidator,
-  dataValue: string | undefined
+  dataValue: string | undefined,
 ): boolean {
   const isValid =
     typeof validator === "function"

@@ -100,12 +100,12 @@ export interface FieldCellRendererProps {
 
 type GetAutocompleteOptions<Q extends FieldCellProps> = (
   props: FieldCellRendererProps,
-  cellProps: Q
+  cellProps: Q,
 ) => string[];
 
 function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   kind: string,
-  getAutocompleteOptions: GetAutocompleteOptions<Q>
+  getAutocompleteOptions: GetAutocompleteOptions<Q>,
 ) {
   return (propsRefs: MutableRefObject<FieldCellRendererProps>) => {
     return {
@@ -119,7 +119,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
           dataValue = dataValue
             .substring(
               0,
-              dataValue.length * (rect.width / textMetrics.width) - 4
+              dataValue.length * (rect.width / textMetrics.width) - 4,
             )
             .concat("...");
         }
@@ -135,7 +135,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
             `(${DataTitle[dataKind]})`,
             rect.x + 10,
             rect.y + rect.height / 2 + 1,
-            rect.width
+            rect.width,
           );
           ctx.restore();
           return true;
@@ -166,7 +166,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
                 dataValue === selectedType.type
               ) {
                 similarColor = props.relationshipsService.getTypeColor(
-                  selectedType.type
+                  selectedType.type,
                 );
               }
               break;
@@ -183,7 +183,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
               ) {
                 similarColor = props.relationshipsService.getObjectColor(
                   selectedObject.type,
-                  selectedObject.objectid
+                  selectedObject.objectid,
                 );
               }
               break;
@@ -201,7 +201,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
                   selectedRelation.objectid
               ) {
                 similarColor = stc(
-                  `${selectedRelation.type}:${selectedRelation.objectid}#${selectedRelation.relation}`
+                  `${selectedRelation.type}:${selectedRelation.objectid}#${selectedRelation.relation}`,
                 );
               }
               break;
@@ -236,7 +236,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
             rect.x + 2,
             rect.y + 2,
             rect.width - 3,
-            rect.height - 3
+            rect.height - 3,
           );
         }
 
@@ -252,7 +252,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
           dataValue,
           rect.x + 10,
           rect.y + rect.height / 2 + 1,
-          rect.width - 20
+          rect.width - 20,
         );
 
         ctx.restore();
@@ -315,7 +315,7 @@ const FieldCellEditor = <
 
   const autocompleteOptions: string[] = props.getAutocompleteOptions(
     props.fieldPropsRef.current,
-    props.value.data
+    props.value.data,
   );
   return (
     <Autocomplete
@@ -387,7 +387,7 @@ export const TypeCellRenderer = fieldCellRenderer<TypeCell, TypeCellProps>(
       .listDefinitions()
       .map((def: ResolvedDefinition) => def.definition.name)
       .sort();
-  }
+  },
 );
 
 export const ObjectIdCellRenderer = fieldCellRenderer<
@@ -401,7 +401,7 @@ export const ObjectIdCellRenderer = fieldCellRenderer<
     }
 
     const resolvedDefinition = props.resolver.lookupDefinition(
-      props.annotatedData[cellProps.row].columnData[cellProps.col - 1]
+      props.annotatedData[cellProps.row].columnData[cellProps.col - 1],
     );
     if (resolvedDefinition === undefined) {
       return [];
@@ -412,7 +412,7 @@ export const ObjectIdCellRenderer = fieldCellRenderer<
         .getObjectIds(resolvedDefinition.definition.name)
         ?.sort() ?? []
     );
-  }
+  },
 );
 
 export const RelationCellRenderer = fieldCellRenderer<
@@ -426,7 +426,7 @@ export const RelationCellRenderer = fieldCellRenderer<
     }
 
     const resolvedDefinition = props.resolver.lookupDefinition(
-      props.annotatedData[cellProps.row].columnData[cellProps.col - 2]
+      props.annotatedData[cellProps.row].columnData[cellProps.col - 2],
     );
     if (resolvedDefinition === undefined) {
       return [];
@@ -437,7 +437,7 @@ export const RelationCellRenderer = fieldCellRenderer<
     }
 
     return resolvedDefinition.listRelationsAndPermissionNames().sort();
-  }
+  },
 );
 
 export const CaveatNameCellRenderer = fieldCellRenderer<

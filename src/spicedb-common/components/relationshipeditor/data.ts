@@ -74,7 +74,7 @@ export function toExternalData(data: AnnotatedData): RelationshipDatum[] {
  * fromExternalData converts a simple RelationshipDatum array into the annotated data.
  */
 export function fromExternalData(
-  externalData: RelationshipDatum[] | undefined
+  externalData: RelationshipDatum[] | undefined,
 ): AnnotatedData {
   return (externalData ?? []).map(datumToAnnotated);
 }
@@ -83,7 +83,7 @@ export function fromExternalData(
  * emptyAnnotatedDatum returns an empty annotated datum for the grid, at the given index.
  */
 export function emptyAnnotatedDatum(
-  index: number
+  index: number,
 ): RelationshipDatumAndMetadata {
   return datumToAnnotated(
     {
@@ -97,7 +97,7 @@ export function emptyAnnotatedDatum(
       caveatContext: "",
       expiration: "",
     },
-    index
+    index,
   );
 }
 
@@ -106,7 +106,7 @@ export function emptyAnnotatedDatum(
  * datum is a comment or not a full relationship, returns undefined.
  */
 export function toRelationshipString(
-  annotated: RelationshipDatumAndMetadata
+  annotated: RelationshipDatumAndMetadata,
 ): string | undefined {
   if ("comment" in annotated.datum) {
     return undefined;
@@ -119,7 +119,7 @@ export function toRelationshipString(
  * toFullRelationshipString returns the full relationship found, or undefined if none.
  */
 export function toFullRelationshipString(
-  annotated: PartialRelationship
+  annotated: PartialRelationship,
 ): string | undefined {
   if (
     !annotated.resourceType ||
@@ -137,7 +137,7 @@ export function toFullRelationshipString(
  * toPartialRelationshipString returns a relationship string with the given relationship's data.
  */
 export function toPartialRelationshipString(
-  annotated: PartialRelationship
+  annotated: PartialRelationship,
 ): string | undefined {
   const caveatContext = annotated.caveatContext
     ? `:${annotated.caveatContext}`
@@ -160,7 +160,7 @@ export function toPartialRelationshipString(
  */
 export function datumToAnnotated(
   datum: RelationshipDatum,
-  index: number
+  index: number,
 ): RelationshipDatumAndMetadata {
   return {
     datum: datum,
@@ -245,7 +245,7 @@ function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
 
 // relationshipToColumnData converts the given relationship into column data.
 export function relationshipToColumnData(
-  rel: RelationshipWithComments
+  rel: RelationshipWithComments,
 ): ColumnData | undefined {
   const relationship = rel.relationship;
   if (relationship === undefined) {
@@ -294,7 +294,7 @@ export function updateRowInData(
   inFlightGridData: AnnotatedData,
   dataRowIndex: number,
   newColumnData: ColumnData,
-  startingColIndex?: number
+  startingColIndex?: number,
 ): AnnotatedData {
   const adjustedData = Array.from(inFlightGridData);
   if (dataRowIndex === adjustedData.length) {

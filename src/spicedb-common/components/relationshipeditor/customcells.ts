@@ -52,7 +52,7 @@ export function useCustomCells(
   resolver: Resolver | undefined,
   similarHighlighting: boolean,
   columnsWithWidths: Column[],
-  isReadOnly: boolean
+  isReadOnly: boolean,
 ): {
   drawCell: DrawCallback;
   provideEditor: ProvideEditorCallback<GridCell>;
@@ -264,7 +264,7 @@ export function useCustomCells(
       }
       return false;
     },
-    [renderers]
+    [renderers],
   );
 
   const provideEditor = useCallback<ProvideEditorCallback<GridCell>>(
@@ -279,7 +279,7 @@ export function useCustomCells(
 
       return undefined;
     },
-    [renderers, isReadOnly]
+    [renderers, isReadOnly],
   );
 
   return { drawCell, provideEditor };
