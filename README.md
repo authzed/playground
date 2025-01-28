@@ -84,6 +84,8 @@ Setup git submodules: `git submodule update --init --recursive`
 
 Run `yarn install` in the _root_ project directory.
 
+Install LFS: `git lfs install`
+
 ## Running for development
 
 ```
