@@ -20,13 +20,14 @@ export enum DataKind {
   SUBJECT_RELATION = 6,
   CAVEAT_NAME = 7,
   CAVEAT_CONTEXT = 8,
+  EXPIRATION = 9,
 }
 
 export type DataValidator = RegExp | ((input: string) => boolean);
 
 export function validate(
   validator: DataValidator,
-  dataValue: string | undefined,
+  dataValue: string | undefined
 ): boolean {
   const isValid =
     typeof validator === "function"
@@ -57,6 +58,14 @@ export const DataRegex: Record<DataKind, DataValidator> = {
       return false;
     }
   },
+  [DataKind.EXPIRATION]: (input: string) => {
+    try {
+      Date.parse(input);
+      return true;
+    } catch {
+      return false;
+    }
+  },
 };
 
 export const DataTitle: Record<DataKind, string> = {
@@ -69,6 +78,7 @@ export const DataTitle: Record<DataKind, string> = {
   [DataKind.SUBJECT_RELATION]: "",
   [DataKind.CAVEAT_NAME]: "",
   [DataKind.CAVEAT_CONTEXT]: "",
+  [DataKind.EXPIRATION]: "",
 };
 
 export enum RelationshipSection {
@@ -76,6 +86,7 @@ export enum RelationshipSection {
   RESOURCE = 1,
   SUBJECT = 2,
   CAVEAT = 3,
+  EXPIRATION = 4,
 }
 
 export type Column = SizedGridColumn & {
@@ -166,5 +177,14 @@ export const COLUMNS: Column[] = [
     dataKind: DataKind.CAVEAT_CONTEXT,
     section: RelationshipSection.CAVEAT,
     dataDescription: "JSON",
+  },
+  {
+    title: "Date/Time",
+    id: "expiration",
+    width: DEFAULT_COLUMN_WIDTH,
+    group: "Expiration (optional)",
+    dataKind: DataKind.EXPIRATION,
+    section: RelationshipSection.EXPIRATION,
+    dataDescription: "datetime",
   },
 ];

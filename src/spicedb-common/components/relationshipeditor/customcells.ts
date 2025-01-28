@@ -16,6 +16,8 @@ import {
   CaveatContextCellRenderer,
   CaveatNameCell,
   CaveatNameCellRenderer,
+  ExpirationCell,
+  ExpirationCellRenderer,
   ObjectIdCell,
   ObjectIdCellRenderer,
   RelationCell,
@@ -33,7 +35,8 @@ export type RelEditorCustomCell =
   | ObjectIdCell
   | RelationCell
   | CaveatNameCell
-  | CaveatContextCell;
+  | CaveatContextCell
+  | ExpirationCell;
 
 // Copied from: https://github.com/glideapps/glide-data-grid/blob/6b0a04f9d6550378890580b4db1e1168e4268c54/packages/cells/src/index.ts#L12
 export type DrawCallback = NonNullable<DataEditorProps["drawCell"]>;
@@ -49,7 +52,7 @@ export function useCustomCells(
   resolver: Resolver | undefined,
   similarHighlighting: boolean,
   columnsWithWidths: Column[],
-  isReadOnly: boolean,
+  isReadOnly: boolean
 ): {
   drawCell: DrawCallback;
   provideEditor: ProvideEditorCallback<GridCell>;
@@ -179,6 +182,28 @@ export function useCustomCells(
     return { caveatcontext: annotatedData[row].columnData[col] };
   }, [gridSelection, annotatedData]);
 
+  const selectedExpiration = useMemo(() => {
+    if (!gridSelection?.current?.cell) {
+      return undefined;
+    }
+
+    const [col, row] = gridSelection.current.cell;
+    if (row >= annotatedData.length) {
+      return undefined;
+    }
+
+    if (col >= COLUMNS.length) {
+      return undefined;
+    }
+
+    const dataKind = COLUMNS[col].dataKind;
+    if (dataKind !== DataKind.EXPIRATION) {
+      return undefined;
+    }
+
+    return { expiration: annotatedData[row].columnData[col] };
+  }, [gridSelection, annotatedData]);
+
   const props = useRef({
     relationshipsService: relationshipsService,
     annotatedData: annotatedData,
@@ -190,6 +215,7 @@ export function useCustomCells(
       selectedRelation: selectedRelation,
       selectedCaveatName: selectedCaveatName,
       selectedCaveatContext: selectedCaveatContext,
+      selectedExpiration: selectedExpiration,
     },
     similarHighlighting: similarHighlighting,
     columnsWithWidths: columnsWithWidths,
@@ -208,6 +234,7 @@ export function useCustomCells(
       selectedRelation: selectedRelation,
       selectedCaveatName: selectedCaveatName,
       selectedCaveatContext: selectedCaveatContext,
+      selectedExpiration: selectedExpiration,
     },
     similarHighlighting: similarHighlighting,
     columnsWithWidths: columnsWithWidths,
@@ -222,6 +249,7 @@ export function useCustomCells(
       RelationCellRenderer(props),
       CaveatNameCellRenderer(props),
       CaveatContextCellRenderer(props),
+      ExpirationCellRenderer(props),
     ];
   }, []);
 
@@ -236,7 +264,7 @@ export function useCustomCells(
       }
       return false;
     },
-    [renderers],
+    [renderers]
   );
 
   const provideEditor = useCallback<ProvideEditorCallback<GridCell>>(
@@ -251,7 +279,7 @@ export function useCustomCells(
 
       return undefined;
     },
-    [renderers, isReadOnly],
+    [renderers, isReadOnly]
   );
 
   return { drawCell, provideEditor };

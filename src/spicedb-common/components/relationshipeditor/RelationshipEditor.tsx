@@ -1,8 +1,3 @@
-import {
-  ParseRelationshipError,
-  parseRelationshipsWithComments,
-  parseRelationshipWithError,
-} from "../../parsing";
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
@@ -37,13 +32,18 @@ import {
   useMemo,
   useRef,
   useState,
-  type ReactNode,
   type KeyboardEvent,
+  type ReactNode,
 } from "react";
 import { useCookies } from "react-cookie";
 import { ThemeProvider } from "styled-components";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 import { Resolver } from "../../parsers/dsl/resolution";
+import {
+  ParseRelationshipError,
+  parseRelationshipsWithComments,
+  parseRelationshipWithError,
+} from "../../parsing";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import { useRelationshipsService } from "../../services/relationshipsservice";
 import {
@@ -81,6 +81,8 @@ import {
   CaveatContextCell,
   CAVEATNAME_CELL_KIND,
   CaveatNameCell,
+  EXPIRATION_CELL_KIND,
+  ExpirationCell,
   OBJECTID_CELL_KIND,
   ObjectIdCell,
   RELATION_CELL_KIND,
@@ -128,7 +130,7 @@ const useStyles = makeStyles((theme: MuiTheme) =>
     toolbarCheckbox: {
       padding: "4px",
     },
-  }),
+  })
 );
 
 export type RelationTupleHighlight = {
@@ -216,7 +218,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           relData.subjectRelation ? `#${relData.subjectRelation}` : ""
         }${
           relData.caveatName ? `[${relData.caveatName}${caveatContext}]` : ""
-        }`;
+        }${relData.expiration ? `[expiration:${relData.expiration}]` : ""}`;
         return parseRelationshipWithError(str);
       })
       .filter((value: Relationship | ParseRelationshipError) => {
@@ -239,17 +241,17 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     const updated = updateRowInData(
       inFlightData.current,
       dataRowIndex,
-      newColumnData,
+      newColumnData
     );
     inFlightData.current = updated;
     setData(updated);
   };
 
   const [gridSelection, setGridSelection] = useState<GridSelection | undefined>(
-    undefined,
+    undefined
   );
   const handleGridSelectionChanged = (
-    newSelection: GridSelection | undefined,
+    newSelection: GridSelection | undefined
   ) => {
     // Prevent column-only selection.
     if (newSelection?.columns && newSelection.columns.length > 0) {
@@ -261,7 +263,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   const handleCellEdited = (
     cellPosition: readonly [number, number],
-    newValue: EditableGridCell,
+    newValue: EditableGridCell
   ) => {
     const [col, row] = cellPosition;
     if (row >= inFlightData.current.length || col >= COLUMNS.length) {
@@ -280,7 +282,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
         const adjustedData = Array.from(inFlightData.current);
         adjustedData[row] = datumToAnnotated(
           relationshipToDatum(parsed),
-          adjustedData[row].dataRowIndex,
+          adjustedData[row].dataRowIndex
         );
         setData(adjustedData);
         return;
@@ -326,7 +328,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
               {COLUMNS[col].dataDescription}
             </Typography>
           )}
-        </div>,
+        </div>
       );
     }
 
@@ -571,6 +573,19 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
             copyData: data[row].columnData[col],
           } as CaveatContextCell;
 
+        case DataKind.EXPIRATION:
+          return {
+            kind: GridCellKind.Custom,
+            data: {
+              kind: EXPIRATION_CELL_KIND,
+              row: row,
+              col: col,
+              dataValue: data[row].columnData[col],
+            },
+            allowOverlay: true,
+            copyData: data[row].columnData[col],
+          } as ExpirationCell;
+
         default:
           return {
             kind: GridCellKind.Text,
@@ -580,7 +595,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
           };
       }
     },
-    [data],
+    [data]
   );
 
   const getCellsForSelection = useCallback(
@@ -607,7 +622,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
       return result;
     },
-    [data],
+    [data]
   );
 
   const classes = useStyles();
@@ -626,7 +641,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   const handlePaste = (
     target: readonly [number, number],
-    values: readonly (readonly string[])[],
+    values: readonly (readonly string[])[]
   ) => {
     if (props.isReadOnly) {
       return false;
@@ -677,7 +692,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
         adjustedData,
         rowToUpdate,
         columnData,
-        startingCol,
+        startingCol
       );
       rowOffset++;
     });
@@ -693,7 +708,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
         const rowIndex = data.findIndex(
           (datum: RelationshipDatumAndMetadata) => {
             return toRelationshipString(datum) === highlight.tupleString;
-          },
+          }
         );
         if (rowIndex === undefined) {
           return undefined;
@@ -738,7 +753,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   const copySelectedRows = () => {
     if (gridSelection?.rows) {
       const selected = data.filter((annotated: RelationshipDatumAndMetadata) =>
-        gridSelection?.rows.hasIndex(annotated.dataRowIndex),
+        gridSelection?.rows.hasIndex(annotated.dataRowIndex)
       );
       if (selected) {
         const data = selected
@@ -765,7 +780,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
         if ("comment" in annotated.datum) {
           const parsed = parseRelationshipWithError(
-            annotated.datum.comment.substring(CommentCellPrefix.length).trim(),
+            annotated.datum.comment.substring(CommentCellPrefix.length).trim()
           );
           if ("errorMessage" in parsed) {
             return annotated;
@@ -848,7 +863,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
         },
       });
     },
-    [highlightsByRowIndex, setTooltip],
+    [highlightsByRowIndex, setTooltip]
   );
 
   const width = props.dimensions?.width ?? 1200;
@@ -879,7 +894,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
 
   const [cookies, setCookies] = useCookies(["relgrid-similar-highlighting"]);
   const [similarHighlighting, setSimilarHighlighting] = useState(
-    cookies["relgrid-similar-highlighting"] !== "0",
+    cookies["relgrid-similar-highlighting"] !== "0"
   );
   const handleToggleSimilarHighlighting = () => {
     const updated = !similarHighlighting;
@@ -894,7 +909,7 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
   const columnsWithWidths = useMemo(() => {
     const defaultColWidth = Math.max(
       width / (COLUMNS.length + 0.5),
-      MIN_COLUMN_WIDTH,
+      MIN_COLUMN_WIDTH
     ); // +0.5 to give some padding
     return COLUMNS.map((col: Column) => {
       return {
@@ -928,12 +943,12 @@ export function RelationshipEditor(props: RelationshipEditorProps) {
     props.resolver,
     similarHighlighting,
     columnsWithWidths,
-    props.isReadOnly,
+    props.isReadOnly
   );
 
   // TODO: get JSX out of state.
   const [snackbarMessage, setSnackbarMessage] = useState<ReactNode | undefined>(
-    undefined,
+    undefined
   );
 
   return (

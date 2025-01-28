@@ -27,6 +27,7 @@ export type PartialRelationship = {
   subjectRelation: string;
   caveatName: string;
   caveatContext: string;
+  expiration: string;
 };
 
 /**
@@ -73,7 +74,7 @@ export function toExternalData(data: AnnotatedData): RelationshipDatum[] {
  * fromExternalData converts a simple RelationshipDatum array into the annotated data.
  */
 export function fromExternalData(
-  externalData: RelationshipDatum[] | undefined,
+  externalData: RelationshipDatum[] | undefined
 ): AnnotatedData {
   return (externalData ?? []).map(datumToAnnotated);
 }
@@ -82,7 +83,7 @@ export function fromExternalData(
  * emptyAnnotatedDatum returns an empty annotated datum for the grid, at the given index.
  */
 export function emptyAnnotatedDatum(
-  index: number,
+  index: number
 ): RelationshipDatumAndMetadata {
   return datumToAnnotated(
     {
@@ -94,8 +95,9 @@ export function emptyAnnotatedDatum(
       subjectRelation: "",
       caveatName: "",
       caveatContext: "",
+      expiration: "",
     },
-    index,
+    index
   );
 }
 
@@ -104,7 +106,7 @@ export function emptyAnnotatedDatum(
  * datum is a comment or not a full relationship, returns undefined.
  */
 export function toRelationshipString(
-  annotated: RelationshipDatumAndMetadata,
+  annotated: RelationshipDatumAndMetadata
 ): string | undefined {
   if ("comment" in annotated.datum) {
     return undefined;
@@ -117,7 +119,7 @@ export function toRelationshipString(
  * toFullRelationshipString returns the full relationship found, or undefined if none.
  */
 export function toFullRelationshipString(
-  annotated: PartialRelationship,
+  annotated: PartialRelationship
 ): string | undefined {
   if (
     !annotated.resourceType ||
@@ -135,7 +137,7 @@ export function toFullRelationshipString(
  * toPartialRelationshipString returns a relationship string with the given relationship's data.
  */
 export function toPartialRelationshipString(
-  annotated: PartialRelationship,
+  annotated: PartialRelationship
 ): string | undefined {
   const caveatContext = annotated.caveatContext
     ? `:${annotated.caveatContext}`
@@ -143,11 +145,14 @@ export function toPartialRelationshipString(
   const caveat = annotated.caveatName
     ? `[${annotated.caveatName}${caveatContext}]`
     : "";
+  const expiration = annotated.expiration
+    ? `[expiration:${annotated.expiration}]`
+    : "";
   return `${annotated.resourceType}:${annotated.resourceId}#${
     annotated.relation
   }@${annotated.subjectType}:${annotated.subjectId}${
     annotated.subjectRelation ? `#${annotated.subjectRelation}` : ""
-  }${caveat}`;
+  }${caveat}${expiration}`;
 }
 
 /**
@@ -155,7 +160,7 @@ export function toPartialRelationshipString(
  */
 export function datumToAnnotated(
   datum: RelationshipDatum,
-  index: number,
+  index: number
 ): RelationshipDatumAndMetadata {
   return {
     datum: datum,
@@ -181,6 +186,7 @@ export function getColumnData(datum: RelationshipDatum) {
     datum.subjectRelation ?? "",
     datum.caveatName ?? "",
     datum.caveatContext ?? "",
+    datum.expiration ?? "",
   ];
 
   return colData;
@@ -206,6 +212,11 @@ export function relationshipToDatum(rel: Relationship): PartialRelationship {
     caveatContext: rel.caveat?.context
       ? Struct.toJsonString(rel.caveat?.context)
       : "",
+    expiration: rel.optionalExpirationTime
+      ? new Date(parseFloat(rel.optionalExpirationTime.seconds) * 1000)
+          .toISOString()
+          .replace(".000", "")
+      : "",
   };
 }
 
@@ -228,12 +239,13 @@ function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
     subjectRelation: columnData[5] ?? "",
     caveatName: columnData[6] ?? "",
     caveatContext: columnData[7] ?? "",
+    expiration: columnData[8] ?? "",
   };
 }
 
 // relationshipToColumnData converts the given relationship into column data.
 export function relationshipToColumnData(
-  rel: RelationshipWithComments,
+  rel: RelationshipWithComments
 ): ColumnData | undefined {
   const relationship = rel.relationship;
   if (relationship === undefined) {
@@ -257,6 +269,11 @@ export function relationshipToColumnData(
     userRel,
     relationship.caveat?.caveatName ?? "",
     caveatContext,
+    relationship.optionalExpirationTime
+      ? new Date(parseFloat(relationship.optionalExpirationTime.seconds) * 1000)
+          .toISOString()
+          .replace(".000", "")
+      : "",
   ];
 
   if (columnData.length !== COLUMNS.length) {
@@ -277,7 +294,7 @@ export function updateRowInData(
   inFlightGridData: AnnotatedData,
   dataRowIndex: number,
   newColumnData: ColumnData,
-  startingColIndex?: number,
+  startingColIndex?: number
 ): AnnotatedData {
   const adjustedData = Array.from(inFlightGridData);
   if (dataRowIndex === adjustedData.length) {
