@@ -9,7 +9,7 @@ env:
   IMAGE_NAME: "authzed/spicedb-playground"
 jobs:
   build-and-push-image:
-    runs-on: "buildjet-4vcpu-ubuntu-2204"
+    runs-on: "depot-ubuntu-24.04-4"
     permissions:
       contents: "write"
       packages: "write"

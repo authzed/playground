@@ -10,7 +10,7 @@ on:
 jobs:
   test:
     name: "Run Linters and Typechecking"
-    runs-on: "ubuntu-latest"
+    runs-on: "depot-ubuntu-24.04-small"
     steps:
       - uses: "actions/checkout@v4"
       - uses: "authzed/action-spicedb@v1"
