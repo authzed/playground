@@ -87,7 +87,8 @@
     "vitest": "^2.1.8"
   },
   "scripts": {
-    "dev": "HTTPS=true vite",
+    "setup": "./scripts/copy-public.sh",
+    "dev": "yarn run setup && HTTPS=true vite",
     "build": "tsc -b && vite build && ./scripts/copy-build.sh",
     "test": "vitest",
     "lint": "eslint .",

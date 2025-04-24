@@ -6,3 +6,4 @@ zed
 build
 .vercel
 .env
+public/static/schemas
