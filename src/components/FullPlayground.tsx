@@ -1,5 +1,4 @@
 import { useAlert } from "../playground-ui/AlertProvider";
-import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import TabLabel from "../playground-ui/TabLabel";
@@ -377,7 +376,6 @@ function ApolloedPlayground() {
 export function ThemedAppView(props: { datastore: DataStore }) {
   const { pushEvent } = useGoogleAnalytics();
   const { showAlert } = useAlert();
-  const { showConfirm } = useConfirmDialog();
 
   const [sharingState, setSharingState] = useState<SharingState>({
     status: SharingStatus.NOT_RUN,
@@ -556,25 +554,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     }
   };
 
-  const askLoadExampleData = async (ex: Example) => {
-    const [result] = await showConfirm({
-      title: `Replace contents with "${ex.title}"?`,
-      content: `This will replace all current Playground data with the example data for "${ex.title}"`,
-      buttons: [
-        { title: "Cancel", value: "undefined" },
-        {
-          title: `Replace With Example`,
-          variant: "contained",
-          color: "primary",
-          value: "load",
-        },
-      ],
-    });
-
-    if (result !== "load") {
-      return;
-    }
-
+  const loadExampleData = async (ex: Example) => {
     pushEvent("load-example", {
       id: ex.id,
     });
@@ -756,12 +736,11 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         {!isOutOfDate && (
           <>
             <ExamplesDropdown
-              className={TourElementClass.browse}
               disabled={
                 sharingState.status === SharingStatus.SHARING ||
                 validationState.status === ValidationStatus.RUNNING
               }
-              exampleSelected={askLoadExampleData}
+              loadExample={loadExampleData}
             />
             <div>
               {sharingState.status === SharingStatus.SHARED && (

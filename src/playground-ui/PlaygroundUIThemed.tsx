@@ -1,27 +1,36 @@
 import CssBaseline from "@material-ui/core/CssBaseline";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import React, { PropsWithChildren, useMemo } from "react";
+import { ReactNode, useMemo, useEffect } from "react";
+import { useTheme } from "@/components/ThemeProvider";
 
 export interface PlaygroundUIThemedProps {
   lightColor?: string;
   darkColor?: string;
   forceDarkMode?: boolean;
+  children: ReactNode;
 }
 
 /**
  * Applied PlaygroundUI themeing to any child content.
  * @example <PlaygroundUIThemed>content</PlaygroundUIThemed>
  */
-export default function PlaygroundUIThemed(
-  props: PropsWithChildren<PlaygroundUIThemedProps>,
-) {
+export default function PlaygroundUIThemed({
+  lightColor,
+  darkColor,
+  forceDarkMode,
+  children,
+}: PlaygroundUIThemedProps) {
+  const { setTheme } = useTheme();
   // Determine whether the user prefers dark or light mode.
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const darkMode = prefersDarkMode || props.forceDarkMode === true;
+  const darkMode = prefersDarkMode || forceDarkMode === true;
 
-  const darkColor = props.darkColor;
-  const lightColor = props.lightColor;
+  useEffect(() => {
+    if (forceDarkMode) {
+      setTheme("dark");
+    }
+  }, [forceDarkMode, setTheme]);
 
   const dark = useMemo(() => {
     return {
@@ -36,7 +45,7 @@ export default function PlaygroundUIThemed(
   }, [lightColor]);
 
   // Instantiate the theme based on the user selection.
-  const theme = React.useMemo(
+  const theme = useMemo(
     () =>
       createTheme({
         palette: {
@@ -93,7 +102,7 @@ export default function PlaygroundUIThemed(
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      {props.children}
+      {children}
     </ThemeProvider>
   );
 }
