@@ -36,6 +36,3 @@ COPY ./contrib/docker-entrypoint-wrapper.sh .
 RUN bash ./test-nginx-conf.sh
 
 COPY --from=playground-builder /app/build/ /usr/share/nginx/html/
-
-COPY examples/schemas/ /usr/share/nginx/html/static/schemas
-RUN ls /usr/share/nginx/html/static/schemas > /usr/share/nginx/html/static/schemas/_all
