@@ -18,7 +18,7 @@ import monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 import "react-reflex/styles.css";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import {
   DataStore,
@@ -90,7 +90,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   }, [props.services.localParseService.state]);
 
   const classes = useStyles();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const datastore = props.datastore;
@@ -175,9 +175,10 @@ export function EditorDisplay(props: EditorDisplayProps) {
     flushSync(() => {
       setLocalIndex(localIndex + 1);
 
+      // TODO: this shouldn't be necessary. Moving to redux may make this less painful.
       const updated = datastore.update(currentItem!, value || "");
       if (updated && updated.pathname !== location.pathname) {
-        history.replace(updated.pathname);
+        navigate({ to: updated.pathname, replace: true });
       }
 
       props.datastoreUpdated();

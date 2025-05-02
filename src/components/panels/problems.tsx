@@ -9,7 +9,7 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import clsx from "clsx";
 import "react-reflex/styles.css";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { DataStorePaths } from "../../services/datastore";
 import { TourElementClass } from "../GuidedTour";
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
@@ -107,7 +107,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
             <Paper className={classes.errorContainer} key={`ir${index}`}>
               <div>
                 <div className={classes.validationErrorContext}>
-                  In {/* @ts-expect-error RRv5 TS definitions are jank */}
+                  In
                   <Link
                     className={classes.link}
                     to={DataStorePaths.Relationships()}

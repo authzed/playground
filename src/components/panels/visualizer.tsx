@@ -12,7 +12,7 @@ import {
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
 import monaco from "monaco-editor";
 import "react-reflex/styles.css";
-import { useHistory } from "react-router-dom";
+import { useNavigate } from "@tanstack/react-router";
 import {
   DataStoreItem,
   DataStoreItemKind,
@@ -20,6 +20,12 @@ import {
 } from "../../services/datastore";
 import { PanelProps } from "./base/common";
 import { PlaygroundPanelLocation } from "./panels";
+
+declare module "@tanstack/react-router" {
+  interface HistoryState {
+    range?: TextRange;
+  }
+}
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -56,11 +62,15 @@ export function VisualizerPanel(
 ) {
   const classes = useStyles();
   const currentItem = props.currentItem;
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const handleBrowseRequested = (range: TextRange | undefined) => {
-    history.push(DataStorePaths.Schema(), {
-      range: range,
+    // TODO: make this functionality use querystrings instead of history state
+    navigate({
+      to: DataStorePaths.Schema(),
+      state: {
+        range,
+      },
     });
   };
 
