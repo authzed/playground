@@ -12,6 +12,7 @@ import { FullPlayground } from "./components/FullPlayground";
 import { InlinePlayground } from "./components/InlinePlayground";
 import AppConfig from "./services/configservice";
 import { PLAYGROUND_UI_COLORS } from "./theme";
+import { ThemeProvider } from "@/components/ThemeProvider";
 
 export interface AppProps {
   /**
@@ -64,16 +65,18 @@ function App(props: AppProps) {
 
   const isEmbeddedPlayground = window.location.pathname.indexOf("/e/") >= 0;
   return (
-    <PlaygroundUIThemed
-      {...PLAYGROUND_UI_COLORS}
-      forceDarkMode={isEmbeddedPlayground}
-    >
-      <AlertProvider>
-        <ConfirmDialogProvider>
-          <ThemedApp forTesting={props.forTesting} />
-        </ConfirmDialogProvider>
-      </AlertProvider>
-    </PlaygroundUIThemed>
+    <ThemeProvider>
+      <PlaygroundUIThemed
+        {...PLAYGROUND_UI_COLORS}
+        forceDarkMode={isEmbeddedPlayground}
+      >
+        <AlertProvider>
+          <ConfirmDialogProvider>
+            <ThemedApp forTesting={props.forTesting} />
+          </ConfirmDialogProvider>
+        </AlertProvider>
+      </PlaygroundUIThemed>
+    </ThemeProvider>
   );
 }
 

@@ -1,42 +1,35 @@
 import { Example, LoadExamples } from "../spicedb-common/examples";
-import { faCaretDown } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { CircularProgress, MenuItem } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import ListItemText from "@material-ui/core/ListItemText";
-import Menu from "@material-ui/core/Menu";
-import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import React, { useEffect, useState } from "react";
 
-const ITEM_HEIGHT = 68;
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+} from "@/components/ui/select";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    loading: {
-      margin: theme.spacing(2),
-      display: "flex",
-      alignItems: "center",
-    },
-  }),
-);
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
-export function ExamplesDropdown(props: {
-  className?: string;
-  disabled?: boolean;
-  exampleSelected: (example: Example) => void;
+import { useEffect, useState } from "react";
+
+export function ExamplesDropdown({
+  disabled,
+  loadExample,
+}: {
+  disabled: boolean;
+  loadExample: (example: Example) => void;
 }) {
-  const classes = useStyles();
-
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const [examples, setExamples] = useState<Example[] | undefined>(undefined);
+  const [examples, setExamples] = useState<Example[]>();
+  const [promptOpen, setPromptOpen] = useState(false);
+  const [selectedExample, setSelectedExample] = useState<Example>();
 
   useEffect(() => {
     const fetchExamples = async () => {
@@ -47,64 +40,58 @@ export function ExamplesDropdown(props: {
     fetchExamples();
   }, [examples]);
 
-  const exampleSelected = (ex: Example) => {
-    props.exampleSelected(ex);
-    setAnchorEl(null);
-  };
-
   return (
     <>
-      <Button
-        size="small"
-        disabled={props.disabled}
-        className={props.className}
-        onClick={handleClick}
-      >
-        Select Example Schema&nbsp;
-        <FontAwesomeIcon icon={faCaretDown} />
-      </Button>
-      <Menu
-        anchorEl={anchorEl}
-        getContentAnchorEl={null}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        PaperProps={{
-          style: {
-            maxHeight: ITEM_HEIGHT * 4.5,
-            width: "50vw",
-            maxWidth: "500px",
-          },
+      <Select
+        onValueChange={(value) => {
+          const example = examples?.find(({ id }) => id === value);
+          if (example) {
+            setSelectedExample(example);
+            setPromptOpen(true);
+          }
         }}
+        disabled={disabled || !examples}
       >
-        {examples === undefined && (
-          <div className={classes.loading}>
-            <CircularProgress />
-          </div>
-        )}
-        {examples !== undefined &&
-          examples.map((example) => {
+        <SelectTrigger>
+          {selectedExample ? selectedExample.title : "Select Example Schema"}
+        </SelectTrigger>
+        <SelectContent>
+          {examples?.map((example) => {
             return (
-              <MenuItem
-                onClick={() => exampleSelected(example)}
-                key={example.id}
-              >
-                <ListItemText
-                  primary={example.title}
-                  secondary={example.subtitle}
-                  secondaryTypographyProps={{
-                    style: {
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                    },
-                  }}
-                />
-              </MenuItem>
+              <SelectItem value={example.id} key={example.id}>
+                {example.title}
+                <br />
+                {example.subtitle}
+              </SelectItem>
             );
           })}
-      </Menu>
+        </SelectContent>
+      </Select>
+      <AlertDialog open={promptOpen} onOpenChange={setPromptOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>
+              Replace contents with "{selectedExample?.title}"?
+            </AlertDialogTitle>
+            <AlertDialogDescription>
+              This will replace all current Playground data with the example
+              data for "{selectedExample?.title}"
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (selectedExample) {
+                  loadExample(selectedExample);
+                }
+              }}
+            >
+              Replace with Example
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </>
   );
 }
