@@ -3,8 +3,6 @@ import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
 import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
 import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
 import "react-reflex/styles.css";
-import { BrowserRouter } from "react-router-dom";
-import { type ReactNode } from "react";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 import "./App.css";
 import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
@@ -13,53 +11,48 @@ import { InlinePlayground } from "./components/InlinePlayground";
 import AppConfig from "./services/configservice";
 import { PLAYGROUND_UI_COLORS } from "./theme";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import {
+  Outlet,
+  RouterProvider,
+  createRouter,
+  createRoute,
+  createRootRoute,
+} from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 
-export interface AppProps {
-  /**
-   * forTesting indicates whether the app is for testing.
-   */
-  forTesting?: boolean | undefined;
-}
+const rootRoute = createRootRoute({
+  component: () => (
+    <>
+      <Outlet />
+      <TanStackRouterDevtools />
+    </>
+  ),
+});
 
-function ForTesting() {
-  return <FullPlayground />;
-}
+// TODO: extend the routing; the $s are catchalls.
+const indexRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "$",
+  component: FullPlayground,
+});
+const inlineRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/i/$",
+  component: InlinePlayground,
+});
+const embeddedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/e/$",
+  component: EmbeddedPlayground,
+});
 
-function ThemedApp(props: {
-  withRouter?: () => ReactNode;
-  forTesting: boolean | undefined;
-}) {
-  if (window.location.pathname.indexOf("/i/") >= 0) {
-    return (
-      // @ts-expect-error RRv5 types are jank
-      <BrowserRouter>
-        <InlinePlayground />
-      </BrowserRouter>
-    );
-  }
-
-  if (window.location.pathname.indexOf("/e/") >= 0) {
-    return (
-      // @ts-expect-error RRv5 types are jank
-      <BrowserRouter>
-        <EmbeddedPlayground />
-      </BrowserRouter>
-    );
-  }
-
-  if (props.forTesting) {
-    return <ForTesting />;
-  } else {
-    return (
-      // @ts-expect-error RRv5 types are jank
-      <BrowserRouter>
-        <FullPlayground />
-      </BrowserRouter>
-    );
-  }
-}
-
-function App(props: AppProps) {
+const routeTree = rootRoute.addChildren([
+  indexRoute,
+  inlineRoute,
+  embeddedRoute,
+]);
+const router = createRouter({ routeTree });
+function App() {
   // Register GA hook.
   useGoogleAnalytics(AppConfig().ga.measurementId);
 
@@ -72,7 +65,7 @@ function App(props: AppProps) {
       >
         <AlertProvider>
           <ConfirmDialogProvider>
-            <ThemedApp forTesting={props.forTesting} />
+            <RouterProvider router={router} />
           </ConfirmDialogProvider>
         </AlertProvider>
       </PlaygroundUIThemed>

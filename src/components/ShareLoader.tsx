@@ -8,7 +8,7 @@ import { RpcError } from "@protobuf-ts/runtime-rpc";
 import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
 import "react-reflex/styles.css";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import AppConfig from "../services/configservice";
 import { DataStore } from "../services/datastore";
 
@@ -33,7 +33,7 @@ export function ShareLoader(props: {
 }) {
   const { showAlert } = useAlert();
   const { showConfirm } = useConfirmDialog();
-  const history = useHistory();
+  const navigate = useNavigate();
   const location = useLocation();
 
   const datastore = props.datastore;
@@ -73,7 +73,7 @@ export function ShareLoader(props: {
       // TODO: use routing for this instead of string manipulation
       const pieces = location.pathname.replace(urlPrefix, "").split("/");
       if (pieces.length < 1 && !props.sharedRequired) {
-        history.push("/");
+        navigate({ to: "/" });
         return;
       }
 
@@ -97,7 +97,7 @@ export function ShareLoader(props: {
             content: "Invalid sharing reference",
             buttonTitle: "Okay",
           });
-          history.replace("/");
+          navigate({ to: "/", replace: true });
           return;
         }
 
@@ -116,7 +116,7 @@ export function ShareLoader(props: {
             content: "The shared playground specified does not exist",
             buttonTitle: "Okay",
           });
-          history.replace("/");
+          navigate({ to: "/", replace: true });
           return;
         }
 
@@ -150,12 +150,14 @@ export function ShareLoader(props: {
         }
 
         if (!props.sharedRequired) {
-          history.replace(
-            location.pathname.slice(
+          // TODO: do this with routing as well
+          navigate({
+            to: location.pathname.slice(
               0,
               urlPrefix.length + shareReference.length,
             ),
-          );
+            replace: true,
+          });
         }
 
         setLoadingStatus(SharedLoadingStatus.LOADED);
@@ -166,7 +168,7 @@ export function ShareLoader(props: {
             content: error?.message,
             buttonTitle: "Okay",
           });
-        history.replace("/");
+        navigate({ to: "/", replace: true });
         return;
       }
     })();
@@ -174,7 +176,7 @@ export function ShareLoader(props: {
     location.pathname,
     loadingStatus,
     datastore,
-    history,
+    navigate,
     showAlert,
     showConfirm,
     urlPrefix,

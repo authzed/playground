@@ -6,7 +6,7 @@ import {
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import Alert from "@material-ui/lab/Alert";
 import "react-reflex/styles.css";
-import { Link } from "react-router-dom";
+import { Link } from "@tanstack/react-router";
 import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
 
 export const ERROR_SOURCE_TO_ITEM = {
@@ -121,7 +121,7 @@ export function DeveloperWarningSourceDisplay({
 
   return (
     <div className={classes.validationErrorContext}>
-      In {/* @ts-expect-error RRv5 types are jank */}
+      In
       <Link className={classes.link} to={DataStorePaths.Schema()}>
         Schema
       </Link>
@@ -140,7 +140,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
     <div>
       {ve.source === DeveloperError_Source.SCHEMA && (
         <div className={classes.validationErrorContext}>
-          In {/* @ts-expect-error RRv5 types are jank */}
+          In
           <Link className={classes.link} to={DataStorePaths.Schema()}>
             Schema
           </Link>
@@ -149,7 +149,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.ASSERTION && (
         <div className={classes.validationErrorContext}>
-          In {/* @ts-expect-error RRv5 types are jank */}
+          In
           <Link className={classes.link} to={DataStorePaths.Assertions()}>
             Assertions
           </Link>
@@ -158,7 +158,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.RELATIONSHIP && (
         <div className={classes.validationErrorContext}>
-          In {/* @ts-expect-error RRv5 types are jank */}
+          In
           <Link className={classes.link} to={DataStorePaths.Relationships()}>
             Test Data
           </Link>
@@ -167,7 +167,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
       )}
       {ve.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className={classes.validationErrorContext}>
-          In {/* @ts-expect-error RRv5 types are jank */}
+          In
           <Link
             className={classes.link}
             to={DataStorePaths.ExpectedRelations()}

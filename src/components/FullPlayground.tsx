@@ -42,7 +42,7 @@ import { fileDialog } from "file-select-dialog";
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useCookies } from "react-cookie";
 import "react-reflex/styles.css";
-import { useHistory, useLocation } from "react-router-dom";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import sjcl from "sjcl";
 import { useKeyboardShortcuts } from "use-keyboard-shortcuts";
 import DISCORD from "../assets/discord.svg?react";
@@ -385,7 +385,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const classes = useStyles({ prefersDarkMode: prefersDarkMode });
   const location = useLocation();
-  const history = useHistory();
+  const navigate = useNavigate();
 
   const datastore = props.datastore;
 
@@ -424,13 +424,14 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   ]);
 
   // Effect: If the user lands on the `/` route, redirect them to the schema editor.
+  // TODO: this should probably be a redirect at the routing layer.
   useEffect(() => {
     (async () => {
       if (currentItem === undefined) {
-        history.replace(DataStorePaths.Schema());
+        navigate({ to: DataStorePaths.Schema(), replace: true });
       }
     })();
-  }, [datastore, currentItem, history]);
+  }, [datastore, currentItem, navigate]);
 
   const conductDownload = () => {
     const yamlContents = createValidationYAML(datastore);
@@ -468,7 +469,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         datastore.loadFromParsed(uploaded);
         datastoreUpdated();
 
-        history.replace(DataStorePaths.Schema());
+        navigate({ to: DataStorePaths.Schema(), replace: true });
       }
     })();
   };
@@ -563,7 +564,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     datastoreUpdated();
 
     services.liveCheckService.clear();
-    history.replace(DataStorePaths.Schema());
+    navigate({ to: DataStorePaths.Schema(), replace: true });
   };
 
   const [previousValidationForDiff, setPreviousValidationForDiff] = useState<
@@ -639,23 +640,24 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const validationState = validationService.state;
 
   const handleChangeTab = (
+    // TODO: this should be a Link
     _event: React.ChangeEvent<object>,
     selectedTabValue: string,
   ) => {
     const item = datastore.getById(selectedTabValue)!;
-    history.push(item.pathname);
+    navigate({ to: item.pathname });
   };
 
   const setDismissTour = () => {
     setShowTour(false);
     setCookie("dismiss-tour", true);
-    history.push(DataStorePaths.Schema());
+    navigate({ to: DataStorePaths.Schema() });
   };
 
   const handleTourBeforeStep = (selector: string) => {
     // Activate the Assertions tab before the assertions dialogs
     if (selector.includes(TourElementClass.assert)) {
-      history.push(DataStorePaths.Assertions());
+      navigate({ to: DataStorePaths.Assertions() });
     }
   };
 
