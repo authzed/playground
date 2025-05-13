@@ -87,6 +87,7 @@ import { TerminalPanel, TerminalSummary } from "./panels/terminal";
 import { ValidationPanel, ValidationSummary } from "./panels/validation";
 import { VisualizerPanel, VisualizerSummary } from "./panels/visualizer";
 import { WatchesPanel, WatchesSummary } from "./panels/watches";
+import {CodeGenerator} from "@/components/CodeGenerator.tsx";
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
 
@@ -547,6 +548,40 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     }
   };
 
+  function CodeGeneratorButton ()  {
+    const [showCodeGenerator, setShowCodeGenerator] = useState(false);
+    const [codeGenProps, setCodeGenProps] = useState({ schema: "", relationshipsYaml: "" });
+
+    const handleOpenCodeGenerator = () => {
+      const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
+      const relationshipsYaml = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents!;
+      if (schema && relationshipsYaml) {
+        setCodeGenProps({ schema, relationshipsYaml });
+        setShowCodeGenerator(true);
+      }
+    };
+
+    return (
+        <>
+          <Button
+              className={clsx(classes.hideTextOnMed)}
+              size="small"
+              onClick={handleOpenCodeGenerator}
+              startIcon={<CodeIcon />}
+          >
+            Generate code
+          </Button>
+          {showCodeGenerator && (
+              <CodeGenerator
+                  schema={codeGenProps.schema}
+                  relationshipsYaml={codeGenProps.relationshipsYaml}
+                  onClose={() => setShowCodeGenerator(false)}
+              />
+          )}
+        </>
+    );
+  }
+
   const datastoreUpdated = () => {
     if (sharingState.status !== SharingStatus.NOT_RUN) {
       setSharingState({
@@ -772,6 +807,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             ) : (
               <span />
             )}
+            <CodeGeneratorButton />
             <Button
               className={clsx(TourElementClass.share, classes.hideTextOnMed, {
                 [classes.hide]: !isSharingEnabled,
