@@ -1,49 +1,50 @@
-import registerDSLanguage, {
-  DS_DARK_THEME_NAME,
-  DS_LANGUAGE_NAME,
-  DS_THEME_NAME,
-} from "../spicedb-common/lang/dslang";
-import { useDebouncedChecker } from "../playground-ui/debouncer";
-import { TextRange } from "../spicedb-common/include/protobuf-parser";
-import { RelationshipFound } from "../spicedb-common/parsing";
-import {
-  DeveloperError,
-  DeveloperWarning,
-} from "../spicedb-common/protodefs/developer/v1/developer";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
-import lineColumn from "line-column";
-import monaco from "monaco-editor";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
-import "react-reflex/styles.css";
-import { useNavigate, useLocation } from "@tanstack/react-router";
-import { ScrollLocation, useCookieService } from "../services/cookieservice";
+import { createStyles, makeStyles } from '@material-ui/core/styles';
+import useMediaQuery from '@material-ui/core/useMediaQuery';
+import Editor, { DiffEditor, useMonaco } from '@monaco-editor/react';
+import { useLocation, useNavigate } from '@tanstack/react-router';
+import lineColumn from 'line-column';
+import monaco from 'monaco-editor';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { flushSync } from 'react-dom';
+import 'react-reflex/styles.css';
+import { useDebouncedChecker } from '../playground-ui/debouncer';
+import { ScrollLocation, useCookieService } from '../services/cookieservice';
 import {
   DataStore,
   DataStoreItem,
   DataStoreItemKind,
-} from "../services/datastore";
-import { LocalParseState } from "../services/localparse";
-import { Services } from "../services/services";
-import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
+} from '../services/datastore';
+import { LocalParseState } from '../services/localparse';
+import { Services } from '../services/services';
+import { TextRange } from '../spicedb-common/include/protobuf-parser';
+import registerDSLanguage, {
+  DS_DARK_THEME_NAME,
+  DS_LANGUAGE_NAME,
+  DS_THEME_NAME,
+} from '../spicedb-common/lang/dslang';
+import { RelationshipFound } from '../spicedb-common/parsing';
+import {
+  DeveloperError,
+  DeveloperWarning,
+} from '../spicedb-common/protodefs/developer/v1/developer';
+import { ERROR_SOURCE_TO_ITEM } from './panels/errordisplays';
 import registerTupleLanguage, {
   TUPLE_DARK_THEME_NAME,
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
-} from "./tuplelang";
+} from './tuplelang';
 
 const useStyles = makeStyles(() =>
   createStyles({
     editorContainer: {
-      height: "100%",
-      width: "100%",
+      height: '100%',
+      width: '100%',
     },
-  }),
+  })
 );
 
 export type EditorDisplayProps = {
+  isDiscoveryMode: boolean;
   datastore: DataStore;
   services: Services;
   currentItem: DataStoreItem | undefined;
@@ -73,7 +74,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const [monacoReady, setMonacoReady] = useState(false);
   const [localIndex, setLocalIndex] = useState(0);
   const localParseState = useRef<LocalParseState>(
-    props.services.localParseService.state,
+    props.services.localParseService.state
   );
 
   // Effect: Register the languages in monaco.
@@ -101,7 +102,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   >({});
 
   // Select the theme and language.
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const prefersDarkMode = useMediaQuery('(prefers-color-scheme: dark)');
 
   const themeName = useMemo(() => {
     if (props.themeName) {
@@ -119,11 +120,11 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
       case DataStoreItemKind.EXPECTED_RELATIONS:
         // Expected Relations YAML.
-        return prefersDarkMode ? "vs-dark" : "vs";
+        return prefersDarkMode ? 'vs-dark' : 'vs';
 
       case DataStoreItemKind.ASSERTIONS:
         // Assertions YAML.
-        return prefersDarkMode ? "vs-dark" : "vs";
+        return prefersDarkMode ? 'vs-dark' : 'vs';
 
       case undefined:
         // Schema.
@@ -131,7 +132,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
       default:
         console.log(`Unknown item kind ${currentItem?.kind} in theme name`);
-        return "vs";
+        return 'vs';
     }
   }, [prefersDarkMode, currentItem?.kind, props.themeName]);
 
@@ -146,15 +147,15 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
       case DataStoreItemKind.EXPECTED_RELATIONS:
         // Expected Relations => YAML.
-        return "yaml";
+        return 'yaml';
 
       case DataStoreItemKind.ASSERTIONS:
         // Assertions => YAML.
-        return "yaml";
+        return 'yaml';
 
       default:
-        console.log("Unknown item kind in language name");
-        return "yaml";
+        console.log('Unknown item kind in language name');
+        return 'yaml';
     }
   }, [currentItem?.kind]);
 
@@ -176,7 +177,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       setLocalIndex(localIndex + 1);
 
       // TODO: this shouldn't be necessary. Moving to redux may make this less painful.
-      const updated = datastore.update(currentItem!, value || "");
+      const updated = datastore.update(currentItem!, value || '');
       if (updated && updated.pathname !== location.pathname) {
         navigate({ to: updated.pathname, replace: true });
       }
@@ -204,7 +205,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
     if (currentItem.kind === DataStoreItemKind.RELATIONSHIPS) {
       props.services.problemService.invalidRelationships.forEach(
         (invalid: RelationshipFound) => {
-          if (!("errorMessage" in invalid.parsed)) {
+          if (!('errorMessage' in invalid.parsed)) {
             return;
           }
 
@@ -218,13 +219,13 @@ export function EditorDisplay(props: EditorDisplayProps) {
               severity: monacoRef.MarkerSeverity.Error,
             });
           }
-        },
+        }
       );
     }
 
-    const contents = currentItem?.editableContents ?? "";
+    const contents = currentItem?.editableContents ?? '';
     const finder = lineColumn(contents);
-    const lines = contents.split("\n");
+    const lines = contents.split('\n');
 
     // Generate markers for warnings.
     if (currentItem.kind === DataStoreItemKind.SCHEMA) {
@@ -242,7 +243,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
               severity: monacoRef.MarkerSeverity.Warning,
             });
           }
-        },
+        }
       );
     }
 
@@ -320,8 +321,8 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
     monacoRef?.editor.setModelMarkers(
       editors[currentItem.id].getModel()!,
-      "someowner",
-      markers,
+      'someowner',
+      markers
     );
   };
 
@@ -337,7 +338,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
           position.column,
         ]);
       }
-    },
+    }
   );
 
   const { run: debouncedSetEditorScroll } = useDebouncedChecker(
@@ -346,7 +347,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       if (props.currentItem?.kind !== undefined) {
         cookieService.storeEditorScroll(props.currentItem.kind, scrollLocation);
       }
-    },
+    }
   );
 
   const handleEditorMounted = (editor: monaco.editor.IStandaloneCodeEditor) => {
@@ -362,7 +363,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
           if (props.onPositionChange !== undefined) {
             props.onPositionChange(e);
           }
-        },
+        }
       );
 
       editor.onDidScrollChange((e: monaco.IScrollEvent) => {
@@ -422,7 +423,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       // Set the scroll position to either that last stored in cookies, or, if none,
       // just show the cursor on screen.
       const lastScrollPosition = cookieService.lookupEditorScroll(
-        currentItem.kind,
+        currentItem.kind
       );
       if (lastScrollPosition) {
         const [top, left] = lastScrollPosition;
@@ -468,21 +469,67 @@ export function EditorDisplay(props: EditorDisplayProps) {
       }
     : {};
 
+  if (props.isDiscoveryMode) {
+    return (
+      <>
+        {monacoReady && currentItem && (
+          <div className="w-full h-full rounded-lg">
+            <Component
+              className="p-1 rounded-lg"
+              height={'100%'}
+              key={`${currentItem.id}-${props.diff ? 'diff' : ''}`}
+              defaultLanguage={languageName}
+              value={currentItem.editableContents}
+              theme={themeName}
+              onChange={handleEditorChange}
+              // TODO: this is weirdly typed because we're conditionally rendering
+              // a diff editor or a code editor and typescript doesn't know about that.
+              // It'd be better to separate this into two different components that
+              // reuse their internals.
+              // @ts-expect-error the mount handler is a no-op if the component is in diff mode
+              onMount={handleEditorMounted}
+              options={{
+                readOnly: props.isReadOnly || !!props.diff,
+                scrollbar: {
+                  handleMouseWheel:
+                    props.disableScrolling !== true &&
+                    props.disableMouseWheelScrolling !== true,
+                  vertical: props.disableScrolling ? 'hidden' : undefined,
+                },
+                'semanticHighlighting.enabled': true,
+                fixedOverflowWidgets: true,
+                automaticLayout: true,
+                minimap: {
+                  enabled: props.hideMinimap !== true,
+                },
+                fontSize: props.fontSize,
+                scrollBeyondLastLine:
+                  props.scrollBeyondLastLine ??
+                  (props.disableScrolling === true ? false : true),
+              }}
+              {...extraProps}
+            />
+          </div>
+        )}
+      </>
+    );
+  }
+
   return (
     <div>
       {monacoReady && currentItem && (
         <div className={classes.editorContainer}>
           <Component
-            key={`${currentItem.id}-${props.diff ? "diff" : ""}`}
+            key={`${currentItem.id}-${props.diff ? 'diff' : ''}`}
             height={
               props.dimensions
                 ? `${props.dimensions.height}px`
-                : (props.defaultHeight ?? "40vh")
+                : (props.defaultHeight ?? '40vh')
             }
             width={
               props.dimensions
                 ? `${props.dimensions.width}px`
-                : (props.defaultWidth ?? "60vw")
+                : (props.defaultWidth ?? '60vw')
             }
             defaultLanguage={languageName}
             value={currentItem.editableContents}
@@ -500,9 +547,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
                 handleMouseWheel:
                   props.disableScrolling !== true &&
                   props.disableMouseWheelScrolling !== true,
-                vertical: props.disableScrolling ? "hidden" : undefined,
+                vertical: props.disableScrolling ? 'hidden' : undefined,
               },
-              "semanticHighlighting.enabled": true,
+              'semanticHighlighting.enabled': true,
               fixedOverflowWidgets: true,
               minimap: {
                 enabled: props.hideMinimap !== true,

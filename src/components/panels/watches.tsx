@@ -1,62 +1,62 @@
-import TabLabel from "../../playground-ui/TabLabel";
-import {
-  ParsedPermission,
-  ParsedRelation,
-} from "../../spicedb-common/parsers/dsl/dsl";
-import { parseRelationships } from "../../spicedb-common/parsing";
-import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-import Paper from "@material-ui/core/Paper";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
+import CircularProgress from '@material-ui/core/CircularProgress';
+import IconButton from '@material-ui/core/IconButton';
+import Paper from '@material-ui/core/Paper';
+import Table from '@material-ui/core/Table';
+import TableBody from '@material-ui/core/TableBody';
+import TableCell from '@material-ui/core/TableCell';
+import TableContainer from '@material-ui/core/TableContainer';
+import TableHead from '@material-ui/core/TableHead';
+import TableRow from '@material-ui/core/TableRow';
+import TextField from '@material-ui/core/TextField';
+import Tooltip from '@material-ui/core/Tooltip';
 import {
   Theme,
   createStyles,
   makeStyles,
   useTheme,
-} from "@material-ui/core/styles";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ControlPointIcon from "@material-ui/icons/ControlPoint";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
-import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import WarningIcon from "@material-ui/icons/Warning";
-import Alert from "@material-ui/lab/Alert";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import clsx from "clsx";
+} from '@material-ui/core/styles';
+import CheckCircleIcon from '@material-ui/icons/CheckCircle';
+import ChevronRightIcon from '@material-ui/icons/ChevronRight';
+import ControlPointIcon from '@material-ui/icons/ControlPoint';
+import DeleteForeverIcon from '@material-ui/icons/DeleteForever';
+import ErrorOutlineIcon from '@material-ui/icons/ErrorOutline';
+import ExpandMoreIcon from '@material-ui/icons/ExpandMore';
+import HelpOutlineIcon from '@material-ui/icons/HelpOutline';
+import HighlightOffIcon from '@material-ui/icons/HighlightOff';
+import RadioButtonUncheckedIcon from '@material-ui/icons/RadioButtonUnchecked';
+import RemoveCircleOutlineIcon from '@material-ui/icons/RemoveCircleOutline';
+import VisibilityIcon from '@material-ui/icons/Visibility';
+import WarningIcon from '@material-ui/icons/Warning';
+import Alert from '@material-ui/lab/Alert';
+import Autocomplete from '@material-ui/lab/Autocomplete';
+import clsx from 'clsx';
 import {
   interpolateBlues,
   interpolateOranges,
   interpolatePurples,
-} from "d3-scale-chromatic";
-import { useMemo, useState, type ChangeEvent } from "react";
-import "react-reflex/styles.css";
+} from 'd3-scale-chromatic';
+import { useMemo, useState, type ChangeEvent } from 'react';
+import 'react-reflex/styles.css';
+import TabLabel from '../../playground-ui/TabLabel';
 import {
   LiveCheckItem,
   LiveCheckItemStatus,
   LiveCheckService,
   LiveCheckStatus,
-} from "../../services/check";
-import { DataStore, DataStoreItemKind } from "../../services/datastore";
-import { LocalParseService } from "../../services/localparse";
-import { CheckDebugTraceView } from "../CheckDebugTraceView";
-import { TourElementClass } from "../GuidedTour";
-import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
-import { ReflexedPanelLocation } from "./base/reflexed";
-import { PlaygroundPanelLocation } from "./panels";
+} from '../../services/check';
+import { DataStore, DataStoreItemKind } from '../../services/datastore';
+import { LocalParseService } from '../../services/localparse';
+import {
+  ParsedPermission,
+  ParsedRelation,
+} from '../../spicedb-common/parsers/dsl/dsl';
+import { parseRelationships } from '../../spicedb-common/parsing';
+import { RelationTuple as Relationship } from '../../spicedb-common/protodefs/core/v1/core';
+import { CheckDebugTraceView } from '../CheckDebugTraceView';
+import { TourElementClass } from '../GuidedTour';
+import { PanelProps, PanelSummaryProps, useSummaryStyles } from './base/common';
+import { ReflexedPanelLocation } from './base/reflexed';
+import { PlaygroundPanelLocation } from './panels';
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -68,26 +68,26 @@ const useStyles = makeStyles((theme: Theme) =>
     },
     foundViaList: {
       margin: 0,
-      fontFamily: "Roboto Mono, monospace",
-      listStyleType: "none",
-      "& li::after": {
+      fontFamily: 'Roboto Mono, monospace',
+      listStyleType: 'none',
+      '& li::after': {
         content: '" →"',
       },
-      "& li:last-child::after": {
+      '& li:last-child::after': {
         content: '""',
       },
     },
     editorContainer: {
-      display: "grid",
-      alignItems: "center",
-      gridTemplateColumns: "auto 1fr",
+      display: 'grid',
+      alignItems: 'center',
+      gridTemplateColumns: 'auto 1fr',
     },
     dot: {
-      display: "inline-block",
+      display: 'inline-block',
       marginRight: theme.spacing(1),
-      borderRadius: "50%",
-      width: "8px",
-      height: "8px",
+      borderRadius: '50%',
+      width: '8px',
+      height: '8px',
     },
     progress: {
       color: theme.palette.text.primary,
@@ -96,7 +96,7 @@ const useStyles = makeStyles((theme: Theme) =>
       color: theme.palette.success.main,
     },
     caveated: {
-      color: "#8787ff",
+      color: '#8787ff',
     },
     gray: {
       color: theme.palette.grey[500],
@@ -108,14 +108,14 @@ const useStyles = makeStyles((theme: Theme) =>
       padding: theme.spacing(1),
       border: 0,
     },
-  }),
+  })
 );
 
 /**
  * WatchesSummary displays the a summary of the check watches.
  */
 export function WatchesSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>,
+  props: PanelSummaryProps<PlaygroundPanelLocation>
 ) {
   const classes = useSummaryStyles();
 
@@ -123,16 +123,16 @@ export function WatchesSummary(
 
   const hasItems = liveCheckService.items.length > 0;
   const foundItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.FOUND,
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.FOUND
   );
   const caveatedItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.CAVEATED,
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.CAVEATED
   );
   const notFoundItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.NOT_FOUND,
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.NOT_FOUND
   );
   const invalidItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.INVALID,
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.INVALID
   );
   const hasServerErr = !!liveCheckService.state.serverErr;
 
@@ -145,7 +145,7 @@ export function WatchesSummary(
       <TabLabel
         icon={
           <VisibilityIcon
-            htmlColor={liveCheckService.items.length === 0 ? "grey" : ""}
+            htmlColor={liveCheckService.items.length === 0 ? 'grey' : ''}
           />
         }
         title="Check Watches"
@@ -194,6 +194,80 @@ export function WatchesSummary(
           </span>
         </Tooltip>
       )}
+      {hasServerErr && <ErrorOutlineIcon color="error" />}
+    </div>
+  );
+}
+
+export function WatchesDiscoverySummary(
+  props: PanelSummaryProps<PlaygroundPanelLocation>
+) {
+  const liveCheckService = props.services.liveCheckService;
+  const foundItems = liveCheckService.items.filter(
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.FOUND
+  );
+  const caveatedItems = liveCheckService.items.filter(
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.CAVEATED
+  );
+  const notFoundItems = liveCheckService.items.filter(
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.NOT_FOUND
+  );
+  const invalidItems = liveCheckService.items.filter(
+    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.INVALID
+  );
+  const hasServerErr = !!liveCheckService.state.serverErr;
+
+  return (
+    <div className="flex justify-evenly gap-2">
+      {!hasServerErr && (
+        <>
+          <div
+            className={clsx(
+              'p-2 px-4 flex-1 flex flex-col  rounded-lg border border-slate-700',
+              {
+                'bg-green-800': foundItems.length > 0,
+              }
+            )}
+          >
+            <div className="text-xs">Passing</div>
+            <div className="text-2xl">{foundItems.length}</div>
+          </div>
+          <div
+            className={clsx(
+              'p-2 px-4 flex-1 flex flex-col  rounded-lg border border-slate-700',
+              {
+                'bg-indigo-700': caveatedItems.length > 0,
+              }
+            )}
+          >
+            <div className="text-xs">Caveated</div>
+            <div className="text-2xl">{caveatedItems.length}</div>
+          </div>
+          <div
+            className={clsx(
+              'p-2 px-4 flex-1 flex flex-col  rounded-lg border border-slate-700',
+              {
+                'bg-amber-700': invalidItems.length > 0,
+              }
+            )}
+          >
+            <div className="text-xs">Invalid</div>
+            <div className="text-2xl">{invalidItems.length}</div>
+          </div>
+          <div
+            className={clsx(
+              'p-2 px-4 flex-1 flex flex-col  rounded-lg border border-slate-700',
+              {
+                'bg-red-700': notFoundItems.length > 0,
+              }
+            )}
+          >
+            <div className="text-xs">Failing</div>
+            <div className="text-2xl">{notFoundItems.length}</div>
+          </div>
+        </>
+      )}
+
       {hasServerErr && <ErrorOutlineIcon color="error" />}
     </div>
   );
@@ -328,10 +402,10 @@ function LiveCheckRow(props: {
   const [context, setContext] = useState(() => {
     // Remove the `default:` prefix we add below.
     if (item.context) {
-      return item.context.substring("default:".length);
+      return item.context.substring('default:'.length);
     }
 
-    return "";
+    return '';
   });
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -346,8 +420,8 @@ function LiveCheckRow(props: {
   };
 
   const handleChangeObject = (_event: object, newValue: string | null) => {
-    setObject(newValue ?? "");
-    item.object = newValue ?? "";
+    setObject(newValue ?? '');
+    item.object = newValue ?? '';
   };
 
   const handleChangeActionInput = (_event: object, newValue: string) => {
@@ -357,8 +431,8 @@ function LiveCheckRow(props: {
   };
 
   const handleChangeAction = (_event: object, newValue: string | null) => {
-    setAction(newValue ?? "");
-    item.action = newValue ?? "";
+    setAction(newValue ?? '');
+    item.action = newValue ?? '';
   };
 
   const handleChangeSubjectInput = (_event: object, newValue: string) => {
@@ -368,22 +442,22 @@ function LiveCheckRow(props: {
   };
 
   const handleChangeSubject = (_event: object, newValue: string | null) => {
-    setSubject(newValue ?? "");
-    item.subject = newValue ?? "";
+    setSubject(newValue ?? '');
+    item.subject = newValue ?? '';
   };
 
   const handleChangeContextInput = (event: ChangeEvent<HTMLInputElement>) => {
     const newValue = event.target.value;
-    setContext(newValue ?? "");
+    setContext(newValue ?? '');
     // NOTE: adding a dummy caveat name to support only specifying the context with checks
     // while preserving the simple approach of parsing all checks as relationships
-    item.context = newValue ? `default:${newValue}` : "";
+    item.context = newValue ? `default:${newValue}` : '';
     liveCheckService.itemUpdated(item);
   };
 
   const relationshipContents =
     props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
-      .editableContents ?? "";
+      .editableContents ?? '';
   const relationships = useMemo(() => {
     return parseRelationships(relationshipContents);
   }, [relationshipContents]);
@@ -397,12 +471,12 @@ function LiveCheckRow(props: {
         }
 
         return `${onr.namespace}:${onr.objectId}`;
-      }),
+      })
     );
   }, [relationships]);
 
   const actions = useMemo(() => {
-    const [definitionPath] = objectInputValue.split(":", 2);
+    const [definitionPath] = objectInputValue.split(':', 2);
     const definition = props.localParseService.lookupDefinition(definitionPath);
     if (definition !== undefined) {
       return definition
@@ -418,7 +492,7 @@ function LiveCheckRow(props: {
         }
 
         return onr.relation;
-      }),
+      })
     );
 
     // NOTE: we include editorUpdateIndex to ensure this is recomputed on
@@ -434,29 +508,29 @@ function LiveCheckRow(props: {
           return null;
         }
 
-        if (subject.objectId === "*") {
+        if (subject.objectId === '*') {
           return null;
         }
 
-        if (subject.relation === "...") {
+        if (subject.relation === '...') {
           return `${subject.namespace}:${subject.objectId}`;
         }
         return `${subject.namespace}:${subject.objectId}#${subject.relation}`;
-      }),
+      })
     );
   }, [relationships]);
 
   const renderOption = (
     option: string | undefined,
     optionSet: (string | undefined)[],
-    colorSet: (n: number) => string,
+    colorSet: (n: number) => string
   ) => {
     return (
       <div className={classes.editorContainer}>
         <DotDisplay
           colorSet={colorSet}
           valueSet={optionSet}
-          value={option ?? ""}
+          value={option ?? ''}
         />
         {option}
       </div>
@@ -497,10 +571,10 @@ function LiveCheckRow(props: {
       <TableRow>
         <TableCell
           style={{
-            verticalAlign: "center",
-            width: "1em",
-            paddingLeft: "0.5em",
-            paddingRight: "0.5em",
+            verticalAlign: 'center',
+            width: '1em',
+            paddingLeft: '0.5em',
+            paddingRight: '0.5em',
           }}
         >
           {item.debugInformation !== undefined && (
@@ -512,13 +586,13 @@ function LiveCheckRow(props: {
 
         <TableCell
           style={{
-            verticalAlign: "center",
-            width: "1em",
-            paddingLeft: "0.5em",
-            paddingRight: "0.5em",
+            verticalAlign: 'center',
+            width: '1em',
+            paddingLeft: '0.5em',
+            paddingRight: '0.5em',
           }}
         >
-          <div style={{ display: "flex" }}>
+          <div style={{ display: 'flex' }}>
             {status === LiveCheckStatus.CHECKING && (
               <CircularProgress className={classes.progress} size="1.5em" />
             )}
@@ -583,15 +657,15 @@ function LiveCheckRow(props: {
                   size="small"
                   fullWidth
                   inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
+                    ...params['inputProps'],
+                    style: { fontFamily: 'monospace' },
                   }}
                   placeholder="tenant/namespace:objectid"
                 />
               )}
             />
           </div>,
-          "28%",
+          '28%'
         )}
         {wrap(
           <div className={classes.editorContainer}>
@@ -619,15 +693,15 @@ function LiveCheckRow(props: {
                   size="small"
                   fullWidth
                   inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
+                    ...params['inputProps'],
+                    style: { fontFamily: 'monospace' },
                   }}
                   placeholder="view"
                 />
               )}
             />
           </div>,
-          "18%",
+          '18%'
         )}
         {wrap(
           <div className={classes.editorContainer}>
@@ -655,15 +729,15 @@ function LiveCheckRow(props: {
                   size="small"
                   fullWidth
                   inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
+                    ...params['inputProps'],
+                    style: { fontFamily: 'monospace' },
                   }}
                   placeholder="tenant/user:someuser"
                 />
               )}
             />
           </div>,
-          "28%",
+          '28%'
         )}
         {wrap(
           <div className={classes.editorContainer}>
@@ -672,7 +746,7 @@ function LiveCheckRow(props: {
               multiline={true}
               fullWidth
               inputProps={{
-                style: { fontFamily: "monospace" },
+                style: { fontFamily: 'monospace' },
               }}
               onChange={handleChangeContextInput}
               placeholder='{"field": value}'
@@ -680,9 +754,9 @@ function LiveCheckRow(props: {
               value={context}
             />
           </div>,
-          "26%",
+          '26%'
         )}
-        <TableCell style={{ width: "1em" }}>
+        <TableCell style={{ width: '1em' }}>
           <IconButton size="small" edge="end" onClick={handleDeleteRow}>
             <DeleteForeverIcon />
           </IconButton>
@@ -714,7 +788,7 @@ function DotDisplay(props: {
       className={classes.dot}
       style={{
         backgroundColor:
-          props.valueSet.indexOf(props.value) >= 0 ? color : "transparent",
+          props.valueSet.indexOf(props.value) >= 0 ? color : 'transparent',
       }}
     />
   );
