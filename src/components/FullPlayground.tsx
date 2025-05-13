@@ -86,6 +86,7 @@ import { ProblemsPanel, ProblemsSummary } from "./panels/problems";
 import { TerminalPanel, TerminalSummary } from "./panels/terminal";
 import { ValidationPanel, ValidationSummary } from "./panels/validation";
 import { VisualizerPanel, VisualizerSummary } from "./panels/visualizer";
+import { QueriesPanel, QueriesSummary } from "./panels/queries";
 import { WatchesPanel, WatchesSummary } from "./panels/watches";
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
@@ -864,21 +865,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 />
               }
             />
-            <Tab
-              value={
-                datastore.getSingletonByKind(
-                  DataStoreItemKind.EXPECTED_RELATIONS,
-                ).id
-              }
-              label={
-                <TabLabelWithCount
-                  problemService={problemService}
-                  kind={DataStoreItemKind.EXPECTED_RELATIONS}
-                  icon={<ET small />}
-                  title="Expected Relations"
-                />
-              }
-            />
           </Tabs>
         )}
 
@@ -1113,6 +1099,11 @@ const panels: Panel<PlaygroundPanelLocation>[] = [
     id: "terminal",
     summary: TerminalSummary,
     content: TerminalPanel,
+  },
+  {
+    id: "queries",
+    summary: QueriesSummary,
+    content: QueriesPanel,
   },
 ];
 

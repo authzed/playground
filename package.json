@@ -12,6 +12,7 @@
     "@fortawesome/react-fontawesome": "^0.2.0",
     "@glideapps/glide-data-grid": "^4.0.2",
     "@glideapps/glide-data-grid-cells": "^4.0.2",
+    "@hookform/resolvers": "^5.0.1",
     "@material-ui/core": "^4.12.4",
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.61",
@@ -19,6 +20,7 @@
     "@protobuf-ts/grpcweb-transport": "^2.9.4",
     "@protobuf-ts/plugin": "^2.6.0",
     "@radix-ui/react-alert-dialog": "^1.1.11",
+    "@radix-ui/react-label": "^2.1.6",
     "@radix-ui/react-select": "^2.2.2",
     "@radix-ui/react-slot": "^1.2.0",
     "@radix-ui/react-tabs": "^1.1.9",
@@ -46,6 +48,7 @@
     "react": "^18.3.1",
     "react-cookie": "^4.1.1",
     "react-dom": "^18.3.1",
+    "react-hook-form": "^7.56.3",
     "react-joyride": "^2.5.3",
     "react-reflex": "^4.0.9",
     "react-responsive-carousel": "^3.2.23",
@@ -60,7 +63,8 @@
     "use-deep-compare-effect": "^1.8.1",
     "use-keyboard-shortcuts": "^2.2.2",
     "visjs-network": "^4.24.11",
-    "yaml": "^2.0.1"
+    "yaml": "^2.0.1",
+    "zod": "^3.24.4"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

@@ -6,6 +6,7 @@ export const TourElementClass = {
   browse: "tec-browse",
   testrel: "tec-testrel",
   assert: "tec-assert",
+  queries: "tec-queries",
   run: "tec-run",
   problems: "tec-problems",
   checkwatch: "tec-checkwatch",
@@ -34,6 +35,11 @@ const steps: Step[] = [
     title: "Assertions",
     content:
       "...and then define assertions to validate your schema and relationships",
+  },
+  {
+    target: `.${TourElementClass.queries}`,
+    title: "Run queries",
+    content: "Ask questions about your permissions",
   },
   {
     target: `.${TourElementClass.run}`,
