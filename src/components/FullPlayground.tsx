@@ -90,6 +90,7 @@ import { ProblemsPanel, ProblemsSummary } from './panels/problems';
 import { TerminalPanel, TerminalSummary } from './panels/terminal';
 import { ValidationPanel, ValidationSummary } from './panels/validation';
 import { VisualizerPanel, VisualizerSummary } from './panels/visualizer';
+import { QueriesPanel } from "./panels/queries";
 import {
   WatchesDiscoverySummary,
   WatchesPanel,
@@ -811,7 +812,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             ) : (
               <span />
             )}
-            <CodeGeneratorButton />
             <Button
               className={clsx(TourElementClass.share, classes.hideTextOnMed, {
                 [classes.hide]: !isSharingEnabled,
@@ -1109,14 +1109,14 @@ function DiscoveryPlayground(
         <div className="mb-4">
           <h2 className="font-semibold text-lg">Schema Editor</h2>
           <div className="text-slate-400 text-md">
-            Write yo schema.{' '}
+            1. Write yo {' '}
             <a
               href="https://authzed.com/docs/spicedb/concepts/schema"
               className="underline underline-offset-2"
             >
               SpiceDB schema
             </a>{' '}
-            defines your permissions system.
+            that defines your permissions system.
           </div>
         </div>
         <div className="flex-grow border border-slate-500 rounded-lg">
@@ -1143,7 +1143,7 @@ function DiscoveryPlayground(
           <div className="mb-4">
             <h2 className="font-semibold text-lg">Relationship Data</h2>
             <div className="text-slate-400 text-md">
-              Write yo relationships. Add application data that conforms to your
+              2. Write yo relationships. Add application data that conforms to your
               schema.
             </div>
           </div>
@@ -1161,7 +1161,7 @@ function DiscoveryPlayground(
           <div className="mt-10 mb-4">
             <h2 className="font-semibold text-lg">Assertions</h2>
             <div className="text-slate-400 text-md">
-              Test yo permissions. Define and evaluate permissions questions.
+              3. Test yo permissions. Define and evaluate permissions questions.
             </div>
           </div>
           <div className="min-h-[30vh] max-h-[30vh] border border-slate-500 p-6] rounded-lg overflow-scroll">
@@ -1177,6 +1177,19 @@ function DiscoveryPlayground(
               services={props.services}
               location={ReflexedPanelLocation.HORIZONTAL}
             />
+          </div>
+          <div className="mt-10 mb-4">
+            <h2 className="font-semibold text-lg">Assertions</h2>
+            <div className="text-slate-400 text-md">
+              4. Ask questions
+            </div>
+          </div>
+
+          <div className="min-h-[30vh] max-h-[30vh] border border-slate-500 p-6] rounded-lg overflow-scroll">
+            <div className="p-4">
+              <QueriesPanel datastore={datastore} services={props.services}
+                            location={ReflexedPanelLocation.HORIZONTAL}/>
+            </div>
           </div>
         </div>
       </div>
