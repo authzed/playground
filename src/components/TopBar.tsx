@@ -1,8 +1,11 @@
 'use client';
 
 import { Button } from '@/components/ui/button';
-import { LogOutIcon, ShareIcon } from 'lucide-react';
-import { ReactElement } from 'react';
+import { ShareIcon } from 'lucide-react';
+import {ReactElement, useState} from 'react';
+import {CodeGenerator} from "@/components/CodeGenerator.tsx";
+import {DataStore, DataStoreItemKind} from "@/services/datastore.ts";
+import CodeIcon from "@material-ui/icons/Code";
 // import {
 //   Command,
 //   CommandEmpty,
@@ -27,7 +30,36 @@ import { ReactElement } from 'react';
 //   { value: 'option5', label: 'Option 5' },
 // ];
 
-export function TopBar(props: { examplesDropdown: ReactElement }) {
+function CodeGeneratorButton (props: {datastore: DataStore})  {
+  const [showCodeGenerator, setShowCodeGenerator] = useState(false);
+  const [codeGenProps, setCodeGenProps] = useState({ schema: "", relationshipsYaml: "" });
+
+  const handleOpenCodeGenerator = () => {
+    const schema = props.datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
+    const relationshipsYaml = props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents!;
+    if (schema && relationshipsYaml) {
+      setCodeGenProps({ schema, relationshipsYaml });
+      setShowCodeGenerator(true);
+    }
+  };
+
+  return (
+      <>
+        <Button variant="outline" onClick={handleOpenCodeGenerator}>
+          <CodeIcon /> Generate code
+        </Button>
+        {showCodeGenerator && (
+            <CodeGenerator
+                schema={codeGenProps.schema}
+                relationshipsYaml={codeGenProps.relationshipsYaml}
+                onClose={() => setShowCodeGenerator(false)}
+            />
+        )}
+      </>
+  );
+}
+
+export function TopBar(props: { examplesDropdown: ReactElement, datastore: DataStore }) {
   // const [open, setOpen] = useState(false);
   // const [value, setValue] = useState('');
 
@@ -97,9 +129,7 @@ export function TopBar(props: { examplesDropdown: ReactElement }) {
             <Button variant="outline">
               <ShareIcon /> Share
             </Button>
-            <Button>
-              <LogOutIcon /> Eject
-            </Button>
+            <CodeGeneratorButton datastore={props.datastore} />
           </div>
 
           {/* Mobile menu */}

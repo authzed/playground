@@ -65,7 +65,7 @@ import {
 import {
   createValidationYAML,
   normalizeValidationYAML,
-} from '../services/validationfileformat';
+} from "../services/validationfileformat";
 import { Example } from '../spicedb-common/examples';
 import { DeveloperServiceClient } from '../spicedb-common/protodefs/authzed/api/v0/developer.client';
 import { useDeveloperService } from '../spicedb-common/services/developerservice';
@@ -555,6 +555,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     }
   };
 
+
+
   const datastoreUpdated = () => {
     if (sharingState.status !== SharingStatus.NOT_RUN) {
       setSharingState({
@@ -715,6 +717,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               loadExample={loadExampleData}
             />
           }
+          datastore={datastore}
         />
         <DiscoveryPlayground
           datastore={datastore}
@@ -808,6 +811,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             ) : (
               <span />
             )}
+            <CodeGeneratorButton />
             <Button
               className={clsx(TourElementClass.share, classes.hideTextOnMed, {
                 [classes.hide]: !isSharingEnabled,
@@ -1139,7 +1143,7 @@ function DiscoveryPlayground(
           <div className="mb-4">
             <h2 className="font-semibold text-lg">Relationship Data</h2>
             <div className="text-slate-400 text-md">
-              Add yo relationships. Add application data that conforms to your
+              Write yo relationships. Add application data that conforms to your
               schema.
             </div>
           </div>
