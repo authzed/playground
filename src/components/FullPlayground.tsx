@@ -11,8 +11,7 @@ import { useZedTerminalService } from "../spicedb-common/services/zedterminalser
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 import { LinearProgress, Tab, Tabs, Tooltip } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
+import { Button } from "@/components/ui/button";
 import TextField from "@material-ui/core/TextField";
 import {
   Theme,
@@ -268,22 +267,6 @@ const useStyles = makeStyles((theme: Theme) =>
       height: "60vh",
       width: "100%",
     },
-    hideTextOnMed: {
-      [theme.breakpoints.down("md")]: {
-        justifyContent: "flex-start",
-        overflow: "hidden",
-        width: "28px",
-        minWidth: "28px",
-        "& .MuiButton-label": {
-          justifyContent: "flex-start",
-          overflow: "hidden",
-          width: "28px",
-          "& .MuiButton-startIcon.MuiButton-iconSizeSmall": {
-            marginLeft: "0px",
-          },
-        },
-      },
-    },
     hide: {
       display: "none",
     },
@@ -294,18 +277,6 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "grid",
       gridTemplateColumns: "1fr auto",
       alignItems: "center",
-    },
-    btnAccept: {
-      "& .MuiSvgIcon-root": {
-        fill: theme.palette.success.main,
-      },
-      color: theme.palette.getContrastText(theme.palette.success.main),
-    },
-    btnRevert: {
-      "& .MuiSvgIcon-root": {
-        fill: theme.palette.error.main,
-      },
-      color: theme.palette.getContrastText(theme.palette.error.main),
     },
     tenantGraphContainer: {
       width: "100%",
@@ -759,59 +730,59 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               )}
             </div>
             {AppConfig().discord.inviteUrl ? (
-              <Button
-                className={classes.hideTextOnMed}
-                size="small"
-                href={AppConfig().discord.inviteUrl}
-                startIcon={
+              <Button asChild variant="link" size="sm">
+                <a
+                  href={AppConfig().discord.inviteUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                >
                   <DISCORD
                     viewBox="0 0 71 55"
                     style={{ height: "1em", width: "1em" }}
                   />
-                }
-              >
-                Discuss on Discord
+                  <span className="hidden md:inline">Discuss on Discord</span>
+                </a>
               </Button>
             ) : (
               <span />
             )}
+            {isSharingEnabled && (
+              <Button
+                size="sm"
+                onClick={() => conductSharing()}
+                variant="secondary"
+                disabled={
+                  sharingState.status === SharingStatus.SHARING ||
+                  validationState.status === ValidationStatus.RUNNING
+                }
+              >
+                <ShareIcon />
+                <span className="hidden md:inline">Share</span>
+              </Button>
+            )}
             <Button
-              className={clsx(TourElementClass.share, classes.hideTextOnMed, {
-                [classes.hide]: !isSharingEnabled,
-              })}
-              size="small"
-              onClick={() => conductSharing()}
-              disabled={
-                sharingState.status === SharingStatus.SHARING ||
-                validationState.status === ValidationStatus.RUNNING
-              }
-              startIcon={<ShareIcon />}
-            >
-              Share
-            </Button>
-            <Button
-              className={classes.hideTextOnMed}
-              size="small"
+              variant="secondary"
+              size="sm"
               onClick={conductDownload}
               disabled={
                 sharingState.status === SharingStatus.SHARING ||
                 validationState.status === ValidationStatus.RUNNING
               }
-              startIcon={<GetAppIcon />}
             >
-              Download
+              <GetAppIcon />
+              <span className="hidden md:inline">Download</span>
             </Button>
             <Button
-              className={classes.hideTextOnMed}
-              size="small"
+              size="sm"
+              variant="secondary"
               onClick={conductUpload}
               disabled={
                 sharingState.status === SharingStatus.SHARING ||
                 validationState.status === ValidationStatus.RUNNING
               }
-              startIcon={<InsertDriveFileIcon />}
             >
-              Load From File
+              <InsertDriveFileIcon />
+              <span className="hidden md:inline">Load From File</span>
             </Button>
           </>
         )}
@@ -888,11 +859,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         <div className={classes.contextToolbar}>
           <div className={classes.contextTools}>
             {currentItem?.kind === DataStoreItemKind.SCHEMA && (
-              <Button
-                variant="contained"
-                onClick={formatSchema}
-                startIcon={<FormatTextdirectionLToRIcon />}
-              >
+              <Button variant="secondary" onClick={formatSchema}>
+                <FormatTextdirectionLToRIcon />
                 Format
               </Button>
             )}
@@ -925,115 +893,110 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               </div>
             )}
 
-            {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-            )}
-
-            {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-            )}
+            {currentItem?.kind !== undefined &&
+              [
+                DataStoreItemKind.ASSERTIONS,
+                DataStoreItemKind.EXPECTED_RELATIONS,
+              ].includes(currentItem.kind) && (
+                <ValidateButton
+                  datastore={datastore}
+                  validationState={validationState}
+                  conductValidation={conductValidation}
+                  developerService={developerService}
+                />
+              )}
 
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff === undefined && (
-                <ButtonGroup className={classes.expectedActions}>
+                <>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<RefreshIcon />}
                     onClick={() => handleGenerateAndUpdate(false)}
                   >
+                    <RefreshIcon />
                     Re-Generate
                   </Button>
                   <Button
-                    variant="contained"
+                    variant="secondary"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<CompareIcon />}
                     onClick={() => handleGenerateAndUpdate(true)}
                   >
+                    <CompareIcon />
                     Compute and Diff
                   </Button>
-                </ButtonGroup>
+                </>
               )}
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff !== undefined && (
-                <ButtonGroup className={classes.expectedActions}>
-                  <Button
-                    variant="contained"
-                    className={classes.btnAccept}
-                    startIcon={<CheckCircleIcon />}
-                    onClick={handleAcceptDiff}
-                  >
+                <>
+                  <Button variant="default" onClick={handleAcceptDiff}>
+                    <CheckCircleIcon />
                     Accept Update
                   </Button>
-                  <Button
-                    variant="contained"
-                    className={classes.btnRevert}
-                    startIcon={<HighlightOffIcon />}
-                    onClick={handleRevertDiff}
-                  >
+                  <Button variant="destructive" onClick={handleRevertDiff}>
+                    <HighlightOffIcon />
                     Revert Update
                   </Button>
-                </ButtonGroup>
+                </>
               )}
           </div>
           <div />
           {currentItem?.kind === DataStoreItemKind.SCHEMA && (
-            <Button
-              className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
-            >
-              Schema Development Guide
+            <Button asChild variant="link" className={classes.docsLink}>
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <DescriptionIcon />
+                Schema Development Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
-            <Button
-              className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
-            >
-              Test Relationships Guide
+            <Button asChild variant="link" className={classes.docsLink}>
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <DescriptionIcon />
+                Test Relationships Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
-            <Button
-              className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
-            >
-              Assertions Guide
+            <Button asChild variant="link" className={classes.docsLink}>
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <DescriptionIcon />
+                Assertions Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
-            <Button
-              className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
-            >
-              Expected Relations Guide
+            <Button asChild className={classes.docsLink} variant="link">
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
+                target="_blank"
+                rel="noreferrer"
+              >
+                <DescriptionIcon />
+                Expected Relations Guide
+              </a>
             </Button>
           )}
         </div>
