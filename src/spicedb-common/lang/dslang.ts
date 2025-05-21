@@ -84,6 +84,14 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     tokenizer: {
       root: [
         [
+          /partial/,
+          {
+            token: "keyword.partial",
+            bracket: "@open",
+            next: "@partial",
+          },
+        ],
+        [
           /definition/,
           {
             token: "keyword.definition",
@@ -236,6 +244,13 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
           { token: "identifier.definition-prefix", next: "@subdef" },
         ],
         [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
+      ],
+      partial: [
+        [
+          /([a-z0-9_]+\/)+/,
+          { token: "identifier.partial-prefix", next: "@subdef" },
+        ],
+        [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }], 
       ],
       subdef: [
         [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
@@ -615,6 +630,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
       { token: "keyword.permission", foreground: "158a64" },
       { token: "keyword.relation", foreground: "883425" },
       { token: "keyword.definition", foreground: "4242ff" },
+      { token: "keyword.partial", foreground: "cc1cfc" },
       { token: "keyword.caveat", foreground: "ff4271" },
       { token: "keyword.nil", foreground: "999999" },
       { token: "keyword.any", foreground: "23974d" },
@@ -622,12 +638,14 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
 
       { token: "identifier.type-prefix", foreground: "aaaaaa" },
       { token: "identifier.definition-prefix", foreground: "aaaaaa" },
+      { token: "identifier.partial-prefix", foreground: "aaaaaa" },
 
       { token: "identifier.caveat", foreground: "000000" },
       { token: "identifier.caveat-param-name", foreground: "9eb4df" },
       { token: "identifier.caveat-usage", foreground: "000000" },
 
       { token: "identifier.definition", foreground: "000000" },
+      { token: "identifier.partial-prefix", foreground: "000000" },
       { token: "identifier.permission", foreground: "000000" },
       { token: "identifier.relation", foreground: "000000" },
     ],
@@ -661,6 +679,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     { token: "keyword.permission", foreground: "1acc92" },
     { token: "keyword.relation", foreground: "ffa887" },
     { token: "keyword.definition", foreground: "8787ff" },
+    { token: "keyword.partial", foreground: "dd6dfc" },
     { token: "keyword.caveat", foreground: "ff87a6" },
     { token: "keyword.nil", foreground: "cccccc" },
     { token: "keyword.any", foreground: "abe5ff" },
