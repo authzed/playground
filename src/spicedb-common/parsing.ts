@@ -94,7 +94,7 @@ export const parseRelationshipWithError = (
   if (!parsed || !parsed.groups) {
     return {
       errorMessage:
-        "Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid`",
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
     };
   }
 
