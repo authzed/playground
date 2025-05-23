@@ -6,6 +6,9 @@
   "dependencies": {
     "@apollo/client": "^3.7.3",
     "@apollo/link-context": "^2.0.0-beta.3",
+    "@bufbuild/protobuf": "^2.4.0",
+    "@connectrpc/connect": "^2.0.2",
+    "@connectrpc/connect-web": "^2.0.2",
     "@fontsource/roboto": "^5.1.1",
     "@fortawesome/fontawesome-svg-core": "^6.4.0",
     "@fortawesome/free-solid-svg-icons": "^6.2.1",
@@ -16,8 +19,6 @@
     "@material-ui/icons": "^4.11.3",
     "@material-ui/lab": "^4.0.0-alpha.61",
     "@monaco-editor/react": "^4.3.1",
-    "@protobuf-ts/grpcweb-transport": "^2.9.4",
-    "@protobuf-ts/plugin": "^2.6.0",
     "@radix-ui/react-alert-dialog": "^1.1.11",
     "@radix-ui/react-select": "^2.2.2",
     "@radix-ui/react-slot": "^1.2.0",

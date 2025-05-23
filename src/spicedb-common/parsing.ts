@@ -1,9 +1,15 @@
 import {
-  ContextualizedCaveat,
+  ContextualizedCaveatSchema,
   RelationTuple as Relationship,
-} from "./protodefs/core/v1/core";
-import { Struct } from "./protodefs/google/protobuf/struct";
-import { Timestamp } from "./protodefs/google/protobuf/timestamp";
+  RelationTupleSchema as RelationshipSchema,
+} from "./protodefs/core/v1/core_pb";
+import {
+  Timestamp,
+  timestampDate,
+  timestampFromMs,
+} from "@bufbuild/protobuf/wkt";
+import type { MessageInitShape } from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
 
 export const CAVEAT_NAME_EXPR =
   "([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]";
@@ -151,7 +157,9 @@ export const parseRelationshipWithError = (
     };
   }
 
-  let contextualizedCaveat: ContextualizedCaveat | undefined = undefined;
+  let contextualizedCaveat:
+    | MessageInitShape<typeof ContextualizedCaveatSchema>
+    | undefined = undefined;
   if (parsed.groups["caveatName"]) {
     contextualizedCaveat = {
       caveatName: parsed.groups["caveatName"] ?? "",
@@ -166,7 +174,7 @@ export const parseRelationshipWithError = (
           };
         }
 
-        contextualizedCaveat.context = Struct.fromJson(caveatContext);
+        contextualizedCaveat.context = caveatContext;
       } catch (e) {
         return {
           errorMessage: `Invalid caveat context: ${e}`,
@@ -184,10 +192,7 @@ export const parseRelationshipWithError = (
       }
 
       const milliseconds = Date.parse(dtString);
-      optionalExpirationTime = {
-        seconds: (milliseconds / 1000).toString(),
-        nanos: 0,
-      };
+      optionalExpirationTime = timestampFromMs(milliseconds);
     } catch (e) {
       return {
         errorMessage: `Invalid expiration time: ${e}`,
@@ -195,7 +200,7 @@ export const parseRelationshipWithError = (
     }
   }
 
-  return {
+  return create(RelationshipSchema, {
     resourceAndRelation: {
       namespace: resourceNamespace,
       objectId: resourceObjectId,
@@ -208,7 +213,7 @@ export const parseRelationshipWithError = (
     },
     caveat: contextualizedCaveat,
     optionalExpirationTime: optionalExpirationTime,
-  };
+  });
 };
 
 /**
@@ -272,18 +277,15 @@ export const convertRelationshipToString = (rel: Relationship) => {
   let caveatString = "";
   if (rel.caveat) {
     caveatString = `[${rel.caveat.caveatName}${
-      rel.caveat.context &&
-      Object.keys(Struct.toJson(rel.caveat.context) ?? {}).length > 0
-        ? `:${Struct.toJsonString(rel.caveat.context)}`
+      rel.caveat.context && Object.keys(rel.caveat.context ?? {}).length > 0
+        ? `:${JSON.stringify(rel.caveat.context)}`
         : ""
     }]`;
   }
 
   let expirationString = "";
   if (rel.optionalExpirationTime) {
-    const datetime = new Date(
-      parseFloat(rel.optionalExpirationTime.seconds) * 1000,
-    );
+    const datetime = timestampDate(rel.optionalExpirationTime);
     expirationString = `[expiration:${datetime.toISOString().replace(".000", "")}]`;
   }
 

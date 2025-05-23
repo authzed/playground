@@ -1,22 +1,28 @@
 import { useCallback, useEffect, useState } from "react";
 import { parseRelationships } from "../parsing";
-import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
 import {
   CheckOperationParameters,
   CheckOperationsResult,
   DeveloperRequest,
   DeveloperResponse,
   FormatSchemaParameters,
+  FormatSchemaParametersSchema,
   FormatSchemaResult,
-  Operation,
   OperationResult,
   RunAssertionsParameters,
+  RunAssertionsParametersSchema,
   RunAssertionsResult,
   RunValidationParameters,
+  RunValidationParametersSchema,
   RunValidationResult,
   SchemaWarningsParameters,
+  SchemaWarningsParametersSchema,
   SchemaWarningsResult,
-} from "../protodefs/developer/v1/developer";
+  DeveloperRequestSchema,
+  DeveloperResponseSchema,
+} from "../protodefs/developer/v1/developer_pb";
+import { create, toJson } from "@bufbuild/protobuf";
 import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
@@ -125,7 +131,7 @@ class DeveloperServiceRequest {
     this.operations.push({
       operation: "schemaWarnings",
       parameters: {
-        schemaWarningsParameters: {},
+        schemaWarningsParameters: create(SchemaWarningsParametersSchema, {}),
       },
       callback: (result: OperationResult) => {
         callback(result.schemaWarningsResult!);
@@ -140,7 +146,7 @@ class DeveloperServiceRequest {
     this.operations.push({
       operation: "formatSchema",
       parameters: {
-        formatSchemaParameters: {},
+        formatSchemaParameters: create(FormatSchemaParametersSchema, {}),
       },
       callback: (result: OperationResult) => {
         callback(result.formatSchemaResult!);
@@ -176,9 +182,9 @@ class DeveloperServiceRequest {
     this.operations.push({
       operation: "runAssertions",
       parameters: {
-        assertionsParameters: {
+        assertionsParameters: create(RunAssertionsParametersSchema, {
           assertionsYaml: yaml,
-        },
+        }),
       },
       callback: (result: OperationResult) => {
         callback(result.assertionsResult!);
@@ -196,9 +202,9 @@ class DeveloperServiceRequest {
     this.operations.push({
       operation: "runValidation",
       parameters: {
-        validationParameters: {
+        validationParameters: create(RunValidationParametersSchema, {
           validationYaml: yaml,
-        },
+        }),
       },
       callback: (result: OperationResult) => {
         callback(result.validationResult!);
@@ -210,25 +216,26 @@ class DeveloperServiceRequest {
    * execute executes the queued operations, returning any *input* errors found.
    */
   public execute(): DeveloperResponse {
-    const request: DeveloperRequest = {
+    const request: DeveloperRequest = create(DeveloperRequestSchema, {
       context: {
         schema: this.schema,
         relationships: this.relationships,
       },
       operations: this.operations.map(
-        (opc: OperationAndCallback): Operation => {
-          return opc.parameters;
-        },
+        (opc: OperationAndCallback) => opc.parameters,
       ),
-    };
-
-    const encodedResponse: string = window[ENTRYPOINT_FUNCTION](
-      DeveloperRequest.toJsonString(request),
-    );
-
-    const response = DeveloperResponse.fromJsonString(encodedResponse, {
-      ignoreUnknownFields: true,
     });
+
+    const developerRequest = JSON.stringify(
+      toJson(DeveloperRequestSchema, request),
+    );
+    const encodedResponse: string =
+      window[ENTRYPOINT_FUNCTION](developerRequest);
+
+    const response = create(
+      DeveloperResponseSchema,
+      JSON.parse(encodedResponse),
+    );
     if (this.operations.length > 0 && response.operationsResults) {
       this.operations.forEach((osc, index) => {
         const result = response.operationsResults?.results[index];

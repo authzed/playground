@@ -9,7 +9,7 @@ import { RelationshipFound } from "../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
-} from "../spicedb-common/protodefs/developer/v1/developer";
+} from "../spicedb-common/protodefs/developer/v1/developer_pb";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";

@@ -5,7 +5,7 @@ import {
   ParsedSchema,
   TextRange,
 } from "../../parsers/dsl/dsl";
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 
 export interface RelationLink {
   key: string;
