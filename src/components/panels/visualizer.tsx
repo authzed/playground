@@ -2,7 +2,7 @@ import TabLabel from "../../playground-ui/TabLabel";
 import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
 import { TextRange } from "../../spicedb-common/include/protobuf-parser";
 import { RelationshipFound } from "../../spicedb-common/parsing";
-import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core";
+import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import {
   createStyles,
   darken,

@@ -3,9 +3,9 @@ import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import TabLabel from "../playground-ui/TabLabel";
 import { Example } from "../spicedb-common/examples";
-import { DeveloperServiceClient } from "../spicedb-common/protodefs/authzed/api/v0/developer.client";
-import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
-import { RpcError } from "@protobuf-ts/runtime-rpc";
+import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
+import { createGrpcWebTransport } from "@connectrpc/connect-web";
+import { createClient, ConnectError } from "@connectrpc/connect";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
@@ -498,8 +498,11 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       status: SharingStatus.SHARING,
     });
 
-    const service = new DeveloperServiceClient(
-      new GrpcWebFetchTransport({ baseUrl: developerEndpoint }),
+    const client = createClient(
+      DeveloperService,
+      createGrpcWebTransport({
+        baseUrl: developerEndpoint,
+      }),
     );
 
     const schema = datastore.getSingletonByKind(
@@ -517,7 +520,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
     // Invoke sharing.
     try {
-      const { response } = await service.share({
+      const response = await client.share({
         schema,
         relationshipsYaml,
         assertionsYaml,
@@ -533,7 +536,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         shareReference: reference,
       });
     } catch (error: unknown) {
-      if (error instanceof RpcError) {
+      if (error instanceof ConnectError) {
         showAlert({
           title: "Error sharing",
           content: error.message,

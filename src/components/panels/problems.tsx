@@ -3,7 +3,7 @@ import { RelationshipFound } from "../../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
-} from "../../spicedb-common/protodefs/developer/v1/developer";
+} from "../../spicedb-common/protodefs/developer/v1/developer_pb";
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";

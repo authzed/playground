@@ -2,7 +2,7 @@ import { RelationshipFound } from "../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
-} from "../spicedb-common/protodefs/developer/v1/developer";
+} from "../spicedb-common/protodefs/developer/v1/developer_pb";
 import { ERROR_SOURCE_TO_ITEM } from "../components/panels/errordisplays";
 import { LiveCheckService, LiveCheckStatus } from "./check";
 import { DataStoreItemKind } from "./datastore";

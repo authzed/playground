@@ -9,7 +9,7 @@ import {
   interpolateYlOrBr,
 } from "d3-scale-chromatic";
 import { useMemo } from "react";
-import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
 
 /**
  * RelationshipsService represents a service for looking up context-sensitive information
@@ -106,7 +106,7 @@ export function useRelationshipsService(
     };
 
     const resources = filter(
-      relationships.map((rt: Relationship) => {
+      relationships.map((rt) => {
         const onr = rt.resourceAndRelation;
         if (onr === undefined) {
           return null;
@@ -118,7 +118,7 @@ export function useRelationshipsService(
     );
 
     const resourceTypes = filter(
-      relationships.map((rt: Relationship) => {
+      relationships.map((rt) => {
         const onr = rt.resourceAndRelation;
         if (onr === undefined) {
           return null;
@@ -129,7 +129,7 @@ export function useRelationshipsService(
     );
 
     const subjects = filter(
-      relationships.map((rt: Relationship) => {
+      relationships.map((rt) => {
         const subject = rt.subject;
         if (subject === undefined) {
           return null;
@@ -144,7 +144,7 @@ export function useRelationshipsService(
     );
 
     const subjectTypes = filter(
-      relationships.map((rt: Relationship) => {
+      relationships.map((rt) => {
         const subject = rt.subject;
         if (subject === undefined) {
           return null;
@@ -184,15 +184,12 @@ export function useRelationshipsService(
       subjects: subjects,
       getObjectIds: (objectType: string) => {
         const resourceIDs = relationships
-          .filter(
-            (rel: Relationship) =>
-              rel.resourceAndRelation?.namespace === objectType,
-          )
-          .map((rel: Relationship) => rel.resourceAndRelation?.objectId ?? "")
+          .filter((rel) => rel.resourceAndRelation?.namespace === objectType)
+          .map((rel) => rel.resourceAndRelation?.objectId ?? "")
           .filter((value: string) => !!value);
         const subjectIDs = relationships
-          .filter((rel: Relationship) => rel.subject?.namespace === objectType)
-          .map((rel: Relationship) => rel.subject?.objectId ?? "")
+          .filter((rel) => rel.subject?.namespace === objectType)
+          .map((rel) => rel.subject?.objectId ?? "")
           .filter((value: string) => !!value);
         return Array.from(new Set<string>([...resourceIDs, ...subjectIDs]));
       },
