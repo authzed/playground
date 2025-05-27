@@ -1,7 +1,7 @@
 import {
   DeveloperError,
   DeveloperWarning,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
+} from "../spicedb-common/protodefs/developer/v1/developer";
 import { DeveloperService } from "../spicedb-common/services/developerservice";
 import { useAlert } from "../playground-ui/AlertProvider";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";

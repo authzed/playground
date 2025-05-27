@@ -1,6 +1,6 @@
 import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
 import { ParsedSchema } from "../../parsers/dsl/dsl";
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { TextRange } from "../../parsers/dsl/dsl";

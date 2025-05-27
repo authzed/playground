@@ -1,12 +1,11 @@
 import { parseRelationship } from "../spicedb-common/parsing";
-import { DebugInformation } from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
+import { DebugInformation } from "../spicedb-common/protodefs/authzed/api/v1/debug";
 import {
-  CheckOperationParametersSchema,
   CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
   DeveloperWarning,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
+} from "../spicedb-common/protodefs/developer/v1/developer";
 import {
   DeveloperService,
   DeveloperServiceError,
@@ -15,7 +14,6 @@ import { useDebouncedChecker } from "../playground-ui/debouncer";
 import { useCallback, useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { DataStore, DataStoreItemKind } from "./datastore";
-import { create } from "@bufbuild/protobuf";
 
 export enum LiveCheckStatus {
   PARSE_ERROR = -2,
@@ -107,11 +105,11 @@ function runEditCheckWasm(
 
     item.status = LiveCheckItemStatus.NOT_CHECKED;
     request.check(
-      create(CheckOperationParametersSchema, {
+      {
         resource: parsed.resourceAndRelation!,
         subject: parsed.subject!,
         caveatContext: parsed.caveat?.context,
-      }),
+      },
       (result) => {
         if (result.checkError) {
           item.status = LiveCheckItemStatus.INVALID;

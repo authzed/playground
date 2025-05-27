@@ -4,7 +4,7 @@ import {
   ParsedRelation,
 } from "../../spicedb-common/parsers/dsl/dsl";
 import { parseRelationships } from "../../spicedb-common/parsing";
-import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
 import Paper from "@material-ui/core/Paper";

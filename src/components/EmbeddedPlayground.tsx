@@ -4,15 +4,13 @@ import {
   RelationshipFound,
   parseRelationship,
 } from "../spicedb-common/parsing";
+import { DeveloperServiceClient } from "../spicedb-common/protodefs/authzed/api/v0/developer.client";
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import { RpcError } from "@protobuf-ts/runtime-rpc";
 import {
-  CheckOperationParametersSchema,
   CheckOperationsResult,
   CheckOperationsResult_Membership,
-  CheckOperationsResultSchema,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createClient, ConnectError } from "@connectrpc/connect";
+} from "../spicedb-common/protodefs/developer/v1/developer";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import {
   faCaretDown,
@@ -46,7 +44,6 @@ import { ShareLoader } from "./ShareLoader";
 
 import { ParsedObjectDefinition } from "../spicedb-common/parsers/dsl/dsl";
 import "./fonts.css";
-import { create } from "@bufbuild/protobuf";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -284,13 +281,9 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       return;
     }
 
-    const client = createClient(
-      DeveloperService,
-      createGrpcWebTransport({
-        baseUrl: developerEndpoint,
-      }),
+    const service = new DeveloperServiceClient(
+      new GrpcWebFetchTransport({ baseUrl: developerEndpoint }),
     );
-
     const schema = datastore.getSingletonByKind(
       DataStoreItemKind.SCHEMA,
     ).editableContents!;
@@ -306,7 +299,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
 
     // Invoke sharing.
     try {
-      const response = await client.share({
+      const { response } = await service.share({
         schema,
         relationshipsYaml,
         assertionsYaml,
@@ -315,7 +308,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       const reference = response.shareReference;
       window.open(`${window.location.origin}/s/${reference}`);
     } catch (error: unknown) {
-      if (error instanceof ConnectError) {
+      if (error instanceof RpcError) {
         showAlert({
           title: "Error sharing",
           content: error.message,
@@ -489,17 +482,14 @@ function EmbeddedQuery(props: { services: Services }) {
     }
 
     const request = devService.newRequest(schemaText, relsText);
-    let checkResult: CheckOperationsResult = create(
-      CheckOperationsResultSchema,
-      {
-        membership: CheckOperationsResult_Membership.UNKNOWN,
-      },
-    );
+    let checkResult: CheckOperationsResult = {
+      membership: CheckOperationsResult_Membership.UNKNOWN,
+    };
     request?.check(
-      create(CheckOperationParametersSchema, {
+      {
         resource: relationship.resourceAndRelation!,
         subject: relationship.subject!,
-      }),
+      },
       (r: CheckOperationsResult) => {
         checkResult = r;
       },

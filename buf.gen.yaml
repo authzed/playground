@@ -1,13 +1,14 @@
 ---
 version: "v2"
 plugins:
-  - remote: "buf.build/bufbuild/es:v2.4.0"
+  - remote: "buf.build/community/timostamm-protobuf-ts:v2.9.1"
     out: "src/spicedb-common/protodefs"
-    include_imports: true
     opt:
-      - "target=ts"
+      - "long_type_string"
+      - "generate_dependencies"
+      - "optimize_code_size"
 inputs:
-  - module: "buf.build/authzed/api:v1.41.0"
+  - module: "buf.build/authzed/api:v1.40.0"
     paths:
       - "authzed/api/v0"
   - git_repo: "https://github.com/authzed/spicedb"

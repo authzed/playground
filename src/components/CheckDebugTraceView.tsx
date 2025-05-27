@@ -4,8 +4,11 @@ import {
   CheckDebugTrace,
   CheckDebugTrace_Permissionship,
   CheckDebugTrace_PermissionType,
-} from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
-import type { JsonObject, JsonValue } from "@bufbuild/protobuf";
+} from "../spicedb-common/protodefs/authzed/api/v1/debug";
+import {
+  Struct,
+  Value,
+} from "../spicedb-common/protodefs/google/protobuf/struct";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
@@ -102,8 +105,8 @@ export function CheckDebugTraceView(props: {
       );
     });
 
-    if (t.resolution.case === "subProblems") {
-      t.resolution.value.traces.forEach(appendExpanded);
+    if (t.resolution.oneofKind === "subProblems") {
+      t.resolution.subProblems.traces.forEach(appendExpanded);
     }
   };
 
@@ -142,16 +145,18 @@ function CheckDebugTraceItems(props: {
         const isNotMember = hasNotPermission(props.trace);
 
         const children =
-          props.trace.resolution.case === "subProblems"
-            ? props.trace.resolution.value.traces.map((subTrace, index) => {
-                return (
-                  <CheckDebugTraceItems
-                    key={index}
-                    trace={subTrace}
-                    localParseService={props.localParseService}
-                  />
-                );
-              })
+          props.trace.resolution.oneofKind === "subProblems"
+            ? props.trace.resolution.subProblems.traces.map(
+                (subTrace, index) => {
+                  return (
+                    <CheckDebugTraceItems
+                      key={index}
+                      trace={subTrace}
+                      localParseService={props.localParseService}
+                    />
+                  );
+                },
+              )
             : [];
 
         if (
@@ -280,18 +285,14 @@ function CaveatTreeItem(props: {
   );
 }
 
-function ContextTreeView(context: JsonObject | undefined) {
+function ContextTreeView(context: Struct | undefined) {
   if (context === undefined) {
     return null;
   }
 
-  if (context === null) {
-    return null;
-  }
-
-  return Object.keys(context).map((key) => {
+  return Object.keys(context.fields).map((key) => {
     let label = <span>{key}</span>;
-    const [value, isItemValue] = ContextTreeValue(context[key]);
+    const [value, isItemValue] = ContextTreeValue(context?.fields[key]);
     if (!isItemValue) {
       label = (
         <span>
@@ -308,25 +309,31 @@ function ContextTreeView(context: JsonObject | undefined) {
   });
 }
 
-function ContextTreeValue(value: JsonValue) {
-  if (value === null) {
-    return [<code>null</code>, false];
+function ContextTreeValue(value: Value) {
+  switch (value.kind.oneofKind) {
+    case "nullValue":
+      return [<code>null</code>, false];
+
+    case "numberValue":
+      return [<code>{value.kind.numberValue.toString()}</code>, false];
+
+    case "stringValue":
+      return [<code>{value.kind.stringValue}</code>, false];
+
+    case "boolValue":
+      return [<code>{value.kind.boolValue.toString()}</code>, false];
+
+    case "structValue":
+      return [ContextTreeView(value.kind.structValue), true];
+
+    case "listValue":
+      return [
+        value.kind.listValue.values.map((v) => {
+          return <TreeItem nodeId="">{ContextTreeValue(v)}</TreeItem>;
+        }),
+        true,
+      ];
   }
-  if (typeof value === "boolean") {
-    return [<code>{value.toString()}</code>, false];
-  }
-  if (Array.isArray(value)) {
-    return [
-      value.map((v) => {
-        return <TreeItem nodeId="">{ContextTreeValue(v)}</TreeItem>;
-      }),
-      true,
-    ];
-  }
-  // NOTE: we've already handled null and array above, so this will match on objects.
-  if (typeof value === "object") {
-    return [ContextTreeView(value), true];
-  }
-  // If we've gotten this far, we have a number or a string and we can render it straight out.
-  return [<code>{value}</code>, false];
+
+  return [null, false];
 }

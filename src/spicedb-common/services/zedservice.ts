@@ -1,8 +1,7 @@
-import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core";
 import { useCallback, useEffect, useState } from "react";
 import { parseRelationships } from "../parsing";
-import { RequestContextSchema } from "../protodefs/developer/v1/developer_pb";
-import { create, toJson } from "@bufbuild/protobuf";
+import { RequestContext } from "../protodefs/developer/v1/developer";
 import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/zed.wasm`;
@@ -200,15 +199,13 @@ export function useZedService(): ZedService {
         relationships: parseRelationships(relationshipsString),
       };
 
-      const contextJSONString = JSON.stringify(
-        toJson(RequestContextSchema, create(RequestContextSchema, reqContext)),
-      );
+      const contextJSONString = RequestContext.toJsonString(reqContext);
 
       const result = JSON.parse(
         window[ENTRYPOINT_FUNCTION](contextJSONString, args),
       );
       const updatedContext = result.updated_context
-        ? create(RequestContextSchema, JSON.parse(result.updated_context))
+        ? RequestContext.fromJsonString(result.updated_context)
         : undefined;
       return {
         updatedSchema: updatedContext?.schema,

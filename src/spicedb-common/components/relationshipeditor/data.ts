@@ -1,6 +1,6 @@
-import { timestampDate } from "@bufbuild/protobuf/wkt";
 import { RelationshipWithComments } from "../../parsing";
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
+import { Struct } from "../../protodefs/google/protobuf/struct";
 import { COLUMNS } from "./columns";
 
 /**
@@ -210,10 +210,10 @@ export function relationshipToDatum(rel: Relationship): PartialRelationship {
     subjectRelation: subRel ?? "",
     caveatName: rel.caveat?.caveatName ?? "",
     caveatContext: rel.caveat?.context
-      ? JSON.stringify(rel.caveat?.context)
+      ? Struct.toJsonString(rel.caveat?.context)
       : "",
     expiration: rel.optionalExpirationTime
-      ? timestampDate(rel.optionalExpirationTime)
+      ? new Date(parseFloat(rel.optionalExpirationTime.seconds) * 1000)
           .toISOString()
           .replace(".000", "")
       : "",
@@ -270,7 +270,7 @@ export function relationshipToColumnData(
     relationship.caveat?.caveatName ?? "",
     caveatContext,
     relationship.optionalExpirationTime
-      ? timestampDate(relationship.optionalExpirationTime)
+      ? new Date(parseFloat(relationship.optionalExpirationTime.seconds) * 1000)
           .toISOString()
           .replace(".000", "")
       : "",

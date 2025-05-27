@@ -6,6 +6,7 @@ import {
   parseRelationship,
   parseRelationshipWithError,
 } from "./parsing";
+import { Struct } from "./protodefs/google/protobuf/struct";
 
 describe("converting relationships", () => {
   it("converts relationships properly to strings", () => {
@@ -165,7 +166,19 @@ describe("parsing relationships", () => {
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("somecaveat");
-    expect(parsed?.caveat?.context).toEqual({ hi: "there" });
+    expect(parsed?.caveat?.context).toHaveProperty("fields");
+    expect(parsed?.caveat?.context).toEqual({
+      fields: {
+        hi: {
+          kind: {
+            oneofKind: "stringValue",
+            stringValue: "there",
+          },
+        },
+      },
+    });
+    assert(parsed?.caveat?.context);
+    expect(Struct.toJson(parsed?.caveat?.context)).toEqual({ hi: "there" });
   });
 
   it("parses a relationship with list in caveat context", () => {
@@ -174,8 +187,9 @@ describe("parsing relationships", () => {
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("some");
+    expect(parsed?.caveat?.context).toHaveProperty("fields");
     assert(parsed?.caveat?.context);
-    expect(parsed?.caveat?.context).toEqual({
+    expect(Struct.toJson(parsed?.caveat?.context)).toEqual({
       somecondition: [],
     });
   });
@@ -187,7 +201,7 @@ describe("parsing relationships", () => {
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("some");
     assert(parsed?.caveat?.context);
-    expect(parsed?.caveat?.context).toEqual({
+    expect(Struct.toJson(parsed?.caveat?.context)).toEqual({
       somecondition: [1, true, "3"],
     });
   });
@@ -199,7 +213,7 @@ describe("parsing relationships", () => {
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("some");
     assert(parsed?.caveat?.context);
-    expect(parsed?.caveat?.context).toEqual({
+    expect(Struct.toJson(parsed?.caveat?.context)).toEqual({
       em: "a@example.com",
     });
   });

@@ -16,7 +16,7 @@ import {
 import {
   DeveloperError,
   DeveloperError_Source,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
+} from "../spicedb-common/protodefs/developer/v1/developer";
 import { Theme } from "@glideapps/glide-data-grid";
 import { useCallback, useMemo, useState } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";

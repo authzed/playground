@@ -1,10 +1,10 @@
 import { useAlert } from "../playground-ui/AlertProvider";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import LoadingView from "../playground-ui/LoadingView";
-import { LookupShareResponse_LookupStatus } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createClient, ConnectError } from "@connectrpc/connect";
+import { DeveloperServiceClient } from "../spicedb-common/protodefs/authzed/api/v0/developer.client";
+import { GrpcWebFetchTransport } from "@protobuf-ts/grpcweb-transport";
+import { LookupShareResponse_LookupStatus } from "../spicedb-common/protodefs/authzed/api/v0/developer";
+import { RpcError } from "@protobuf-ts/runtime-rpc";
 import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
 import "react-reflex/styles.css";
@@ -66,11 +66,8 @@ export function ShareLoader(props: {
       if (!endpoint) {
         return;
       }
-      const client = createClient(
-        DeveloperService,
-        createGrpcWebTransport({
-          baseUrl: endpoint,
-        }),
+      const service = new DeveloperServiceClient(
+        new GrpcWebFetchTransport({ baseUrl: endpoint }),
       );
 
       // TODO: use routing for this instead of string manipulation
@@ -83,11 +80,12 @@ export function ShareLoader(props: {
       const shareReference = pieces[0];
 
       try {
-        const response = await client.lookupShared({
+        const { response, status } = await service.lookupShared({
           shareReference,
         });
         if (
-          response.status === LookupShareResponse_LookupStatus.FAILED_TO_LOOKUP
+          status.code ===
+          LookupShareResponse_LookupStatus.FAILED_TO_LOOKUP.toString()
         ) {
           setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
           if (props.sharedRequired) {
@@ -105,7 +103,8 @@ export function ShareLoader(props: {
 
         // Unknown reference.
         if (
-          response.status === LookupShareResponse_LookupStatus.UNKNOWN_REFERENCE
+          status.code ===
+          LookupShareResponse_LookupStatus.UNKNOWN_REFERENCE.toString()
         ) {
           setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
           if (props.sharedRequired) {
@@ -163,10 +162,10 @@ export function ShareLoader(props: {
 
         setLoadingStatus(SharedLoadingStatus.LOADED);
       } catch (error: unknown) {
-        if (error instanceof ConnectError)
+        if (error instanceof RpcError)
           await showAlert({
             title: "Error loading shared playground",
-            content: error.message,
+            content: error?.message,
             buttonTitle: "Okay",
           });
         navigate({ to: "/", replace: true });

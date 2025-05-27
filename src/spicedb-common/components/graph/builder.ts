@@ -1,4 +1,4 @@
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core";
 import { VisEdge, VisNode } from "../../../playground-ui/VisNetworkGraph";
 import { emphasize } from "@material-ui/core/styles";
 import { schemeCategory10 } from "d3-scale-chromatic";
