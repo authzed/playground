@@ -295,14 +295,14 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
   );
 }
 
+function notNull(value: string | null): value is string {
+  return value !== null;
+}
+
 const filter = (values: (string | null)[]): string[] => {
-  const filtered = values.filter((v: string | null) => !!v);
+  const filtered = values.filter(notNull);
   const set = new Set(filtered);
-  const deduped: string[] = [];
-  set.forEach((value: string | null) => {
-    deduped.push(value!);
-  });
-  return deduped;
+  return Array.from(set);
 };
 
 function LiveCheckRow(props: {
