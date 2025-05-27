@@ -22,7 +22,7 @@ import {
   DeveloperRequestSchema,
   DeveloperResponseSchema,
 } from "../protodefs/developer/v1/developer_pb";
-import { create, toJson } from "@bufbuild/protobuf";
+import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
@@ -226,16 +226,13 @@ class DeveloperServiceRequest {
       ),
     });
 
-    const developerRequest = JSON.stringify(
-      toJson(DeveloperRequestSchema, request),
-    );
+    const developerRequest = toJsonString(DeveloperRequestSchema, request);
     const encodedResponse: string =
       window[ENTRYPOINT_FUNCTION](developerRequest);
 
-    const response = create(
-      DeveloperResponseSchema,
-      JSON.parse(encodedResponse),
-    );
+    const response = fromJsonString(DeveloperResponseSchema, encodedResponse, {
+      ignoreUnknownFields: true,
+    });
     if (this.operations.length > 0 && response.operationsResults) {
       this.operations.forEach((osc, index) => {
         const result = response.operationsResults?.results[index];
