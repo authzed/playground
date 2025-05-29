@@ -64,6 +64,28 @@ vercel deploy --prebuilt
 
 > ℹ️ Git Large File Storage (LFS) must be enabled in your Vercel project settings.
 
+#### Enabling sharing functionality
+
+To enable the sharing functionality on Vercel, you need to configure the following environment variables in your Vercel project settings:
+
+**Required for sharing:**
+
+- `S3_ENDPOINT` - Your S3-compatible storage endpoint (e.g., `https://s3.amazonaws.com` for AWS S3)
+- `S3_BUCKET` - Name of the S3 bucket to store shared playground data
+- `SHARE_SALT` - A random string used for generating share hashes (keep this secret)
+- `AWS_ACCESS_KEY_ID` - AWS access key for S3 access
+- `AWS_SECRET_ACCESS_KEY` - AWS secret key for S3 access
+- `VITE_SHARE_API_ENDPOINT` - The URL of your deployed Vercel instance (e.g., `https://your-playground.vercel.app`)
+
+**Optional:**
+
+- `VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID` - Google Analytics measurement ID
+- `VITE_DISCORD_CHANNEL_ID` - Discord channel ID for embedded chat
+- `VITE_DISCORD_SERVER_ID` - Discord server ID
+- `VITE_DISCORD_INVITE_URL` - Discord invite URL (defaults to https://authzed.com/discord)
+
+You can set these environment variables in the Vercel dashboard under your project's Settings > Environment Variables.
+
 ### NodeJS
 
 The `build` directory in the project root directory after running `yarn build` will contain an optimized production React application that can be served using your preferred NodeJS hosting method.
@@ -90,6 +112,14 @@ Install LFS: `git lfs install`
 
 ```
 yarn run dev
+```
+
+### Running for development with sharing enabled
+
+The `vercel` CLI can be used to run locally with sharing enabled:
+
+```
+VITE_SHARE_API_ENDPOINT=http://localhost:3000 SHARE_SALT=... AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... S3_ENDPOINT=... S3_BUCKET=...  vercel dev
 ```
 
 ## Updating wasm dependencies
@@ -122,7 +152,7 @@ docker build . -t tag-for-playground-image
 Build args can be specified for the build-time environment variables:
 
 ```
-docker build --build-arg VITE_AUTHZED_DEVELOPER_GATEWAY_ENDPOINT=https://my.developer.endpoint . -t tag-for-playground-image
+docker build --build-arg VITE_SHARE_API_ENDPOINT=https://my.playground.endpoint . -t tag-for-playground-image
 ```
 
 ## Developing your own schema

@@ -1,10 +1,6 @@
 import { useAlert } from "../playground-ui/AlertProvider";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import LoadingView from "../playground-ui/LoadingView";
-import { LookupShareResponse_LookupStatus } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createClient, ConnectError } from "@connectrpc/connect";
 import Alert from "@material-ui/lab/Alert";
 import React, { useEffect, useState } from "react";
 import "react-reflex/styles.css";
@@ -53,7 +49,7 @@ export function ShareLoader(props: {
       return;
     }
 
-    if (!AppConfig().authzed?.developerEndpoint) {
+    if (!AppConfig().shareApiEndpoint) {
       setLoadingStatus(SharedLoadingStatus.NOT_APPLICABLE);
       return;
     }
@@ -62,16 +58,10 @@ export function ShareLoader(props: {
 
     // Load the shared data.
     (async () => {
-      const endpoint = AppConfig().authzed.developerEndpoint;
-      if (!endpoint) {
+      const apiEndpoint = AppConfig().shareApiEndpoint;
+      if (!apiEndpoint) {
         return;
       }
-      const client = createClient(
-        DeveloperService,
-        createGrpcWebTransport({
-          baseUrl: endpoint,
-        }),
-      );
 
       // TODO: use routing for this instead of string manipulation
       const pieces = location.pathname.replace(urlPrefix, "").split("/");
@@ -83,12 +73,29 @@ export function ShareLoader(props: {
       const shareReference = pieces[0];
 
       try {
-        const response = await client.lookupShared({
-          shareReference,
-        });
-        if (
-          response.status === LookupShareResponse_LookupStatus.FAILED_TO_LOOKUP
-        ) {
+        const response = await fetch(
+          `${apiEndpoint}/api/lookupshare?shareid=${encodeURIComponent(shareReference)}`,
+        );
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
+            if (props.sharedRequired) {
+              return;
+            }
+
+            await showAlert({
+              title: "Shared playground not found",
+              content: "The shared playground specified does not exist",
+              buttonTitle: "Okay",
+            });
+            navigate({ to: "/", replace: true });
+            return;
+          }
+
+          const errorData = await response
+            .json()
+            .catch(() => ({ error: "Unknown error" }));
           setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
           if (props.sharedRequired) {
             return;
@@ -96,30 +103,14 @@ export function ShareLoader(props: {
 
           await showAlert({
             title: "Error loading shared playground",
-            content: "Invalid sharing reference",
+            content: errorData.error || "Failed to load shared playground",
             buttonTitle: "Okay",
           });
           navigate({ to: "/", replace: true });
           return;
         }
 
-        // Unknown reference.
-        if (
-          response.status === LookupShareResponse_LookupStatus.UNKNOWN_REFERENCE
-        ) {
-          setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
-          if (props.sharedRequired) {
-            return;
-          }
-
-          await showAlert({
-            title: "Shared playground not found",
-            content: "The shared playground specified does not exist",
-            buttonTitle: "Okay",
-          });
-          navigate({ to: "/", replace: true });
-          return;
-        }
+        const shareData = await response.json();
 
         // Valid reference.
         let updateDatastore = true;
@@ -143,10 +134,10 @@ export function ShareLoader(props: {
 
         if (updateDatastore) {
           datastore.load({
-            schema: response.schema,
-            relationshipsYaml: response.relationshipsYaml,
-            assertionsYaml: response.assertionsYaml,
-            verificationYaml: response.validationYaml,
+            schema: shareData.schema || "",
+            relationshipsYaml: shareData.relationships_yaml || "",
+            assertionsYaml: shareData.assertions_yaml || "",
+            verificationYaml: shareData.validation_yaml || "",
           });
         }
 
@@ -163,12 +154,19 @@ export function ShareLoader(props: {
 
         setLoadingStatus(SharedLoadingStatus.LOADED);
       } catch (error: unknown) {
-        if (error instanceof ConnectError)
-          await showAlert({
-            title: "Error loading shared playground",
-            content: error.message,
-            buttonTitle: "Okay",
-          });
+        setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
+        if (props.sharedRequired) {
+          return;
+        }
+
+        await showAlert({
+          title: "Error loading shared playground",
+          content:
+            error instanceof Error
+              ? error.message
+              : "Failed to load shared playground",
+          buttonTitle: "Okay",
+        });
         navigate({ to: "/", replace: true });
         return;
       }
