@@ -10,9 +10,6 @@ import {
   CheckOperationsResult_Membership,
   CheckOperationsResultSchema,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createClient, ConnectError } from "@connectrpc/connect";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import {
   faCaretDown,
@@ -279,17 +276,10 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
   const { showAlert } = useAlert();
 
   const shareAndOpen = async () => {
-    const developerEndpoint = AppConfig().authzed?.developerEndpoint;
-    if (!developerEndpoint) {
+    const shareApiEndpoint = AppConfig().shareApiEndpoint;
+    if (!shareApiEndpoint) {
       return;
     }
-
-    const client = createClient(
-      DeveloperService,
-      createGrpcWebTransport({
-        baseUrl: developerEndpoint,
-      }),
-    );
 
     const schema = datastore.getSingletonByKind(
       DataStoreItemKind.SCHEMA,
@@ -306,23 +296,43 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
 
     // Invoke sharing.
     try {
-      const response = await client.share({
-        schema,
-        relationshipsYaml,
-        assertionsYaml,
-        validationYaml,
+      const response = await fetch(`${shareApiEndpoint}/api/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          version: "2",
+          schema,
+          relationships_yaml: relationshipsYaml,
+          assertions_yaml: assertionsYaml,
+          validation_yaml: validationYaml,
+        }),
       });
-      const reference = response.shareReference;
-      window.open(`${window.location.origin}/s/${reference}`);
-    } catch (error: unknown) {
-      if (error instanceof ConnectError) {
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         showAlert({
           title: "Error sharing",
-          content: error.message,
+          content: errorData.error || "Failed to share playground",
           buttonTitle: "Okay",
         });
         return;
       }
+
+      const result = await response.json();
+      const reference = result.hash;
+      window.open(`${window.location.origin}/s/${reference}`);
+    } catch (error: unknown) {
+      showAlert({
+        title: "Error sharing",
+        content:
+          error instanceof Error ? error.message : "Failed to share playground",
+        buttonTitle: "Okay",
+      });
+      return;
     }
   };
 

@@ -3,9 +3,6 @@ import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import TabLabel from "../playground-ui/TabLabel";
 import { Example } from "../spicedb-common/examples";
-import { DeveloperService } from "../spicedb-common/protodefs/authzed/api/v0/developer_pb";
-import { createGrpcWebTransport } from "@connectrpc/connect-web";
-import { createClient, ConnectError } from "@connectrpc/connect";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
@@ -489,21 +486,14 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   };
 
   const conductSharing = async () => {
-    const developerEndpoint = AppConfig().authzed?.developerEndpoint;
-    if (!developerEndpoint) {
+    const shareApiEndpoint = AppConfig().shareApiEndpoint;
+    if (!shareApiEndpoint) {
       return;
     }
 
     setSharingState({
       status: SharingStatus.SHARING,
     });
-
-    const client = createClient(
-      DeveloperService,
-      createGrpcWebTransport({
-        baseUrl: developerEndpoint,
-      }),
-    );
 
     const schema = datastore.getSingletonByKind(
       DataStoreItemKind.SCHEMA,
@@ -520,13 +510,37 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
     // Invoke sharing.
     try {
-      const response = await client.share({
-        schema,
-        relationshipsYaml,
-        assertionsYaml,
-        validationYaml,
+      const response = await fetch(`${shareApiEndpoint}/api/share`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          version: "2",
+          schema,
+          relationships_yaml: relationshipsYaml,
+          assertions_yaml: assertionsYaml,
+          validation_yaml: validationYaml,
+        }),
       });
-      const reference = response.shareReference;
+
+      if (!response.ok) {
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
+        showAlert({
+          title: "Error sharing",
+          content: errorData.error || "Failed to share playground",
+          buttonTitle: "Okay",
+        });
+        setSharingState({
+          status: SharingStatus.SHARE_ERROR,
+        });
+        return;
+      }
+
+      const result = await response.json();
+      const reference = result.hash;
       pushEvent("shared", {
         reference: reference,
       });
@@ -536,17 +550,16 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         shareReference: reference,
       });
     } catch (error: unknown) {
-      if (error instanceof ConnectError) {
-        showAlert({
-          title: "Error sharing",
-          content: error.message,
-          buttonTitle: "Okay",
-        });
-        setSharingState({
-          status: SharingStatus.SHARE_ERROR,
-        });
-        return;
-      }
+      showAlert({
+        title: "Error sharing",
+        content:
+          error instanceof Error ? error.message : "Failed to share playground",
+        buttonTitle: "Okay",
+      });
+      setSharingState({
+        status: SharingStatus.SHARE_ERROR,
+      });
+      return;
     }
   };
 
@@ -694,7 +707,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   };
 
   const appConfig = AppConfig();
-  const isSharingEnabled = !!appConfig.authzed?.developerEndpoint;
+  const isSharingEnabled = !!appConfig.shareApiEndpoint;
 
   return (
     <div className={classes.root}>
