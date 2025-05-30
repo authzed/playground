@@ -4,7 +4,7 @@ import { parseSchema } from "../spicedb-common/parsers/dsl/dsl";
 import { parseRelationships } from "../spicedb-common/parsing";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
+import { Button } from "@/components/ui/button";
 import {
   createStyles,
   darken,
@@ -193,14 +193,15 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
         </Tabs>
         <div className={classes.buttonContainer}>
-          <Button
-            variant="contained"
-            color="primary"
-            href={window.location.toString().replace("/i/", "/s/")}
-            target="_blank"
-            startIcon={<LaunchIcon />}
-          >
-            Open
+          <Button asChild variant="link">
+            <a
+              href={window.location.toString().replace("/i/", "/s/")}
+              target="_blank"
+              rel="noreferrer"
+            >
+              <LaunchIcon />
+              Open
+            </a>
           </Button>
         </div>
       </AppBar>
