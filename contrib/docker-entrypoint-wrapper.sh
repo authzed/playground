@@ -6,8 +6,6 @@ nginx_conf_template=nginx.conf.tmpl
 
 . generate-config-env.sh
 
-validate_env "$env_file"
-generate_env "$env_file"
 generate_nginx "$nginx_conf_template" "$nginx_conf"
 
 /docker-entrypoint.sh nginx
