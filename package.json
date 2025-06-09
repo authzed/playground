@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "cy:run": "cypress run --browser chrome",
+    "cy:run": "cypress run --browser chrome --headless",
     "cy:open": "cypress open",
     "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
   },
@@ -95,7 +95,7 @@
     "@types/use-deep-compare-effect": "^1.5.1",
     "@types/uuid": "^9.0.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "cypress": "^12.9.0",
+    "cypress": "15.4.0",
     "cypress-wait-until": "^1.7.2",
     "eslint": "^9.18.0",
     "eslint-plugin-react-hooks": "^5.1.0",

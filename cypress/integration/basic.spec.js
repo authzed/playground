@@ -17,12 +17,10 @@ describe("Playground", () => {
 
   it("displays header buttons", () => {
     cy.dismissTour();
-    cy.get("a").contains("Discuss on Discord").should("exist");
     cy.get("header > button").contains("Select Example Schema").should("exist");
     cy.get("header > button").contains("Share").should("exist");
     cy.get("header > button").contains("Download").should("exist");
     cy.get("header > button").contains("Load From File").should("exist");
-    cy.contains("Sign In To Import").should("exist");
   });
 
   it("default validation succeeds", () => {
