@@ -6,3 +6,5 @@ zed
 build
 .vercel
 .env
+cypress/screenshots
+cypress/videos
