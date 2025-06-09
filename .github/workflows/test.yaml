@@ -8,7 +8,7 @@ on:
     branches:
       - "*"
 jobs:
-  test:
+  unit-tests:
     name: "Run Tests"
     runs-on: "depot-ubuntu-24.04-small"
     steps:
@@ -24,3 +24,20 @@ jobs:
       - uses: "bahmutov/npm-install@v1"
       - name: "Run tests"
         run: "yarn test"
+  e2e-tests:
+    name: "Run E2E Tests"
+    runs-on: "depot-ubuntu-24.04-4" # Use a larger instance for E2E tests
+    steps:
+      - uses: "actions/checkout@v4"
+      - uses: "authzed/action-spicedb@v1"
+        with:
+          version: "latest"
+      - uses: "actions/setup-node@v4"
+        with:
+          node-version: 22
+          cache-dependency-path: "yarn.lock"
+          cache: "yarn"
+      - uses: "bahmutov/npm-install@v1"
+      - name: "Run server locally and tests"
+        run:
+          yarn dev & sleep 60 && yarn cy:run
