@@ -17,5 +17,7 @@ cd spicedb
 git fetch
 git checkout ${VERSION}
 cd pkg/development/wasm
-GOOS=js GOARCH=wasm go build -o main.wasm
+# -s: Omit the symbol table.
+# -w: Omit the DWARF debugging information.
+GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o main.wasm
 mv main.wasm ../../../../public/static
