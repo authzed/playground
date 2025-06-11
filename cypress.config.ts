@@ -10,7 +10,7 @@ export default defineConfig({
   chromeWebSecurity: false,
 
   e2e: {
-    baseUrl: "http://localhost:3000",
+    baseUrl: "http://localhost:5173",
     specPattern: [
       "cypress/integration/**/*.spec.{js,ts}",
       "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
