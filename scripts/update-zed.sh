@@ -16,5 +16,7 @@ cd zed
 git fetch
 git checkout ${VERSION}
 cd pkg/wasm
-GOOS=js GOARCH=wasm go build -o zed.wasm
+# -s: Omit the symbol table.
+# -w: Omit the DWARF debugging information.
+GOOS=js GOARCH=wasm go build -ldflags="-s -w" -o zed.wasm
 mv zed.wasm ../../../public/static
