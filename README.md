@@ -7,11 +7,13 @@
 
 # Playground
 
-The SpiceDB Playground is an interactive app for building a [SpiceDB] schema, interacting with test relationships, and quickly iterating with test assertions.
+The [SpiceDB] Playground is an interactive app for building a [SpiceDB] schema, interacting with test relationships, and quickly iterating with test assertions.
 
 Whether you're just getting started learning SpiceDB concepts or need to develop a new permissions system schema for your application, the SpiceDB playground has functionality to help.
 
-SpiceDB Playground features include:
+![screenshot](./img/playground_screen.png)
+
+Features include:
 
 - Rich text editor with syntax highlighting and tooltips
 - Visual relationship editor with support for defining caveat context data
@@ -27,11 +29,15 @@ SpiceDB is a graph database purpose-built for storing and evaluating access cont
 
 As of 2021, broken access control became the #1 threat to the web. With SpiceDB, developers finally have the solution to stopping this threat the same way as the hyperscalers.
 
-Learn more about [SpiceDB]
-
 [SpiceDB]: https://authzed.com/spicedb
 
-## Getting Started
+# Getting Started
+
+## Run locally
+
+```command
+yarn add global serve && yarn build && cd build && serve
+```
 
 ## Deploying
 
@@ -84,35 +90,7 @@ To enable the sharing functionality on Vercel, you need to configure the followi
 - `VITE_DISCORD_SERVER_ID` - Discord server ID
 - `VITE_DISCORD_INVITE_URL` - Discord invite URL (defaults to https://authzed.com/discord)
 
-You can set these environment variables in the Vercel dashboard under your project's Settings > Environment Variables.
-
-### NodeJS
-
-The `build` directory in the project root directory after running `yarn build` will contain an optimized production React application that can be served using your preferred NodeJS hosting method.
-
-> ℹ️ Node v18.x is required.
-
-For example:
-
-```command
-yarn global install serve
-cd build
-serve
-```
-
-## Installing dependencies
-
-Setup git submodules: `git submodule update --init --recursive`
-
-Run `yarn install` in the _root_ project directory.
-
-Install LFS: `git lfs install`
-
-## Running for development
-
-```
-yarn run dev
-```
+You can set these environment variables in the Vercel dashboard under your project's _Settings > Environment Variables_.
 
 ### Running for development with sharing enabled
 
@@ -120,39 +98,6 @@ The `vercel` CLI can be used to run locally with sharing enabled:
 
 ```
 VITE_SHARE_API_ENDPOINT=http://localhost:3000 SHARE_SALT=... AWS_ACCESS_KEY_ID=... AWS_SECRET_ACCESS_KEY=... S3_ENDPOINT=... S3_BUCKET=...  vercel dev
-```
-
-## Updating wasm dependencies
-
-The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the [wasm-config.json] file with the desired tag/commit hash and then run from the project root:
-
-`yarn run update:spicedb`
-
-`yarn run update:zed`
-
-> ℹ️ [jq] is required and must be installed.
-
-[wasm-config.json]: https://github.com/authzed/playground/blob/main/spicedb-common/wasm-config.json
-[jq]: https://jqlang.github.io/jq/
-
-## Updating the generated protobuf code
-
-This project uses generated gRPC code to talk to the download API. To regenerate:
-
-1. Install [buf](https://buf.build/docs/installation/) if you haven't already
-1. Run `buf generate`
-1. Commit the changes
-
-## Building the Docker Container
-
-```
-docker build . -t tag-for-playground-image
-```
-
-Build args can be specified for the build-time environment variables:
-
-```
-docker build --build-arg VITE_SHARE_API_ENDPOINT=https://my.playground.endpoint . -t tag-for-playground-image
 ```
 
 ## Developing your own schema
