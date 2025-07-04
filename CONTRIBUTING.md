@@ -79,7 +79,21 @@ The signing process has been automated by [CLA Assistant][cla-assistant] during 
 
 ## Common tasks
 
-We use [yarn](https://yarnpkg.com/) to run common tasks in the project.
+We use [yarn](https://yarnpkg.com/) to manage dependencies and do common tasks.
+
+### Installing dependencies
+
+Setup git submodules: `git submodule update --init --recursive`
+
+Run `yarn install` in the _root_ project directory.
+
+Install LFS: `git lfs install`
+
+### Running for development
+
+```
+yarn run dev
+```
 
 ### Testing
 
@@ -106,8 +120,39 @@ yarn run lint
 
 ### Adding dependencies
 
-This project uses [yarn](https://yarnpkg.com/) for managing dependencies.
-
 ```sh
 yarn add <package>
+```
+
+### Updating wasm dependencies
+
+The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the [wasm-config.json] file with the desired tag/commit hash and then run from the project root:
+
+`yarn run update:spicedb`
+
+`yarn run update:zed`
+
+> ℹ️ [jq] is required and must be installed.
+
+[wasm-config.json]: https://github.com/authzed/playground/blob/main/spicedb-common/wasm-config.json
+[jq]: https://jqlang.github.io/jq/
+
+### Updating the generated protobuf code
+
+This project uses generated gRPC code to talk to the download API. To regenerate:
+
+1. Install [buf](https://buf.build/docs/installation/) if you haven't already
+1. Run `yarn run buf:generate`
+1. Commit the changes
+
+### Building the Docker Container
+
+```
+docker build . -t tag-for-playground-image
+```
+
+Build args can be specified for the build-time environment variables:
+
+```
+docker build --build-arg VITE_SHARE_API_ENDPOINT=https://my.playground.endpoint . -t tag-for-playground-image
 ```
