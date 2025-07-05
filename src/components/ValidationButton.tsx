@@ -1,5 +1,5 @@
 import { DeveloperService } from "../spicedb-common/services/developerservice";
-import Button from "@material-ui/core/Button";
+import { Button } from "@/components/ui/button";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import { fade } from "@material-ui/core/styles/colorManipulator";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
@@ -96,8 +96,7 @@ export function ValidateButton(props: {
           "Validation not run"}
       </div>
       <Button
-        variant="contained"
-        startIcon={<PlayCircleFilledIcon />}
+        variant="secondary"
         className={TourElementClass.run}
         disabled={
           props.developerService.state.status !== "ready" ||
@@ -105,6 +104,7 @@ export function ValidateButton(props: {
         }
         onClick={props.conductValidation}
       >
+        <PlayCircleFilledIcon />
         Run
       </Button>
     </div>
