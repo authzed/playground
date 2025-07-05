@@ -42,7 +42,7 @@ Cypress.Commands.add("waitForWasm", () => {
     () => cy.window().then((win) => !!win.runSpiceDBDeveloperRequest),
     {
       errorMsg: "WASM development package not loaded",
-      timeout: 30000,
+      timeout: 120000, // 120 seconds
       interval: 500,
     },
   );

@@ -6,7 +6,7 @@ import { create, toJson } from "@bufbuild/protobuf";
 import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/zed.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 65000000; // bytes
 const ENTRYPOINT_FUNCTION = "runZedCommand";
 
 /**
