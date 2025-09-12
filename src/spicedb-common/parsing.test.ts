@@ -49,7 +49,7 @@ describe("parsing relationships", () => {
     const relationship = "";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -57,7 +57,7 @@ describe("parsing relationships", () => {
     const relationship = "somenamespace#somerel@someuser:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -65,7 +65,7 @@ describe("parsing relationships", () => {
     const relationship = "somenamespace:something#somerel";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -73,7 +73,7 @@ describe("parsing relationships", () => {
     const relationship = "a:something#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -81,7 +81,7 @@ describe("parsing relationships", () => {
     const relationship = "document:some.thing#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -89,7 +89,7 @@ describe("parsing relationships", () => {
     const relationship = "document:*#somerel@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -97,7 +97,7 @@ describe("parsing relationships", () => {
     const relationship = "document:something#a@user:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -105,7 +105,7 @@ describe("parsing relationships", () => {
     const relationship = "document:something#somerel@a:foo";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -113,7 +113,7 @@ describe("parsing relationships", () => {
     const relationship = "document:something#somerel@user:some.thing";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
@@ -121,7 +121,7 @@ describe("parsing relationships", () => {
     const relationship = "document:something#somerel@user:someuser#a";
     expect(parseRelationshipWithError(relationship)).toEqual({
       errorMessage:
-        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]]`',
+        'Relationship must be of the form `resourcetype:resourceid#relation@subjecttype:subjectid[caveatname:[{"key":"value"}]][expiration:2025-09-11T16:57:57Z]`',
     });
   });
 
