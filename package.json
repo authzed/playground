@@ -98,9 +98,7 @@
     "format:check": "prettier . -c",
     "cy:run": "cypress run --browser chrome",
     "cy:open": "cypress open",
-    "update:spicedb": "./scripts/update-spicedb.sh",
-    "update:zed": "./scripts/update-zed.sh",
-    "update:buf": "buf generate"
+    "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
   },
   "browserslist": {
     "production": [
