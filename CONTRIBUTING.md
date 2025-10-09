@@ -126,24 +126,15 @@ yarn add <package>
 
 ### Updating wasm dependencies
 
-The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update the versions, edit the [wasm-config.json] file with the desired tag/commit hash and then run from the project root:
+The project contains prebuilt WASM files for versions of both SpiceDB and zed. To update them:
 
-`yarn run update:spicedb`
-
-`yarn run update:zed`
+1. Edit the [wasm-config.json] file with the desired tag/commit hash
+2. Run `yarn run update:deps`
 
 > ℹ️ [jq] is required and must be installed.
 
 [wasm-config.json]: https://github.com/authzed/playground/blob/main/spicedb-common/wasm-config.json
 [jq]: https://jqlang.github.io/jq/
-
-### Updating the generated protobuf code
-
-This project uses generated gRPC code to talk to the download API. To regenerate:
-
-1. Install [buf](https://buf.build/docs/installation/) if you haven't already
-1. Run `yarn run buf:generate`
-1. Commit the changes
 
 ### Building the Docker Container
 

@@ -15,7 +15,7 @@ if [ ! -d "spicedb" ] ; then
 fi
 cd spicedb
 git fetch
-git checkout ${VERSION}
+git checkout ${VERSION} --force
 cd pkg/development/wasm
 # -s: Omit the symbol table.
 # -w: Omit the DWARF debugging information.
