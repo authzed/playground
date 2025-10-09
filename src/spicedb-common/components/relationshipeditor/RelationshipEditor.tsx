@@ -470,6 +470,7 @@ export function RelationshipEditor({
 
   const getCellData = useCallback(
     ([col, row]: readonly [number, number]): GridCell => {
+      console.log("getting cell data")
       if (row >= data.length) {
         return {
           kind: GridCellKind.Text,
@@ -934,6 +935,8 @@ export function RelationshipEditor({
     });
   };
 
+  console.log("data dump")
+  console.log(data)
   const { drawCell, provideEditor } = useCustomCells(
     relationshipsService,
     data,
@@ -1006,6 +1009,8 @@ export function RelationshipEditor({
           label="Highlight same types, objects and relations"
         />
       </div>
+      {console.log("this is how long we think data is")}
+      {console.log(data.length)}
       <DataEditor
         theme={dataEditorTheme}
         keybindings={{ search: true }}

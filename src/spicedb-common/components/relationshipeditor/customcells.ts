@@ -256,8 +256,13 @@ export function useCustomCells(
   // TODO: come up with a way to express this that doesn't require looping.
   const drawCell = useCallback<DrawCallback>(
     (args) => {
+      console.log("calling drawCell");
+      console.log(args);
       const { cell } = args;
+      console.log("cell.kind:", cell.kind);
+      console.log(cell);
       if (cell.kind !== GridCellKind.Custom) return false;
+      console.log("looping over renderers");
       for (const r of renderers) {
         if (r.isMatch(cell)) {
           // @ts-expect-error typescript can't see that we're looping over something static
