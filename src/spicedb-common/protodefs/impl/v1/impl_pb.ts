@@ -12,7 +12,7 @@ import type { Message } from "@bufbuild/protobuf";
  * Describes the file impl/v1/impl.proto.
  */
 export const file_impl_v1_impl: GenFile = /*@__PURE__*/
-  fileDesc("ChJpbXBsL3YxL2ltcGwucHJvdG8SB2ltcGwudjEiYQoNRGVjb2RlZENhdmVhdBI0CgNjZWwYASABKAsyJS5nb29nbGUuYXBpLmV4cHIudjFhbHBoYTEuQ2hlY2tlZEV4cHJIABIMCgRuYW1lGAIgASgJQgwKCmtpbmRfb25lb2YiywEKDURlY29kZWRab29raWUSDwoHdmVyc2lvbhgBIAEoDRItCgJ2MRgCIAEoCzIfLmltcGwudjEuRGVjb2RlZFpvb2tpZS5WMVpvb2tpZUgAEi0KAnYyGAMgASgLMh8uaW1wbC52MS5EZWNvZGVkWm9va2llLlYyWm9va2llSAAaHAoIVjFab29raWUSEAoIcmV2aXNpb24YASABKAQaHAoIVjJab29raWUSEAoIcmV2aXNpb24YASABKAlCDwoNdmVyc2lvbl9vbmVvZiLWAQoPRGVjb2RlZFplZFRva2VuEkEKFGRlcHJlY2F0ZWRfdjFfem9va2llGAIgASgLMiEuaW1wbC52MS5EZWNvZGVkWmVkVG9rZW4uVjFab29raWVIABIxCgJ2MRgDIAEoCzIjLmltcGwudjEuRGVjb2RlZFplZFRva2VuLlYxWmVkVG9rZW5IABocCghWMVpvb2tpZRIQCghyZXZpc2lvbhgBIAEoBBoeCgpWMVplZFRva2VuEhAKCHJldmlzaW9uGAEgASgJQg8KDXZlcnNpb25fb25lb2YiQQoNRGVjb2RlZEN1cnNvchIfCgJ2MRgBIAEoCzIRLmltcGwudjEuVjFDdXJzb3JIAEIPCg12ZXJzaW9uX29uZW9mIsUBCghWMUN1cnNvchIQCghyZXZpc2lvbhgBIAEoCRIQCghzZWN0aW9ucxgCIAMoCRIgChhjYWxsX2FuZF9wYXJhbWV0ZXJzX2hhc2gYAyABKAkSGAoQZGlzcGF0Y2hfdmVyc2lvbhgEIAEoDRIrCgVmbGFncxgFIAMoCzIcLmltcGwudjEuVjFDdXJzb3IuRmxhZ3NFbnRyeRosCgpGbGFnc0VudHJ5EgsKA2tleRgBIAEoCRINCgV2YWx1ZRgCIAEoCToCOAEiHQoKRG9jQ29tbWVudBIPCgdjb21tZW50GAEgASgJIogBChBSZWxhdGlvbk1ldGFkYXRhEjQKBGtpbmQYASABKA4yJi5pbXBsLnYxLlJlbGF0aW9uTWV0YWRhdGEuUmVsYXRpb25LaW5kIj4KDFJlbGF0aW9uS2luZBIQCgxVTktOT1dOX0tJTkQQABIMCghSRUxBVElPThABEg4KClBFUk1JU1NJT04QAiJAChROYW1lc3BhY2VBbmRSZXZpc2lvbhIWCg5uYW1lc3BhY2VfbmFtZRgBIAEoCRIQCghyZXZpc2lvbhgCIAEoCSJHChBWMUFscGhhMVJldmlzaW9uEjMKDG5zX3JldmlzaW9ucxgBIAMoCzIdLmltcGwudjEuTmFtZXNwYWNlQW5kUmV2aXNpb25CLlosZ2l0aHViLmNvbS9hdXRoemVkL3NwaWNlZGIvcGtnL3Byb3RvL2ltcGwvdjFiBnByb3RvMw", [file_google_api_expr_v1alpha1_checked]);
+  fileDesc("ChJpbXBsL3YxL2ltcGwucHJvdG8SB2ltcGwudjEiYQoNRGVjb2RlZENhdmVhdBI0CgNjZWwYASABKAsyJS5nb29nbGUuYXBpLmV4cHIudjFhbHBoYTEuQ2hlY2tlZEV4cHJIABIMCgRuYW1lGAIgASgJQgwKCmtpbmRfb25lb2YiywEKDURlY29kZWRab29raWUSDwoHdmVyc2lvbhgBIAEoDRItCgJ2MRgCIAEoCzIfLmltcGwudjEuRGVjb2RlZFpvb2tpZS5WMVpvb2tpZUgAEi0KAnYyGAMgASgLMh8uaW1wbC52MS5EZWNvZGVkWm9va2llLlYyWm9va2llSAAaHAoIVjFab29raWUSEAoIcmV2aXNpb24YASABKAQaHAoIVjJab29raWUSEAoIcmV2aXNpb24YASABKAlCDwoNdmVyc2lvbl9vbmVvZiL6AQoPRGVjb2RlZFplZFRva2VuEkEKFGRlcHJlY2F0ZWRfdjFfem9va2llGAIgASgLMiEuaW1wbC52MS5EZWNvZGVkWmVkVG9rZW4uVjFab29raWVIABIxCgJ2MRgDIAEoCzIjLmltcGwudjEuRGVjb2RlZFplZFRva2VuLlYxWmVkVG9rZW5IABocCghWMVpvb2tpZRIQCghyZXZpc2lvbhgBIAEoBBpCCgpWMVplZFRva2VuEhAKCHJldmlzaW9uGAEgASgJEiIKGmRhdGFzdG9yZV91bmlxdWVfaWRfcHJlZml4GAIgASgJQg8KDXZlcnNpb25fb25lb2YiQQoNRGVjb2RlZEN1cnNvchIfCgJ2MRgBIAEoCzIRLmltcGwudjEuVjFDdXJzb3JIAEIPCg12ZXJzaW9uX29uZW9mIuIBCghWMUN1cnNvchIQCghyZXZpc2lvbhgBIAEoCRIQCghzZWN0aW9ucxgCIAMoCRIgChhjYWxsX2FuZF9wYXJhbWV0ZXJzX2hhc2gYAyABKAkSGAoQZGlzcGF0Y2hfdmVyc2lvbhgEIAEoDRIrCgVmbGFncxgFIAMoCzIcLmltcGwudjEuVjFDdXJzb3IuRmxhZ3NFbnRyeRIbChNkYXRhc3RvcmVfdW5pcXVlX2lkGAYgASgJGiwKCkZsYWdzRW50cnkSCwoDa2V5GAEgASgJEg0KBXZhbHVlGAIgASgJOgI4ASIdCgpEb2NDb21tZW50Eg8KB2NvbW1lbnQYASABKAkiIAoPVHlwZUFubm90YXRpb25zEg0KBXR5cGVzGAEgAygJIrwBChBSZWxhdGlvbk1ldGFkYXRhEjQKBGtpbmQYASABKA4yJi5pbXBsLnYxLlJlbGF0aW9uTWV0YWRhdGEuUmVsYXRpb25LaW5kEjIKEHR5cGVfYW5ub3RhdGlvbnMYAiABKAsyGC5pbXBsLnYxLlR5cGVBbm5vdGF0aW9ucyI+CgxSZWxhdGlvbktpbmQSEAoMVU5LTk9XTl9LSU5EEAASDAoIUkVMQVRJT04QARIOCgpQRVJNSVNTSU9OEAIiQAoUTmFtZXNwYWNlQW5kUmV2aXNpb24SFgoObmFtZXNwYWNlX25hbWUYASABKAkSEAoIcmV2aXNpb24YAiABKAkiRwoQVjFBbHBoYTFSZXZpc2lvbhIzCgxuc19yZXZpc2lvbnMYASADKAsyHS5pbXBsLnYxLk5hbWVzcGFjZUFuZFJldmlzaW9uQi5aLGdpdGh1Yi5jb20vYXV0aHplZC9zcGljZWRiL3BrZy9wcm90by9pbXBsL3YxYgZwcm90bzM", [file_google_api_expr_v1alpha1_checked]);
 
 /**
  * @generated from message impl.v1.DecodedCaveat
@@ -166,6 +166,14 @@ export type DecodedZedToken_V1ZedToken = Message<"impl.v1.DecodedZedToken.V1ZedT
    * @generated from field: string revision = 1;
    */
   revision: string;
+
+  /**
+   * datastore_unique_id_prefix is a prefix of the unique ID for the datastore that created
+   * this token. Will be empty for legacy tokens.
+   *
+   * @generated from field: string datastore_unique_id_prefix = 2;
+   */
+  datastoreUniqueIdPrefix: string;
 };
 
 /**
@@ -239,6 +247,14 @@ export type V1Cursor = Message<"impl.v1.V1Cursor"> & {
    * @generated from field: map<string, string> flags = 5;
    */
   flags: { [key: string]: string };
+
+  /**
+   * datastore_unique_id is the unique ID for the datastore. Will be empty for legacy
+   * cursors.
+   *
+   * @generated from field: string datastore_unique_id = 6;
+   */
+  datastoreUniqueId: string;
 };
 
 /**
@@ -266,6 +282,23 @@ export const DocCommentSchema: GenMessage<DocComment> = /*@__PURE__*/
   messageDesc(file_impl_v1_impl, 5);
 
 /**
+ * @generated from message impl.v1.TypeAnnotations
+ */
+export type TypeAnnotations = Message<"impl.v1.TypeAnnotations"> & {
+  /**
+   * @generated from field: repeated string types = 1;
+   */
+  types: string[];
+};
+
+/**
+ * Describes the message impl.v1.TypeAnnotations.
+ * Use `create(TypeAnnotationsSchema)` to create a new message.
+ */
+export const TypeAnnotationsSchema: GenMessage<TypeAnnotations> = /*@__PURE__*/
+  messageDesc(file_impl_v1_impl, 6);
+
+/**
  * @generated from message impl.v1.RelationMetadata
  */
 export type RelationMetadata = Message<"impl.v1.RelationMetadata"> & {
@@ -273,6 +306,11 @@ export type RelationMetadata = Message<"impl.v1.RelationMetadata"> & {
    * @generated from field: impl.v1.RelationMetadata.RelationKind kind = 1;
    */
   kind: RelationMetadata_RelationKind;
+
+  /**
+   * @generated from field: impl.v1.TypeAnnotations type_annotations = 2;
+   */
+  typeAnnotations?: TypeAnnotations;
 };
 
 /**
@@ -280,7 +318,7 @@ export type RelationMetadata = Message<"impl.v1.RelationMetadata"> & {
  * Use `create(RelationMetadataSchema)` to create a new message.
  */
 export const RelationMetadataSchema: GenMessage<RelationMetadata> = /*@__PURE__*/
-  messageDesc(file_impl_v1_impl, 6);
+  messageDesc(file_impl_v1_impl, 7);
 
 /**
  * @generated from enum impl.v1.RelationMetadata.RelationKind
@@ -306,7 +344,7 @@ export enum RelationMetadata_RelationKind {
  * Describes the enum impl.v1.RelationMetadata.RelationKind.
  */
 export const RelationMetadata_RelationKindSchema: GenEnum<RelationMetadata_RelationKind> = /*@__PURE__*/
-  enumDesc(file_impl_v1_impl, 6, 0);
+  enumDesc(file_impl_v1_impl, 7, 0);
 
 /**
  * @generated from message impl.v1.NamespaceAndRevision
@@ -328,7 +366,7 @@ export type NamespaceAndRevision = Message<"impl.v1.NamespaceAndRevision"> & {
  * Use `create(NamespaceAndRevisionSchema)` to create a new message.
  */
 export const NamespaceAndRevisionSchema: GenMessage<NamespaceAndRevision> = /*@__PURE__*/
-  messageDesc(file_impl_v1_impl, 7);
+  messageDesc(file_impl_v1_impl, 8);
 
 /**
  * @generated from message impl.v1.V1Alpha1Revision
@@ -345,5 +383,5 @@ export type V1Alpha1Revision = Message<"impl.v1.V1Alpha1Revision"> & {
  * Use `create(V1Alpha1RevisionSchema)` to create a new message.
  */
 export const V1Alpha1RevisionSchema: GenMessage<V1Alpha1Revision> = /*@__PURE__*/
-  messageDesc(file_impl_v1_impl, 8);
+  messageDesc(file_impl_v1_impl, 9);
 

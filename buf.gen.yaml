@@ -7,8 +7,4 @@ plugins:
     opt:
       - "target=ts"
 inputs:
-  - module: "buf.build/authzed/api:v1.41.0"
-    paths:
-      - "authzed/api/v0"
-  - git_repo: "https://github.com/authzed/spicedb"
-    subdir: "proto/internal"
+  - directory: "spicedb/proto/internal"
