@@ -1,5 +1,4 @@
 import { defineConfig } from "cypress";
-import fs from 'fs';
 
 export default defineConfig({
   retries: 0,
@@ -20,13 +19,4 @@ export default defineConfig({
       "cypress/e2e/**/*.cy.{js,jsx,ts,tsx}",
     ],
   },
-    setupNodeEvents: (on) => {
-      on("task", {
-        log(message) {
-            console.log(message);
-            fs.appendFileSync('cypress/logs/console.log', `${message}\n`);
-            return null;
-        }
-      })
-    }
 });

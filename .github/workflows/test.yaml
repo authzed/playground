@@ -13,9 +13,6 @@ jobs:
     runs-on: "depot-ubuntu-24.04-small"
     steps:
       - uses: "actions/checkout@v4"
-      - uses: "authzed/action-spicedb@v1"
-        with:
-          version: "latest"
       - uses: "actions/setup-node@v4"
         with:
           node-version: 22
@@ -29,18 +26,19 @@ jobs:
     runs-on: "depot-ubuntu-24.04-4" # Use a larger instance for E2E tests
     steps:
       - uses: "actions/checkout@v4"
-      - uses: "authzed/action-spicedb@v1"
-        with:
-          version: "latest"
       - uses: "actions/setup-node@v4"
         with:
           node-version: 22
           cache-dependency-path: "yarn.lock"
           cache: "yarn"
       - uses: "bahmutov/npm-install@v1"
-      - name: "Run server locally and tests"
-        run:
-          yarn dev & sleep 60 && yarn cy:run
+      - name: "Cypress run"
+        uses: "cypress-io/github-action@v6"
+        with:
+          browser: chrome
+          start: HTTPS=true vite preview -l info --strictPort --port 5173
+          wait-on: "http://localhost:5173"
+          wait-on-timeout: 120
       - uses: "actions/upload-artifact@v4"
         if: always()
         with:
