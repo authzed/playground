@@ -1,8 +1,8 @@
 import TabLabel from "../../playground-ui/TabLabel";
-import {
+import type {
   ParsedPermission,
   ParsedRelation,
-} from "../../spicedb-common/parsers/dsl/dsl";
+} from "@authzed/spicedb-parser-js";
 import { parseRelationships } from "../../spicedb-common/parsing";
 import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import CircularProgress from "@material-ui/core/CircularProgress";

@@ -39,7 +39,7 @@ import {
 } from "react";
 import { useCookies } from "react-cookie";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
-import { Resolver } from "../../parsers/dsl/resolution";
+import { Resolver } from "@authzed/spicedb-parser-js";
 import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
@@ -136,9 +136,10 @@ export type RelationshipEditorProps = {
   highlights?: RelationTupleHighlight[];
   isReadOnly: boolean;
   dataUpdated: (updatedData: RelationshipDatum[]) => void;
-  resolver?: Resolver | undefined;
+  resolver?: Resolver;
   themeOverrides?: Partial<Theme>;
-} & { dimensions?: { width: number; height: number } };
+  dimensions?: { width: number; height: number };
+};
 
 interface TooltipData {
   message: string;

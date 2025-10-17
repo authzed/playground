@@ -1,8 +1,9 @@
-import { ParsedSchema, parseSchema } from "../spicedb-common/parsers/dsl/dsl";
 import {
-  ResolvedDefinition,
+  type ParsedSchema,
+  parseSchema,
+  type ResolvedDefinition,
   Resolver,
-} from "../spicedb-common/parsers/dsl/resolution";
+} from "@authzed/spicedb-parser-js";
 import {
   parseRelationshipsWithErrors,
   RelationshipFound,

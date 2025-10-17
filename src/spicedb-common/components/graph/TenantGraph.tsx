@@ -1,9 +1,8 @@
 import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
-import { ParsedSchema } from "../../parsers/dsl/dsl";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import { TextRange } from "../../parsers/dsl/dsl";
+import type { TextRange, ParsedSchema } from "@authzed/spicedb-parser-js";
 import {
   ActiveInfo,
   findActive,

@@ -4,7 +4,7 @@ import {
   ParsedRelation,
   ParsedSchema,
   TextRange,
-} from "../../parsers/dsl/dsl";
+} from "@authzed/spicedb-parser-js";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 
 export interface RelationLink {
@@ -25,11 +25,8 @@ export class TypeSet {
   private tracker: RelationTracker;
   public types: Record<string, TypeHandle>;
 
-  constructor(
-    private schema: ParsedSchema,
-    private relationships: Relationship[] | undefined,
-  ) {
-    const objectDefs = this.schema.definitions.filter(
+  constructor(schema: ParsedSchema, relationships?: Relationship[]) {
+    const objectDefs = schema.definitions.filter(
       (def) => def.kind === "objectDef",
     );
 

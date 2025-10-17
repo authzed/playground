@@ -41,7 +41,7 @@ import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
 import { ShareLoader } from "./ShareLoader";
 
-import { ParsedObjectDefinition } from "../spicedb-common/parsers/dsl/dsl";
+import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import "./fonts.css";
 import { create } from "@bufbuild/protobuf";
 
