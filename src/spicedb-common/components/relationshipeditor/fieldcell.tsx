@@ -1,5 +1,6 @@
 import {
   CustomCell,
+  GridCellKind,
   DrawCellCallback,
   GridSelection,
 } from "@glideapps/glide-data-grid";
@@ -124,6 +125,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
     return {
       // TODO: see if there's a way to do this without the as
       isMatch: (cell: CustomCell): cell is T => (cell as T).data.kind === kind,
+      kind: GridCellKind.Custom,
       draw: (args: Parameters<DrawCellCallback>[0], cell: CustomCell<Q>) => {
         const { ctx, rect, row, col, theme, highlighted } = args;
         let { dataValue } = cell.data;

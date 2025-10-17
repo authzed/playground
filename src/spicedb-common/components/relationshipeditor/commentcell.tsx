@@ -1,4 +1,8 @@
-import { CustomCell, DrawCellCallback } from "@glideapps/glide-data-grid";
+import {
+  CustomCell,
+  CustomRenderer,
+  GridCellKind,
+} from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 import { Column, CommentCellPrefix } from "./columns";
@@ -93,12 +97,13 @@ const CommentCellEditor = (props: CommentCellEditorProps) => {
 
 export const CommentCellRenderer = (
   props: MutableRefObject<FieldCellRendererProps>,
-) => {
+): CustomRenderer<CommentCell> => {
   return {
+    kind: GridCellKind.Custom,
     isMatch: (cell: CustomCell): cell is CommentCell =>
       // TODO: see if there's a way to do this without casting the cell
       (cell as CommentCell).data.kind === COMMENT_CELL_KIND,
-    draw: (args: Parameters<DrawCellCallback>[0], cell: CommentCell) => {
+    draw: (args, cell) => {
       const { ctx, rect } = args;
       const { dataValue } = cell.data;
       ctx.save();
@@ -115,7 +120,7 @@ export const CommentCellRenderer = (
       ctx.restore();
       return true;
     },
-    provideEditor: () => (p: CommentCellEditorProps) => {
+    provideEditor: () => (p) => {
       const { onChange, value, initialValue } = p;
       return (
         <CommentCellEditor

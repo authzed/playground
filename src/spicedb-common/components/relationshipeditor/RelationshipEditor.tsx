@@ -470,7 +470,6 @@ export function RelationshipEditor({
 
   const getCellData = useCallback(
     ([col, row]: readonly [number, number]): GridCell => {
-      console.log("getting cell data")
       if (row >= data.length) {
         return {
           kind: GridCellKind.Text,
@@ -935,16 +934,13 @@ export function RelationshipEditor({
     });
   };
 
-  console.log("data dump")
-  console.log(data)
-  const { drawCell, provideEditor } = useCustomCells(
+  const { customRenderers } = useCustomCells(
     relationshipsService,
     data,
     gridSelection,
     resolver,
     similarHighlighting,
     columnsWithWidths,
-    isReadOnly,
   );
 
   // TODO: get JSX out of state.
@@ -1009,8 +1005,6 @@ export function RelationshipEditor({
           label="Highlight same types, objects and relations"
         />
       </div>
-      {console.log("this is how long we think data is")}
-      {console.log(data.length)}
       <DataEditor
         theme={dataEditorTheme}
         keybindings={{ search: true }}
@@ -1020,8 +1014,7 @@ export function RelationshipEditor({
         columns={columnsWithWidths}
         rows={data.length}
         onPaste={handlePaste}
-        drawCell={drawCell}
-        provideEditor={provideEditor}
+        customRenderers={customRenderers}
         getCellsForSelection={getCellsForSelection}
         onCellEdited={isReadOnly ? undefined : handleCellEdited}
         onRowAppended={isReadOnly ? undefined : handleRowAppended}
