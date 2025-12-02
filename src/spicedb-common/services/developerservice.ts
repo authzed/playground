@@ -26,7 +26,7 @@ import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
-const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes
+const ESTIMATED_WASM_BINARY_SIZE = 58000000; // bytes
 const ENTRYPOINT_FUNCTION = "runSpiceDBDeveloperRequest";
 
 /**
