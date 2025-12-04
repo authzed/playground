@@ -11,7 +11,7 @@ import Autocomplete, {
 } from "@material-ui/lab/Autocomplete";
 import { MutableRefObject, useRef } from "react";
 import stc from "string-to-color";
-import { ResolvedDefinition, Resolver } from "../../parsers/dsl/resolution";
+import { ResolvedDefinition, Resolver } from "@authzed/spicedb-parser-js";
 import { RelationshipsService } from "../../services/relationshipsservice";
 import {
   COLUMNS,

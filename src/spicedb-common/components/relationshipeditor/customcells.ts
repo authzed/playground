@@ -4,7 +4,7 @@ import {
   type GridSelection,
 } from "@glideapps/glide-data-grid";
 import { useMemo, useRef } from "react";
-import { Resolver } from "../../parsers/dsl/resolution";
+import { Resolver } from "@authzed/spicedb-parser-js";
 import { RelationshipsService } from "../../services/relationshipsservice";
 import { COLUMNS, Column, DataKind } from "./columns";
 import { CommentCell, CommentCellRenderer } from "./commentcell";

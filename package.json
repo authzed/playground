@@ -4,6 +4,7 @@
   "type": "module",
   "private": true,
   "dependencies": {
+    "@authzed/spicedb-parser-js": "^1.0.5",
     "@aws-sdk/client-s3": "^3.0.0",
     "@bufbuild/protobuf": "^2.4.0",
     "@fontsource/roboto": "^5.1.1",

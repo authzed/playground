@@ -10,7 +10,7 @@ import {
   ParsedSchema,
   TextRange,
   TypeRef,
-} from "../../parsers/dsl/dsl";
+} from "@authzed/spicedb-parser-js";
 import {
   PermissionHandle,
   RelationHandle,
