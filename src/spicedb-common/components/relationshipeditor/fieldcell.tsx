@@ -1,4 +1,9 @@
-import { CustomCell, GridSelection } from "@glideapps/glide-data-grid";
+import {
+  CustomCell,
+  GridCellKind,
+  DrawCellCallback,
+  GridSelection,
+} from "@glideapps/glide-data-grid";
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete, {
@@ -25,9 +30,11 @@ export const CAVEATCONTEXT_CELL_KIND = "caveatcontext-field-cell";
 export const EXPIRATION_CELL_KIND = "expiration-field-cell";
 
 interface FieldCellProps {
+  readonly kind: string;
   readonly dataValue: string;
   readonly row: number;
   readonly col: number;
+  readonly readonly: boolean;
 }
 
 type TypeCellProps = FieldCellProps & {
@@ -66,6 +73,13 @@ export type RelationCell = CustomCell<RelationCellProps>;
 export type CaveatNameCell = CustomCell<CaveatNameCellProps>;
 export type CaveatContextCell = CustomCell<CaveatContextCellProps>;
 export type ExpirationCell = CustomCell<ExpirationCellProps>;
+
+export type AnyCell =
+  | TypeCell
+  | ObjectIdCell
+  | RelationCell
+  | CaveatNameCell
+  | CaveatContextCell;
 
 type SelectedType = {
   type: string;
@@ -109,8 +123,10 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
 ) {
   return (propsRefs: MutableRefObject<FieldCellRendererProps>) => {
     return {
-      isMatch: (cell: CustomCell): cell is T => cell.data.kind === kind,
-      draw: (args, cell) => {
+      // TODO: see if there's a way to do this without the as
+      isMatch: (cell: CustomCell): cell is T => (cell as T).data.kind === kind,
+      kind: GridCellKind.Custom,
+      draw: (args: Parameters<DrawCellCallback>[0], cell: CustomCell<Q>) => {
         const { ctx, rect, row, col, theme, highlighted } = args;
         let { dataValue } = cell.data;
         // Truncate text
@@ -258,7 +274,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         ctx.restore();
         return true;
       },
-      provideEditor: () => (p) => {
+      provideEditor: () => (p: FieldCellEditorProps<T, Q>) => {
         const { onChange, value, initialValue, onFinishedEditing } = p;
         return (
           <FieldCellEditor<T, Q>
@@ -276,10 +292,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   };
 }
 
-const FieldCellEditor = <
-  T extends CustomCell<Q>,
-  Q extends FieldCellProps,
->(props: {
+type FieldCellEditorProps<T extends CustomCell<Q>, Q extends FieldCellProps> = {
   fieldPropsRef: MutableRefObject<FieldCellRendererProps>;
   onChange: (newValue: T) => void;
   value: T;
@@ -287,7 +300,11 @@ const FieldCellEditor = <
   onFinishedEditing: (newValue?: T | undefined) => void;
   getAutocompleteOptions: GetAutocompleteOptions<Q>;
   kind: string;
-}) => {
+};
+
+const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
+  props: FieldCellEditorProps<T, Q>,
+) => {
   const edited = useRef(false);
 
   // NOTE: In order to handle the initialValue correctly, we have to include it as

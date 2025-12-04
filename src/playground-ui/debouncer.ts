@@ -63,6 +63,8 @@ export function useDebouncedChecker<T>(
     })();
   };
 
+  // TODO: this is creating a new `run` on every render. Refactor so that the reference is stable,
+  // or else use an off-the-shelf debounce.
   return {
     run: (arg: T) => {
       // To prevent it blocking the main thread.

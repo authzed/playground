@@ -17,11 +17,6 @@ declare module "string.prototype.replaceall" {
   export default fn;
 }
 
-declare module "visjs-network" {
-  const data: object;
-  export default data;
-}
-
 declare global {
   interface Window {
     // TODO: type this based on what's in wasm_exec.js
@@ -30,5 +25,7 @@ declare global {
       run: (instance: object) => void;
     };
     Crate: new (options: Options) => Crate;
+    runZedCommand?: (jsonString: string, args: string[]) => string;
+    runSpiceDBDeveloperRequest?: (jsonString: string) => string;
   }
 }

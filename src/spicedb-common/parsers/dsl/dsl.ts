@@ -526,7 +526,7 @@ const nilExpr = Parsimmon.lazy(() => {
     Parsimmon.index,
     string("nil"),
     Parsimmon.index,
-    function (startIndex, data, endIndex) {
+    function (startIndex, _data, endIndex) {
       return {
         kind: "nil",
         isNil: true,
@@ -692,7 +692,7 @@ const definition = Parsimmon.seqMap(
 );
 
 // Caveats.
-const caveatParameterTypeExpr = Parsimmon.lazy(() => {
+const caveatParameterTypeExpr: Parser<unknown> = Parsimmon.lazy(() => {
   return Parsimmon.seqMap(
     Parsimmon.index,
     seq(
@@ -749,7 +749,7 @@ const caveatExpression = Parsimmon.seqMap(
   Parsimmon.index,
   seq(celExpression),
   Parsimmon.index,
-  function (startIndex, data, endIndex) {
+  function (startIndex, _data, endIndex) {
     return {
       kind: "caveatExpr",
       range: { startIndex: startIndex, endIndex: endIndex },

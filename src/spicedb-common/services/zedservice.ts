@@ -7,7 +7,6 @@ import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/zed.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
-const ENTRYPOINT_FUNCTION = "runZedCommand";
 
 /**
  * ZedService exposes a service for running commands against an in-memory `zed`
@@ -41,10 +40,10 @@ export interface ZedService {
 }
 
 export type CommandResult = {
-  updatedSchema: string | undefined;
-  updatedRelationships: Relationship[] | undefined;
-  output: string | undefined;
-  error: string | undefined;
+  updatedSchema?: string;
+  updatedRelationships?: Relationship[];
+  output?: string;
+  error?: string;
 };
 
 export type ZedServiceState =
@@ -138,7 +137,7 @@ export function useZedService(): ZedService {
   }, [setState]);
 
   useEffect(() => {
-    const initialized = window[ENTRYPOINT_FUNCTION];
+    const initialized = window.runZedCommand;
     switch (state.status) {
       case "standby":
         return;
@@ -204,9 +203,11 @@ export function useZedService(): ZedService {
         toJson(RequestContextSchema, create(RequestContextSchema, reqContext)),
       );
 
-      const result = JSON.parse(
-        window[ENTRYPOINT_FUNCTION](contextJSONString, args),
-      );
+      const resultString = window.runZedCommand?.(contextJSONString, args);
+      if (!resultString) {
+        return { error: "Zed command function was undefined." };
+      }
+      const result = JSON.parse(resultString);
       const updatedContext = result.updated_context
         ? create(RequestContextSchema, JSON.parse(result.updated_context))
         : undefined;

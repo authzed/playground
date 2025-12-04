@@ -1,11 +1,9 @@
 import {
-  DataEditorProps,
-  GridCell,
-  GridCellKind,
-  GridSelection,
-  ProvideEditorCallback,
+  type DataEditorProps,
+  type CustomRenderer,
+  type GridSelection,
 } from "@glideapps/glide-data-grid";
-import { useCallback, useMemo, useRef } from "react";
+import { useMemo, useRef } from "react";
 import { Resolver } from "../../parsers/dsl/resolution";
 import { RelationshipsService } from "../../services/relationshipsservice";
 import { COLUMNS, Column, DataKind } from "./columns";
@@ -52,10 +50,12 @@ export function useCustomCells(
   resolver: Resolver | undefined,
   similarHighlighting: boolean,
   columnsWithWidths: Column[],
-  isReadOnly: boolean,
 ): {
-  drawCell: DrawCallback;
-  provideEditor: ProvideEditorCallback<GridCell>;
+  // The type we're providing here is about as narrow as we can
+  // get without fully figuring out a discriminated union here.
+  // TODO: Make this part type-safe by figuring out the types.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  customRenderers: readonly CustomRenderer<any>[];
 } {
   const selectedType = useMemo(() => {
     if (!gridSelection?.current?.cell) {
@@ -253,34 +253,9 @@ export function useCustomCells(
     ];
   }, []);
 
-  const drawCell = useCallback<DrawCallback>(
-    (args) => {
-      const { cell } = args;
-      if (cell.kind !== GridCellKind.Custom) return false;
-      for (const r of renderers) {
-        if (r.isMatch(cell)) {
-          return r.draw(args, cell);
-        }
-      }
-      return false;
-    },
-    [renderers],
-  );
-
-  const provideEditor = useCallback<ProvideEditorCallback<GridCell>>(
-    (cell) => {
-      if (cell.kind !== GridCellKind.Custom || isReadOnly) return undefined;
-
-      for (const r of renderers) {
-        if (r.isMatch(cell)) {
-          return r.provideEditor();
-        }
-      }
-
-      return undefined;
-    },
-    [renderers, isReadOnly],
-  );
-
-  return { drawCell, provideEditor };
+  // TODO: there seems to be a type bug in glide-data-grid where
+  // the inferred type on provideEditor doesn't match the type
+  // that's expected here. You can remove the `as` to see what i mean.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  return { customRenderers: renderers as CustomRenderer<any>[] };
 }

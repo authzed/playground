@@ -1,4 +1,8 @@
-import { CustomCell } from "@glideapps/glide-data-grid";
+import {
+  CustomCell,
+  CustomRenderer,
+  GridCellKind,
+} from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 import { Column, CommentCellPrefix } from "./columns";
@@ -26,12 +30,14 @@ export function copyDataForCommentCell(dataValue: string): string {
   return dataValue;
 }
 
-const CommentCellEditor = (props: {
+type CommentCellEditorProps = {
   columnsWithWidths: Column[];
   onChange: (newValue: CommentCell) => void;
   value: CommentCell;
   initialValue: string | undefined;
-}) => {
+};
+
+const CommentCellEditor = (props: CommentCellEditorProps) => {
   // From: https://github.com/mui/material-ui/issues/12779
   // Ensures that the autofocus jumps to the end of the input's value.
   const handleFocus = (
@@ -91,10 +97,12 @@ const CommentCellEditor = (props: {
 
 export const CommentCellRenderer = (
   props: MutableRefObject<FieldCellRendererProps>,
-) => {
+): CustomRenderer<CommentCell> => {
   return {
+    kind: GridCellKind.Custom,
     isMatch: (cell: CustomCell): cell is CommentCell =>
-      cell.data.kind === COMMENT_CELL_KIND,
+      // TODO: see if there's a way to do this without casting the cell
+      (cell as CommentCell).data.kind === COMMENT_CELL_KIND,
     draw: (args, cell) => {
       const { ctx, rect } = args;
       const { dataValue } = cell.data;

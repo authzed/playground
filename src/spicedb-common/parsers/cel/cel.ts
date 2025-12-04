@@ -159,7 +159,7 @@ const unary = seq(
 const multiplicationOp = lexeme(string("*"))
   .or(lexeme(string("/")))
   .or(lexeme(string("%")));
-const multiplication = seq(
+const multiplication: Parser<unknown> = seq(
   unary,
   seq(
     multiplicationOp,
@@ -172,7 +172,7 @@ const multiplication = seq(
 // Addition       = [Addition ("+" | "-")] Multiplication ;
 // NOTE: reordered here to allow for parsing by Parsimmon
 const additionOp = lexeme(string("+")).or(lexeme(string("-")));
-const addition = seq(
+const addition: Parser<unknown> = seq(
   multiplication,
   seq(
     additionOp,
@@ -193,7 +193,7 @@ const relOp = lexeme(string("<"))
 
 // Relation       = [Relation Relop] Addition ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const relation = seq(
+const relation: Parser<unknown> = seq(
   addition,
   seq(
     relOp,
@@ -205,7 +205,7 @@ const relation = seq(
 
 // ConditionalAnd = [ConditionalAnd "&&"] Relation ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const conditionalAnd = seq(
+const conditionalAnd: Parser<unknown> = seq(
   relation,
   seq(
     andToken,
@@ -217,7 +217,7 @@ const conditionalAnd = seq(
 
 // ConditionalOr  = [ConditionalOr "||"] ConditionalAnd ;
 // NOTE: reordered here to allow for parsing by Parsimmon
-const conditionalOr = seq(
+const conditionalOr: Parser<unknown> = seq(
   conditionalAnd,
   seq(
     orToken,
@@ -228,7 +228,7 @@ const conditionalOr = seq(
 );
 
 // Expr = ConditionalOr ["?" ConditionalOr ":" Expr] ;
-export const celExpression = conditionalOr.then(
+export const celExpression: Parser<unknown> = conditionalOr.then(
   seq(
     questionMark,
     conditionalOr,
