@@ -1,4 +1,3 @@
-import { useDebouncedChecker } from "../playground-ui/debouncer";
 import {
   RelationTupleHighlight,
   RelationshipEditor,
@@ -22,6 +21,7 @@ import { useCallback, useMemo, useState } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import { DataStore, DataStoreItemKind } from "../services/datastore";
 import { Services } from "../services/services";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 const partialRelationshipCommentPrefix = "partial relationship: ";
 
@@ -77,13 +77,13 @@ export type DatastoreRelationshipEditorProps = {
 export function DatastoreRelationshipEditor(
   props: DatastoreRelationshipEditorProps,
 ) {
-  const { run: debouncedUpdateDatastore } = useDebouncedChecker(
-    50,
-    async (data: RelationshipDatum[]) => {
+  const debouncedUpdateDatastore = useDebouncedCallback(
+    (data: RelationshipDatum[]) => {
       const editableContents = toRelationshipsString(data);
       props.datastore.update(relationshipsItem, editableContents);
       props.datastoreUpdated();
     },
+    { wait: 50 },
   );
 
   const handleDataUpdated = useCallback(

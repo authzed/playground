@@ -164,8 +164,8 @@ export function findActive<T extends WithSourceInfo>(
  * @returns The graph for subsequent calls.
  */
 export function generateTenantGraph(
-  schema: ParsedSchema | undefined,
-  relationships: Relationship[] | undefined,
+  schema?: ParsedSchema,
+  relationships?: Relationship[],
 ) {
   if (schema === undefined) {
     return {
@@ -196,18 +196,6 @@ export function generateTenantGraph(
     nodes.push(...defNodes);
     edges.push(...defEdges);
   });
-
-  // Add the tenant node.
-  /*
-    nodes.push({
-        id: NodeIDs.Root,
-        label: 'Permissions System',
-        group: 'tenant',
-        shape: 'star',
-        color: COLORS.tenant,
-        sourceInfo: undefined
-    });
-    */
 
   // Filter out any duplicate nodes or edges to prevent errors from being raised
   // by the visualizer.

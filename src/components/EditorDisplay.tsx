@@ -3,7 +3,6 @@ import registerDSLanguage, {
   DS_LANGUAGE_NAME,
   DS_THEME_NAME,
 } from "../spicedb-common/lang/dslang";
-import { useDebouncedChecker } from "../playground-ui/debouncer";
 import { TextRange } from "../spicedb-common/include/protobuf-parser";
 import { RelationshipFound } from "../spicedb-common/parsing";
 import {
@@ -33,6 +32,7 @@ import registerTupleLanguage, {
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
 } from "./tuplelang";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -328,9 +328,8 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const locationState = location.state as LocationState | undefined | null;
   const cookieService = useCookieService();
 
-  const { run: debouncedSetEditorPosition } = useDebouncedChecker(
-    250,
-    async (position: monaco.Position) => {
+  const debouncedSetEditorPosition = useDebouncedCallback(
+    (position: monaco.Position) => {
       if (props.currentItem?.kind !== undefined) {
         cookieService.storeEditorPosition(props.currentItem.kind, [
           position.lineNumber,
@@ -338,15 +337,16 @@ export function EditorDisplay(props: EditorDisplayProps) {
         ]);
       }
     },
+    { wait: 250 },
   );
 
-  const { run: debouncedSetEditorScroll } = useDebouncedChecker(
-    250,
-    async (scrollLocation: ScrollLocation) => {
+  const debouncedSetEditorScroll = useDebouncedCallback(
+    (scrollLocation: ScrollLocation) => {
       if (props.currentItem?.kind !== undefined) {
         cookieService.storeEditorScroll(props.currentItem.kind, scrollLocation);
       }
     },
+    { wait: 250 },
   );
 
   const handleEditorMounted = (editor: monaco.editor.IStandaloneCodeEditor) => {
