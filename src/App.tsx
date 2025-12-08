@@ -1,4 +1,3 @@
-import { AlertProvider } from "./playground-ui/AlertProvider";
 import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
 import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
 import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
@@ -19,6 +18,7 @@ import {
   createRootRoute,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
+import { Toaster } from "./components/ui/sonner";
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -58,18 +58,19 @@ function App() {
 
   const isEmbeddedPlayground = window.location.pathname.indexOf("/e/") >= 0;
   return (
-    <ThemeProvider>
-      <PlaygroundUIThemed
-        {...PLAYGROUND_UI_COLORS}
-        forceDarkMode={isEmbeddedPlayground}
-      >
-        <AlertProvider>
+    <>
+      <Toaster />
+      <ThemeProvider>
+        <PlaygroundUIThemed
+          {...PLAYGROUND_UI_COLORS}
+          forceDarkMode={isEmbeddedPlayground}
+        >
           <ConfirmDialogProvider>
             <RouterProvider router={router} />
           </ConfirmDialogProvider>
-        </AlertProvider>
-      </PlaygroundUIThemed>
-    </ThemeProvider>
+        </PlaygroundUIThemed>
+      </ThemeProvider>
+    </>
   );
 }
 

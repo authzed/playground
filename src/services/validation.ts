@@ -3,7 +3,6 @@ import {
   DeveloperWarning,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 import { DeveloperService } from "../spicedb-common/services/developerservice";
-import { useAlert } from "../playground-ui/AlertProvider";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import { useTheme } from "@material-ui/core/styles";
 import { useState } from "react";
@@ -13,6 +12,7 @@ import {
   buildAssertionsYaml,
   buildValidationBlockYaml,
 } from "./validationfileformat";
+import { toast } from "sonner";
 
 export enum ValidationStatus {
   NOT_RUN = 0,
@@ -159,7 +159,6 @@ export function useValidationService(
     [ValidationStatus.VALIDATION_ERROR]: theme.palette.error.main,
   }[validationState.status];
 
-  const { showAlert } = useAlert();
   const { pushEvent } = useGoogleAnalytics();
 
   const conductValidation = (callback: ValidationCallback) => {
@@ -175,10 +174,8 @@ export function useValidationService(
       (state: ValidationState) => {
         setValidationState(state);
         if (state.runError) {
-          showAlert({
-            title: "Error running validation",
-            content: state.runError,
-            buttonTitle: "Okay",
+          toast.error("Error running validation", {
+            description: state.runError,
           });
         }
       },

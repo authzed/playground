@@ -1,4 +1,3 @@
-import { useAlert } from "../playground-ui/AlertProvider";
 import { DS_EMBED_DARK_THEME_NAME } from "../spicedb-common/lang/dslang";
 import {
   RelationshipFound,
@@ -44,6 +43,7 @@ import { ShareLoader } from "./ShareLoader";
 import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import "./fonts.css";
 import { create } from "@bufbuild/protobuf";
+import { toast } from "sonner";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -273,8 +273,6 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
     setAnchorEl(null);
   };
 
-  const { showAlert } = useAlert();
-
   const shareAndOpen = async () => {
     const shareApiEndpoint = AppConfig().shareApiEndpoint;
     if (!shareApiEndpoint) {
@@ -314,10 +312,8 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Unknown error" }));
-        showAlert({
-          title: "Error sharing",
-          content: errorData.error || "Failed to share playground",
-          buttonTitle: "Okay",
+        toast.error("Error sharing", {
+          description: errorData.error || "Failed to share playground",
         });
         return;
       }
@@ -326,11 +322,9 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       const reference = result.hash;
       window.open(`${window.location.origin}/s/${reference}`);
     } catch (error: unknown) {
-      showAlert({
-        title: "Error sharing",
-        content:
+      toast.error("Error sharing", {
+        description:
           error instanceof Error ? error.message : "Failed to share playground",
-        buttonTitle: "Okay",
       });
       return;
     }

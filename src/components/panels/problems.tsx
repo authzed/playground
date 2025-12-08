@@ -89,15 +89,15 @@ export function ProblemsSummary(
   );
 }
 
-export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
+export function ProblemsPanel({
+  services,
+}: PanelProps<PlaygroundPanelLocation>) {
   const classes = useStyles();
 
   return (
     <div className={clsx(classes.apiOutput)}>
-      {!props.services.problemService.hasProblems && (
-        <span>No problems found</span>
-      )}
-      {props.services.problemService.invalidRelationships.map(
+      {!services.problemService.hasProblems && <span>No problems found</span>}
+      {services.problemService.invalidRelationships.map(
         (invalid: RelationshipFound, index: number) => {
           if (!("errorMessage" in invalid.parsed)) {
             return <div />;
@@ -125,7 +125,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
           );
         },
       )}
-      {props.services.problemService.requestErrors.map(
+      {services.problemService.requestErrors.map(
         (de: DeveloperError, index: number) => {
           return (
             <Paper className={classes.errorContainer} key={`de${index}`}>
@@ -137,7 +137,7 @@ export function ProblemsPanel(props: PanelProps<PlaygroundPanelLocation>) {
           );
         },
       )}
-      {props.services.problemService.warnings.map(
+      {services.problemService.warnings.map(
         (dw: DeveloperWarning, index: number) => {
           return (
             <Paper className={classes.errorContainer} key={`dw${index}`}>

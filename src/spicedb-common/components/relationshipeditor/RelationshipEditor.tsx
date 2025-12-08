@@ -1,3 +1,4 @@
+import { toast } from "sonner";
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
@@ -16,9 +17,7 @@ import {
   Checkbox,
   FormControlLabel,
   IconButton,
-  Snackbar,
   Tooltip,
-  Typography,
 } from "@material-ui/core";
 import {
   createStyles,
@@ -27,7 +26,6 @@ import {
   useTheme,
 } from "@material-ui/core/styles";
 import { Assignment, Comment, Delete } from "@material-ui/icons";
-import Alert from "@material-ui/lab/Alert";
 import {
   useCallback,
   useEffect,
@@ -35,7 +33,6 @@ import {
   useRef,
   useState,
   type KeyboardEvent,
-  type ReactNode,
 } from "react";
 import { useCookies } from "react-cookie";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
@@ -317,21 +314,13 @@ export function RelationshipEditor({
     const validated = validate(validator, cell.data.dataValue);
     if (!validated) {
       const regex = DataRegex[COLUMNS[col].dataKind];
-      setSnackbarMessage(
-        <div>
-          <Typography variant="caption">
-            Expected format for {COLUMNS[col].title}:
-          </Typography>
-          {regex instanceof RegExp && (
-            <Typography variant="subtitle1">{regex.toString()}</Typography>
-          )}
-          {!(regex instanceof RegExp) && (
-            <Typography variant="subtitle1">
-              {COLUMNS[col].dataDescription}
-            </Typography>
-          )}
-        </div>,
-      );
+
+      toast.error(`Expected format for ${COLUMNS[col].title}:`, {
+        description:
+          regex instanceof RegExp
+            ? regex.toString()
+            : COLUMNS[col].dataDescription,
+      });
     }
 
     newColumnData[col] = validated ? cell.data.dataValue : "";
@@ -944,27 +933,8 @@ export function RelationshipEditor({
     columnsWithWidths,
   );
 
-  // TODO: get JSX out of state.
-  const [snackbarMessage, setSnackbarMessage] = useState<ReactNode | undefined>(
-    undefined,
-  );
-
   return (
     <div className={classes.root} onKeyDown={handleKeyDown}>
-      <div style={{ position: "relative" }}>
-        <Snackbar
-          open={!!snackbarMessage}
-          onClose={() => setSnackbarMessage(undefined)}
-        >
-          <Alert
-            onClose={() => setSnackbarMessage(undefined)}
-            severity="info"
-            variant="filled"
-          >
-            {snackbarMessage}
-          </Alert>
-        </Snackbar>
-      </div>
       <div className={classes.toolbar} style={{ height: toolbarHeight }}>
         {!isReadOnly && (
           <Checkbox

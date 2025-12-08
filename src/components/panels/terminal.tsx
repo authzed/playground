@@ -7,7 +7,7 @@ import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { Alert, Color } from "@material-ui/lab";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import Convert from "ansi-to-html";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from "react";
@@ -16,6 +16,7 @@ import useDeepCompareEffect from "use-deep-compare-effect";
 import { DataStoreItemKind } from "../../services/datastore";
 import { PanelProps } from "./base/common";
 import { PlaygroundPanelLocation } from "./panels";
+import { CircleX, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -158,16 +159,20 @@ export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
 
       case "loaderror":
         return (
-          <Alert severity="error">
-            Could not start the Terminal. Please make sure you have WebAssembly
-            enabled.
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>
+              Could not start the Terminal. Please make sure you have
+              WebAssembly enabled.
+            </AlertTitle>
           </Alert>
         );
 
       case "unsupported":
         return (
-          <Alert severity="error">
-            Your browser does not support WebAssembly
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>Your browser does not support WebAssembly</AlertTitle>
           </Alert>
         );
 
@@ -230,30 +235,23 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
           return undefined;
         }
 
-        const severity: Record<string, Color> = {
-          trace: "info",
-          debug: "info",
-          info: "info",
-          warning: "warning",
-          error: "error",
-        };
+        const isError = parsed["level"] === "error";
         return (
-          <Alert
-            variant="outlined"
-            severity={severity[parsed["level"]]}
-            style={{ padding: 0, border: "0px" }}
-          >
-            {Object.keys(parsed).map((k) => {
-              if (k === "is-log") {
-                return undefined;
-              }
+          <Alert variant={isError ? "destructive" : "default"}>
+            {isError ? <CircleX /> : <MessageCircleWarning />}
+            <AlertDescription>
+              {Object.entries(parsed).map(([key, value]) => {
+                if (key === "is-log") {
+                  return undefined;
+                }
 
-              return (
-                <span>
-                  {k}: {JSON.stringify(parsed[k])}&nbsp;
-                </span>
-              );
-            })}
+                return (
+                  <span key={key}>
+                    {key}: {JSON.stringify(value)}&nbsp;
+                  </span>
+                );
+              })}
+            </AlertDescription>
           </Alert>
         );
       }
@@ -271,7 +269,11 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
   return <div dangerouslySetInnerHTML={{ __html: output }}></div>;
 }
 
-function TerminalOutputDisplay(props: {
+function TerminalOutputDisplay({
+  sections,
+  showLogs,
+  onRefocus,
+}: {
   sections: TerminalSection[];
   showLogs?: boolean;
   onRefocus?: () => void;
@@ -280,27 +282,23 @@ function TerminalOutputDisplay(props: {
   const convert = new Convert({
     escapeXML: true,
   });
-  const children = props.sections.flatMap(
-    (section: TerminalSection): ReactNode => {
-      if ("command" in section) {
-        return <div>$ {section.command}</div>;
-      } else {
-        return (
-          <div className={classes.terminalOutput}>
-            {section.output
-              .split("\n")
-              .map((o) =>
-                convertStringOutput(convert, o, props.showLogs ?? false),
-              )}
-          </div>
-        );
-      }
-    },
-  );
+  const children = sections.flatMap((section: TerminalSection): ReactNode => {
+    if ("command" in section) {
+      return <div>$ {section.command}</div>;
+    } else {
+      return (
+        <div className={classes.terminalOutput}>
+          {section.output
+            .split("\n")
+            .map((o) => convertStringOutput(convert, o, showLogs ?? false))}
+        </div>
+      );
+    }
+  });
   const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
     const hasSelection = !!getSelectedTextWithin(event.target as Element);
-    if (props.onRefocus && !hasSelection) {
-      props.onRefocus();
+    if (onRefocus && !hasSelection) {
+      onRefocus();
     }
     if (hasSelection) {
       event.stopPropagation();
