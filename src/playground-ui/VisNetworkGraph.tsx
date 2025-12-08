@@ -6,7 +6,7 @@ import { useRef, useState } from "react";
 import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import vis from "visjs-network";
-import { useDebouncedChecker } from "./debouncer";
+import { useDebouncer } from "@tanstack/react-pacer/debouncer";
 
 export type EdgeShape =
   | "ellipse"
@@ -217,9 +217,8 @@ export default function VisNetworkGraph<
     }
   };
 
-  const { run: runUpdate, isActive } = useDebouncedChecker(
-    250,
-    async (graph: VisGraphDefinition<N, E>) => {
+  const graphUpdateDebouncer = useDebouncer(
+    (graph: VisGraphDefinition<N, E>) => {
       // Check for in-place changes.
       if (
         networkRef.current &&
@@ -296,21 +295,23 @@ export default function VisNetworkGraph<
       updateSelection(props.selected);
       setIsLoaded(true);
     },
+    { wait: 250 },
+    (state) => ({ isPending: state.isPending }),
   );
 
   useDeepCompareEffect(() => {
     if (divRef.current) {
-      runUpdate(props.graph);
+      graphUpdateDebouncer.maybeExecute(props.graph);
     }
   }, [props.graph, divRef]);
 
   useDeepCompareEffect(() => {
-    if (isActive()) {
+    if (graphUpdateDebouncer.state.isPending) {
       return;
     }
 
     updateSelection(props.selected);
-  }, [props.selected, networkRef, updateSelection, isActive]);
+  }, [props.selected, networkRef, updateSelection, graphUpdateDebouncer]);
 
   return (
     <div className={clsx(classes.graph, props.className)}>

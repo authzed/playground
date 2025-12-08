@@ -11,11 +11,11 @@ import {
   DeveloperService,
   DeveloperServiceError,
 } from "../spicedb-common/services/developerservice";
-import { useDebouncedChecker } from "../playground-ui/debouncer";
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { v4 as uuidv4 } from "uuid";
 import { DataStore, DataStoreItemKind } from "./datastore";
 import { create } from "@bufbuild/protobuf";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 export enum LiveCheckStatus {
   PARSE_ERROR = -2,
@@ -157,52 +157,49 @@ export function useLiveCheckService(
   });
 
   const devServiceStatus = developerService.state.status;
-  const runCheck = useCallback(
-    async (itemsToCheck: LiveCheckItem[]) => {
-      if (devServiceStatus !== "ready") {
-        return;
+  const runCheck = (itemsToCheck: LiveCheckItem[]) => {
+    if (devServiceStatus !== "ready") {
+      return;
+    }
+
+    setState({ status: LiveCheckStatus.CHECKING });
+    const r = runEditCheckWasm(developerService, datastore, itemsToCheck);
+    if (r === undefined) {
+      setState({ status: LiveCheckStatus.NOT_CHECKING });
+
+      if (itemsToCheck.length > 0) {
+        setState({
+          status: LiveCheckStatus.SERVICE_ERROR,
+          lastRun: new Date(),
+          requestErrors: [],
+          serverErr:
+            "Cannot instantiate developer service. Please make sure you have WebAssembly enabled.",
+        });
       }
+      return;
+    }
 
-      setState({ status: LiveCheckStatus.CHECKING });
-      const r = runEditCheckWasm(developerService, datastore, itemsToCheck);
-      if (r === undefined) {
-        setState({ status: LiveCheckStatus.NOT_CHECKING });
+    const [response, warnings] = r;
+    const serverErr: string | undefined = response.internalError || undefined;
+    const devErrs: DeveloperError[] = response.developerErrors
+      ? response.developerErrors.inputErrors
+      : [];
+    const status = serverErr
+      ? LiveCheckStatus.SERVICE_ERROR
+      : devErrs.length > 0
+        ? LiveCheckStatus.PARSE_ERROR
+        : LiveCheckStatus.NOT_CHECKING;
 
-        if (itemsToCheck.length > 0) {
-          setState({
-            status: LiveCheckStatus.SERVICE_ERROR,
-            lastRun: new Date(),
-            requestErrors: [],
-            serverErr:
-              "Cannot instantiate developer service. Please make sure you have WebAssembly enabled.",
-          });
-        }
-        return;
-      }
+    setState({
+      status: status,
+      lastRun: new Date(),
+      requestErrors: devErrs,
+      serverErr: serverErr,
+      warnings: warnings,
+    });
+  };
 
-      const [response, warnings] = r;
-      const serverErr: string | undefined = response.internalError || undefined;
-      const devErrs: DeveloperError[] = response.developerErrors
-        ? response.developerErrors.inputErrors
-        : [];
-      const status = serverErr
-        ? LiveCheckStatus.SERVICE_ERROR
-        : devErrs.length > 0
-          ? LiveCheckStatus.PARSE_ERROR
-          : LiveCheckStatus.NOT_CHECKING;
-
-      setState({
-        status: status,
-        lastRun: new Date(),
-        requestErrors: devErrs,
-        serverErr: serverErr,
-        warnings: warnings,
-      });
-    },
-    [developerService, devServiceStatus, datastore],
-  );
-
-  const { run: check } = useDebouncedChecker(500, runCheck);
+  const check = useDebouncedCallback(runCheck, { wait: 500 });
 
   // Setup an effect which registers the listener for the datastore changes and processes items.
   useEffect(() => {

@@ -4,11 +4,11 @@ import {
   type ResolvedDefinition,
   Resolver,
 } from "@authzed/spicedb-parser-js";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import {
   parseRelationshipsWithErrors,
   RelationshipFound,
 } from "../spicedb-common/parsing";
-import { useDebouncedChecker } from "../playground-ui/debouncer";
 import { useEffect, useMemo, useState } from "react";
 import { DataStore, DataStoreItemKind } from "./datastore";
 
@@ -40,7 +40,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
     relationships: [],
   });
 
-  const runCheck = async ({
+  const runCheck = ({
     schemaText,
     relsText,
   }: {
@@ -66,7 +66,9 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
     });
   };
 
-  const { run: check } = useDebouncedChecker(250, runCheck);
+  const check = useDebouncedCallback(runCheck, {
+    wait: 250,
+  });
 
   useEffect(() => {
     // Kick off the initial check.
@@ -78,10 +80,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
     ).editableContents!;
     check({ schemaText: schemaText, relsText: relsText });
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  useEffect(() => {
+    // Register the listener for the datastore
     return datastore.registerListener(() => {
       const schemaText = datastore.getSingletonByKind(
         DataStoreItemKind.SCHEMA,
@@ -91,11 +90,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
       ).editableContents!;
       check({ schemaText: schemaText, relsText: relsText });
     });
-
-    // NOTE: we do not want to rely on `check` changing, since it is merely
-    // a function.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datastore]);
+  }, [datastore, check]);
 
   const lookupDefinition = useMemo(() => {
     return (name: string): ResolvedDefinition | undefined => {
@@ -108,7 +103,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
   }, [state.resolver]);
 
   return {
-    state: state,
-    lookupDefinition: lookupDefinition,
+    state,
+    lookupDefinition,
   };
 }

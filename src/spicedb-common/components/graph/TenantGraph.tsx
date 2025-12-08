@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
@@ -112,11 +113,19 @@ const useStyles = makeStyles((theme: Theme) =>
 /**
  * TenantGraph renders a graphical view of the schema configured in a Tenant.
  */
-export default function TenantGraph(props: TenantGraphProps) {
-  const graph = generateTenantGraph(props.schema, props.relationships);
+export default function TenantGraph({
+  schema,
+  relationships,
+  active,
+  onBrowseRequested,
+}: TenantGraphProps) {
+  const graph = useMemo(
+    () => generateTenantGraph(schema, relationships),
+    [relationships, schema],
+  );
 
   const handleDoubleClicked = (nodes: LocalNode[], edges: LocalEdge[]) => {
-    if (props.onBrowseRequested === undefined) {
+    if (onBrowseRequested === undefined) {
       return;
     }
 
@@ -129,14 +138,14 @@ export default function TenantGraph(props: TenantGraphProps) {
     }
 
     if (rangeToShow !== undefined) {
-      props.onBrowseRequested(rangeToShow);
+      onBrowseRequested(rangeToShow);
     }
   };
 
   const { nodes, edges } = graph;
   const selected = {
-    nodes: findActive<LocalNode>(nodes, props.active) ?? [],
-    edges: findActive<LocalEdge>(edges, props.active) ?? [],
+    nodes: findActive<LocalNode>(nodes, active) ?? [],
+    edges: findActive<LocalEdge>(edges, active) ?? [],
   };
 
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");

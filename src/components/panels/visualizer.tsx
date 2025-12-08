@@ -1,8 +1,8 @@
 import TabLabel from "../../playground-ui/TabLabel";
 import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
 import { TextRange } from "../../spicedb-common/include/protobuf-parser";
-import { RelationshipFound } from "../../spicedb-common/parsing";
-import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
+import { ParseRelationshipError } from "../../spicedb-common/parsing";
+import { RelationTuple } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import {
   createStyles,
   darken,
@@ -52,19 +52,27 @@ export function VisualizerSummary() {
   return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
 }
 
-export function VisualizerPanel(
-  props: PanelProps<PlaygroundPanelLocation> & {
-    dimensions?: { width: number; height: number };
-  } & {
-    editorPosition?: monaco.Position | undefined;
-    currentItem?: DataStoreItem | undefined;
-  },
-) {
+function isRelationship(
+  relOrError: RelationTuple | ParseRelationshipError,
+): relOrError is RelationTuple {
+  return !("errorMessage" in relOrError);
+}
+
+export function VisualizerPanel({
+  location,
+  services,
+  dimensions,
+  editorPosition,
+  currentItem,
+}: PanelProps<PlaygroundPanelLocation> & {
+  dimensions?: { width: number; height: number };
+  editorPosition?: monaco.Position | undefined;
+  currentItem?: DataStoreItem | undefined;
+}) {
   const classes = useStyles();
-  const currentItem = props.currentItem;
   const navigate = useNavigate();
 
-  const handleBrowseRequested = (range: TextRange | undefined) => {
+  const handleBrowseRequested = (range?: TextRange) => {
     // TODO: make this functionality use querystrings instead of history state
     navigate({
       to: DataStorePaths.Schema(),
@@ -74,25 +82,25 @@ export function VisualizerPanel(
     });
   };
 
-  const relationships = props.services.localParseService.state.relationships
-    .filter((tf: RelationshipFound) => !("errorMessage" in tf.parsed))
-    .map((tf: RelationshipFound) => tf.parsed) as Relationship[];
+  const relationships = services.localParseService.state.relationships
+    .map((relFound) => relFound.parsed)
+    .filter(isRelationship);
 
   return (
     <div
       className={classes.tenantGraphContainer}
-      style={{ height: props.dimensions?.height ?? 0 }}
+      style={{ height: dimensions?.height ?? 0 }}
     >
       <TenantGraph
-        key={props.location}
-        schema={props.services.localParseService.state.parsed}
+        key={location}
+        schema={services.localParseService.state.parsed}
         relationships={relationships}
         onBrowseRequested={handleBrowseRequested}
         active={
-          props.editorPosition
+          editorPosition
             ? {
                 isSchema: currentItem?.kind === DataStoreItemKind.SCHEMA,
-                position: props.editorPosition,
+                position: editorPosition,
               }
             : undefined
         }
