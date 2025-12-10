@@ -1,12 +1,13 @@
-import { useAlert } from "../playground-ui/AlertProvider";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import LoadingView from "../playground-ui/LoadingView";
-import Alert from "@material-ui/lab/Alert";
+import { Alert, AlertTitle } from "./ui/alert";
 import React, { useEffect, useState } from "react";
 import "react-reflex/styles.css";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import AppConfig from "../services/configservice";
 import { DataStore } from "../services/datastore";
+import { toast } from "sonner";
+import { CircleX } from "lucide-react";
 
 enum SharedLoadingStatus {
   NOT_CHECKED = -1,
@@ -27,7 +28,6 @@ export function ShareLoader(props: {
   children: React.ReactNode;
   sharedRequired: boolean;
 }) {
-  const { showAlert } = useAlert();
   const { showConfirm } = useConfirmDialog();
   const navigate = useNavigate();
   const location = useLocation();
@@ -84,12 +84,13 @@ export function ShareLoader(props: {
               return;
             }
 
-            await showAlert({
-              title: "Shared playground not found",
-              content: "The shared playground specified does not exist",
-              buttonTitle: "Okay",
+            toast.error("Shared playground not found", {
+              description: "The shared playground specified does not exist",
+              action: {
+                label: "Okay",
+                onClick: () => navigate({ to: "/", replace: true }),
+              },
             });
-            navigate({ to: "/", replace: true });
             return;
           }
 
@@ -101,12 +102,13 @@ export function ShareLoader(props: {
             return;
           }
 
-          await showAlert({
-            title: "Error loading shared playground",
-            content: errorData.error || "Failed to load shared playground",
-            buttonTitle: "Okay",
+          toast.error("Error loading shared playground", {
+            description: errorData.error || "Failed to load shared playground",
+            action: {
+              label: "Okay",
+              onClick: () => navigate({ to: "/", replace: true }),
+            },
           });
-          navigate({ to: "/", replace: true });
           return;
         }
 
@@ -159,15 +161,16 @@ export function ShareLoader(props: {
           return;
         }
 
-        await showAlert({
-          title: "Error loading shared playground",
-          content:
+        toast.error("Error loading shared playground", {
+          description:
             error instanceof Error
               ? error.message
               : "Failed to load shared playground",
-          buttonTitle: "Okay",
+          action: {
+            label: "Okay",
+            onClick: () => navigate({ to: "/", replace: true }),
+          },
         });
-        navigate({ to: "/", replace: true });
         return;
       }
     })();
@@ -176,7 +179,6 @@ export function ShareLoader(props: {
     loadingStatus,
     datastore,
     navigate,
-    showAlert,
     showConfirm,
     urlPrefix,
     props.sharedRequired,
@@ -189,13 +191,19 @@ export function ShareLoader(props: {
     return (
       <div>
         {loadingStatus === SharedLoadingStatus.NOT_APPLICABLE && (
-          <Alert severity="error">Could not load shared playground</Alert>
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>Could not load shared playground</AlertTitle>
+          </Alert>
         )}
         {loadingStatus === SharedLoadingStatus.LOADING && (
           <LoadingView message="Loading shared playground data" />
         )}
         {loadingStatus === SharedLoadingStatus.LOAD_ERROR && (
-          <Alert severity="error">Could not load shared playground</Alert>
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>Could not load shared playground</AlertTitle>
+          </Alert>
         )}
       </div>
     );

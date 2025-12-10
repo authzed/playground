@@ -34,7 +34,7 @@ import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import WarningIcon from "@material-ui/icons/Warning";
-import Alert from "@material-ui/lab/Alert";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
 import {
@@ -57,6 +57,7 @@ import { TourElementClass } from "../GuidedTour";
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
 import { ReflexedPanelLocation } from "./base/reflexed";
 import { PlaygroundPanelLocation } from "./panels";
+import { CircleX, Info, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -240,13 +241,12 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
           <TableHead>
             <TableRow>
               <TableCell colSpan={7}>
-                <Alert
-                  severity="warning"
-                  variant="outlined"
-                  style={{ border: 0 }}
-                >
-                  Checks not run: There is an error in the schema or test
-                  relationships
+                <Alert>
+                  <MessageCircleWarning />
+                  <AlertTitle>Checks not run</AlertTitle>
+                  <AlertDescription>
+                    There is an error in the schema or test relationships
+                  </AlertDescription>
                 </Alert>
               </TableCell>
             </TableRow>
@@ -256,8 +256,9 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
           <TableHead>
             <TableRow>
               <TableCell colSpan={7}>
-                <Alert severity="info" variant="outlined" style={{ border: 0 }}>
-                  Developer system is currently loading
+                <Alert>
+                  <Info />
+                  <AlertTitle>Developer system is currently loading</AlertTitle>
                 </Alert>
               </TableCell>
             </TableRow>
@@ -267,8 +268,9 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
           <TableHead>
             <TableRow>
               <TableCell colSpan={7}>
-                <Alert severity="error">
-                  {liveCheckService.state.serverErr}
+                <Alert variant="destructive">
+                  <CircleX />
+                  <AlertTitle>{liveCheckService.state.serverErr}</AlertTitle>
                 </Alert>
               </TableCell>
             </TableRow>

@@ -4,10 +4,11 @@ import {
   DeveloperWarning,
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import Alert from "@material-ui/lab/Alert";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import "react-reflex/styles.css";
 import { Link } from "@tanstack/react-router";
 import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
+import { CircleX, MessageCircleWarning } from "lucide-react";
 
 export const ERROR_SOURCE_TO_ITEM = {
   [DeveloperError_Source.SCHEMA]: DataStoreItemKind.SCHEMA,
@@ -64,38 +65,35 @@ const useErrorDisplayStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export function DeveloperErrorDisplay(props: { error: DeveloperError }) {
+export function DeveloperErrorDisplay({ error }: { error: DeveloperError }) {
   const classes = useErrorDisplayStyles();
   return (
-    <Alert
-      className={classes.validationError}
-      variant="outlined"
-      severity="error"
-    >
-      {props.error.message}
-      {!!props.error.path && props.error.path.length > 0 && (
-        <div className={classes.foundVia}>
+    <Alert variant="destructive">
+      <CircleX />
+      <AlertTitle>{error.message}</AlertTitle>
+      {error.path.length > 0 && (
+        <AlertDescription>
           Found Via:
           <ul className={classes.foundViaList}>
-            {props.error.path.map((item: string, index: number) => {
-              return <li key={index}>{item}</li>;
-            })}
+            {error.path.map((item) => (
+              <li key={item}>{item}</li>
+            ))}
           </ul>
-        </div>
+        </AlertDescription>
       )}
     </Alert>
   );
 }
 
-export function DeveloperWarningDisplay(props: { warning: DeveloperWarning }) {
-  const classes = useErrorDisplayStyles();
+export function DeveloperWarningDisplay({
+  warning,
+}: {
+  warning: DeveloperWarning;
+}) {
   return (
-    <Alert
-      className={classes.validationError}
-      variant="outlined"
-      severity="warning"
-    >
-      {props.warning.message}
+    <Alert>
+      <MessageCircleWarning />
+      <AlertTitle>{warning.message}</AlertTitle>
     </Alert>
   );
 }
@@ -131,14 +129,13 @@ export function DeveloperWarningSourceDisplay({
   );
 }
 
-export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
-  const ve = props.error;
+export function DeveloperSourceDisplay({ error }: { error: DeveloperError }) {
   const classes = useSourceDisplayStyles();
 
   // TODO: unify with error source above.
   return (
     <div>
-      {ve.source === DeveloperError_Source.SCHEMA && (
+      {error.source === DeveloperError_Source.SCHEMA && (
         <div className={classes.validationErrorContext}>
           In
           <Link className={classes.link} to={DataStorePaths.Schema()}>
@@ -147,7 +144,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
           :
         </div>
       )}
-      {ve.source === DeveloperError_Source.ASSERTION && (
+      {error.source === DeveloperError_Source.ASSERTION && (
         <div className={classes.validationErrorContext}>
           In
           <Link className={classes.link} to={DataStorePaths.Assertions()}>
@@ -156,7 +153,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
           :
         </div>
       )}
-      {ve.source === DeveloperError_Source.RELATIONSHIP && (
+      {error.source === DeveloperError_Source.RELATIONSHIP && (
         <div className={classes.validationErrorContext}>
           In
           <Link className={classes.link} to={DataStorePaths.Relationships()}>
@@ -165,7 +162,7 @@ export function DeveloperSourceDisplay(props: { error: DeveloperError }) {
           :
         </div>
       )}
-      {ve.source === DeveloperError_Source.VALIDATION_YAML && (
+      {error.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className={classes.validationErrorContext}>
           In
           <Link
