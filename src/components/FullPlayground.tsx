@@ -1,4 +1,3 @@
-import { useAlert } from "../playground-ui/AlertProvider";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import TabLabel from "../playground-ui/TabLabel";
@@ -30,7 +29,7 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import ShareIcon from "@material-ui/icons/Share";
-import Alert from "@material-ui/lab/Alert";
+import { Alert, AlertTitle } from "./ui/alert";
 import ToggleButton from "@material-ui/lab/ToggleButton";
 import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
 import clsx from "clsx";
@@ -84,6 +83,8 @@ import { TerminalPanel, TerminalSummary } from "./panels/terminal";
 import { ValidationPanel, ValidationSummary } from "./panels/validation";
 import { VisualizerPanel, VisualizerSummary } from "./panels/visualizer";
 import { WatchesPanel, WatchesSummary } from "./panels/watches";
+import { toast } from "sonner";
+import { CircleX, MessageCircleWarning } from "lucide-react";
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
 
@@ -372,7 +373,6 @@ function ApolloedPlayground() {
 
 export function ThemedAppView(props: { datastore: DataStore }) {
   const { pushEvent } = useGoogleAnalytics();
-  const { showAlert } = useAlert();
 
   const [sharingState, setSharingState] = useState<SharingState>({
     status: SharingStatus.NOT_RUN,
@@ -453,10 +453,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         const contents = await getFileContentsAsText(file);
         const uploaded = parseValidationYAML(contents);
         if ("message" in uploaded) {
-          showAlert({
-            title: "Could not load uploaded YAML",
-            content: `The uploaded validation YAML is invalid: ${uploaded.message}`,
-            buttonTitle: "Okay",
+          toast.error("Could not load uploaded YAML", {
+            description: `The uploaded validation YAML is invalid: ${uploaded.message}`,
           });
           return;
         }
@@ -528,10 +526,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         const errorData = await response
           .json()
           .catch(() => ({ error: "Unknown error" }));
-        showAlert({
-          title: "Error sharing",
-          content: errorData.error || "Failed to share playground",
-          buttonTitle: "Okay",
+        toast.error("Error sharing", {
+          description: errorData.error || "Failed to share playground",
         });
         setSharingState({
           status: SharingStatus.SHARE_ERROR,
@@ -550,11 +546,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         shareReference: reference,
       });
     } catch (error: unknown) {
-      showAlert({
-        title: "Error sharing",
-        content:
+      toast.error("Error sharing", {
+        description:
           error instanceof Error ? error.message : "Failed to share playground",
-        buttonTitle: "Okay",
       });
       setSharingState({
         status: SharingStatus.SHARE_ERROR,
@@ -712,15 +706,21 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   return (
     <div className={classes.root}>
       {!WebAssembly && (
-        <Alert severity="error">
-          WebAssembly is disabled but is required for Playground debugging. All
-          debugging tools will be disabled.
+        <Alert variant="destructive">
+          <CircleX />
+          <AlertTitle>
+            WebAssembly is disabled but is required for Playground debugging.
+            All debugging tools will be disabled.
+          </AlertTitle>
         </Alert>
       )}
       {isOutOfDate && (
-        <Alert severity="warning">
-          The contents of the Playground have been updated in another tab.
-          Please close this Playground tab.
+        <Alert>
+          <MessageCircleWarning />
+          <AlertTitle>
+            The contents of the Playground have been updated in another tab.
+            Please close this Playground tab.
+          </AlertTitle>
         </Alert>
       )}
       <GuidedTour
@@ -1169,16 +1169,20 @@ function MainPanel(
 
       case "loaderror":
         return (
-          <Alert severity="error">
-            Could not start the Development System. Please make sure you have
-            WebAssembly enabled.
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>
+              Could not start the Development System. Please make sure you have
+              WebAssembly enabled.
+            </AlertTitle>
           </Alert>
         );
 
       case "unsupported":
         return (
-          <Alert severity="error">
-            Your browser does not support WebAssembly
+          <Alert variant="destructive">
+            <CircleX />
+            <AlertTitle>Your browser does not support WebAssembly</AlertTitle>
           </Alert>
         );
 
