@@ -9,6 +9,8 @@ ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
 # Environment variables for build time.
 ARG VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID=""
 
+ARG VITE_POSTHOG_KEY=""
+ARG VITE_POSTHOG_HOST=https://us.i.posthog.com
 ARG VITE_DISCORD_CHANNEL_ID=""
 ARG VITE_DISCORD_INVITE_URL="https://authzed.com/discord"
 ARG VITE_DISCORD_SERVER_ID=""
