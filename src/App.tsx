@@ -55,7 +55,6 @@ const routeTree = rootRoute.addChildren([
 ]);
 const router = createRouter({ routeTree });
 
-// Initialize PostHog if configured
 const config = AppConfig();
 if (config.posthog.apiKey && config.posthog.host) {
   posthog.init(config.posthog.apiKey, {

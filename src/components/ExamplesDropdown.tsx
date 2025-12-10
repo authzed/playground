@@ -87,12 +87,10 @@ export function ExamplesDropdown({
             <AlertDialogAction
               onClick={() => {
                 if (selectedExample) {
-                  if (config.posthog.apiKey && config.posthog.host) {
-                    posthog.capture("schema_selected", {
-                      schema_id: selectedExample.id,
-                      schema_title: selectedExample.title,
-                    });
-                  }
+                  posthog.capture("schema_selected", {
+                    schema_id: selectedExample.id,
+                    schema_title: selectedExample.title,
+                  });
                   loadExample(selectedExample);
                 }
               }}
