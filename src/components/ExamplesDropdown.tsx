@@ -20,7 +20,6 @@ import {
 
 import { useEffect, useState } from "react";
 import { usePostHog } from "@posthog/react";
-import AppConfig from "@/services/configservice";
 
 export function ExamplesDropdown({
   disabled,
@@ -33,7 +32,6 @@ export function ExamplesDropdown({
   const [promptOpen, setPromptOpen] = useState(false);
   const [selectedExample, setSelectedExample] = useState<Example>();
   const posthog = usePostHog();
-  const config = AppConfig();
 
   useEffect(() => {
     const fetchExamples = async () => {
@@ -87,7 +85,7 @@ export function ExamplesDropdown({
             <AlertDialogAction
               onClick={() => {
                 if (selectedExample) {
-                  posthog.capture("schema_selected", {
+                  posthog.capture("playground_schema_selected", {
                     schema_id: selectedExample.id,
                     schema_title: selectedExample.title,
                   });
