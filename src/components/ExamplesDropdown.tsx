@@ -19,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 
 import { useEffect, useState } from "react";
+import { usePostHog } from "@posthog/react";
 
 export function ExamplesDropdown({
   disabled,
@@ -30,6 +31,7 @@ export function ExamplesDropdown({
   const [examples, setExamples] = useState<Example[]>();
   const [promptOpen, setPromptOpen] = useState(false);
   const [selectedExample, setSelectedExample] = useState<Example>();
+  const posthog = usePostHog();
 
   useEffect(() => {
     const fetchExamples = async () => {
@@ -83,6 +85,10 @@ export function ExamplesDropdown({
             <AlertDialogAction
               onClick={() => {
                 if (selectedExample) {
+                  posthog.capture("playground_schema_selected", {
+                    schema_id: selectedExample.id,
+                    schema_title: selectedExample.title,
+                  });
                   loadExample(selectedExample);
                 }
               }}
