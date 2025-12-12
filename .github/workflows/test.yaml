@@ -13,6 +13,8 @@ jobs:
     runs-on: "depot-ubuntu-24.04-small"
     steps:
       - uses: "actions/checkout@v4"
+        with:
+          submodules: true
       - uses: "authzed/action-spicedb@v1"
         with:
           version: "latest"
