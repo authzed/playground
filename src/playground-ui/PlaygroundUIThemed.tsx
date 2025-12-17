@@ -21,10 +21,12 @@ export default function PlaygroundUIThemed({
   forceDarkMode,
   children,
 }: PlaygroundUIThemedProps) {
-  const { setTheme } = useTheme();
+  const { theme: currentTheme, setTheme } = useTheme();
   // Determine whether the user prefers dark or light mode.
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
-  const darkMode = prefersDarkMode || forceDarkMode === true;
+  const darkMode =
+    forceDarkMode === true ||
+    (currentTheme === "system" ? prefersDarkMode : currentTheme === "dark");
 
   useEffect(() => {
     if (forceDarkMode) {
