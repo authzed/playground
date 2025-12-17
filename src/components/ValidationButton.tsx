@@ -1,149 +1,80 @@
 import { DeveloperService } from "../spicedb-common/services/developerservice";
-import Button from "@material-ui/core/Button";
-import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import { alpha } from "@material-ui/core/styles/colorManipulator";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import CheckCircleOutlineIcon from "@material-ui/icons/CheckCircleOutline";
-import ErrorIcon from "@material-ui/icons/Error";
-import PlayCircleFilledIcon from "@material-ui/icons/PlayCircleFilled";
-import clsx from "clsx";
-import "react-reflex/styles.css";
+import { Button } from "./ui/button";
 import { DataStore } from "../services/datastore";
 import { ValidationState, ValidationStatus } from "../services/validation";
-import { TourElementClass } from "./GuidedTour";
+import { CheckCircle, CircleX, CirclePlay } from "lucide-react";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    gcm: {
-      color: "green",
-      display: "inherit",
-    },
-    rem: {
-      color: "red",
-      display: "inherit",
-    },
-    gray: {
-      color: "gray",
-      display: "inherit",
-    },
-    lastRun: {
-      display: "grid",
-      gridTemplateColumns: "auto 150px",
-      alignItems: "center",
-      columnGap: theme.spacing(1),
-      backgroundColor: "rgba(255, 255, 255, 0.05)",
-      height: "100%",
-      padding: "4px",
-      paddingLeft: "8px",
-    },
-    validated: {
-      backgroundColor: alpha(theme.palette.success.light, 0.2),
-    },
-    validationError: {
-      backgroundColor: alpha(theme.palette.error.light, 0.2),
-    },
-    validationDisplay: {
-      display: "grid",
-      gridTemplateColumns: "auto auto",
-      alignItems: "center",
-      columnGap: theme.spacing(1),
-    },
-  }),
-);
-
-export function ValidateButton(props: {
+export function ValidateButton({
+  conductValidation,
+  datastore,
+  validationState,
+  developerService,
+}: {
   conductValidation: () => void;
   datastore: DataStore;
   validationState: ValidationState;
   developerService: DeveloperService;
 }) {
-  const validated =
-    props.validationState.status === ValidationStatus.VALIDATED ||
-    props.validationState.status === ValidationStatus.VALIDATION_ERROR;
   const upToDate =
-    validated &&
-    props.validationState.validationDatastoreIndex ===
-      props.datastore.currentIndex();
-
-  const classes = useStyles();
+    validationState.validationDatastoreIndex === datastore.currentIndex();
+  const valid =
+    upToDate && validationState.status === ValidationStatus.VALIDATED;
+  const invalid =
+    upToDate && validationState.status === ValidationStatus.VALIDATION_ERROR;
+  const loading = validationState.status === ValidationStatus.CALL_ERROR;
+  const notRun =
+    validationState.status !== ValidationStatus.CALL_ERROR && !upToDate;
 
   return (
-    <div className={classes.validationDisplay}>
-      <div
-        className={clsx(classes.lastRun, {
-          [classes.validated]:
-            upToDate &&
-            props.validationState.status === ValidationStatus.VALIDATED,
-          [classes.validationError]:
-            upToDate &&
-            props.validationState.status === ValidationStatus.VALIDATION_ERROR,
-        })}
-      >
+    <div className="flex flex-row justify-between">
+      <div className="flex flex-row px-3 mr-2 w-48 items-center bg-muted rounded-xs">
         <ValidationIcon
-          datastore={props.datastore}
-          validationState={props.validationState}
+          datastore={datastore}
+          validationState={validationState}
+          className="pr-2"
         />
-        {upToDate &&
-          props.validationState.status === ValidationStatus.VALIDATED &&
-          "Validated!"}
-        {upToDate &&
-          props.validationState.status === ValidationStatus.VALIDATION_ERROR &&
-          "Failed to Validate"}
-        {props.validationState.status === ValidationStatus.CALL_ERROR &&
-          "Dev service loading"}
-        {props.validationState.status !== ValidationStatus.CALL_ERROR &&
-          !upToDate &&
-          "Validation not run"}
+        {valid && "Validated!"}
+        {invalid && "Failed to Validate"}
+        {loading && "Dev service loading"}
+        {notRun && "Validation not run"}
       </div>
       <Button
-        variant="contained"
-        startIcon={<PlayCircleFilledIcon />}
-        className={TourElementClass.run}
         disabled={
-          props.developerService.state.status !== "ready" ||
-          props.validationState.status === ValidationStatus.RUNNING
+          developerService.state.status !== "ready" ||
+          validationState.status === ValidationStatus.RUNNING
         }
-        onClick={props.conductValidation}
+        onClick={conductValidation}
+        variant="outline"
       >
+        <CirclePlay />
         Run
       </Button>
     </div>
   );
 }
 
-export function ValidationIcon(props: {
-  small?: boolean;
+export function ValidationIcon({
+  datastore,
+  validationState,
+  className,
+}: {
   datastore: DataStore;
   validationState: ValidationState;
+  className: string;
 }) {
-  const classes = useStyles();
   if (
-    props.validationState.status === ValidationStatus.VALIDATED &&
-    props.datastore.currentIndex() ===
-      props.validationState.validationDatastoreIndex
+    validationState.status === ValidationStatus.VALIDATED &&
+    datastore.currentIndex() === validationState.validationDatastoreIndex
   ) {
-    return (
-      <span className={classes.gcm}>
-        <CheckCircleIcon />
-      </span>
-    );
+    return <CheckCircle className={className} fill="green" />;
   }
 
   if (
-    props.validationState.status === ValidationStatus.VALIDATION_ERROR &&
-    props.datastore.currentIndex() ===
-      props.validationState.validationDatastoreIndex
+    validationState.status === ValidationStatus.VALIDATION_ERROR &&
+    datastore.currentIndex() === validationState.validationDatastoreIndex
   ) {
-    return (
-      <span className={classes.rem}>
-        <ErrorIcon />
-      </span>
-    );
+    return <CircleX className={className} fill="red" />;
   }
 
-  return (
-    <span className={classes.gray}>
-      <CheckCircleOutlineIcon />
-    </span>
-  );
+  return <CheckCircle className={className} />;
 }
