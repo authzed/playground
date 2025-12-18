@@ -77,7 +77,6 @@ import { ShareLoader } from "./ShareLoader";
 import { ValidateButton } from "./ValidationButton";
 import { Panel, useSummaryStyles } from "./panels/base/common";
 import { ReflexedPanelDisplay } from "./panels/base/reflexed";
-import { PlaygroundPanelLocation } from "./panels/panels";
 import { ProblemsPanel, ProblemsSummary } from "./panels/problems";
 import { TerminalPanel, TerminalSummary } from "./panels/terminal";
 import { ValidationPanel, ValidationSummary } from "./panels/validation";
@@ -1104,31 +1103,31 @@ const TabLabelWithCount = (props: {
   );
 };
 
-const panels: Panel<PlaygroundPanelLocation>[] = [
+const panels: Panel[] = [
   {
     id: "problems",
-    summary: ProblemsSummary,
-    content: ProblemsPanel,
+    Summary: ProblemsSummary,
+    Content: ProblemsPanel,
   },
   {
     id: "watches",
-    summary: WatchesSummary,
-    content: WatchesPanel,
+    Summary: WatchesSummary,
+    Content: WatchesPanel,
   },
   {
     id: "visualizer",
-    summary: VisualizerSummary,
-    content: VisualizerPanel,
+    Summary: VisualizerSummary,
+    Content: VisualizerPanel,
   },
   {
     id: "validation",
-    summary: ValidationSummary,
-    content: ValidationPanel,
+    Summary: ValidationSummary,
+    Content: ValidationPanel,
   },
   {
     id: "terminal",
-    summary: TerminalSummary,
-    content: TerminalPanel,
+    Summary: TerminalSummary,
+    Content: TerminalPanel,
   },
 ];
 
