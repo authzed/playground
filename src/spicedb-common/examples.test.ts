@@ -5,7 +5,7 @@ describe("LoadExamples", () => {
   it("should correctly parse and return examples and skip those that are missing files", () => {
     const examples = LoadExamples();
 
-    expect(examples).toHaveLength(6);
+    expect(examples).toHaveLength(8);
 
     examples.forEach(function (example) {
       expect(example.id).not.toBeNull();
