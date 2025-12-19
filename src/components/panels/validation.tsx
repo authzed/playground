@@ -9,7 +9,6 @@ import "react-reflex/styles.css";
 import { ValidationStatus } from "../../services/validation";
 import { PanelProps, PanelSummaryProps } from "./base/common";
 import { DeveloperErrorDisplay, DeveloperSourceDisplay } from "./errordisplays";
-import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -27,9 +26,7 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export function ValidationSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>,
-) {
+export function ValidationSummary(props: PanelSummaryProps) {
   return (
     <TabLabel
       icon={
@@ -42,7 +39,7 @@ export function ValidationSummary(
   );
 }
 
-export function ValidationPanel(props: PanelProps<PlaygroundPanelLocation>) {
+export function ValidationPanel(props: PanelProps) {
   const classes = useStyles();
   const validationState = props.services.validationService.state;
 

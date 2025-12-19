@@ -19,7 +19,6 @@ import {
   DataStorePaths,
 } from "../../services/datastore";
 import { PanelProps } from "./base/common";
-import { PlaygroundPanelLocation } from "./panels";
 
 declare module "@tanstack/react-router" {
   interface HistoryState {
@@ -64,7 +63,7 @@ export function VisualizerPanel({
   dimensions,
   editorPosition,
   currentItem,
-}: PanelProps<PlaygroundPanelLocation> & {
+}: PanelProps & {
   dimensions?: { width: number; height: number };
   editorPosition?: monaco.Position | undefined;
   currentItem?: DataStoreItem | undefined;

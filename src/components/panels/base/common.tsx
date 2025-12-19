@@ -1,12 +1,14 @@
+import { type ReactNode } from "react";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import "react-reflex/styles.css";
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
+import { ReflexedPanelLocation } from "../types";
 
 /**
  * Panel defines a single panel found in the panel display component.
  */
-export interface Panel<L extends string> {
+export interface Panel {
   /**
    * id is the unique ID for the panel. Must be stable across loads.
    */
@@ -15,29 +17,29 @@ export interface Panel<L extends string> {
   /**
    * summary is the React tag to render for displaying the summary of the panel.
    */
-  summary: (props: PanelSummaryProps<L>) => JSX.Element;
+  Summary: (props: PanelSummaryProps) => ReactNode;
 
   /**
    * content is the React tag to render for displaying the contents of the panel.
    */
-  content: (props: PanelProps<L>) => JSX.Element;
+  Content: (props: PanelProps) => ReactNode;
 }
 
 /**
  * PanelProps are the props passed to all panels content tags.
  */
-export interface PanelProps<L extends string> {
+export interface PanelProps {
   datastore: DataStore;
   services: Services;
-  location: L;
+  location: ReflexedPanelLocation;
 }
 
 /**
  * PanelSummaryProps are the props passed to all panel summary tags.
  */
-export interface PanelSummaryProps<L extends string> {
+export interface PanelSummaryProps {
   services: Services;
-  location: L;
+  location: ReflexedPanelLocation;
 }
 
 /**

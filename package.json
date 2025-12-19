@@ -60,7 +60,8 @@
     "use-deep-compare-effect": "^1.8.1",
     "use-keyboard-shortcuts": "^2.2.2",
     "visjs-network": "^4.24.11",
-    "yaml": "^2.0.1"
+    "yaml": "^2.0.1",
+    "zod": "^4.2.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.18.0",

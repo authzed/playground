@@ -19,7 +19,6 @@ import {
   DeveloperWarningDisplay,
   DeveloperWarningSourceDisplay,
 } from "./errordisplays";
-import { PlaygroundPanelLocation } from "./panels";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -52,9 +51,7 @@ const useStyles = makeStyles((theme: Theme) =>
 /**
  * ProblemsSummary displays a summary of the problems found.
  */
-export function ProblemsSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>,
-) {
+export function ProblemsSummary(props: PanelSummaryProps) {
   const classes = useSummaryStyles();
   const errorCount = props.services.problemService.errorCount;
   const warningCount = props.services.problemService.warnings.length;
@@ -89,9 +86,7 @@ export function ProblemsSummary(
   );
 }
 
-export function ProblemsPanel({
-  services,
-}: PanelProps<PlaygroundPanelLocation>) {
+export function ProblemsPanel({ services }: PanelProps) {
   const classes = useStyles();
 
   return (

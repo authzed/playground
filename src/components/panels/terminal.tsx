@@ -15,7 +15,6 @@ import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import { DataStoreItemKind } from "../../services/datastore";
 import { PanelProps } from "./base/common";
-import { PlaygroundPanelLocation } from "./panels";
 import { CircleX, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -65,7 +64,7 @@ export function TerminalSummary() {
   );
 }
 
-export function TerminalPanel(props: PanelProps<PlaygroundPanelLocation>) {
+export function TerminalPanel(props: PanelProps) {
   const classes = useStyles();
   const zts = props.services.zedTerminalService!;
 
