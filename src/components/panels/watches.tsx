@@ -1,3 +1,4 @@
+import { type ReactNode } from "react";
 import TabLabel from "../../playground-ui/TabLabel";
 import type {
   ParsedPermission,
@@ -55,8 +56,7 @@ import { LocalParseService } from "../../services/localparse";
 import { CheckDebugTraceView } from "../CheckDebugTraceView";
 import { TourElementClass } from "../GuidedTour";
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
-import { ReflexedPanelLocation } from "./base/reflexed";
-import { PlaygroundPanelLocation } from "./panels";
+import { ReflexedPanelLocation } from "./types";
 import { CircleX, Info, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
@@ -115,9 +115,7 @@ const useStyles = makeStyles((theme: Theme) =>
 /**
  * WatchesSummary displays the a summary of the check watches.
  */
-export function WatchesSummary(
-  props: PanelSummaryProps<PlaygroundPanelLocation>,
-) {
+export function WatchesSummary(props: PanelSummaryProps) {
   const classes = useSummaryStyles();
 
   const liveCheckService = props.services.liveCheckService;
@@ -200,7 +198,7 @@ export function WatchesSummary(
   );
 }
 
-export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
+export function WatchesPanel(props: PanelProps) {
   const liveCheckService = props.services.liveCheckService;
   const localParseService = props.services.localParseService;
   const datastore = props.datastore;
@@ -213,7 +211,7 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
           <TableRow>
             <TableCell></TableCell>
             <TableCell></TableCell>
-            {props.location === ReflexedPanelLocation.HORIZONTAL && (
+            {props.location === "horizontal" && (
               <>
                 <TableCell>Resource</TableCell>
                 <TableCell>Permission</TableCell>
@@ -221,7 +219,7 @@ export function WatchesPanel(props: PanelProps<PlaygroundPanelLocation>) {
                 <TableCell>Context (optional)</TableCell>
               </>
             )}
-            {props.location === ReflexedPanelLocation.VERTICAL && (
+            {props.location === "vertical" && (
               <>
                 <TableCell>Resource, Permission, Subject, Context</TableCell>
               </>
@@ -308,10 +306,10 @@ const filter = (values: (string | null)[]): string[] => {
 };
 
 function LiveCheckRow(props: {
-  location: PlaygroundPanelLocation;
+  location: ReflexedPanelLocation;
   service: LiveCheckService;
   item: LiveCheckItem;
-  editorUpdateIndex: number | undefined;
+  editorUpdateIndex?: number;
   datastore: DataStore;
   localParseService: LocalParseService;
 }) {
@@ -467,8 +465,8 @@ function LiveCheckRow(props: {
 
   const status = liveCheckService.state.status;
   const theme = useTheme();
-  const wrap = (content: JSX.Element, width: string) => {
-    if (props.location === ReflexedPanelLocation.VERTICAL) {
+  const wrap = (content: ReactNode, width: string) => {
+    if (props.location === "vertical") {
       return (
         <Table>
           <TableRow>

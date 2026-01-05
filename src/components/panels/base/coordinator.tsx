@@ -1,59 +1,61 @@
 import { useState } from "react";
 import { Panel } from "./common";
+import { panelLocations, type ReflexedPanelLocation } from "../types";
+import z from "zod";
 
 /**
  * LocationData is a location and its metadata.
  */
-export interface LocationData<L> {
-  location: L;
+export interface LocationData {
+  location: ReflexedPanelLocation;
   metadata: PanelLocation;
 }
 
 /**
  * PanelsCoordinator defines the interface for the panels coordinator.
  */
-export interface PanelsCoordinator<L extends string> {
+export interface PanelsCoordinator {
   /**
    * panelsInLocation returns all panels found in a specific location.
    */
-  panelsInLocation: (location: L) => Panel<L>[];
+  panelsInLocation: (location: ReflexedPanelLocation) => Panel[];
 
   /**
    * showPanel displays that panel, moving it to the correct location if necessary.
    */
-  showPanel: (panel: Panel<L>, location: L) => void;
+  showPanel: (panel: Panel, location: ReflexedPanelLocation) => void;
 
   /**
    * getActivePanel returns the active panel in a specific location.
    */
-  getActivePanel: (location: L) => Panel<L> | undefined;
+  getActivePanel: (location: ReflexedPanelLocation) => Panel | undefined;
 
   /**
    * setActivePanel sets the active panel for a location. Moves the panel to the location
    * if necessary.
    */
-  setActivePanel: (panelId: string, location: L) => void;
+  setActivePanel: (panelId: string, location: ReflexedPanelLocation) => void;
 
   /**
    * isDisplayVisible returns true if the display for a specific location is currently
    * visible.
    */
-  isDisplayVisible: (location: L) => boolean;
+  isDisplayVisible: (location: ReflexedPanelLocation) => boolean;
 
   /**
    * closeDisplay marks a display location as collapsed.
    */
-  closeDisplay: (location: L) => void;
+  closeDisplay: (location: ReflexedPanelLocation) => void;
 
   /**
    * hasPanels returns true if the specified location has any panels.
    */
-  hasPanels: (location: L) => boolean;
+  hasPanels: (location: ReflexedPanelLocation) => boolean;
 
   /**
    * listLocations lists all the locations defined.
    */
-  listLocations: () => LocationData<L>[];
+  listLocations: () => LocationData[];
 }
 
 /**
@@ -71,21 +73,21 @@ export interface PanelLocation {
   icon: React.ReactNode;
 }
 
-export interface PanelCoordinatorProps<L extends string> {
+export interface PanelCoordinatorProps {
   /**
    * panels are the panels defined.
    */
-  panels: Panel<L>[];
+  panels: Panel[];
 
   /**
    * locations are the locations defined.
    */
-  locations: Record<L, PanelLocation>;
+  locations: Record<ReflexedPanelLocation, PanelLocation>;
 
   /**
    * defaultLocation is the location in which to place panels by default.
    */
-  defaultLocation: L;
+  defaultLocation: ReflexedPanelLocation;
 
   /**
    * autoCloseDisplayWhenEmpty, if true, specifes that a display should be closed
@@ -94,11 +96,18 @@ export interface PanelCoordinatorProps<L extends string> {
   autoCloseDisplayWhenEmpty?: boolean;
 }
 
-interface CoordinatorState<L extends string> {
-  panelLocations: Record<string, L>;
-  displaysVisible: Record<L, boolean>;
-  activeTabs: Record<L, string>;
-}
+const reflexedPanelLocation = z.union([
+  z.literal("horizontal"),
+  z.literal("vertical"),
+]);
+
+const CoordinatorState = z.object({
+  panelLocations: z.record(z.string(), reflexedPanelLocation),
+  displaysVisible: z.record(reflexedPanelLocation, z.boolean()),
+  activeTabs: z.partialRecord(reflexedPanelLocation, z.string()),
+});
+
+type CoordinatorStateType = z.infer<typeof CoordinatorState>;
 
 const COORDINATOR_STATE_KEY = "panel-coordinator-state";
 
@@ -153,74 +162,72 @@ const COORDINATOR_STATE_KEY = "panel-coordinator-state";
         datastore={props.datastore} />
   ```
  */
-export function usePanelsCoordinator<L extends string>(
-  props: PanelCoordinatorProps<L>,
-): PanelsCoordinator<L> {
+export function usePanelsCoordinator(
+  props: PanelCoordinatorProps,
+): PanelsCoordinator {
   const [coordinatorState, internalSetCoordinatorState] = useState<
-    CoordinatorState<L>
+    z.infer<typeof CoordinatorState>
   >(() => {
     // Try to parse from local storage.
     try {
       const foundState = JSON.parse(
         localStorage.getItem(COORDINATOR_STATE_KEY) ?? "",
       );
+      // This will throw an error if the state can't be parsed properly.
+      const parsed = CoordinatorState.parse(foundState);
       if (
-        "panelLocations" in foundState &&
-        "displaysVisible" in foundState &&
-        "activeTabs" in foundState
+        // Check that the number of panel locations matches the panels we've got
+        Object.keys(parsed.panelLocations).length === props.panels.length
       ) {
-        if (
-          Object.keys(foundState.panelLocations).length === props.panels.length
-        ) {
-          return foundState;
-        }
+        return parsed;
       }
     } catch (e) {
       // Do nothing.
       console.error(e);
     }
 
-    const locations: Record<string, L> = {};
-    props.panels.forEach((panel: Panel<L>) => {
+    const locations: Record<string, ReflexedPanelLocation> = {};
+    props.panels.forEach((panel: Panel) => {
       locations[panel.id] = props.defaultLocation;
-    });
-
-    const displays: Record<L, boolean> = {} as Record<L, boolean>;
-    Object.keys(props.locations).forEach((locationStr: string) => {
-      displays[locationStr as unknown as L] = false;
     });
 
     return {
       panelLocations: locations,
-      displaysVisible: displays,
-      activeTabs: {} as Record<L, string>,
+      displaysVisible: {
+        horizontal: false,
+        vertical: false,
+      },
+      activeTabs: {},
     };
   });
 
-  const setCoordinatorStateAndSave = (state: CoordinatorState<L>) => {
+  const setCoordinatorStateAndSave = (state: CoordinatorStateType) => {
     internalSetCoordinatorState(state);
     localStorage.setItem(COORDINATOR_STATE_KEY, JSON.stringify(state));
   };
 
-  const panelsInLocation = (location: L, state?: CoordinatorState<L>) => {
+  const panelsInLocation = (
+    location: ReflexedPanelLocation,
+    state?: CoordinatorStateType,
+  ) => {
     const checkState = state ?? coordinatorState;
-    return props.panels.filter((panel: Panel<L>) => {
+    return props.panels.filter((panel: Panel) => {
       return checkState.panelLocations[panel.id] === location;
     });
   };
 
-  const showPanel = (panel: Panel<L>, location: L) => {
+  const showPanel = (panel: Panel, location: ReflexedPanelLocation) => {
     setActivePanel(panel.id, location);
   };
 
-  const getActivePanel = (location: L) => {
+  const getActivePanel = (location: ReflexedPanelLocation) => {
     const allowedPanels = panelsInLocation(location);
     return allowedPanels.find(
-      (panel: Panel<L>) => panel.id === coordinatorState.activeTabs[location],
+      (panel: Panel) => panel.id === coordinatorState.activeTabs[location],
     );
   };
 
-  const setActivePanel = (panelId: string, location: L) => {
+  const setActivePanel = (panelId: string, location: ReflexedPanelLocation) => {
     let updatedState = {
       ...coordinatorState,
     };
@@ -231,7 +238,7 @@ export function usePanelsCoordinator<L extends string>(
       const active = getActivePanel(existingLocation);
       if (active?.id === panelId) {
         const panels = panelsInLocation(existingLocation).filter(
-          (found: Panel<L>) => found.id !== panelId,
+          (found: Panel) => found.id !== panelId,
         );
         if (panels.length) {
           updatedState = {
@@ -262,8 +269,7 @@ export function usePanelsCoordinator<L extends string>(
 
       // Check for auto-close.
       if (props.autoCloseDisplayWhenEmpty === true) {
-        Object.keys(props.locations).forEach((locationStr: string) => {
-          const location = locationStr as L;
+        panelLocations.forEach((location) => {
           if (!panelsInLocation(location, updatedState).length) {
             updatedState = {
               ...updatedState,
@@ -298,7 +304,7 @@ export function usePanelsCoordinator<L extends string>(
     setCoordinatorStateAndSave(updatedState);
   };
 
-  const closeDisplay = (location: L) => {
+  const closeDisplay = (location: ReflexedPanelLocation) => {
     let updatedState = {
       ...coordinatorState,
       displaysVisible: {
@@ -322,32 +328,31 @@ export function usePanelsCoordinator<L extends string>(
     setCoordinatorStateAndSave(updatedState);
   };
 
-  const isDisplayVisible = (location: L) => {
+  const isDisplayVisible = (location: ReflexedPanelLocation) => {
     return coordinatorState.displaysVisible[location];
   };
 
-  const hasPanels = (location: L) => {
+  const hasPanels = (location: ReflexedPanelLocation) => {
     return panelsInLocation(location).length > 0;
   };
 
   const listLocations = () => {
-    return Object.keys(props.locations).map((locationStr: string) => {
-      const locationKey = locationStr as L;
+    return panelLocations.map((location) => {
       return {
-        location: locationKey,
-        metadata: props.locations[locationKey],
+        location,
+        metadata: props.locations[location],
       };
     });
   };
 
   return {
-    panelsInLocation: panelsInLocation,
-    hasPanels: hasPanels,
-    showPanel: showPanel,
-    getActivePanel: getActivePanel,
-    setActivePanel: setActivePanel,
-    closeDisplay: closeDisplay,
-    isDisplayVisible: isDisplayVisible,
-    listLocations: listLocations,
+    panelsInLocation,
+    hasPanels,
+    showPanel,
+    getActivePanel,
+    setActivePanel,
+    closeDisplay,
+    isDisplayVisible,
+    listLocations,
   };
 }

@@ -2,7 +2,6 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import HorizontalSplitIcon from "@material-ui/icons/HorizontalSplit";
 import VerticalSplitIcon from "@material-ui/icons/VerticalSplit";
 import {
-  PropsWithChildren,
   useEffect,
   useState,
   Children,
@@ -47,21 +46,13 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-export enum ReflexedPanelLocation {
-  HORIZONTAL = "h",
-  VERTICAL = "v",
-}
-
-interface CommonProps {
-  datastore: DataStore;
-  services: Services;
-}
-
-interface PanelDefProps<E> {
-  panels: Panel<ReflexedPanelLocation>[];
-  extraProps?: E | undefined;
+interface PanelDefProps {
+  panels: Panel[];
   disabled?: boolean | undefined;
   overrideSummaryDisplay?: ReactNode;
+  datastore: DataStore;
+  services: Services;
+  children: ReactNode;
 }
 
 interface Dimensions {
@@ -69,39 +60,32 @@ interface Dimensions {
   height: number;
 }
 
-interface DimensionsProp {
-  dimensions?: Dimensions | undefined;
-}
-
 /**
  * ReflexedPanelDisplay is a panel display component with two pre-defined panels (horizontal
  * and vertical), with the horizonal being collapsed into a summary bar when not visible, and with
  * automatic support for user-resizing.
  */
-export function ReflexedPanelDisplay<E>(
-  props: PropsWithChildren<PanelDefProps<E> & CommonProps>,
-) {
+export function ReflexedPanelDisplay(props: PanelDefProps) {
   const classes = useStyles();
 
-  const coordinator = usePanelsCoordinator<ReflexedPanelLocation>({
+  const coordinator = usePanelsCoordinator({
     panels: props.panels,
     locations: {
-      [ReflexedPanelLocation.HORIZONTAL]: {
+      horizontal: {
         title: "Bottom",
         icon: <HorizontalSplitIcon />,
       },
-      [ReflexedPanelLocation.VERTICAL]: {
+      vertical: {
         title: "Side",
         icon: <VerticalSplitIcon />,
       },
     },
-    defaultLocation: ReflexedPanelLocation.HORIZONTAL,
+    defaultLocation: "horizontal",
     autoCloseDisplayWhenEmpty: true,
   });
 
   const horizontalDisplayVisible =
-    coordinator.isDisplayVisible(ReflexedPanelLocation.HORIZONTAL) &&
-    !props.disabled;
+    coordinator.isDisplayVisible("horizontal") && !props.disabled;
 
   const cachedHorizontalFlex = parseFloat(
     localStorage.getItem(HORIZONTAL_FLEX_KEY) ??
@@ -142,7 +126,7 @@ export function ReflexedPanelDisplay<E>(
           propagateDimensionsRate={50}
           propagateDimensions={true}
         >
-          <MainDisplayWithSummaryBar<E> coordinator={coordinator} {...props} />
+          <MainDisplayWithSummaryBar coordinator={coordinator} {...props} />
         </ReflexElement>
 
         {horizontalDisplayVisible && <ReflexSplitter />}
@@ -156,9 +140,8 @@ export function ReflexedPanelDisplay<E>(
           onResize={handleHorizontalResize}
         >
           {horizontalDisplayVisible ? (
-            <PanelDisplay<ReflexedPanelLocation>
-              {...props.extraProps}
-              location={ReflexedPanelLocation.HORIZONTAL}
+            <PanelDisplay
+              location="horizontal"
               coordinator={coordinator}
               services={props.services}
               datastore={props.datastore}
@@ -172,20 +155,17 @@ export function ReflexedPanelDisplay<E>(
   );
 }
 
-function MainDisplayWithSummaryBar<E>(
-  props: PropsWithChildren<
-    {
-      coordinator: PanelsCoordinator<ReflexedPanelLocation>;
-      extraProps?: E | undefined;
-      disabled?: boolean | undefined;
-    } & CommonProps &
-      DimensionsProp
-  >,
-) {
+function MainDisplayWithSummaryBar(props: {
+  coordinator: PanelsCoordinator;
+  disabled?: boolean | undefined;
+  children: ReactNode;
+  dimensions?: Dimensions;
+  datastore: DataStore;
+  services: Services;
+}) {
   const coordinator = props.coordinator;
   const displayVisible =
-    coordinator.isDisplayVisible(ReflexedPanelLocation.HORIZONTAL) &&
-    !props.disabled;
+    coordinator.isDisplayVisible("horizontal") && !props.disabled;
 
   /*
    * NOTE: The comparison to window.innerHeight below ensures that we only render the
@@ -196,17 +176,14 @@ function MainDisplayWithSummaryBar<E>(
   const HEIGHT_COMPARISON = 10 + 144; // 144 is the max AppBar height.
   const displaySummaryBar =
     !displayVisible &&
-    coordinator.hasPanels(ReflexedPanelLocation.HORIZONTAL) &&
+    coordinator.hasPanels("horizontal") &&
     window.innerHeight - (props.dimensions?.height ?? 0) < HEIGHT_COMPARISON;
 
   return (
     <div style={{ height: "100%", width: "100%" }}>
-      <MainDisplayAndVertical<E> {...props} />
+      <MainDisplayAndVertical {...props} />
       {displaySummaryBar && (
-        <PanelSummaryBar<ReflexedPanelLocation>
-          location={ReflexedPanelLocation.HORIZONTAL}
-          {...props}
-        />
+        <PanelSummaryBar location="horizontal" {...props} />
       )}
     </div>
   );
@@ -214,26 +191,21 @@ function MainDisplayWithSummaryBar<E>(
 
 type EnrichedChildren = {
   children?: React.ReactNode;
-} & DimensionsProp;
+  dimensions?: Dimensions;
+};
 
-function MainDisplayAndVertical<E>(
-  props: PropsWithChildren<
-    {
-      coordinator: PanelsCoordinator<ReflexedPanelLocation>;
-      extraProps?: E | undefined;
-    } & CommonProps &
-      DimensionsProp
-  >,
-) {
+function MainDisplayAndVertical(props: {
+  coordinator: PanelsCoordinator;
+  dimensions?: Dimensions;
+  children: ReactNode;
+  datastore: DataStore;
+  services: Services;
+}) {
   const classes = useStyles();
 
   const coordinator = props.coordinator;
-  const verticalDisplayVisible = coordinator.isDisplayVisible(
-    ReflexedPanelLocation.VERTICAL,
-  );
-  const horizontalDisplayVisible = coordinator.isDisplayVisible(
-    ReflexedPanelLocation.HORIZONTAL,
-  );
+  const verticalDisplayVisible = coordinator.isDisplayVisible("vertical");
+  const horizontalDisplayVisible = coordinator.isDisplayVisible("horizontal");
 
   const cachedVerticalFlex = parseFloat(
     localStorage.getItem(VERTICAL_FLEX_KEY) ?? DEFAULT_VERTICAL_FLEX.toString(),
@@ -263,8 +235,7 @@ function MainDisplayAndVertical<E>(
   };
 
   const contentHeight =
-    horizontalDisplayVisible ||
-    !coordinator.hasPanels(ReflexedPanelLocation.HORIZONTAL)
+    horizontalDisplayVisible || !coordinator.hasPanels("horizontal")
       ? (props.dimensions?.height ?? 0)
       : (props.dimensions?.height ?? 0) - SUMMARY_BAR_HEIGHT;
   const contentDimensions: Dimensions | undefined = props.dimensions
@@ -308,9 +279,8 @@ function MainDisplayAndVertical<E>(
           propagateDimensions={true}
           onResize={handleVerticalResize}
         >
-          <PanelDisplay<ReflexedPanelLocation>
-            {...props.extraProps}
-            location={ReflexedPanelLocation.VERTICAL}
+          <PanelDisplay
+            location="vertical"
             coordinator={coordinator}
             services={props.services}
             datastore={props.datastore}

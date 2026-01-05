@@ -13,15 +13,16 @@ import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
 import { Panel, useSummaryStyles } from "./common";
 import { LocationData, PanelsCoordinator } from "./coordinator";
+import { ReflexedPanelLocation } from "../types";
 
 export const SUMMARY_BAR_HEIGHT = 48; // Pixels
 
 /**
  * PanelSummaryBar is the summary bar displayed when a panel display is closed.
  */
-export function PanelSummaryBar<L extends string>(props: {
-  location: L;
-  coordinator: PanelsCoordinator<L>;
+export function PanelSummaryBar(props: {
+  location: ReflexedPanelLocation;
+  coordinator: PanelsCoordinator;
   services: Services;
   disabled?: boolean | undefined;
   overrideSummaryDisplay?: ReactNode;
@@ -45,10 +46,10 @@ export function PanelSummaryBar<L extends string>(props: {
       >
         {props.overrideSummaryDisplay !== undefined &&
           props.overrideSummaryDisplay}
-        {panels.map((panel: Panel<L>) => {
+        {panels.map((panel: Panel) => {
           // NOTE: Using this as a tag here is important for React's state system. Otherwise,
           // it'll run hooks outside of the normal flow, which breaks things.
-          const Summary = panel.summary;
+          const Summary = panel.Summary;
           return (
             <Button
               key={panel.id}
@@ -114,23 +115,20 @@ const TOOLBAR_HEIGHT = 48; // Pixels
 /**
  * PanelDisplay displays the panels in a specific location.
  */
-export function PanelDisplay<L extends string>(
-  props: {
-    location: L;
-    coordinator: PanelsCoordinator<L>;
-    datastore: DataStore;
-    services: Services;
-  } & {
-    dimensions?: { width: number; height: number };
-  },
-) {
+export function PanelDisplay(props: {
+  location: ReflexedPanelLocation;
+  coordinator: PanelsCoordinator;
+  datastore: DataStore;
+  services: Services;
+  dimensions?: { width: number; height: number };
+}) {
   const classes = useStyles();
   const coordinator = props.coordinator;
 
   const currentTabName = coordinator.getActivePanel(props.location)?.id || "";
 
   const handleChangeTab = useCallback(
-    (_event: React.ChangeEvent<object>, selectedPanelId: string) => {
+    (_event: object, selectedPanelId: string) => {
       coordinator.setActivePanel(selectedPanelId, props.location);
     },
     [coordinator, props.location],
@@ -159,23 +157,16 @@ export function PanelDisplay<L extends string>(
             aria-label="Tabs"
             variant="fullWidth"
           >
-            {panels.map((panel: Panel<L>) => {
+            {panels.map(({ id, Summary }: Panel) => {
               // NOTE: Using this as a tag here is important for React's state system. Otherwise,
               // it'll run hooks outside of the normal flow, which breaks things.
-              const Summary = panel.summary;
-              return (
-                <Tab
-                  key={`tab-${panel.id}`}
-                  value={panel.id}
-                  label={<Summary {...props} />}
-                />
-              );
+              return <Tab key={id} value={id} label={<Summary {...props} />} />;
             })}
           </Tabs>
 
           <span>
             {currentTabName &&
-              coordinator.listLocations().map((locData: LocationData<L>) => {
+              coordinator.listLocations().map((locData: LocationData) => {
                 if (locData.location === props.location) {
                   return <div key={locData.location} />;
                 }
@@ -215,10 +206,9 @@ export function PanelDisplay<L extends string>(
         </Toolbar>
       </AppBar>
 
-      {panels.map((panel: Panel<L>) => {
+      {panels.map(({ id, Content }: Panel) => {
         // NOTE: Using this as a tag here is important for React's state system. Otherwise,
         // it'll run hooks outside of the normal flow, which breaks things.
-        const Content = panel.content;
         const height =
           (props.dimensions?.height ?? 0 >= 48)
             ? (props.dimensions?.height ?? 0) - 48
@@ -226,8 +216,8 @@ export function PanelDisplay<L extends string>(
 
         return (
           <TabPanel
-            key={`panel-${panel.id}`}
-            index={panel.id}
+            key={id}
+            index={id}
             value={currentTabName}
             style={{
               overflow: "auto",
@@ -235,7 +225,7 @@ export function PanelDisplay<L extends string>(
               position: "relative",
             }}
           >
-            {currentTabName === panel.id && <Content {...contentProps} />}
+            {currentTabName === id && <Content {...contentProps} />}
           </TabPanel>
         );
       })}
