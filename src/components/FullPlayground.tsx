@@ -771,60 +771,79 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               )}
             </div>
             {AppConfig().discord.inviteUrl ? (
-              <Button
-                className={classes.hideTextOnMed}
-                size="small"
-                href={AppConfig().discord.inviteUrl}
-                startIcon={
-                  <DISCORD
-                    viewBox="0 0 71 55"
-                    style={{ height: "1em", width: "1em" }}
-                  />
-                }
-              >
-                Discuss on Discord
-              </Button>
+              <Tooltip title="Discuss on Discord">
+                <Button
+                  className={classes.hideTextOnMed}
+                  size="small"
+                  href={AppConfig().discord.inviteUrl}
+                  startIcon={
+                    <DISCORD
+                      viewBox="0 0 71 55"
+                      style={{ height: "1em", width: "1em" }}
+                    />
+                  }
+                >
+                  Discuss on Discord
+                </Button>
+              </Tooltip>
             ) : (
               <span />
             )}
-            <Button
-              className={clsx(TourElementClass.share, classes.hideTextOnMed, {
-                [classes.hide]: !isSharingEnabled,
-              })}
-              size="small"
-              onClick={() => conductSharing()}
-              disabled={
-                sharingState.status === SharingStatus.SHARING ||
-                validationState.status === ValidationStatus.RUNNING
-              }
-              startIcon={<ShareIcon />}
-            >
-              Share
-            </Button>
-            <Button
-              className={classes.hideTextOnMed}
-              size="small"
-              onClick={conductDownload}
-              disabled={
-                sharingState.status === SharingStatus.SHARING ||
-                validationState.status === ValidationStatus.RUNNING
-              }
-              startIcon={<GetAppIcon />}
-            >
-              Download
-            </Button>
-            <Button
-              className={classes.hideTextOnMed}
-              size="small"
-              onClick={conductUpload}
-              disabled={
-                sharingState.status === SharingStatus.SHARING ||
-                validationState.status === ValidationStatus.RUNNING
-              }
-              startIcon={<InsertDriveFileIcon />}
-            >
-              Load From File
-            </Button>
+            <Tooltip title="Share">
+              <span
+                className={clsx({
+                  [classes.hide]: !isSharingEnabled,
+                })}
+              >
+                <Button
+                  className={clsx(
+                    TourElementClass.share,
+                    classes.hideTextOnMed,
+                  )}
+                  size="small"
+                  onClick={() => conductSharing()}
+                  disabled={
+                    sharingState.status === SharingStatus.SHARING ||
+                    validationState.status === ValidationStatus.RUNNING
+                  }
+                  startIcon={<ShareIcon />}
+                >
+                  Share
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip title="Download">
+              <span>
+                <Button
+                  className={classes.hideTextOnMed}
+                  size="small"
+                  onClick={conductDownload}
+                  disabled={
+                    sharingState.status === SharingStatus.SHARING ||
+                    validationState.status === ValidationStatus.RUNNING
+                  }
+                  startIcon={<GetAppIcon />}
+                >
+                  Download
+                </Button>
+              </span>
+            </Tooltip>
+            <Tooltip title="Load From File">
+              <span>
+                <Button
+                  className={classes.hideTextOnMed}
+                  size="small"
+                  onClick={conductUpload}
+                  disabled={
+                    sharingState.status === SharingStatus.SHARING ||
+                    validationState.status === ValidationStatus.RUNNING
+                  }
+                  startIcon={<InsertDriveFileIcon />}
+                >
+                  Load From File
+                </Button>
+              </span>
+            </Tooltip>
           </>
         )}
       </AppBar>
