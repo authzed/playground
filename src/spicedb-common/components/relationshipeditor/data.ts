@@ -1,6 +1,8 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
+
 import { RelationshipWithComments } from "../../parsing";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+
 import { COLUMNS } from "./columns";
 
 /**

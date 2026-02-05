@@ -1,8 +1,4 @@
-import TabLabel from "../playground-ui/TabLabel";
-import TenantGraph from "../spicedb-common/components/graph/TenantGraph";
 import { parseSchema } from "@authzed/spicedb-parser-js";
-import { parseRelationships } from "../spicedb-common/parsing";
-import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
 import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
@@ -12,11 +8,17 @@ import BubbleChartIcon from "@material-ui/icons/BubbleChart";
 import LaunchIcon from "@material-ui/icons/Launch";
 import clsx from "clsx";
 import React, { useState } from "react";
+
+import TabLabel from "../playground-ui/TabLabel";
 import { useLiveCheckService } from "../services/check";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { useValidationService } from "../services/validation";
+import TenantGraph from "../spicedb-common/components/graph/TenantGraph";
+import { parseRelationships } from "../spicedb-common/parsing";
+import { useDeveloperService } from "../spicedb-common/services/developerservice";
+
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
 import { AT, ET, NS, VL } from "./KindIcons";

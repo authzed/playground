@@ -1,8 +1,9 @@
+import "react-reflex/styles.css";
+
 import { faDatabase } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import WarningIcon from "@material-ui/icons/Warning";
-import "react-reflex/styles.css";
 
 interface StyleProps {
   small?: boolean;

@@ -1,3 +1,8 @@
+import { create } from "@bufbuild/protobuf";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
+import { useEffect, useState } from "react";
+import { v4 as uuidv4 } from "uuid";
+
 import { parseRelationship } from "../spicedb-common/parsing";
 import { DebugInformation } from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
 import {
@@ -11,11 +16,8 @@ import {
   DeveloperService,
   DeveloperServiceError,
 } from "../spicedb-common/services/developerservice";
-import { useEffect, useState } from "react";
-import { v4 as uuidv4 } from "uuid";
+
 import { DataStore, DataStoreItemKind } from "./datastore";
-import { create } from "@bufbuild/protobuf";
-import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 export enum LiveCheckStatus {
   PARSE_ERROR = -2,

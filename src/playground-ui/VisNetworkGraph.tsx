@@ -1,12 +1,13 @@
+import "react-reflex/styles.css";
+
 import { CircularProgress } from "@material-ui/core";
 import { createStyles, makeStyles, useTheme } from "@material-ui/core/styles";
+import { useDebouncer } from "@tanstack/react-pacer/debouncer";
 import clsx from "clsx";
 import { dequal } from "dequal";
 import { useRef, useState } from "react";
-import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import vis from "visjs-network";
-import { useDebouncer } from "@tanstack/react-pacer/debouncer";
 
 export type EdgeShape =
   | "ellipse"

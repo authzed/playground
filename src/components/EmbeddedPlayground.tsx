@@ -1,12 +1,7 @@
-import { DS_EMBED_DARK_THEME_NAME } from "../spicedb-common/lang/dslang";
-import { RelationshipFound, parseRelationship } from "../spicedb-common/parsing";
-import {
-  CheckOperationParametersSchema,
-  CheckOperationsResult,
-  CheckOperationsResult_Membership,
-  CheckOperationsResultSchema,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { useDeveloperService } from "../spicedb-common/services/developerservice";
+import "./fonts.css";
+
+import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
+import { create } from "@bufbuild/protobuf";
 import {
   faCaretDown,
   faDatabase,
@@ -22,6 +17,8 @@ import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 import clsx from "clsx";
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+
 import { useLiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
@@ -29,14 +26,19 @@ import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { Services } from "../services/services";
 import { useValidationService } from "../services/validation";
+import { DS_EMBED_DARK_THEME_NAME } from "../spicedb-common/lang/dslang";
+import { RelationshipFound, parseRelationship } from "../spicedb-common/parsing";
+import {
+  CheckOperationParametersSchema,
+  CheckOperationsResult,
+  CheckOperationsResult_Membership,
+  CheckOperationsResultSchema,
+} from "../spicedb-common/protodefs/developer/v1/developer_pb";
+import { useDeveloperService } from "../spicedb-common/services/developerservice";
+
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
 import { ShareLoader } from "./ShareLoader";
-
-import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
-import "./fonts.css";
-import { create } from "@bufbuild/protobuf";
-import { toast } from "sonner";
 
 const useStyles = makeStyles(() =>
   createStyles({

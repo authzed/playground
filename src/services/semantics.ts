@@ -5,6 +5,7 @@ import type {
   ResolvedCaveatDefinition,
   ResolvedDefinition,
 } from "@authzed/spicedb-parser-js";
+
 import { LocalParseState } from "./localparse";
 
 const TYPE_AND_OBJECT_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)(#?)/g;

@@ -1,19 +1,21 @@
-import TabPanel from "../../../playground-ui/TabPanel";
 import { Button, Tooltip, Typography } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import Toolbar from "@material-ui/core/Toolbar";
-import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import CloseIcon from "@material-ui/icons/Close";
 import { useCallback, type ReactNode } from "react";
+
+import TabPanel from "../../../playground-ui/TabPanel";
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
+import { ReflexedPanelLocation } from "../types";
+
 import { Panel, useSummaryStyles } from "./common";
 import { LocationData, PanelsCoordinator } from "./coordinator";
-import { ReflexedPanelLocation } from "../types";
 
 export const SUMMARY_BAR_HEIGHT = 48; // Pixels
 

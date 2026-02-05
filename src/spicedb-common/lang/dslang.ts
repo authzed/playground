@@ -1,6 +1,6 @@
+import { findReferenceNode, parse, ResolvedReference, Resolver } from "@authzed/spicedb-parser-js";
 import * as monacoEditor from "monaco-editor";
 import { Position, editor, languages } from "monaco-editor";
-import { findReferenceNode, parse, ResolvedReference, Resolver } from "@authzed/spicedb-parser-js";
 
 export const DS_LANGUAGE_NAME = "dsl";
 export const DS_THEME_NAME = "dsl-theme";

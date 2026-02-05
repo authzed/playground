@@ -2,6 +2,7 @@ import CssBaseline from "@material-ui/core/CssBaseline";
 import { createTheme, ThemeProvider } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import { ReactNode, useMemo, useEffect } from "react";
+
 import { useTheme } from "@/components/ThemeProvider";
 
 export interface PlaygroundUIThemedProps {

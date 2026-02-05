@@ -1,11 +1,10 @@
-import { type ReactNode } from "react";
-import TabLabel from "../../playground-ui/TabLabel";
+import "react-reflex/styles.css";
+
 import type { ParsedPermission, ParsedRelation } from "@authzed/spicedb-parser-js";
-import { parseRelationships } from "../../spicedb-common/parsing";
-import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
 import Paper from "@material-ui/core/Paper";
+import { Theme, createStyles, makeStyles, useTheme } from "@material-ui/core/styles";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -14,7 +13,6 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
-import { Theme, createStyles, makeStyles, useTheme } from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ControlPointIcon from "@material-ui/icons/ControlPoint";
@@ -27,12 +25,14 @@ import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
 import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
 import VisibilityIcon from "@material-ui/icons/Visibility";
 import WarningIcon from "@material-ui/icons/Warning";
-import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
 import { interpolateBlues, interpolateOranges, interpolatePurples } from "d3-scale-chromatic";
+import { CircleX, Info, MessageCircleWarning } from "lucide-react";
+import { type ReactNode } from "react";
 import { useMemo, useState, type ChangeEvent } from "react";
-import "react-reflex/styles.css";
+
+import TabLabel from "../../playground-ui/TabLabel";
 import {
   LiveCheckItem,
   LiveCheckItemStatus,
@@ -41,11 +41,14 @@ import {
 } from "../../services/check";
 import { DataStore, DataStoreItemKind } from "../../services/datastore";
 import { LocalParseService } from "../../services/localparse";
+import { parseRelationships } from "../../spicedb-common/parsing";
+import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import { CheckDebugTraceView } from "../CheckDebugTraceView";
 import { TourElementClass } from "../GuidedTour";
+import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
 import { ReflexedPanelLocation } from "./types";
-import { CircleX, Info, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

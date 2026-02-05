@@ -1,21 +1,24 @@
-import TabLabel from "../../playground-ui/TabLabel";
-import { mergeRelationshipsStringAndComments } from "../../spicedb-common/parsing";
-import { TerminalSection } from "../../spicedb-common/services/zedterminalservice";
+import "react-reflex/styles.css";
+
 import { faTerminal } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 import Convert from "ansi-to-html";
+import { CircleX, MessageCircleWarning } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from "react";
-import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
+
+import TabLabel from "../../playground-ui/TabLabel";
 import { DataStoreItemKind } from "../../services/datastore";
+import { mergeRelationshipsStringAndComments } from "../../spicedb-common/parsing";
+import { TerminalSection } from "../../spicedb-common/services/zedterminalservice";
+import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+
 import { PanelProps } from "./base/common";
-import { CircleX, MessageCircleWarning } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

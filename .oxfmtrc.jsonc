@@ -1,4 +1,15 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "ignorePatterns": ["src/spicedb-common/protodefs", "examples", "public"],
+  "experimentalSortImports": {
+    "groups": [
+      ["side-effect"],
+      ["builtin"],
+      ["external", "type-external"],
+      ["internal", "type-internal"],
+      ["parent", "type-parent"],
+      ["sibling", "type-sibling"],
+      ["index", "type-index"],
+    ],
+  },
 }

@@ -1,4 +1,7 @@
+import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
 import { useCallback, useEffect, useState } from "react";
+
+import wasmConfig from "../../wasm-config.json";
 import { parseRelationships } from "../parsing";
 import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
 import {
@@ -22,8 +25,6 @@ import {
   DeveloperRequestSchema,
   DeveloperResponseSchema,
 } from "../protodefs/developer/v1/developer_pb";
-import { create, fromJsonString, toJsonString } from "@bufbuild/protobuf";
-import wasmConfig from "../../wasm-config.json";
 
 const WASM_FILE = `/static/main.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 46376012; // bytes

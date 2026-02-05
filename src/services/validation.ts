@@ -1,15 +1,18 @@
+import "react-reflex/styles.css";
+
+import { useTheme } from "@material-ui/core/styles";
+import { useState } from "react";
+import { toast } from "sonner";
+
+import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
+import { DataStore, DataStoreItemKind } from "../services/datastore";
 import {
   DeveloperError,
   DeveloperWarning,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 import { DeveloperService } from "../spicedb-common/services/developerservice";
-import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
-import { useTheme } from "@material-ui/core/styles";
-import { useState } from "react";
-import "react-reflex/styles.css";
-import { DataStore, DataStoreItemKind } from "../services/datastore";
+
 import { buildAssertionsYaml, buildValidationBlockYaml } from "./validationfileformat";
-import { toast } from "sonner";
 
 export enum ValidationStatus {
   NOT_RUN = 0,

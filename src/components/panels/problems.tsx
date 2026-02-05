@@ -1,17 +1,20 @@
+import "react-reflex/styles.css";
+
+import Paper from "@material-ui/core/Paper";
+import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
+import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
+import { Link } from "@tanstack/react-router";
+import clsx from "clsx";
+
 import TabLabel from "../../playground-ui/TabLabel";
+import { DataStorePaths } from "../../services/datastore";
 import { RelationshipFound } from "../../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
-import Paper from "@material-ui/core/Paper";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import clsx from "clsx";
-import "react-reflex/styles.css";
-import { Link } from "@tanstack/react-router";
-import { DataStorePaths } from "../../services/datastore";
 import { TourElementClass } from "../GuidedTour";
+
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
 import {
   DeveloperErrorDisplay,

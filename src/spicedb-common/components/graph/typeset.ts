@@ -5,6 +5,7 @@ import {
   ParsedSchema,
   TextRange,
 } from "@authzed/spicedb-parser-js";
+
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 
 export interface RelationLink {

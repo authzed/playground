@@ -1,7 +1,3 @@
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
-import { VisEdge, VisNode } from "../../../playground-ui/VisNetworkGraph";
-import { emphasize } from "@material-ui/core/styles";
-import { schemeCategory10 } from "d3-scale-chromatic";
 import {
   ParsedArrowExpression,
   ParsedBinaryExpression,
@@ -11,6 +7,12 @@ import {
   TextRange,
   TypeRef,
 } from "@authzed/spicedb-parser-js";
+import { emphasize } from "@material-ui/core/styles";
+import { schemeCategory10 } from "d3-scale-chromatic";
+
+import { VisEdge, VisNode } from "../../../playground-ui/VisNetworkGraph";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+
 import {
   PermissionHandle,
   RelationHandle,

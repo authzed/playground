@@ -1,6 +1,7 @@
 import { CustomCell, CustomRenderer, GridCellKind } from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
+
 import { Column, CommentCellPrefix } from "./columns";
 import { FieldCellRendererProps } from "./fieldcell";
 

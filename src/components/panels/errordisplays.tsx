@@ -1,14 +1,16 @@
+import "react-reflex/styles.css";
+
+import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
+import { Link } from "@tanstack/react-router";
+import { CircleX, MessageCircleWarning } from "lucide-react";
+
+import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
 import {
   DeveloperError,
   DeveloperError_Source,
   DeveloperWarning,
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
-import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
-import "react-reflex/styles.css";
-import { Link } from "@tanstack/react-router";
-import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
-import { CircleX, MessageCircleWarning } from "lucide-react";
 
 export const ERROR_SOURCE_TO_ITEM = {
   [DeveloperError_Source.SCHEMA]: DataStoreItemKind.SCHEMA,
