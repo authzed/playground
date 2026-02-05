@@ -7,8 +7,8 @@ import { useZedTerminalService } from "../spicedb-common/services/zedterminalser
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 import { LinearProgress, Tab, Tabs, Tooltip } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
+import { Button } from "@/components/ui/button"
+import { ButtonGroup } from "@/components/ui/button-group"
 import TextField from "@material-ui/core/TextField";
 import {
   Theme,
@@ -770,80 +770,67 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 />
               )}
             </div>
-            {AppConfig().discord.inviteUrl ? (
-              <Tooltip title="Discuss on Discord">
+            {AppConfig().discord.inviteUrl && (
                 <Button
+                asChild
                   className={classes.hideTextOnMed}
-                  size="small"
-                  href={AppConfig().discord.inviteUrl}
-                  startIcon={
+                  size="sm"
+                  title="Discord"
+                >
+                <a href={AppConfig().discord.inviteUrl}>
                     <DISCORD
                       viewBox="0 0 71 55"
                       style={{ height: "1em", width: "1em" }}
                     />
-                  }
-                >
+                    {/* TODO: make sure this works and then do it elsewhere */}
+                <span className="md:hidden">
                   Discuss on Discord
+                  </span>
+                  </a>
                 </Button>
-              </Tooltip>
-            ) : (
-              <span />
             )}
-            <Tooltip title="Share">
-              <span
-                className={clsx({
-                  [classes.hide]: !isSharingEnabled,
-                })}
-              >
+              {isSharingEnabled && 
                 <Button
                   className={clsx(
                     TourElementClass.share,
                     classes.hideTextOnMed,
                   )}
-                  size="small"
-                  onClick={() => conductSharing()}
+                  title="Share"
+                  size="sm"
+                  onClick={conductSharing}
                   disabled={
                     sharingState.status === SharingStatus.SHARING ||
                     validationState.status === ValidationStatus.RUNNING
                   }
-                  startIcon={<ShareIcon />}
                 >
+                <ShareIcon />
                   Share
                 </Button>
-              </span>
-            </Tooltip>
-            <Tooltip title="Download">
-              <span>
+              }
                 <Button
-                  className={classes.hideTextOnMed}
-                  size="small"
+                  size="sm"
+                  title="Download"
                   onClick={conductDownload}
                   disabled={
                     sharingState.status === SharingStatus.SHARING ||
                     validationState.status === ValidationStatus.RUNNING
                   }
-                  startIcon={<GetAppIcon />}
                 >
+                <GetAppIcon />
                   Download
                 </Button>
-              </span>
-            </Tooltip>
-            <Tooltip title="Load From File">
-              <span>
                 <Button
-                  className={classes.hideTextOnMed}
-                  size="small"
+                  size="sm"
                   onClick={conductUpload}
+                  title="Load from File"
                   disabled={
                     sharingState.status === SharingStatus.SHARING ||
                     validationState.status === ValidationStatus.RUNNING
                   }
-                  startIcon={<InsertDriveFileIcon />}
                 >
+                <InsertDriveFileIcon />
                   Load From File
                 </Button>
-              </span>
-            </Tooltip>
           </>
         )}
       </AppBar>
@@ -920,10 +907,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           <div className={classes.contextTools}>
             {currentItem?.kind === DataStoreItemKind.SCHEMA && (
               <Button
-                variant="contained"
                 onClick={formatSchema}
-                startIcon={<FormatTextdirectionLToRIcon />}
               >
+              <FormatTextdirectionLToRIcon />
                 Format
               </Button>
             )}
@@ -978,46 +964,43 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               previousValidationForDiff === undefined && (
                 <ButtonGroup className={classes.expectedActions}>
                   <Button
-                    variant="contained"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<RefreshIcon />}
                     onClick={() => handleGenerateAndUpdate(false)}
                   >
+                  <RefreshIcon />
                     Re-Generate
                   </Button>
                   <Button
-                    variant="contained"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<CompareIcon />}
                     onClick={() => handleGenerateAndUpdate(true)}
                   >
+                  <CompareIcon />
                     Compute and Diff
                   </Button>
                 </ButtonGroup>
               )}
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff !== undefined && (
+                // TODO: styling here
                 <ButtonGroup className={classes.expectedActions}>
                   <Button
-                    variant="contained"
                     className={classes.btnAccept}
-                    startIcon={<CheckCircleIcon />}
                     onClick={handleAcceptDiff}
                   >
+                  <CheckCircleIcon />
                     Accept Update
                   </Button>
                   <Button
-                    variant="contained"
                     className={classes.btnRevert}
-                    startIcon={<HighlightOffIcon />}
                     onClick={handleRevertDiff}
                   >
+                  <HighlightOffIcon />
                     Revert Update
                   </Button>
                 </ButtonGroup>
@@ -1026,45 +1009,55 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           <div />
           {currentItem?.kind === DataStoreItemKind.SCHEMA && (
             <Button
+            asChild
+            // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
+            <a href="https://authzed.com/docs/spicedb/modeling/developing-a-schema" target="_blank">
+            <DescriptionIcon />
               Schema Development Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
             <Button
+            asChild
+            // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
+            <a href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships" target="_blank">
+            <DescriptionIcon />
               Test Relationships Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
             <Button
+            asChild
+            // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
+            <a href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
+              target="_blank">
+              <DescriptionIcon />
               Assertions Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
             <Button
+            asChild
+            // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
+            <a href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
+              target="_blank">
+              <DescriptionIcon />
               Expected Relations Guide
+              </a>
             </Button>
           )}
         </div>
