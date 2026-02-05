@@ -73,18 +73,14 @@ export function toExternalData(data: AnnotatedData): RelationshipDatum[] {
 /**
  * fromExternalData converts a simple RelationshipDatum array into the annotated data.
  */
-export function fromExternalData(
-  externalData: RelationshipDatum[] | undefined,
-): AnnotatedData {
+export function fromExternalData(externalData: RelationshipDatum[] | undefined): AnnotatedData {
   return (externalData ?? []).map(datumToAnnotated);
 }
 
 /**
  * emptyAnnotatedDatum returns an empty annotated datum for the grid, at the given index.
  */
-export function emptyAnnotatedDatum(
-  index: number,
-): RelationshipDatumAndMetadata {
+export function emptyAnnotatedDatum(index: number): RelationshipDatumAndMetadata {
   return datumToAnnotated(
     {
       resourceType: "",
@@ -105,9 +101,7 @@ export function emptyAnnotatedDatum(
  * toRelationshipString converts the given annotated datum into a relationship string. If the
  * datum is a comment or not a full relationship, returns undefined.
  */
-export function toRelationshipString(
-  annotated: RelationshipDatumAndMetadata,
-): string | undefined {
+export function toRelationshipString(annotated: RelationshipDatumAndMetadata): string | undefined {
   if ("comment" in annotated.datum) {
     return undefined;
   }
@@ -118,9 +112,7 @@ export function toRelationshipString(
 /**
  * toFullRelationshipString returns the full relationship found, or undefined if none.
  */
-export function toFullRelationshipString(
-  annotated: PartialRelationship,
-): string | undefined {
+export function toFullRelationshipString(annotated: PartialRelationship): string | undefined {
   if (
     !annotated.resourceType ||
     !annotated.resourceId ||
@@ -136,18 +128,10 @@ export function toFullRelationshipString(
 /**
  * toPartialRelationshipString returns a relationship string with the given relationship's data.
  */
-export function toPartialRelationshipString(
-  annotated: PartialRelationship,
-): string | undefined {
-  const caveatContext = annotated.caveatContext
-    ? `:${annotated.caveatContext}`
-    : "";
-  const caveat = annotated.caveatName
-    ? `[${annotated.caveatName}${caveatContext}]`
-    : "";
-  const expiration = annotated.expiration
-    ? `[expiration:${annotated.expiration}]`
-    : "";
+export function toPartialRelationshipString(annotated: PartialRelationship): string | undefined {
+  const caveatContext = annotated.caveatContext ? `:${annotated.caveatContext}` : "";
+  const caveat = annotated.caveatName ? `[${annotated.caveatName}${caveatContext}]` : "";
+  const expiration = annotated.expiration ? `[expiration:${annotated.expiration}]` : "";
   return `${annotated.resourceType}:${annotated.resourceId}#${
     annotated.relation
   }@${annotated.subjectType}:${annotated.subjectId}${
@@ -209,13 +193,9 @@ export function relationshipToDatum(rel: Relationship): PartialRelationship {
     subjectId: rel.subject?.objectId ?? "",
     subjectRelation: subRel ?? "",
     caveatName: rel.caveat?.caveatName ?? "",
-    caveatContext: rel.caveat?.context
-      ? JSON.stringify(rel.caveat?.context)
-      : "",
+    caveatContext: rel.caveat?.context ? JSON.stringify(rel.caveat?.context) : "",
     expiration: rel.optionalExpirationTime
-      ? timestampDate(rel.optionalExpirationTime)
-          .toISOString()
-          .replace(".000", "")
+      ? timestampDate(rel.optionalExpirationTime).toISOString().replace(".000", "")
       : "",
   };
 }
@@ -244,9 +224,7 @@ function fromColumnData(columnData: ColumnData): PartialRelationship | Comment {
 }
 
 // relationshipToColumnData converts the given relationship into column data.
-export function relationshipToColumnData(
-  rel: RelationshipWithComments,
-): ColumnData | undefined {
+export function relationshipToColumnData(rel: RelationshipWithComments): ColumnData | undefined {
   const relationship = rel.relationship;
   if (relationship === undefined) {
     return undefined;
@@ -270,9 +248,7 @@ export function relationshipToColumnData(
     relationship.caveat?.caveatName ?? "",
     caveatContext,
     relationship.optionalExpirationTime
-      ? timestampDate(relationship.optionalExpirationTime)
-          .toISOString()
-          .replace(".000", "")
+      ? timestampDate(relationship.optionalExpirationTime).toISOString().replace(".000", "")
       : "",
   ];
 

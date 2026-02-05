@@ -172,10 +172,7 @@ export abstract class DataStore {
    * @param newEditableContents The new editable contents for the item.
    * @returns The updated item, or undefined if the item was not found.
    */
-  public update(
-    item: DataStoreItem,
-    newEditableContents: string,
-  ): DataStoreItem | undefined {
+  public update(item: DataStoreItem, newEditableContents: string): DataStoreItem | undefined {
     const deserialized = this.getStored();
 
     // Add back the new/updated item.
@@ -215,16 +212,13 @@ export abstract class DataStore {
     store.items[DataStorePaths.Schema()].editableContents = schema;
 
     // Add the relationships.
-    store.items[DataStorePaths.Relationships()].editableContents =
-      relationshipsYaml;
+    store.items[DataStorePaths.Relationships()].editableContents = relationshipsYaml;
 
     // Add the assertions data.
-    store.items[DataStorePaths.Assertions()].editableContents =
-      assertionsYaml ?? "";
+    store.items[DataStorePaths.Assertions()].editableContents = assertionsYaml ?? "";
 
     // Add the expected config.
-    store.items[DataStorePaths.ExpectedRelations()].editableContents =
-      verificationYaml;
+    store.items[DataStorePaths.ExpectedRelations()].editableContents = verificationYaml;
 
     this.setStoredAndReport(store);
   }
@@ -237,10 +231,9 @@ export abstract class DataStore {
     this.load({
       schema: p.schema,
       relationshipsYaml: p.relationships,
-      assertionsYaml: yaml.stringify(
-        p.assertions ?? { assertTrue: [], assertFalse: [] },
-        { lineWidth: 0 },
-      ),
+      assertionsYaml: yaml.stringify(p.assertions ?? { assertTrue: [], assertFalse: [] }, {
+        lineWidth: 0,
+      }),
       verificationYaml: yaml.stringify(p.validation, { lineWidth: 0 }),
     });
   }
@@ -255,9 +248,7 @@ class LocalStorageDataStore extends DataStore {
 
   getStored(): DataStorageData {
     try {
-      const loaded = JSON.parse(
-        localStorage.getItem(LOCAL_STORAGE_DATASTORE_KEY) || "null",
-      );
+      const loaded = JSON.parse(localStorage.getItem(LOCAL_STORAGE_DATASTORE_KEY) || "null");
       if (loaded) {
         return loaded;
       }
@@ -275,8 +266,7 @@ class LocalStorageDataStore extends DataStore {
 
   isOutOfDate(): boolean {
     return (
-      this.lastStoredIndex !== undefined &&
-      this.lastStoredIndex !== this.getStored().editIndex
+      this.lastStoredIndex !== undefined && this.lastStoredIndex !== this.getStored().editIndex
     );
   }
 

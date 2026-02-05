@@ -6,9 +6,7 @@ describe("Playground", () => {
   });
 
   it("displays tutorial", () => {
-    cy.get(".react-joyride__tooltip")
-      .contains("Welcome!")
-      .should("have.length", 1);
+    cy.get(".react-joyride__tooltip").contains("Welcome!").should("have.length", 1);
   });
 
   it("can dismiss tutorial", () => {

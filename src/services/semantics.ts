@@ -8,15 +8,12 @@ import type {
 import { LocalParseState } from "./localparse";
 
 const TYPE_AND_OBJECT_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)(#?)/g;
-const TYPE_OBJECT_AND_REL_REGEX =
-  /(?<typepath>[^:@]+):(?<object_id>[^#]+)#(?<rel>[^@]+)/g;
+const TYPE_OBJECT_AND_REL_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)#(?<rel>[^@]+)/g;
 
 /**
  * getRelatableDefinitions returns the name of all definitions found in the local parse state.
  */
-export const getRelatableDefinitions = (
-  localParseState: LocalParseState,
-): string[] => {
+export const getRelatableDefinitions = (localParseState: LocalParseState): string[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {
     return [];
@@ -140,9 +137,7 @@ export const getSubjectDefinitions = (
           return {
             name: def.definition.name,
             isUserDefinition:
-              def.definition.permissions.length +
-                def.definition.relations.length ===
-              0,
+              def.definition.permissions.length + def.definition.relations.length === 0,
           };
         });
     }
@@ -151,9 +146,7 @@ export const getSubjectDefinitions = (
   return resolver.listDefinitions().map((def: ResolvedDefinition) => {
     return {
       name: def.definition.name,
-      isUserDefinition:
-        def.definition.permissions.length + def.definition.relations.length ===
-        0,
+      isUserDefinition: def.definition.permissions.length + def.definition.relations.length === 0,
     };
   });
 };
@@ -161,15 +154,11 @@ export const getSubjectDefinitions = (
 /**
  * getCaveatDefinitions returns the name of all caveats found in the local parse state.
  */
-export const getCaveatDefinitions = (
-  localParseState: LocalParseState,
-): string[] => {
+export const getCaveatDefinitions = (localParseState: LocalParseState): string[] => {
   const resolver = localParseState.resolver;
   if (resolver === undefined) {
     return [];
   }
 
-  return resolver
-    .listCaveats()
-    .map((def: ResolvedCaveatDefinition) => def.definition.name);
+  return resolver.listCaveats().map((def: ResolvedCaveatDefinition) => def.definition.name);
 };

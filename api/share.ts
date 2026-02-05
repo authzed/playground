@@ -2,8 +2,7 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import { createHash } from "crypto";
 
-const encodeURL =
-  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export type SharedDataV2 = {
   version: "2";
@@ -44,11 +43,7 @@ function validateSharedDataV2(data): data is SharedDataV2 {
     return false;
   }
 
-  const optionalStringFields = [
-    "relationships_yaml",
-    "validation_yaml",
-    "assertions_yaml",
-  ];
+  const optionalStringFields = ["relationships_yaml", "validation_yaml", "assertions_yaml"];
   for (const field of optionalStringFields) {
     if (field in data && typeof data[field] !== "string") {
       return false;
@@ -100,12 +95,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   // Validate that the computed hash only contains allowed characters
   for (const char of shareHash) {
     if (!encodeURL.includes(char)) {
-      console.error(
-        "Computed hash contains invalid character:",
-        char,
-        "in hash:",
-        shareHash,
-      );
+      console.error("Computed hash contains invalid character:", char, "in hash:", shareHash);
       return res.status(500).json({ error: "Hash generation error" });
     }
   }

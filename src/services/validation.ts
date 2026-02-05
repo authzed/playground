@@ -8,10 +8,7 @@ import { useTheme } from "@material-ui/core/styles";
 import { useState } from "react";
 import "react-reflex/styles.css";
 import { DataStore, DataStoreItemKind } from "../services/datastore";
-import {
-  buildAssertionsYaml,
-  buildValidationBlockYaml,
-} from "./validationfileformat";
+import { buildAssertionsYaml, buildValidationBlockYaml } from "./validationfileformat";
 import { toast } from "sonner";
 
 export enum ValidationStatus {
@@ -36,10 +33,7 @@ export interface ValidationResult {
   updatedValidationYaml: string | null;
 }
 
-export type ValidationCallback = (
-  validated: boolean,
-  response: ValidationResult,
-) => boolean;
+export type ValidationCallback = (validated: boolean, response: ValidationResult) => boolean;
 
 /**
  * runsValidation over the data found in the datastore, invoking the callback when complete
@@ -57,9 +51,7 @@ function runValidation(
 
   const datastoreIndex = datastore.currentIndex();
 
-  const schema =
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
-    "";
+  const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "";
   const relationshipsString = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
@@ -119,12 +111,9 @@ function runValidation(
     inputDevErrors.push(...response.developerErrors.inputErrors);
   }
 
-  const validated =
-    inputDevErrors.length === 0 && validationDevErrors.length === 0;
+  const validated = inputDevErrors.length === 0 && validationDevErrors.length === 0;
   setValidationState({
-    status: validated
-      ? ValidationStatus.VALIDATED
-      : ValidationStatus.VALIDATION_ERROR,
+    status: validated ? ValidationStatus.VALIDATED : ValidationStatus.VALIDATION_ERROR,
     requestErrors: inputDevErrors,
     validationErrors: validationDevErrors,
     validationDatastoreIndex: datastoreIndex,

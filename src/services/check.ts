@@ -78,9 +78,7 @@ function runEditCheckWasm(
   datastore: DataStore,
   items: LiveCheckItem[],
 ): [DeveloperResponse, DeveloperWarning[]] | undefined {
-  const schema =
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ??
-    "";
+  const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "";
   const relationshipsString = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
@@ -210,10 +208,7 @@ export function useLiveCheckService(
 
   // Setup an effect which runs the check initially once the developer service is ready.
   useEffect(() => {
-    if (
-      state.status === LiveCheckStatus.NEVER_RUN &&
-      devServiceStatus === "ready"
-    ) {
+    if (state.status === LiveCheckStatus.NEVER_RUN && devServiceStatus === "ready") {
       check(items);
     }
   }, [state, items, check, devServiceStatus]);

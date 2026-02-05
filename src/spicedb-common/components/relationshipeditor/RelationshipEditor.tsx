@@ -13,27 +13,10 @@ import DataEditor, {
 } from "@glideapps/glide-data-grid";
 // Bring in the CSS for glide-data-grid
 import "@glideapps/glide-data-grid/dist/index.css";
-import {
-  Checkbox,
-  FormControlLabel,
-  IconButton,
-  Tooltip,
-} from "@material-ui/core";
-import {
-  createStyles,
-  makeStyles,
-  Theme as MuiTheme,
-  useTheme,
-} from "@material-ui/core/styles";
+import { Checkbox, FormControlLabel, IconButton, Tooltip } from "@material-ui/core";
+import { createStyles, makeStyles, Theme as MuiTheme, useTheme } from "@material-ui/core/styles";
 import { Assignment, Comment, Delete } from "@material-ui/icons";
-import {
-  useCallback,
-  useEffect,
-  useMemo,
-  useRef,
-  useState,
-  type KeyboardEvent,
-} from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useCookies } from "react-cookie";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 import { Resolver } from "@authzed/spicedb-parser-js";
@@ -208,9 +191,7 @@ export function RelationshipEditor({
       })
       .map((value: RelationshipDatumAndMetadata) => {
         const relData = value.datum as PartialRelationship;
-        const caveatContext = relData.caveatContext
-          ? `:${relData.caveatContext}`
-          : "";
+        const caveatContext = relData.caveatContext ? `:${relData.caveatContext}` : "";
         const str = `${relData.resourceType}:${relData.resourceId}#${
           relData.relation
         }@${relData.subjectType}:${relData.subjectId}${
@@ -237,21 +218,13 @@ export function RelationshipEditor({
       return;
     }
 
-    const updated = updateRowInData(
-      inFlightData.current,
-      dataRowIndex,
-      newColumnData,
-    );
+    const updated = updateRowInData(inFlightData.current, dataRowIndex, newColumnData);
     inFlightData.current = updated;
     setData(updated);
   };
 
-  const [gridSelection, setGridSelection] = useState<GridSelection | undefined>(
-    undefined,
-  );
-  const handleGridSelectionChanged = (
-    newSelection: GridSelection | undefined,
-  ) => {
+  const [gridSelection, setGridSelection] = useState<GridSelection | undefined>(undefined);
+  const handleGridSelectionChanged = (newSelection: GridSelection | undefined) => {
     // Prevent column-only selection.
     if (newSelection?.columns && newSelection.columns.length > 0) {
       return;
@@ -297,10 +270,9 @@ export function RelationshipEditor({
     // If the cell data starts with `// ` and this is the first column, convert to a comment.
     if (col === 0 && cell.data.dataValue.startsWith(CommentCellPrefix)) {
       const adjustedData = Array.from(inFlightData.current);
-      const commentString = [
-        cell.data.dataValue,
-        ...adjustedData[row].columnData.slice(1),
-      ].join(" ");
+      const commentString = [cell.data.dataValue, ...adjustedData[row].columnData.slice(1)].join(
+        " ",
+      );
       adjustedData[row].datum = { comment: commentString };
       adjustedData[row].columnData = [commentString];
       setData(adjustedData);
@@ -316,10 +288,7 @@ export function RelationshipEditor({
       const regex = DataRegex[COLUMNS[col].dataKind];
 
       toast.error(`Expected format for ${COLUMNS[col].title}:`, {
-        description:
-          regex instanceof RegExp
-            ? regex.toString()
-            : COLUMNS[col].dataDescription,
+        description: regex instanceof RegExp ? regex.toString() : COLUMNS[col].dataDescription,
       });
     }
 
@@ -328,11 +297,7 @@ export function RelationshipEditor({
     adjustData(row, newColumnData);
 
     // Jump to cell to the right, but only if the next cell is empty.
-    if (
-      newColumnData[col] &&
-      col < COLUMNS.length - 1 &&
-      existingColumnData[col + 1] === ""
-    ) {
+    if (newColumnData[col] && col < COLUMNS.length - 1 && existingColumnData[col + 1] === "") {
       // NOTE: timeout needed for glide grid to apply its own grid selection change before we do.
       const range = {
         x: col + 1,
@@ -388,11 +353,7 @@ export function RelationshipEditor({
 
     if (selection.rows) {
       const adjustedData = Array.from(data);
-      for (
-        let row = selection.rows.last() ?? 0;
-        row >= (selection.rows.first() ?? 1);
-        row--
-      ) {
+      for (let row = selection.rows.last() ?? 0; row >= (selection.rows.first() ?? 1); row--) {
         if (!selection.rows.hasIndex(row)) {
           continue;
         }
@@ -656,8 +617,7 @@ export function RelationshipEditor({
         if (columnData.length === 1) {
           const asRelationship = parseRelationshipsWithComments(columnData[0]);
           if (asRelationship.length === 1) {
-            columnData =
-              relationshipToColumnData(asRelationship[0]) ?? columnData;
+            columnData = relationshipToColumnData(asRelationship[0]) ?? columnData;
           }
         }
 
@@ -678,12 +638,7 @@ export function RelationshipEditor({
         return;
       }
 
-      adjustedData = updateRowInData(
-        adjustedData,
-        rowToUpdate,
-        columnData,
-        startingCol,
-      );
+      adjustedData = updateRowInData(adjustedData, rowToUpdate, columnData, startingCol);
       rowOffset++;
     });
 
@@ -695,11 +650,9 @@ export function RelationshipEditor({
   const highlightRegions = useDeepCompareMemo(() => {
     return (highlights ?? [])
       .map((highlight: RelationTupleHighlight) => {
-        const rowIndex = data.findIndex(
-          (datum: RelationshipDatumAndMetadata) => {
-            return toRelationshipString(datum) === highlight.tupleString;
-          },
-        );
+        const rowIndex = data.findIndex((datum: RelationshipDatumAndMetadata) => {
+          return toRelationshipString(datum) === highlight.tupleString;
+        });
         if (rowIndex === undefined) {
           return undefined;
         }
@@ -805,9 +758,7 @@ export function RelationshipEditor({
     // NOTE: the input check is to ensure that hitting `/` inside an editor does not convert
     // the cell into a comment.
     const nodeName =
-      "nodeName" in e.target
-        ? (e.target as HTMLElement).nodeName.toLowerCase()
-        : undefined;
+      "nodeName" in e.target ? (e.target as HTMLElement).nodeName.toLowerCase() : undefined;
     if (e.key === "/" && gridSelection?.current?.cell && nodeName !== "input") {
       const [col, row] = gridSelection.current.cell;
       if (col === 0) {
@@ -859,8 +810,7 @@ export function RelationshipEditor({
   const width = dimensions?.width ?? 1200;
   const height = dimensions?.height ?? 300;
   const toolbarHeight = 50;
-  const hasCheckedRows =
-    gridSelection?.rows !== undefined && gridSelection.rows.length > 0;
+  const hasCheckedRows = gridSelection?.rows !== undefined && gridSelection.rows.length > 0;
   const allRowsChecked =
     gridSelection?.rows !== undefined &&
     data.length > 0 &&
@@ -892,22 +842,15 @@ export function RelationshipEditor({
     setCookies("relgrid-similar-highlighting", updated ? "1" : "0");
   };
 
-  const [overriddenColumnWidths, setOverriddenColumnWidths] = useState<
-    Record<string, number>
-  >({});
+  const [overriddenColumnWidths, setOverriddenColumnWidths] = useState<Record<string, number>>({});
 
   const columnsWithWidths = useMemo(() => {
-    const defaultColWidth = Math.max(
-      width / (COLUMNS.length + 0.5),
-      MIN_COLUMN_WIDTH,
-    ); // +0.5 to give some padding
+    const defaultColWidth = Math.max(width / (COLUMNS.length + 0.5), MIN_COLUMN_WIDTH); // +0.5 to give some padding
     return COLUMNS.map((col: Column) => {
       return {
         ...col,
         width:
-          col.id! in overriddenColumnWidths
-            ? overriddenColumnWidths[col.id!]
-            : defaultColWidth,
+          col.id! in overriddenColumnWidths ? overriddenColumnWidths[col.id!] : defaultColWidth,
         trailingRowOptions: isReadOnly ? undefined : col.trailingRowOptions,
       };
     });
@@ -968,10 +911,7 @@ export function RelationshipEditor({
         <span />
         <FormControlLabel
           control={
-            <Checkbox
-              checked={similarHighlighting}
-              onClick={handleToggleSimilarHighlighting}
-            />
+            <Checkbox checked={similarHighlighting} onClick={handleToggleSimilarHighlighting} />
           }
           label="Highlight same types, objects and relations"
         />

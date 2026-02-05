@@ -5,10 +5,7 @@ import {
   Resolver,
 } from "@authzed/spicedb-parser-js";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import {
-  parseRelationshipsWithErrors,
-  RelationshipFound,
-} from "../spicedb-common/parsing";
+import { parseRelationshipsWithErrors, RelationshipFound } from "../spicedb-common/parsing";
 import { useEffect, useMemo, useState } from "react";
 import { DataStore, DataStoreItemKind } from "./datastore";
 
@@ -40,23 +37,14 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
     relationships: [],
   });
 
-  const runCheck = ({
-    schemaText,
-    relsText,
-  }: {
-    schemaText: string;
-    relsText: string;
-  }) => {
+  const runCheck = ({ schemaText, relsText }: { schemaText: string; relsText: string }) => {
     if (relsText === state.relsText && schemaText === state.schemaText) {
       return;
     }
 
     const rels =
-      relsText === state.relsText
-        ? state.relationships
-        : parseRelationshipsWithErrors(relsText);
-    const parsed =
-      schemaText === state.schemaText ? state.parsed : parseSchema(schemaText);
+      relsText === state.relsText ? state.relationships : parseRelationshipsWithErrors(relsText);
+    const parsed = schemaText === state.schemaText ? state.parsed : parseSchema(schemaText);
     setState({
       relsText: relsText,
       schemaText: schemaText,
@@ -72,9 +60,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
 
   useEffect(() => {
     // Kick off the initial check.
-    const schemaText = datastore.getSingletonByKind(
-      DataStoreItemKind.SCHEMA,
-    ).editableContents!;
+    const schemaText = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
     const relsText = datastore.getSingletonByKind(
       DataStoreItemKind.RELATIONSHIPS,
     ).editableContents!;
@@ -82,9 +68,7 @@ export function useLocalParseService(datastore: DataStore): LocalParseService {
 
     // Register the listener for the datastore
     return datastore.registerListener(() => {
-      const schemaText = datastore.getSingletonByKind(
-        DataStoreItemKind.SCHEMA,
-      ).editableContents!;
+      const schemaText = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
       const relsText = datastore.getSingletonByKind(
         DataStoreItemKind.RELATIONSHIPS,
       ).editableContents!;

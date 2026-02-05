@@ -38,28 +38,21 @@ Cypress.Commands.add("panelText", () => {
 
 // Wait until WASM developer package is loaded
 Cypress.Commands.add("waitForWasm", () => {
-  cy.waitUntil(
-    () => cy.window().then((win) => !!win.runSpiceDBDeveloperRequest),
-    {
-      errorMsg: "WASM development package not loaded",
-      timeout: 30000,
-      interval: 500,
-    },
-  );
+  cy.waitUntil(() => cy.window().then((win) => !!win.runSpiceDBDeveloperRequest), {
+    errorMsg: "WASM development package not loaded",
+    timeout: 30000,
+    interval: 500,
+  });
   return;
 });
 
 // -- Child commands --
 // Asserts that all list items are present.
-Cypress.Commands.add(
-  "containsAll",
-  { prevSubject: "element" },
-  (subject, list) => {
-    list.forEach((line) => {
-      cy.wrap(subject).contains(line);
-    });
-  },
-);
+Cypress.Commands.add("containsAll", { prevSubject: "element" }, (subject, list) => {
+  list.forEach((line) => {
+    cy.wrap(subject).contains(line);
+  });
+});
 
 //
 // -- This is a dual command --

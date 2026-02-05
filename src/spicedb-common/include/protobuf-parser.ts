@@ -81,12 +81,8 @@ var stripFirstLast = function (x: string) {
 };
 
 var identifier = lexeme(regex(/[a-zA-Z_][0-9a-zA-Z_+-]*/));
-var doubleString = lexeme(
-  regex(/\"([^\"\n\\\\]|\\\\.)*(\"|\\\\?$)/).map(stripFirstLast),
-);
-var singleString = lexeme(
-  regex(/\'([^\'\n\\\\]|\\\\.)*(\'|\\\\?$)/).map(stripFirstLast),
-);
+var doubleString = lexeme(regex(/\"([^\"\n\\\\]|\\\\.)*(\"|\\\\?$)/).map(stripFirstLast));
+var singleString = lexeme(regex(/\'([^\'\n\\\\]|\\\\.)*(\'|\\\\?$)/).map(stripFirstLast));
 
 var number = lexeme(regex(/[.]?[0-9+-][0-9a-zA-Z_.+-]*/)).map(Number);
 var trueLiteral = lexeme(string("true")).result(true);
@@ -113,14 +109,7 @@ var message: any = Parsimmon.seqMap(
   };
 });
 
-var value = alt(
-  trueLiteral,
-  falseLiteral,
-  number,
-  doubleString,
-  singleString,
-  identifier,
-);
+var value = alt(trueLiteral, falseLiteral, number, doubleString, singleString, identifier);
 
 var pair = seq(identifier.skip(colon), value).map(function (pair) {
   return { type: "pair", name: pair[0], value: pair[1] };
@@ -139,8 +128,6 @@ export default function parse(input: string): ParseResult {
     status: result.status,
     error: !result.status ? Parsimmon.formatError(input, result) : undefined,
     parserResult: result as Parsimmon.Result<MessageOrPair>,
-    value: result.status
-      ? (result as Parsimmon.Success<MessageOrPair>).value
-      : undefined,
+    value: result.status ? (result as Parsimmon.Success<MessageOrPair>).value : undefined,
   };
 }

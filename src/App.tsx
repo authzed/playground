@@ -48,11 +48,7 @@ const embeddedRoute = createRoute({
   component: EmbeddedPlayground,
 });
 
-const routeTree = rootRoute.addChildren([
-  indexRoute,
-  inlineRoute,
-  embeddedRoute,
-]);
+const routeTree = rootRoute.addChildren([indexRoute, inlineRoute, embeddedRoute]);
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
@@ -74,10 +70,7 @@ function App() {
       <Toaster />
       <PostHogProvider client={posthog}>
         <ThemeProvider>
-          <PlaygroundUIThemed
-            {...PLAYGROUND_UI_COLORS}
-            forceDarkMode={isEmbeddedPlayground}
-          >
+          <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
             <ConfirmDialogProvider>
               <RouterProvider router={router} />
             </ConfirmDialogProvider>

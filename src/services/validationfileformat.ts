@@ -1,7 +1,4 @@
-import {
-  AssertionData,
-  ValidationData,
-} from "../spicedb-common/validationfileformat";
+import { AssertionData, ValidationData } from "../spicedb-common/validationfileformat";
 import yaml from "yaml";
 import { DataStore, DataStoreItemKind } from "./datastore";
 
@@ -9,9 +6,7 @@ import { DataStore, DataStoreItemKind } from "./datastore";
  * buildValidationYaml builds the YAML validation block.
  */
 export const buildValidationBlockYaml = (datastore: DataStore): string => {
-  const expectedRelations = datastore.getSingletonByKind(
-    DataStoreItemKind.EXPECTED_RELATIONS,
-  );
+  const expectedRelations = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
   const validationBlock = expectedRelations.editableContents;
   return validationBlock || "{}";
 };
@@ -30,15 +25,11 @@ export const buildAssertionsYaml = (datastore: DataStore): string => {
  * the datastore.
  */
 export const createValidationYAML = (datastore: DataStore): string => {
-  const schema = datastore.getSingletonByKind(
-    DataStoreItemKind.SCHEMA,
-  ).editableContents!;
+  const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
   const relationships = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents!;
-  const assertions = datastore.getSingletonByKind(
-    DataStoreItemKind.ASSERTIONS,
-  ).editableContents!;
+  const assertions = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).editableContents!;
   const expectedRelations = datastore.getSingletonByKind(
     DataStoreItemKind.EXPECTED_RELATIONS,
   ).editableContents!;
