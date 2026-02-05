@@ -1,3 +1,5 @@
+import { useEffect, useMemo, useState, type ReactNode, type ChangeEvent } from "react";
+
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import TabLabel from "../playground-ui/TabLabel";
@@ -5,7 +7,7 @@ import { Example } from "../spicedb-common/examples";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
-import { LinearProgress, Tab, Tabs, Tooltip } from "@material-ui/core";
+import { LinearProgress, Tab, Tabs } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -25,12 +27,10 @@ import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import ShareIcon from "@material-ui/icons/Share";
 import { Alert, AlertTitle } from "./ui/alert";
-import ToggleButton from "@material-ui/lab/ToggleButton";
-import ToggleButtonGroup from "@material-ui/lab/ToggleButtonGroup";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import clsx from "clsx";
 import { saveAs } from "file-saver";
 import { fileDialog } from "file-select-dialog";
-import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { useCookies } from "react-cookie";
 import "react-reflex/styles.css";
 import { useNavigate, useLocation } from "@tanstack/react-router";
@@ -179,7 +179,6 @@ const useStyles = makeStyles((theme: Theme) =>
         backgroundColor: "rgba(255, 255, 255, 0.25)",
       },
     },
-    expectedActions: {},
     logoContainer: {
       display: "inline-flex",
       alignItems: "center",
@@ -190,11 +189,6 @@ const useStyles = makeStyles((theme: Theme) =>
       fontFamily: "Roboto Mono, monospace",
       [theme.breakpoints.down("sm")]: {
         paddingTop: theme.spacing(1),
-      },
-    },
-    docsLink: {
-      [theme.breakpoints.down("sm")]: {
-        display: "none",
       },
     },
     normalLogo: {
@@ -272,18 +266,6 @@ const useStyles = makeStyles((theme: Theme) =>
       display: "grid",
       gridTemplateColumns: "1fr auto",
       alignItems: "center",
-    },
-    btnAccept: {
-      "& .MuiSvgIcon-root": {
-        fill: theme.palette.success.main,
-      },
-      color: theme.palette.getContrastText(theme.palette.success.main),
-    },
-    btnRevert: {
-      "& .MuiSvgIcon-root": {
-        fill: theme.palette.error.main,
-      },
-      color: theme.palette.getContrastText(theme.palette.error.main),
     },
     tenantGraphContainer: {
       width: "100%",
@@ -614,7 +596,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const handleChangeTab = (
     // TODO: this should be a Link
-    _event: React.ChangeEvent<object>,
+    _event: ChangeEvent<object>,
     selectedTabValue: string,
   ) => {
     const item = datastore.getById(selectedTabValue)!;
@@ -644,18 +626,14 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
     return cookieService.relationshipsEditorType;
   });
-  const handleChangeRelationshipEditor = (
-    _event: React.MouseEvent<HTMLElement, MouseEvent>,
-    value: unknown,
-  ) => {
-    const type = value ? value.toString() : "grid";
-    if (type === "grid" && services.problemService.invalidRelationships.length > 0) {
+  const handleChangeRelationshipEditor = (value: string) => {
+    if (value === "grid" && services.problemService.invalidRelationships.length > 0) {
       return;
     }
 
-    if (type === "grid" || type === "code") {
-      cookieService.setRelationshipsEditorType(type);
-      setRelationshipEditor(type);
+    if (value === "grid" || value === "code") {
+      cookieService.setRelationshipsEditorType(value);
+      setRelationshipEditor(value);
     }
   };
 
@@ -723,19 +701,18 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               )}
             </div>
             {AppConfig().discord.inviteUrl && (
-              <Button asChild className={classes.hideTextOnMed} size="sm" title="Discord">
+              <Button asChild size="sm" title="Discord" variant="ghost">
                 <a href={AppConfig().discord.inviteUrl}>
                   <DISCORD viewBox="0 0 71 55" style={{ height: "1em", width: "1em" }} />
-                  {/* TODO: make sure this works and then do it elsewhere */}
-                  <span className="md:hidden">Discuss on Discord</span>
+                  <span className="hidden md:inline">Discuss on Discord</span>
                 </a>
               </Button>
             )}
             {isSharingEnabled && (
               <Button
-                className={clsx(TourElementClass.share, classes.hideTextOnMed)}
                 title="Share"
                 size="sm"
+                variant="ghost"
                 onClick={conductSharing}
                 disabled={
                   sharingState.status === SharingStatus.SHARING ||
@@ -743,12 +720,13 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 }
               >
                 <ShareIcon />
-                Share
+                <span className="hidden md:inline">Share</span>
               </Button>
             )}
             <Button
               size="sm"
               title="Download"
+              variant="ghost"
               onClick={conductDownload}
               disabled={
                 sharingState.status === SharingStatus.SHARING ||
@@ -756,11 +734,12 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               }
             >
               <GetAppIcon />
-              Download
+              <span className="hidden md:inline">Download</span>
             </Button>
             <Button
               size="sm"
               onClick={conductUpload}
+              variant="ghost"
               title="Load from File"
               disabled={
                 sharingState.status === SharingStatus.SHARING ||
@@ -768,7 +747,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               }
             >
               <InsertDriveFileIcon />
-              Load From File
+              <span className="hidden md:inline">Load From File</span>
             </Button>
           </>
         )}
@@ -837,7 +816,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         <div className={classes.contextToolbar}>
           <div className={classes.contextTools}>
             {currentItem?.kind === DataStoreItemKind.SCHEMA && (
-              <Button onClick={formatSchema}>
+              <Button onClick={formatSchema} variant="outline">
                 <FormatTextdirectionLToRIcon />
                 Format
               </Button>
@@ -845,27 +824,29 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
             {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
               <div>
-                <ToggleButtonGroup
+                <ToggleGroup
                   value={relationshipsEditor}
-                  exclusive
-                  onChange={handleChangeRelationshipEditor}
+                  variant="outline"
+                  type="single"
+                  onValueChange={handleChangeRelationshipEditor}
                   aria-label="relationship editor view"
                 >
-                  <ToggleButton
+                  <ToggleGroupItem
                     value="grid"
                     aria-label="grid editor"
+                    title="Grid Editor"
                     disabled={services.problemService.invalidRelationships.length > 0}
                   >
-                    <Tooltip title="Grid Editor">
-                      <GridOnIcon style={{ fontSize: "1em" }} />
-                    </Tooltip>
-                  </ToggleButton>
-                  <ToggleButton value="code" aria-label="code editor">
-                    <Tooltip title="Text Editor (Advanced)">
-                      <CodeIcon style={{ fontSize: "1em" }} />
-                    </Tooltip>
-                  </ToggleButton>
-                </ToggleButtonGroup>
+                    <GridOnIcon style={{ fontSize: "1em" }} />
+                  </ToggleGroupItem>
+                  <ToggleGroupItem
+                    value="code"
+                    title="Text Editor (Advanced)"
+                    aria-label="code editor"
+                  >
+                    <CodeIcon style={{ fontSize: "1em" }} />
+                  </ToggleGroupItem>
+                </ToggleGroup>
               </div>
             )}
 
@@ -889,8 +870,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff === undefined && (
-                <ButtonGroup className={classes.expectedActions}>
+                <ButtonGroup>
                   <Button
+                    variant="outline"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
@@ -901,6 +883,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                     Re-Generate
                   </Button>
                   <Button
+                    variant="outline"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
@@ -914,13 +897,12 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               )}
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff !== undefined && (
-                // TODO: styling here
-                <ButtonGroup className={classes.expectedActions}>
-                  <Button className={classes.btnAccept} onClick={handleAcceptDiff}>
+                <ButtonGroup>
+                  <Button onClick={handleAcceptDiff}>
                     <CheckCircleIcon />
                     Accept Update
                   </Button>
-                  <Button className={classes.btnRevert} onClick={handleRevertDiff}>
+                  <Button variant="destructive" onClick={handleRevertDiff}>
                     <HighlightOffIcon />
                     Revert Update
                   </Button>
@@ -929,67 +911,31 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           </div>
           <div />
           {currentItem?.kind === DataStoreItemKind.SCHEMA && (
-            <Button
-              asChild
-              // TODO: styling
-              className={classes.docsLink}
-            >
-              <a
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
-                target="_blank"
-              >
-                <DescriptionIcon />
-                Schema Development Guide
-              </a>
-            </Button>
+            <DocLink
+              title="Schema Development Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
+            />
           )}
 
           {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
-            <Button
-              asChild
-              // TODO: styling
-              className={classes.docsLink}
-            >
-              <a
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
-                target="_blank"
-              >
-                <DescriptionIcon />
-                Test Relationships Guide
-              </a>
-            </Button>
+            <DocLink
+              title="Test Relationships Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
+            />
           )}
 
           {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
-            <Button
-              asChild
-              // TODO: styling
-              className={classes.docsLink}
-            >
-              <a
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
-                target="_blank"
-              >
-                <DescriptionIcon />
-                Assertions Guide
-              </a>
-            </Button>
+            <DocLink
+              title="Assertions Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
+            />
           )}
 
           {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
-            <Button
-              asChild
-              // TODO: styling
-              className={classes.docsLink}
-            >
-              <a
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
-                target="_blank"
-              >
-                <DescriptionIcon />
-                Expected Relations Guide
-              </a>
-            </Button>
+            <DocLink
+              title="Expected Relations Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
+            />
           )}
         </div>
       </AppBar>
@@ -1008,6 +954,15 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     </div>
   );
 }
+
+const DocLink = ({ title, href }: { title: string; href: string }) => (
+  <Button asChild variant="ghost" title={title}>
+    <a href={href} target="_blank">
+      <DescriptionIcon />
+      <span className="hidden sm:inline">{title}</span>
+    </a>
+  </Button>
+);
 
 const TabLabelWithCount = (props: {
   problemService: ProblemService;
