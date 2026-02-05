@@ -75,9 +75,7 @@ interface VisNetwork {
  * simplify the graph for comparison. We only include fields that affect the shape of
  * the graph.
  */
-function simplify<N extends VisNode, E extends VisEdge>(
-  graph: VisGraphDefinition<N, E>,
-) {
+function simplify<N extends VisNode, E extends VisEdge>(graph: VisGraphDefinition<N, E>) {
   return {
     nodes: graph.nodes.map((node: N) => {
       return {
@@ -149,10 +147,7 @@ const useStyles = makeStyles(() =>
   }),
 );
 
-export interface VisNetworkGraphSelection<
-  N extends VisNode,
-  E extends VisEdge,
-> {
+export interface VisNetworkGraphSelection<N extends VisNode, E extends VisEdge> {
   nodes: N[];
   edges: E[];
 }
@@ -171,10 +166,9 @@ export interface VisNetworkGraphProps<N extends VisNode, E extends VisEdge> {
  *  &lt;script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
  *  &lt;link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet" type="text/css" />
  */
-export default function VisNetworkGraph<
-  N extends VisNode = VisNode,
-  E extends VisEdge = VisEdge,
->(props: VisNetworkGraphProps<N, E>) {
+export default function VisNetworkGraph<N extends VisNode = VisNode, E extends VisEdge = VisEdge>(
+  props: VisNetworkGraphProps<N, E>,
+) {
   const theme = useTheme();
   const classes = useStyles();
 
@@ -185,27 +179,18 @@ export default function VisNetworkGraph<
   const edgeDataSetRef = useRef<VisDataSet>();
   const [isLoaded, setIsLoaded] = useState(false);
 
-  const updateSelection = (
-    selection: VisNetworkGraphSelection<N, E> | undefined,
-  ) => {
+  const updateSelection = (selection: VisNetworkGraphSelection<N, E> | undefined) => {
     if (!selection) {
       return;
     }
 
     const network = networkRef.current;
-    if (
-      network !== undefined &&
-      nodeDataSetRef.current &&
-      edgeDataSetRef.current
-    ) {
+    if (network !== undefined && nodeDataSetRef.current && edgeDataSetRef.current) {
       network.setSelection(
         {
           nodes: selection.nodes
             .map((node: N) => node.id)
-            .filter(
-              (nodeID: string | number) =>
-                !!nodeDataSetRef.current?.get(nodeID),
-            ),
+            .filter((nodeID: string | number) => !!nodeDataSetRef.current?.get(nodeID)),
           edges: selection.edges
             .map((edge: E) => edge.id)
             .filter((edgeID: string) => !!edgeDataSetRef.current?.get(edgeID)),
@@ -274,20 +259,17 @@ export default function VisNetworkGraph<
       });
 
       if (props.onDblClicked !== undefined) {
-        network.on(
-          "doubleClick",
-          function (e: { nodes: string[]; edges: string[] }) {
-            const nodes = props.graph.nodes.filter((node: VisNode) =>
-              e.nodes.includes(node.id.toString()),
-            );
-            const edges = props.graph.edges.filter((edge: VisEdge) =>
-              e.edges.includes(edge.id.toString()),
-            );
-            if (props.onDblClicked !== undefined) {
-              props.onDblClicked(nodes, edges);
-            }
-          },
-        );
+        network.on("doubleClick", function (e: { nodes: string[]; edges: string[] }) {
+          const nodes = props.graph.nodes.filter((node: VisNode) =>
+            e.nodes.includes(node.id.toString()),
+          );
+          const edges = props.graph.edges.filter((edge: VisEdge) =>
+            e.edges.includes(edge.id.toString()),
+          );
+          if (props.onDblClicked !== undefined) {
+            props.onDblClicked(nodes, edges);
+          }
+        });
       }
 
       networkRef.current = network;

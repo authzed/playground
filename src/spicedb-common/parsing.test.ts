@@ -23,8 +23,7 @@ describe("converting relationships", () => {
   });
 
   it("converts caveated relationships properly to strings", () => {
-    const relationship =
-      'document:something#somerel@user:something[some:{"hi":"there"}]';
+    const relationship = 'document:something#somerel@user:something[some:{"hi":"there"}]';
     const parsed = parseRelationship(relationship);
     expect(convertRelationshipToString(parsed!)).toEqual(relationship);
   });
@@ -136,8 +135,7 @@ describe("parsing relationships", () => {
   });
 
   it("parses a correct relationship with multiple levels of namespace nesting", () => {
-    const relationship =
-      "foo/bar/baz/document:something#somerel@one/two/three/user:foo#...";
+    const relationship = "foo/bar/baz/document:something#somerel@one/two/three/user:foo#...";
     expect(parseRelationship(relationship)).toBeDefined();
   });
 
@@ -152,16 +150,14 @@ describe("parsing relationships", () => {
   });
 
   it("parses a correct relationship with caveat name", () => {
-    const relationship =
-      "document:something#somerel@user:something[somecaveat]";
+    const relationship = "document:something#somerel@user:something[somecaveat]";
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("somecaveat");
   });
 
   it("parses a correct relationship with caveat name and context", () => {
-    const relationship =
-      'document:something#somerel@user:something[somecaveat:{"hi": "there"}]';
+    const relationship = 'document:something#somerel@user:something[somecaveat:{"hi": "there"}]';
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("somecaveat");
@@ -169,8 +165,7 @@ describe("parsing relationships", () => {
   });
 
   it("parses a relationship with list in caveat context", () => {
-    const relationship =
-      'document:something#somerel@user:something[some:{"somecondition": []}]';
+    const relationship = 'document:something#somerel@user:something[some:{"somecondition": []}]';
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("some");
@@ -193,8 +188,7 @@ describe("parsing relationships", () => {
   });
 
   it("parses a relationship with an email in caveat context", () => {
-    const relationship =
-      'document:something#somerel@user:something[some:{"em":"a@example.com"}]';
+    const relationship = 'document:something#somerel@user:something[some:{"em":"a@example.com"}]';
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeDefined();
     expect(parsed?.caveat?.caveatName).toBe("some");
@@ -217,8 +211,7 @@ describe("parsing relationships", () => {
   });
 
   it("fails to parse a relationship with invalid caveat context", () => {
-    const relationship =
-      'document:something#somerel@user:something[some:{"hi"]';
+    const relationship = 'document:something#somerel@user:something[some:{"hi"]';
     const parsed = parseRelationship(relationship);
     expect(parsed).toBeUndefined();
   });
@@ -242,14 +235,12 @@ describe("parsing relationships", () => {
   });
 
   it("parses a correct relationship with expiration", () => {
-    const relationship =
-      "document:somedoc#viewer@user:tom[expiration:2024-01-01T12:00:00]";
+    const relationship = "document:somedoc#viewer@user:tom[expiration:2024-01-01T12:00:00]";
     expect(parseRelationship(relationship)).toBeDefined();
   });
 
   it("fails to parse a relationship with invalid expiration", () => {
-    const relationship =
-      "document:somedoc#viewer@user:tom[expiration:2024aaaa01-01T12:00:00]";
+    const relationship = "document:somedoc#viewer@user:tom[expiration:2024aaaa01-01T12:00:00]";
     expect(parseRelationship(relationship)).toBeUndefined();
   });
 });

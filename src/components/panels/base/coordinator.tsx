@@ -96,10 +96,7 @@ export interface PanelCoordinatorProps {
   autoCloseDisplayWhenEmpty?: boolean;
 }
 
-const reflexedPanelLocation = z.union([
-  z.literal("horizontal"),
-  z.literal("vertical"),
-]);
+const reflexedPanelLocation = z.union([z.literal("horizontal"), z.literal("vertical")]);
 
 const CoordinatorState = z.object({
   panelLocations: z.record(z.string(), reflexedPanelLocation),
@@ -162,17 +159,13 @@ const COORDINATOR_STATE_KEY = "panel-coordinator-state";
         datastore={props.datastore} />
   ```
  */
-export function usePanelsCoordinator(
-  props: PanelCoordinatorProps,
-): PanelsCoordinator {
+export function usePanelsCoordinator(props: PanelCoordinatorProps): PanelsCoordinator {
   const [coordinatorState, internalSetCoordinatorState] = useState<
     z.infer<typeof CoordinatorState>
   >(() => {
     // Try to parse from local storage.
     try {
-      const foundState = JSON.parse(
-        localStorage.getItem(COORDINATOR_STATE_KEY) ?? "",
-      );
+      const foundState = JSON.parse(localStorage.getItem(COORDINATOR_STATE_KEY) ?? "");
       // This will throw an error if the state can't be parsed properly.
       const parsed = CoordinatorState.parse(foundState);
       if (
@@ -206,10 +199,7 @@ export function usePanelsCoordinator(
     localStorage.setItem(COORDINATOR_STATE_KEY, JSON.stringify(state));
   };
 
-  const panelsInLocation = (
-    location: ReflexedPanelLocation,
-    state?: CoordinatorStateType,
-  ) => {
+  const panelsInLocation = (location: ReflexedPanelLocation, state?: CoordinatorStateType) => {
     const checkState = state ?? coordinatorState;
     return props.panels.filter((panel: Panel) => {
       return checkState.panelLocations[panel.id] === location;
@@ -222,9 +212,7 @@ export function usePanelsCoordinator(
 
   const getActivePanel = (location: ReflexedPanelLocation) => {
     const allowedPanels = panelsInLocation(location);
-    return allowedPanels.find(
-      (panel: Panel) => panel.id === coordinatorState.activeTabs[location],
-    );
+    return allowedPanels.find((panel: Panel) => panel.id === coordinatorState.activeTabs[location]);
   };
 
   const setActivePanel = (panelId: string, location: ReflexedPanelLocation) => {

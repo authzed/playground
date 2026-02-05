@@ -54,13 +54,10 @@ const useStyles = makeStyles((theme: Theme) =>
           padding: 0,
           margin: 0,
           color: (props: StyleProps) =>
-            props.prefersDarkMode
-              ? theme.palette.grey[500]
-              : theme.palette.grey[700],
+            props.prefersDarkMode ? theme.palette.grey[500] : theme.palette.grey[700],
           fontSize: "85%",
           "&:nth-child(1)": {
-            color: (props: StyleProps) =>
-              props.prefersDarkMode ? "#8787ff" : "#4242ff",
+            color: (props: StyleProps) => (props.prefersDarkMode ? "#8787ff" : "#4242ff"),
           },
           "&:nth-child(3)": {
             color: theme.palette.text.primary,
@@ -68,12 +65,10 @@ const useStyles = makeStyles((theme: Theme) =>
             fontWeight: "bold",
           },
           "&:nth-child(5)": {
-            color: (props: StyleProps) =>
-              props.prefersDarkMode ? "#ffa887" : "#883425",
+            color: (props: StyleProps) => (props.prefersDarkMode ? "#ffa887" : "#883425"),
           },
           "&:nth-child(7)": {
-            color: (props: StyleProps) =>
-              props.prefersDarkMode ? "#8787ff" : "#4242ff",
+            color: (props: StyleProps) => (props.prefersDarkMode ? "#8787ff" : "#4242ff"),
           },
           "&:nth-child(9)": {
             color: theme.palette.text.primary,
@@ -85,13 +80,11 @@ const useStyles = makeStyles((theme: Theme) =>
             fontSize: "95%",
           },
           "&.target-permission": {
-            color: (props: StyleProps) =>
-              props.prefersDarkMode ? "#1acc92" : "#1acc92",
+            color: (props: StyleProps) => (props.prefersDarkMode ? "#1acc92" : "#1acc92"),
             fontSize: "95%",
           },
           "&.target-relation": {
-            color: (props: StyleProps) =>
-              props.prefersDarkMode ? "#ffa887" : "#883425",
+            color: (props: StyleProps) => (props.prefersDarkMode ? "#ffa887" : "#883425"),
             fontSize: "95%",
           },
         },
@@ -119,10 +112,7 @@ export default function TenantGraph({
   active,
   onBrowseRequested,
 }: TenantGraphProps) {
-  const graph = useMemo(
-    () => generateTenantGraph(schema, relationships),
-    [relationships, schema],
-  );
+  const graph = useMemo(() => generateTenantGraph(schema, relationships), [relationships, schema]);
 
   const handleDoubleClicked = (nodes: LocalNode[], edges: LocalEdge[]) => {
     if (onBrowseRequested === undefined) {

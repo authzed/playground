@@ -65,8 +65,7 @@ const NodeIDs = {
   Root: `root`,
   ObjectType: (ref: TypeHandle) => `ns-${ref.index}`,
   Relation: (ref: RelationHandle) => `rel-${ref.index}-${ref.parentType.index}`,
-  Permission: (ref: PermissionHandle) =>
-    `perm-${ref.index}-${ref.parentType.index}`,
+  Permission: (ref: PermissionHandle) => `perm-${ref.index}-${ref.parentType.index}`,
   RelationOrPermission: (ref: RelationOrPermissionHandle) => {
     switch (ref.kind) {
       case "relation":
@@ -81,24 +80,18 @@ const NodeIDs = {
 };
 
 const EdgeIDs = {
-  TypeToRoot: (ref: TypeHandle) =>
-    `${NodeIDs.ObjectType(ref)}->${NodeIDs.Root}`,
+  TypeToRoot: (ref: TypeHandle) => `${NodeIDs.ObjectType(ref)}->${NodeIDs.Root}`,
   TypeToRelation: (ref: RelationHandle) =>
     `${NodeIDs.ObjectType(ref.parentType)}->${NodeIDs.Relation(ref)}`,
   TypeToPermission: (ref: PermissionHandle) =>
     `${NodeIDs.ObjectType(ref.parentType)}->${NodeIDs.Permission(ref)}`,
-  ReferencedRelationOrPermission: (
-    startNodeID: string,
-    ref: RelationOrPermissionHandle,
-  ) => `${startNodeID}->${NodeIDs.RelationOrPermission(ref)}`,
+  ReferencedRelationOrPermission: (startNodeID: string, ref: RelationOrPermissionHandle) =>
+    `${startNodeID}->${NodeIDs.RelationOrPermission(ref)}`,
   RelationToDataType: (ref: RelationHandle, typeRef: TypeHandle) =>
     `${NodeIDs.Relation(ref)}-->${NodeIDs.ObjectType(typeRef)}`,
-  ExpressionChild: (exprNodeID: string, parentNodeID: string) =>
-    `${parentNodeID}-e->${exprNodeID}`,
-  ArrowRelationOutward: (
-    expr: ParsedArrowExpression,
-    target: RelationOrPermissionHandle,
-  ) => `${NodeIDs.Arrow(expr)}->${NodeIDs.RelationOrPermission(target)}}`,
+  ExpressionChild: (exprNodeID: string, parentNodeID: string) => `${parentNodeID}-e->${exprNodeID}`,
+  ArrowRelationOutward: (expr: ParsedArrowExpression, target: RelationOrPermissionHandle) =>
+    `${NodeIDs.Arrow(expr)}->${NodeIDs.RelationOrPermission(target)}}`,
 };
 
 interface SourceInfo {
@@ -133,22 +126,14 @@ export function findActive<T extends WithSourceInfo>(
       return false;
     }
 
-    if (
-      item.sourceInfo.parserRange.startIndex.line === active.position.lineNumber
-    ) {
-      if (
-        item.sourceInfo.parserRange.startIndex.column >= active.position.column
-      ) {
+    if (item.sourceInfo.parserRange.startIndex.line === active.position.lineNumber) {
+      if (item.sourceInfo.parserRange.startIndex.column >= active.position.column) {
         return false;
       }
     }
 
-    if (
-      item.sourceInfo.parserRange.endIndex.line === active.position.lineNumber
-    ) {
-      if (
-        item.sourceInfo.parserRange.endIndex.column <= active.position.column
-      ) {
+    if (item.sourceInfo.parserRange.endIndex.line === active.position.lineNumber) {
+      if (item.sourceInfo.parserRange.endIndex.column <= active.position.column) {
         return false;
       }
     }
@@ -163,10 +148,7 @@ export function findActive<T extends WithSourceInfo>(
  * @param relationships The existing relationships in the testing environment. If specified, will be used for edge inference.
  * @returns The graph for subsequent calls.
  */
-export function generateTenantGraph(
-  schema?: ParsedSchema,
-  relationships?: Relationship[],
-) {
+export function generateTenantGraph(schema?: ParsedSchema, relationships?: Relationship[]) {
   if (schema === undefined) {
     return {
       nodes: [],
@@ -229,43 +211,42 @@ function generateTypeSubgraph(
   const edges: LocalEdge[] = [];
 
   // Add nodes for each relation.
-  Object.values(typeHandle.relations).forEach(
-    (relationHandle: RelationHandle) => {
-      // Add the relation node.
-      nodes.push({
-        id: NodeIDs.Relation(relationHandle),
-        label: relationHandle.relation.name,
-        group: "relation",
-        shape: "diamond",
-        color: {
-          background: COLORS.relation,
-          border: COLORS.relation,
-        },
-        sourceInfo: {
-          parserRange: relationHandle.relation.range,
-        },
-      });
+  Object.values(typeHandle.relations).forEach((relationHandle: RelationHandle) => {
+    // Add the relation node.
+    nodes.push({
+      id: NodeIDs.Relation(relationHandle),
+      label: relationHandle.relation.name,
+      group: "relation",
+      shape: "diamond",
+      color: {
+        background: COLORS.relation,
+        border: COLORS.relation,
+      },
+      sourceInfo: {
+        parserRange: relationHandle.relation.range,
+      },
+    });
 
-      // Connect the relation to the type.
-      edges.push({
-        id: EdgeIDs.TypeToRelation(relationHandle),
-        from: NodeIDs.ObjectType(relationHandle.parentType),
-        to: NodeIDs.Relation(relationHandle),
-        color: { color: COLORS.typetorelation },
-        sourceInfo: {
-          parserRange: relationHandle.relation.range,
-        },
-      });
+    // Connect the relation to the type.
+    edges.push({
+      id: EdgeIDs.TypeToRelation(relationHandle),
+      from: NodeIDs.ObjectType(relationHandle.parentType),
+      to: NodeIDs.Relation(relationHandle),
+      color: { color: COLORS.typetorelation },
+      sourceInfo: {
+        parserRange: relationHandle.relation.range,
+      },
+    });
 
-      // Connect the relation via data edges to any data referenced namespaces.
-      const links = typeSet.lookupRelationLinks(relationHandle);
-      links.forEach((link: RelationLink) => {
-        const referencedType = link.subjectType;
-        const tableContents = link.relationships
-          .map((rel: Relationship) => {
-            // NOTE: VisJS is doing the sanitizing of the input here. This was verified
-            // manually by jschorr.
-            return `<tr>
+    // Connect the relation via data edges to any data referenced namespaces.
+    const links = typeSet.lookupRelationLinks(relationHandle);
+    links.forEach((link: RelationLink) => {
+      const referencedType = link.subjectType;
+      const tableContents = link.relationships
+        .map((rel: Relationship) => {
+          // NOTE: VisJS is doing the sanitizing of the input here. This was verified
+          // manually by jschorr.
+          return `<tr>
                     <td><code>${rel.resourceAndRelation?.namespace}</code></td>
                     <td><code>:</code></td>
                     <td><code>${rel.resourceAndRelation?.objectId}</code></td>
@@ -280,9 +261,7 @@ function generateTypeSubgraph(
                         ? "target-permission"
                         : "target-relation"
                     }"><code>${
-                      rel.subject?.relation === "..."
-                        ? ""
-                        : `#${rel.subject?.relation}`
+                      rel.subject?.relation === "..." ? "" : `#${rel.subject?.relation}`
                     }</code></td>
                         ${
                           rel.caveat?.caveatName
@@ -290,71 +269,68 @@ function generateTypeSubgraph(
                             : ""
                         }
                 </tr>`;
-          })
-          .join("");
+        })
+        .join("");
 
-        const relationshipListStr = `<table class="${RELATIONSHIP_TABLE_CLASS_NAME}">${tableContents}</table>`;
-        edges.push({
-          id: EdgeIDs.RelationToDataType(relationHandle, referencedType),
-          to: link.subjectRelation
-            ? NodeIDs.RelationOrPermission(link.subjectRelation)
-            : NodeIDs.ObjectType(referencedType),
-          from: NodeIDs.Relation(relationHandle),
-          color: { color: COLORS.dataref },
-          dashes: [1, 5],
-          arrows: {
-            to: { enabled: true },
-          },
-          title: `Relationships defined from ${relationHandle.relation.name} to ${referencedType.definition.name}:<br>${relationshipListStr}`,
-          sourceInfo: {
-            parserRange: undefined,
-          },
-        });
+      const relationshipListStr = `<table class="${RELATIONSHIP_TABLE_CLASS_NAME}">${tableContents}</table>`;
+      edges.push({
+        id: EdgeIDs.RelationToDataType(relationHandle, referencedType),
+        to: link.subjectRelation
+          ? NodeIDs.RelationOrPermission(link.subjectRelation)
+          : NodeIDs.ObjectType(referencedType),
+        from: NodeIDs.Relation(relationHandle),
+        color: { color: COLORS.dataref },
+        dashes: [1, 5],
+        arrows: {
+          to: { enabled: true },
+        },
+        title: `Relationships defined from ${relationHandle.relation.name} to ${referencedType.definition.name}:<br>${relationshipListStr}`,
+        sourceInfo: {
+          parserRange: undefined,
+        },
       });
-    },
-  );
+    });
+  });
 
   // Add nodes for each permission.
-  Object.values(typeHandle.permissions).forEach(
-    (permissionHandle: PermissionHandle) => {
-      // Add the permission node.
-      nodes.push({
-        id: NodeIDs.Permission(permissionHandle),
-        label: permissionHandle.permission.name,
-        group: "permission",
-        shape: "diamond",
-        color: {
-          background: "transparent",
-          border: COLORS.permission,
-        },
-        sourceInfo: {
-          parserRange: permissionHandle.permission.range,
-        },
-      });
+  Object.values(typeHandle.permissions).forEach((permissionHandle: PermissionHandle) => {
+    // Add the permission node.
+    nodes.push({
+      id: NodeIDs.Permission(permissionHandle),
+      label: permissionHandle.permission.name,
+      group: "permission",
+      shape: "diamond",
+      color: {
+        background: "transparent",
+        border: COLORS.permission,
+      },
+      sourceInfo: {
+        parserRange: permissionHandle.permission.range,
+      },
+    });
 
-      // Add nodes and edges representing the permission's expression.
-      const { nodes: exNodes, edges: exEdges } = generateExpressionGraph(
-        permissionHandle.permission.expr,
-        NodeIDs.Permission(permissionHandle),
-        typeHandle,
-        typeSet,
-        getTuplesetPathColor,
-      );
-      nodes.push(...exNodes);
-      edges.push(...exEdges);
+    // Add nodes and edges representing the permission's expression.
+    const { nodes: exNodes, edges: exEdges } = generateExpressionGraph(
+      permissionHandle.permission.expr,
+      NodeIDs.Permission(permissionHandle),
+      typeHandle,
+      typeSet,
+      getTuplesetPathColor,
+    );
+    nodes.push(...exNodes);
+    edges.push(...exEdges);
 
-      // Connect the permission to the type.
-      edges.push({
-        id: EdgeIDs.TypeToPermission(permissionHandle),
-        from: NodeIDs.ObjectType(permissionHandle.parentType),
-        to: NodeIDs.Permission(permissionHandle),
-        color: { color: COLORS.typetopermission },
-        sourceInfo: {
-          parserRange: permissionHandle.permission.range,
-        },
-      });
-    },
-  );
+    // Connect the permission to the type.
+    edges.push({
+      id: EdgeIDs.TypeToPermission(permissionHandle),
+      from: NodeIDs.ObjectType(permissionHandle.parentType),
+      to: NodeIDs.Permission(permissionHandle),
+      color: { color: COLORS.typetopermission },
+      sourceInfo: {
+        parserRange: permissionHandle.permission.range,
+      },
+    });
+  });
 
   // Add the type's node.
   nodes.push({
@@ -394,9 +370,7 @@ function generateExpressionGraph(
 
   switch (expression.kind) {
     case "relationref": {
-      const found = typeHandle.lookupRelationOrPermission(
-        expression.relationName,
-      );
+      const found = typeHandle.lookupRelationOrPermission(expression.relationName);
       if (found) {
         edges.push({
           id: EdgeIDs.ReferencedRelationOrPermission(parentNodeID, found),
@@ -416,9 +390,7 @@ function generateExpressionGraph(
     }
 
     case "arrow": {
-      const resolved = typeHandle.lookupRelation(
-        expression.sourceRelation.relationName,
-      );
+      const resolved = typeHandle.lookupRelation(expression.sourceRelation.relationName);
       if (resolved !== undefined) {
         const arrowColor = getTuplesetPathColor();
         edges.push({
@@ -483,15 +455,10 @@ function generateExpressionGraph(
       if (unionedRelations) {
         const { relations, nodes: urNodes, edges: urEdges } = unionedRelations;
         relations.forEach((expr: ParsedRelationRefExpression) => {
-          const referenced = typeHandle.lookupRelationOrPermission(
-            expr.relationName,
-          );
+          const referenced = typeHandle.lookupRelationOrPermission(expr.relationName);
           if (referenced) {
             edges.push({
-              id: EdgeIDs.ExpressionChild(
-                NodeIDs.RelationOrPermission(referenced),
-                parentNodeID,
-              ),
+              id: EdgeIDs.ExpressionChild(NodeIDs.RelationOrPermission(referenced), parentNodeID),
               from: parentNodeID,
               to: NodeIDs.RelationOrPermission(referenced),
               arrows: {

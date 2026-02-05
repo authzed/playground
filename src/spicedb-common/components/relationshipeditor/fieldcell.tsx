@@ -6,20 +6,12 @@ import {
 } from "@glideapps/glide-data-grid";
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
-import Autocomplete, {
-  type AutocompleteRenderInputParams,
-} from "@material-ui/lab/Autocomplete";
+import Autocomplete, { type AutocompleteRenderInputParams } from "@material-ui/lab/Autocomplete";
 import { MutableRefObject, useRef } from "react";
 import stc from "string-to-color";
 import { ResolvedDefinition, Resolver } from "@authzed/spicedb-parser-js";
 import { RelationshipsService } from "../../services/relationshipsservice";
-import {
-  COLUMNS,
-  Column,
-  DataKind,
-  DataTitle,
-  RelationshipSection,
-} from "./columns";
+import { COLUMNS, Column, DataKind, DataTitle, RelationshipSection } from "./columns";
 import { AnnotatedData } from "./data";
 
 export const TYPE_CELL_KIND = "type-field-cell";
@@ -74,12 +66,7 @@ export type CaveatNameCell = CustomCell<CaveatNameCellProps>;
 export type CaveatContextCell = CustomCell<CaveatContextCellProps>;
 export type ExpirationCell = CustomCell<ExpirationCellProps>;
 
-export type AnyCell =
-  | TypeCell
-  | ObjectIdCell
-  | RelationCell
-  | CaveatNameCell
-  | CaveatContextCell;
+export type AnyCell = TypeCell | ObjectIdCell | RelationCell | CaveatNameCell | CaveatContextCell;
 
 type SelectedType = {
   type: string;
@@ -133,10 +120,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         const textMetrics = ctx.measureText(dataValue);
         if (textMetrics.width / rect.width > 1) {
           dataValue = dataValue
-            .substring(
-              0,
-              dataValue.length * (rect.width / textMetrics.width) - 4,
-            )
+            .substring(0, dataValue.length * (rect.width / textMetrics.width) - 4)
             .concat("...");
         }
 
@@ -165,8 +149,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
           props.selected.selectedRelation;
         const selectedObject: SelectedObject | undefined =
           props.selected.selectedObject || props.selected.selectedRelation;
-        const selectedRelation: SelectedRelation | undefined =
-          props.selected.selectedRelation;
+        const selectedRelation: SelectedRelation | undefined = props.selected.selectedRelation;
         const selectedCaveatName: SelectedCaveatName | undefined =
           props.selected.selectedCaveatName;
 
@@ -181,9 +164,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
                 selectedType.type &&
                 dataValue === selectedType.type
               ) {
-                similarColor = props.relationshipsService.getTypeColor(
-                  selectedType.type,
-                );
+                similarColor = props.relationshipsService.getTypeColor(selectedType.type);
               }
               break;
 
@@ -194,8 +175,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
                 selectedObject !== undefined &&
                 selectedObject.objectid &&
                 dataValue === selectedObject.objectid &&
-                props.annotatedData[row].columnData[zeroIndexedCol - 1] ===
-                  selectedObject.type
+                props.annotatedData[row].columnData[zeroIndexedCol - 1] === selectedObject.type
               ) {
                 similarColor = props.relationshipsService.getObjectColor(
                   selectedObject.type,
@@ -211,8 +191,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
                 selectedRelation !== undefined &&
                 selectedRelation.relation &&
                 dataValue === selectedRelation.relation &&
-                props.annotatedData[row].columnData[zeroIndexedCol - 2] ===
-                  selectedRelation.type &&
+                props.annotatedData[row].columnData[zeroIndexedCol - 2] === selectedRelation.type &&
                 props.annotatedData[row].columnData[zeroIndexedCol - 1] ===
                   selectedRelation.objectid
               ) {
@@ -248,12 +227,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
 
           ctx.fillStyle = alpha(similarColor, 0.2);
           ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
-          ctx.strokeRect(
-            rect.x + 2,
-            rect.y + 2,
-            rect.width - 3,
-            rect.height - 3,
-          );
+          ctx.strokeRect(rect.x + 2, rect.y + 2, rect.width - 3, rect.height - 3);
         }
 
         if (highlighted) {
@@ -264,12 +238,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         ctx.save();
         ctx.fillStyle = theme.textDark;
         ctx.font = "12px Roboto Mono, Monospace";
-        ctx.fillText(
-          dataValue,
-          rect.x + 10,
-          rect.y + rect.height / 2 + 1,
-          rect.width - 20,
-        );
+        ctx.fillText(dataValue, rect.x + 10, rect.y + rect.height / 2 + 1, rect.width - 20);
 
         ctx.restore();
         return true;
@@ -407,10 +376,7 @@ export const TypeCellRenderer = fieldCellRenderer<TypeCell, TypeCellProps>(
   },
 );
 
-export const ObjectIdCellRenderer = fieldCellRenderer<
-  ObjectIdCell,
-  ObjectIdCellProps
->(
+export const ObjectIdCellRenderer = fieldCellRenderer<ObjectIdCell, ObjectIdCellProps>(
   OBJECTID_CELL_KIND,
   (props: FieldCellRendererProps, cellProps: ObjectIdCellProps) => {
     if (props.resolver === undefined) {
@@ -425,17 +391,12 @@ export const ObjectIdCellRenderer = fieldCellRenderer<
     }
 
     return (
-      props.relationshipsService
-        .getObjectIds(resolvedDefinition.definition.name)
-        ?.sort() ?? []
+      props.relationshipsService.getObjectIds(resolvedDefinition.definition.name)?.sort() ?? []
     );
   },
 );
 
-export const RelationCellRenderer = fieldCellRenderer<
-  RelationCell,
-  RelationCellProps
->(
+export const RelationCellRenderer = fieldCellRenderer<RelationCell, RelationCellProps>(
   RELATION_CELL_KIND,
   (props: FieldCellRendererProps, cellProps: RelationCellProps) => {
     if (props.resolver === undefined) {
@@ -457,22 +418,22 @@ export const RelationCellRenderer = fieldCellRenderer<
   },
 );
 
-export const CaveatNameCellRenderer = fieldCellRenderer<
-  CaveatNameCell,
-  CaveatNameCellProps
->(CAVEATNAME_CELL_KIND, (props: FieldCellRendererProps) => {
-  if (props.resolver === undefined) {
-    return [];
-  }
+export const CaveatNameCellRenderer = fieldCellRenderer<CaveatNameCell, CaveatNameCellProps>(
+  CAVEATNAME_CELL_KIND,
+  (props: FieldCellRendererProps) => {
+    if (props.resolver === undefined) {
+      return [];
+    }
 
-  const { selectedCaveatName } = props.selected;
-  if (selectedCaveatName?.type === undefined) {
-    return [];
-  }
+    const { selectedCaveatName } = props.selected;
+    if (selectedCaveatName?.type === undefined) {
+      return [];
+    }
 
-  const def = props.resolver.lookupDefinition(selectedCaveatName.type);
-  return def ? def.listWithCaveatNames().sort() : [];
-});
+    const def = props.resolver.lookupDefinition(selectedCaveatName.type);
+    return def ? def.listWithCaveatNames().sort() : [];
+  },
+);
 
 export const CaveatContextCellRenderer = fieldCellRenderer<
   CaveatContextCell,
@@ -482,10 +443,10 @@ export const CaveatContextCellRenderer = fieldCellRenderer<
   return [];
 });
 
-export const ExpirationCellRenderer = fieldCellRenderer<
-  ExpirationCell,
-  ExpirationCellProps
->(EXPIRATION_CELL_KIND, () => {
-  // No autocomplete support
-  return [];
-});
+export const ExpirationCellRenderer = fieldCellRenderer<ExpirationCell, ExpirationCellProps>(
+  EXPIRATION_CELL_KIND,
+  () => {
+    // No autocomplete support
+    return [];
+  },
+);

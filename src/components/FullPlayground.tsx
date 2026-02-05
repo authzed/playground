@@ -7,15 +7,10 @@ import { useZedTerminalService } from "../spicedb-common/services/zedterminalser
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 import { LinearProgress, Tab, Tabs, Tooltip } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
-import ButtonGroup from "@material-ui/core/ButtonGroup";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import TextField from "@material-ui/core/TextField";
-import {
-  Theme,
-  createStyles,
-  darken,
-  makeStyles,
-} from "@material-ui/core/styles";
+import { Theme, createStyles, darken, makeStyles } from "@material-ui/core/styles";
 import { alpha } from "@material-ui/core/styles/colorManipulator";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
@@ -44,10 +39,7 @@ import { useKeyboardShortcuts } from "use-keyboard-shortcuts";
 import DISCORD from "../assets/discord.svg?react";
 import { useLiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
-import {
-  RelationshipsEditorType,
-  useCookieService,
-} from "../services/cookieservice";
+import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import {
   DataStore,
   DataStoreItem,
@@ -58,15 +50,8 @@ import {
 import { useLocalParseService } from "../services/localparse";
 import { ProblemService, useProblemService } from "../services/problem";
 import { Services } from "../services/services";
-import {
-  ValidationResult,
-  ValidationStatus,
-  useValidationService,
-} from "../services/validation";
-import {
-  createValidationYAML,
-  normalizeValidationYAML,
-} from "../services/validationfileformat";
+import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
+import { createValidationYAML, normalizeValidationYAML } from "../services/validationfileformat";
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay, EditorDisplayProps } from "./EditorDisplay";
 import { ExamplesDropdown } from "./ExamplesDropdown";
@@ -152,9 +137,7 @@ const useStyles = makeStyles((theme: Theme) =>
       "& .MuiTab-root": {
         minWidth: 0,
         backgroundColor: (props: StyleProps) =>
-          props.prefersDarkMode
-            ? "#1b1b1b"
-            : darken(theme.palette.background.default, 0.05),
+          props.prefersDarkMode ? "#1b1b1b" : darken(theme.palette.background.default, 0.05),
       },
       "& .Mui-selected": {
         backgroundColor: () => alpha(theme.palette.primary.light, 0.15),
@@ -164,9 +147,7 @@ const useStyles = makeStyles((theme: Theme) =>
         gridTemplateColumns: "100%",
         gridTemplateRows: "auto auto",
         backgroundColor: (props: StyleProps) =>
-          props.prefersDarkMode
-            ? "#1b1b1b"
-            : darken(theme.palette.background.default, 0.05),
+          props.prefersDarkMode ? "#1b1b1b" : darken(theme.palette.background.default, 0.05),
       },
     },
     contextToolbar: {
@@ -389,11 +370,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const localParseService = useLocalParseService(datastore);
   const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
-  const problemService = useProblemService(
-    localParseService,
-    liveCheckService,
-    validationService,
-  );
+  const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = useZedTerminalService();
 
   const services = {
@@ -469,9 +446,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   };
 
   const formatSchema = () => {
-    const schema = datastore.getSingletonByKind(
-      DataStoreItemKind.SCHEMA,
-    ).editableContents;
+    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents;
     const request = developerService.newRequest(schema, "");
     request?.formatSchema((result) => {
       datastore.update(
@@ -492,9 +467,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       status: SharingStatus.SHARING,
     });
 
-    const schema = datastore.getSingletonByKind(
-      DataStoreItemKind.SCHEMA,
-    ).editableContents!;
+    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
       DataStoreItemKind.RELATIONSHIPS,
     ).editableContents!;
@@ -522,9 +495,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       });
 
       if (!response.ok) {
-        const errorData = await response
-          .json()
-          .catch(() => ({ error: "Unknown error" }));
+        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
         toast.error("Error sharing", {
           description: errorData.error || "Failed to share playground",
         });
@@ -546,8 +517,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       });
     } catch (error: unknown) {
       toast.error("Error sharing", {
-        description:
-          error instanceof Error ? error.message : "Failed to share playground",
+        description: error instanceof Error ? error.message : "Failed to share playground",
       });
       setSharingState({
         status: SharingStatus.SHARE_ERROR,
@@ -576,9 +546,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     navigate({ to: DataStorePaths.Schema(), replace: true });
   };
 
-  const [previousValidationForDiff, setPreviousValidationForDiff] = useState<
-    string | undefined
-  >(undefined);
+  const [previousValidationForDiff, setPreviousValidationForDiff] = useState<string | undefined>(
+    undefined,
+  );
 
   const conductValidation = () => {
     validationService.conductValidation(() => {
@@ -593,38 +563,34 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     }
 
     setPreviousValidationForDiff(undefined);
-    validationService.conductValidation(
-      (_validated: boolean, result: ValidationResult) => {
-        if (result.updatedValidationYaml) {
-          const updatedYaml = normalizeValidationYAML(
-            result.updatedValidationYaml,
-          );
-          const expectedRelations = datastore.getSingletonByKind(
-            DataStoreItemKind.EXPECTED_RELATIONS,
-          );
+    validationService.conductValidation((_validated: boolean, result: ValidationResult) => {
+      if (result.updatedValidationYaml) {
+        const updatedYaml = normalizeValidationYAML(result.updatedValidationYaml);
+        const expectedRelations = datastore.getSingletonByKind(
+          DataStoreItemKind.EXPECTED_RELATIONS,
+        );
 
-          if (updatedYaml === expectedRelations.editableContents) {
-            return false;
-          }
-
-          if (diff) {
-            setPreviousValidationForDiff(expectedRelations.editableContents);
-          }
-
-          if (!updatedYaml) {
-            return false;
-          }
-
-          datastore.update(expectedRelations, updatedYaml);
-          datastoreUpdated();
-
-          // Rerun validation to remove any errors.
-          conductValidation();
+        if (updatedYaml === expectedRelations.editableContents) {
           return false;
         }
+
+        if (diff) {
+          setPreviousValidationForDiff(expectedRelations.editableContents);
+        }
+
+        if (!updatedYaml) {
+          return false;
+        }
+
+        datastore.update(expectedRelations, updatedYaml);
+        datastoreUpdated();
+
+        // Rerun validation to remove any errors.
+        conductValidation();
         return false;
-      },
-    );
+      }
+      return false;
+    });
   };
 
   const handleAcceptDiff = () => {
@@ -633,9 +599,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const handleRevertDiff = () => {
     if (previousValidationForDiff !== undefined) {
-      const expectedRelations = datastore.getSingletonByKind(
-        DataStoreItemKind.EXPECTED_RELATIONS,
-      );
+      const expectedRelations = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
       datastore.update(expectedRelations, previousValidationForDiff);
 
       datastoreUpdated();
@@ -673,23 +637,19 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const isOutOfDate = props.datastore.isOutOfDate();
   const cookieService = useCookieService();
 
-  const [relationshipsEditor, setRelationshipEditor] =
-    useState<RelationshipsEditorType>(() => {
-      if (services.problemService.invalidRelationships.length > 0) {
-        return "code";
-      }
+  const [relationshipsEditor, setRelationshipEditor] = useState<RelationshipsEditorType>(() => {
+    if (services.problemService.invalidRelationships.length > 0) {
+      return "code";
+    }
 
-      return cookieService.relationshipsEditorType;
-    });
+    return cookieService.relationshipsEditorType;
+  });
   const handleChangeRelationshipEditor = (
     _event: React.MouseEvent<HTMLElement, MouseEvent>,
     value: unknown,
   ) => {
     const type = value ? value.toString() : "grid";
-    if (
-      type === "grid" &&
-      services.problemService.invalidRelationships.length > 0
-    ) {
+    if (type === "grid" && services.problemService.invalidRelationships.length > 0) {
       return;
     }
 
@@ -708,8 +668,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         <Alert variant="destructive">
           <CircleX />
           <AlertTitle>
-            WebAssembly is disabled but is required for Playground debugging.
-            All debugging tools will be disabled.
+            WebAssembly is disabled but is required for Playground debugging. All debugging tools
+            will be disabled.
           </AlertTitle>
         </Alert>
       )}
@@ -717,8 +677,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         <Alert>
           <MessageCircleWarning />
           <AlertTitle>
-            The contents of the Playground have been updated in another tab.
-            Please close this Playground tab.
+            The contents of the Playground have been updated in another tab. Please close this
+            Playground tab.
           </AlertTitle>
         </Alert>
       )}
@@ -731,21 +691,13 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       <AppBar position="static" color="default" className={classes.topBar}>
         <div className={classes.logoContainer}>
           <div className={classes.normalLogo}>
-            <a
-              href="https://authzed.com/spicedb"
-              rel="noreferrer"
-              target="_blank"
-            >
+            <a href="https://authzed.com/spicedb" rel="noreferrer" target="_blank">
               <NormalLogo />
             </a>{" "}
             Playground
           </div>
           <div className={classes.smallLogo}>
-            <a
-              href="https://authzed.com/spicedb"
-              rel="noreferrer"
-              target="_blank"
-            >
+            <a href="https://authzed.com/spicedb" rel="noreferrer" target="_blank">
               <SmallLogo />
             </a>
           </div>
@@ -770,80 +722,54 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 />
               )}
             </div>
-            {AppConfig().discord.inviteUrl ? (
-              <Tooltip title="Discuss on Discord">
-                <Button
-                  className={classes.hideTextOnMed}
-                  size="small"
-                  href={AppConfig().discord.inviteUrl}
-                  startIcon={
-                    <DISCORD
-                      viewBox="0 0 71 55"
-                      style={{ height: "1em", width: "1em" }}
-                    />
-                  }
-                >
-                  Discuss on Discord
-                </Button>
-              </Tooltip>
-            ) : (
-              <span />
+            {AppConfig().discord.inviteUrl && (
+              <Button asChild className={classes.hideTextOnMed} size="sm" title="Discord">
+                <a href={AppConfig().discord.inviteUrl}>
+                  <DISCORD viewBox="0 0 71 55" style={{ height: "1em", width: "1em" }} />
+                  {/* TODO: make sure this works and then do it elsewhere */}
+                  <span className="md:hidden">Discuss on Discord</span>
+                </a>
+              </Button>
             )}
-            <Tooltip title="Share">
-              <span
-                className={clsx({
-                  [classes.hide]: !isSharingEnabled,
-                })}
+            {isSharingEnabled && (
+              <Button
+                className={clsx(TourElementClass.share, classes.hideTextOnMed)}
+                title="Share"
+                size="sm"
+                onClick={conductSharing}
+                disabled={
+                  sharingState.status === SharingStatus.SHARING ||
+                  validationState.status === ValidationStatus.RUNNING
+                }
               >
-                <Button
-                  className={clsx(
-                    TourElementClass.share,
-                    classes.hideTextOnMed,
-                  )}
-                  size="small"
-                  onClick={() => conductSharing()}
-                  disabled={
-                    sharingState.status === SharingStatus.SHARING ||
-                    validationState.status === ValidationStatus.RUNNING
-                  }
-                  startIcon={<ShareIcon />}
-                >
-                  Share
-                </Button>
-              </span>
-            </Tooltip>
-            <Tooltip title="Download">
-              <span>
-                <Button
-                  className={classes.hideTextOnMed}
-                  size="small"
-                  onClick={conductDownload}
-                  disabled={
-                    sharingState.status === SharingStatus.SHARING ||
-                    validationState.status === ValidationStatus.RUNNING
-                  }
-                  startIcon={<GetAppIcon />}
-                >
-                  Download
-                </Button>
-              </span>
-            </Tooltip>
-            <Tooltip title="Load From File">
-              <span>
-                <Button
-                  className={classes.hideTextOnMed}
-                  size="small"
-                  onClick={conductUpload}
-                  disabled={
-                    sharingState.status === SharingStatus.SHARING ||
-                    validationState.status === ValidationStatus.RUNNING
-                  }
-                  startIcon={<InsertDriveFileIcon />}
-                >
-                  Load From File
-                </Button>
-              </span>
-            </Tooltip>
+                <ShareIcon />
+                Share
+              </Button>
+            )}
+            <Button
+              size="sm"
+              title="Download"
+              onClick={conductDownload}
+              disabled={
+                sharingState.status === SharingStatus.SHARING ||
+                validationState.status === ValidationStatus.RUNNING
+              }
+            >
+              <GetAppIcon />
+              Download
+            </Button>
+            <Button
+              size="sm"
+              onClick={conductUpload}
+              title="Load from File"
+              disabled={
+                sharingState.status === SharingStatus.SHARING ||
+                validationState.status === ValidationStatus.RUNNING
+              }
+            >
+              <InsertDriveFileIcon />
+              Load From File
+            </Button>
           </>
         )}
       </AppBar>
@@ -872,9 +798,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             />
             <Tab
               className={TourElementClass.testrel}
-              value={
-                datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id
-              }
+              value={datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -886,9 +810,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             />
             <Tab
               className={TourElementClass.assert}
-              value={
-                datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id
-              }
+              value={datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -899,11 +821,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               }
             />
             <Tab
-              value={
-                datastore.getSingletonByKind(
-                  DataStoreItemKind.EXPECTED_RELATIONS,
-                ).id
-              }
+              value={datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).id}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -919,11 +837,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         <div className={classes.contextToolbar}>
           <div className={classes.contextTools}>
             {currentItem?.kind === DataStoreItemKind.SCHEMA && (
-              <Button
-                variant="contained"
-                onClick={formatSchema}
-                startIcon={<FormatTextdirectionLToRIcon />}
-              >
+              <Button onClick={formatSchema}>
+                <FormatTextdirectionLToRIcon />
                 Format
               </Button>
             )}
@@ -939,9 +854,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                   <ToggleButton
                     value="grid"
                     aria-label="grid editor"
-                    disabled={
-                      services.problemService.invalidRelationships.length > 0
-                    }
+                    disabled={services.problemService.invalidRelationships.length > 0}
                   >
                     <Tooltip title="Grid Editor">
                       <GridOnIcon style={{ fontSize: "1em" }} />
@@ -978,46 +891,37 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               previousValidationForDiff === undefined && (
                 <ButtonGroup className={classes.expectedActions}>
                   <Button
-                    variant="contained"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<RefreshIcon />}
                     onClick={() => handleGenerateAndUpdate(false)}
                   >
+                    <RefreshIcon />
                     Re-Generate
                   </Button>
                   <Button
-                    variant="contained"
                     disabled={
                       developerService.state.status !== "ready" ||
                       validationState.status === ValidationStatus.RUNNING
                     }
-                    startIcon={<CompareIcon />}
                     onClick={() => handleGenerateAndUpdate(true)}
                   >
+                    <CompareIcon />
                     Compute and Diff
                   </Button>
                 </ButtonGroup>
               )}
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff !== undefined && (
+                // TODO: styling here
                 <ButtonGroup className={classes.expectedActions}>
-                  <Button
-                    variant="contained"
-                    className={classes.btnAccept}
-                    startIcon={<CheckCircleIcon />}
-                    onClick={handleAcceptDiff}
-                  >
+                  <Button className={classes.btnAccept} onClick={handleAcceptDiff}>
+                    <CheckCircleIcon />
                     Accept Update
                   </Button>
-                  <Button
-                    variant="contained"
-                    className={classes.btnRevert}
-                    startIcon={<HighlightOffIcon />}
-                    onClick={handleRevertDiff}
-                  >
+                  <Button className={classes.btnRevert} onClick={handleRevertDiff}>
+                    <HighlightOffIcon />
                     Revert Update
                   </Button>
                 </ButtonGroup>
@@ -1026,45 +930,65 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           <div />
           {currentItem?.kind === DataStoreItemKind.SCHEMA && (
             <Button
+              asChild
+              // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
-              Schema Development Guide
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
+                target="_blank"
+              >
+                <DescriptionIcon />
+                Schema Development Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
             <Button
+              asChild
+              // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
-              Test Relationships Guide
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
+                target="_blank"
+              >
+                <DescriptionIcon />
+                Test Relationships Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
             <Button
+              asChild
+              // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
-              Assertions Guide
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
+                target="_blank"
+              >
+                <DescriptionIcon />
+                Assertions Guide
+              </a>
             </Button>
           )}
 
           {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
             <Button
+              asChild
+              // TODO: styling
               className={classes.docsLink}
-              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
-              target="_blank"
-              startIcon={<DescriptionIcon />}
             >
-              Expected Relations Guide
+              <a
+                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
+                target="_blank"
+              >
+                <DescriptionIcon />
+                Expected Relations Guide
+              </a>
             </Button>
           )}
         </div>
@@ -1094,10 +1018,7 @@ const TabLabelWithCount = (props: {
   const classes = useSummaryStyles();
   const problemService = props.problemService;
   const errorCount = problemService.getErrorCount(props.kind);
-  const warningCount =
-    props.kind === DataStoreItemKind.SCHEMA
-      ? problemService.warnings.length
-      : 0;
+  const warningCount = props.kind === DataStoreItemKind.SCHEMA ? problemService.warnings.length : 0;
 
   return (
     <div className={classes.problemTab}>
@@ -1190,8 +1111,7 @@ function MainPanel(
           <Alert variant="destructive">
             <CircleX />
             <AlertTitle>
-              Could not start the Development System. Please make sure you have
-              WebAssembly enabled.
+              Could not start the Development System. Please make sure you have WebAssembly enabled.
             </AlertTitle>
           </Alert>
         );
@@ -1212,9 +1132,7 @@ function MainPanel(
   return (
     <div key="main" className={classes.mainContent}>
       {!currentItem && (
-        <div className={classes.landing}>
-          To get started, please add a namespace configuration.
-        </div>
+        <div className={classes.landing}>To get started, please add a namespace configuration.</div>
       )}
 
       <ReflexedPanelDisplay
@@ -1230,8 +1148,7 @@ function MainPanel(
               datastore={datastore}
               services={props.services}
               isReadOnly={
-                sharingState.status === SharingStatus.SHARING ||
-                props.datastore.isOutOfDate()
+                sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate()
               }
               datastoreUpdated={props.datastoreUpdated}
             />
@@ -1243,8 +1160,7 @@ function MainPanel(
             services={props.services}
             currentItem={props.currentItem}
             isReadOnly={
-              sharingState.status === SharingStatus.SHARING ||
-              props.datastore.isOutOfDate()
+              sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate()
             }
             diff={
               currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS
@@ -1274,10 +1190,7 @@ function IsolatedEditorDisplay(props: EditorDisplayProps) {
 
 const getFileContentsAsText = async (file: File): Promise<string> => {
   return new Promise(
-    (
-      resolve: (value: string | PromiseLike<string>) => void,
-      reject: () => void,
-    ) => {
+    (resolve: (value: string | PromiseLike<string>) => void, reject: () => void) => {
       const reader = new FileReader();
       reader.onloadend = function (e: ProgressEvent<FileReader>) {
         resolve(e.target?.result?.toString() ?? "");

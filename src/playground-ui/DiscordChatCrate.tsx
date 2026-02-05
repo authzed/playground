@@ -65,10 +65,7 @@ const loadFromCDN = () =>
 /**
  * DiscordChatCrate creates a WidgetBot.io crate for a Discord channel.
  */
-export const DiscordChatCrate = ({
-  serverId,
-  channelId,
-}: DiscordChatCrateProps) => {
+export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps) => {
   const crate = useRef<Crate | undefined>(undefined);
   const injected = useRef(false);
 
@@ -80,12 +77,7 @@ export const DiscordChatCrate = ({
   const color = theme.palette.primary.main;
 
   useEffect(() => {
-    if (
-      crate.current !== undefined ||
-      injected.current ||
-      !serverId ||
-      !channelId
-    ) {
+    if (crate.current !== undefined || injected.current || !serverId || !channelId) {
       return;
     }
     (async () => {

@@ -15,24 +15,16 @@ export function ValidateButton({
   validationState: ValidationState;
   developerService: DeveloperService;
 }) {
-  const upToDate =
-    validationState.validationDatastoreIndex === datastore.currentIndex();
-  const valid =
-    upToDate && validationState.status === ValidationStatus.VALIDATED;
-  const invalid =
-    upToDate && validationState.status === ValidationStatus.VALIDATION_ERROR;
+  const upToDate = validationState.validationDatastoreIndex === datastore.currentIndex();
+  const valid = upToDate && validationState.status === ValidationStatus.VALIDATED;
+  const invalid = upToDate && validationState.status === ValidationStatus.VALIDATION_ERROR;
   const loading = validationState.status === ValidationStatus.CALL_ERROR;
-  const notRun =
-    validationState.status !== ValidationStatus.CALL_ERROR && !upToDate;
+  const notRun = validationState.status !== ValidationStatus.CALL_ERROR && !upToDate;
 
   return (
     <div className="flex flex-row justify-between">
       <div className="flex flex-row px-3 mr-2 w-48 items-center bg-muted rounded-xs">
-        <ValidationIcon
-          datastore={datastore}
-          validationState={validationState}
-          className="pr-2"
-        />
+        <ValidationIcon datastore={datastore} validationState={validationState} className="pr-2" />
         {valid && "Validated!"}
         {invalid && "Failed to Validate"}
         {loading && "Dev service loading"}

@@ -1,11 +1,6 @@
 import { Example, LoadExamples } from "../spicedb-common/examples";
 
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "@/components/ui/select";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 
 import {
   AlertDialog,
@@ -72,12 +67,10 @@ export function ExamplesDropdown({
       <AlertDialog open={promptOpen} onOpenChange={setPromptOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>
-              Replace contents with "{selectedExample?.title}"?
-            </AlertDialogTitle>
+            <AlertDialogTitle>Replace contents with "{selectedExample?.title}"?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will replace all current Playground data with the example
-              data for "{selectedExample?.title}"
+              This will replace all current Playground data with the example data for "
+              {selectedExample?.title}"
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

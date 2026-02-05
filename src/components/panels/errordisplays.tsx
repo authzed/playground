@@ -85,11 +85,7 @@ export function DeveloperErrorDisplay({ error }: { error: DeveloperError }) {
   );
 }
 
-export function DeveloperWarningDisplay({
-  warning,
-}: {
-  warning: DeveloperWarning;
-}) {
+export function DeveloperWarningDisplay({ warning }: { warning: DeveloperWarning }) {
   return (
     <Alert>
       <MessageCircleWarning />
@@ -110,11 +106,7 @@ const useSourceDisplayStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-export function DeveloperWarningSourceDisplay({
-  warning,
-}: {
-  warning: DeveloperWarning;
-}) {
+export function DeveloperWarningSourceDisplay({ warning }: { warning: DeveloperWarning }) {
   const classes = useSourceDisplayStyles();
 
   return (
@@ -123,8 +115,7 @@ export function DeveloperWarningSourceDisplay({
       <Link className={classes.link} to={DataStorePaths.Schema()}>
         Schema
       </Link>
-      {/* NOTE: this is a guess; I think this was an unintentional omission. */}
-      : {warning.message}
+      {/* NOTE: this is a guess; I think this was an unintentional omission. */}: {warning.message}
     </div>
   );
 }
@@ -165,10 +156,7 @@ export function DeveloperSourceDisplay({ error }: { error: DeveloperError }) {
       {error.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className={classes.validationErrorContext}>
           In
-          <Link
-            className={classes.link}
-            to={DataStorePaths.ExpectedRelations()}
-          >
+          <Link className={classes.link} to={DataStorePaths.ExpectedRelations()}>
             Expected Relations
           </Link>
           :

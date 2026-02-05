@@ -40,12 +40,7 @@ export default function TabPanel(props: TabPanelProps) {
   const { children, value, index, ...other } = props;
 
   return (
-    <div
-      style={props.style}
-      role="tabpanel"
-      hidden={value !== index}
-      {...other}
-    >
+    <div style={props.style} role="tabpanel" hidden={value !== index} {...other}>
       <div>{children}</div>
     </div>
   );

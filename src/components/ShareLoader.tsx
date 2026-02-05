@@ -34,9 +34,7 @@ export function ShareLoader(props: {
 
   const datastore = props.datastore;
   const urlPrefix = `/${props.shareUrlRoot}/`;
-  const [loadingStatus, setLoadingStatus] = useState(
-    SharedLoadingStatus.NOT_CHECKED,
-  );
+  const [loadingStatus, setLoadingStatus] = useState(SharedLoadingStatus.NOT_CHECKED);
 
   // Register an effect to load shared data if the URL specifies to do so.
   useEffect(() => {
@@ -94,9 +92,7 @@ export function ShareLoader(props: {
             return;
           }
 
-          const errorData = await response
-            .json()
-            .catch(() => ({ error: "Unknown error" }));
+          const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
           setLoadingStatus(SharedLoadingStatus.LOAD_ERROR);
           if (props.sharedRequired) {
             return;
@@ -146,10 +142,7 @@ export function ShareLoader(props: {
         if (!props.sharedRequired) {
           // TODO: do this with routing as well
           navigate({
-            to: location.pathname.slice(
-              0,
-              urlPrefix.length + shareReference.length,
-            ),
+            to: location.pathname.slice(0, urlPrefix.length + shareReference.length),
             replace: true,
           });
         }
@@ -162,10 +155,7 @@ export function ShareLoader(props: {
         }
 
         toast.error("Error loading shared playground", {
-          description:
-            error instanceof Error
-              ? error.message
-              : "Failed to load shared playground",
+          description: error instanceof Error ? error.message : "Failed to load shared playground",
           action: {
             label: "Okay",
             onClick: () => navigate({ to: "/", replace: true }),
@@ -184,10 +174,7 @@ export function ShareLoader(props: {
     props.sharedRequired,
   ]);
 
-  if (
-    location.pathname.startsWith(urlPrefix) &&
-    loadingStatus !== SharedLoadingStatus.LOADED
-  ) {
+  if (location.pathname.startsWith(urlPrefix) && loadingStatus !== SharedLoadingStatus.LOADED) {
     return (
       <div>
         {loadingStatus === SharedLoadingStatus.NOT_APPLICABLE && (

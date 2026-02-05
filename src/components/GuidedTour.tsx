@@ -32,14 +32,12 @@ const steps: Step[] = [
   {
     target: `.${TourElementClass.assert}`,
     title: "Assertions",
-    content:
-      "...and then define assertions to validate your schema and relationships",
+    content: "...and then define assertions to validate your schema and relationships",
   },
   {
     target: `.${TourElementClass.run}`,
     title: "Validate",
-    content:
-      "Click Run to test your assertions against your permissions system",
+    content: "Click Run to test your assertions against your permissions system",
   },
   {
     target: `.${TourElementClass.problems}`,
@@ -84,13 +82,7 @@ const handleEvents = (
   onTourEnd: () => void,
   onEnterStep: (className: string) => void,
 ) => {
-  return (data: {
-    action: string;
-    index: number;
-    size: number;
-    type: string;
-    step: Step;
-  }) => {
+  return (data: { action: string; index: number; size: number; type: string; step: Step }) => {
     const { action, type, step } = data;
 
     // Tour start
@@ -112,10 +104,7 @@ const handleEvents = (
       // No-op
     }
     // Tour skip
-    if (
-      (ACTIONS.SKIP === action && EVENTS.TOUR_END === type) ||
-      ACTIONS.CLOSE === action
-    ) {
+    if ((ACTIONS.SKIP === action && EVENTS.TOUR_END === type) || ACTIONS.CLOSE === action) {
       onSkip();
     }
   };
