@@ -1,7 +1,9 @@
 import { useState } from "react";
-import { Panel } from "./common";
-import { panelLocations, type ReflexedPanelLocation } from "../types";
 import z from "zod";
+
+import { panelLocations, type ReflexedPanelLocation } from "../types";
+
+import { Panel } from "./common";
 
 /**
  * LocationData is a location and its metadata.

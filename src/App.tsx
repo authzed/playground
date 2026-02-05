@@ -1,15 +1,8 @@
-import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
-import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
-import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
 import "react-reflex/styles.css";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 import "./App.css";
-import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
-import { FullPlayground } from "./components/FullPlayground";
-import { InlinePlayground } from "./components/InlinePlayground";
-import AppConfig from "./services/configservice";
-import { PLAYGROUND_UI_COLORS } from "./theme";
-import { ThemeProvider } from "@/components/ThemeProvider";
+
+import { PostHogProvider } from "@posthog/react";
 import {
   Outlet,
   RouterProvider,
@@ -18,9 +11,19 @@ import {
   createRootRoute,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
-import { Toaster } from "./components/ui/sonner";
 import posthog from "posthog-js";
-import { PostHogProvider } from "@posthog/react";
+
+import { ThemeProvider } from "@/components/ThemeProvider";
+
+import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
+import { FullPlayground } from "./components/FullPlayground";
+import { InlinePlayground } from "./components/InlinePlayground";
+import { Toaster } from "./components/ui/sonner";
+import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
+import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
+import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
+import AppConfig from "./services/configservice";
+import { PLAYGROUND_UI_COLORS } from "./theme";
 
 const rootRoute = createRootRoute({
   component: () => (

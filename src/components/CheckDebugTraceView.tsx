@@ -1,10 +1,3 @@
-import {
-  CaveatEvalInfo,
-  CaveatEvalInfo_Result,
-  CheckDebugTrace,
-  CheckDebugTrace_Permissionship,
-  CheckDebugTrace_PermissionType,
-} from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
 import type { JsonObject, JsonValue } from "@bufbuild/protobuf";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
@@ -15,7 +8,15 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import TreeItem from "@material-ui/lab/TreeItem";
 import TreeView from "@material-ui/lab/TreeView";
 import clsx from "clsx";
+
 import { LocalParseService } from "../services/localparse";
+import {
+  CaveatEvalInfo,
+  CaveatEvalInfo_Result,
+  CheckDebugTrace,
+  CheckDebugTrace_Permissionship,
+  CheckDebugTrace_PermissionType,
+} from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

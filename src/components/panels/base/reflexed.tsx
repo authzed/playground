@@ -1,11 +1,14 @@
+import "react-reflex/styles.css";
+
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import HorizontalSplitIcon from "@material-ui/icons/HorizontalSplit";
 import VerticalSplitIcon from "@material-ui/icons/VerticalSplit";
 import { useEffect, useState, Children, isValidElement, cloneElement, type ReactNode } from "react";
 import { HandlerProps, ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
-import "react-reflex/styles.css";
+
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
+
 import { Panel } from "./common";
 import { PanelDisplay, PanelSummaryBar, SUMMARY_BAR_HEIGHT } from "./components";
 import { PanelsCoordinator, usePanelsCoordinator } from "./coordinator";

@@ -1,7 +1,8 @@
-import { ParsedValidation } from "../spicedb-common/validationfileformat";
 import { useRef } from "react";
 import { v4 as uuidv4 } from "uuid";
 import yaml from "yaml";
+
+import { ParsedValidation } from "../spicedb-common/validationfileformat";
 
 // NOTE: Remember to set lineWidth to 0 for yaml.stringify. Important to prevent string folding.
 

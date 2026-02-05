@@ -1,34 +1,37 @@
+import "react-reflex/styles.css";
+
+import { createStyles, makeStyles } from "@material-ui/core/styles";
+import useMediaQuery from "@material-ui/core/useMediaQuery";
+import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
+import { useNavigate, useLocation } from "@tanstack/react-router";
+import lineColumn from "line-column";
+import monaco from "monaco-editor";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { flushSync } from "react-dom";
+
+import { ScrollLocation, useCookieService } from "../services/cookieservice";
+import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
+import { LocalParseState } from "../services/localparse";
+import { Services } from "../services/services";
+import { TextRange } from "../spicedb-common/include/protobuf-parser";
 import registerDSLanguage, {
   DS_DARK_THEME_NAME,
   DS_LANGUAGE_NAME,
   DS_THEME_NAME,
 } from "../spicedb-common/lang/dslang";
-import { TextRange } from "../spicedb-common/include/protobuf-parser";
 import { RelationshipFound } from "../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
-import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
-import lineColumn from "line-column";
-import monaco from "monaco-editor";
-import { useEffect, useMemo, useRef, useState } from "react";
-import { flushSync } from "react-dom";
-import "react-reflex/styles.css";
-import { useNavigate, useLocation } from "@tanstack/react-router";
-import { ScrollLocation, useCookieService } from "../services/cookieservice";
-import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
-import { LocalParseState } from "../services/localparse";
-import { Services } from "../services/services";
+
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
 import registerTupleLanguage, {
   TUPLE_DARK_THEME_NAME,
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
 } from "./tuplelang";
-import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 const useStyles = makeStyles(() =>
   createStyles({

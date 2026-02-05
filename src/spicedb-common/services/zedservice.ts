@@ -1,9 +1,10 @@
-import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
-import { useCallback, useEffect, useState } from "react";
-import { parseRelationships } from "../parsing";
-import { RequestContextSchema } from "../protodefs/developer/v1/developer_pb";
 import { create, toJson } from "@bufbuild/protobuf";
+import { useCallback, useEffect, useState } from "react";
+
 import wasmConfig from "../../wasm-config.json";
+import { parseRelationships } from "../parsing";
+import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
+import { RequestContextSchema } from "../protodefs/developer/v1/developer_pb";
 
 const WASM_FILE = `/static/zed.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes

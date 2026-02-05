@@ -1,24 +1,25 @@
-import {
-  RelationTupleHighlight,
-  RelationshipEditor,
-} from "../spicedb-common/components/relationshipeditor/RelationshipEditor";
+import { Theme } from "@glideapps/glide-data-grid";
+import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
+import { useCallback, useMemo, useState } from "react";
+import useDeepCompareEffect from "use-deep-compare-effect";
+
+import { DataStore, DataStoreItemKind } from "../services/datastore";
+import { Services } from "../services/services";
 import { CommentCellPrefix } from "../spicedb-common/components/relationshipeditor/columns";
 import {
   RelationshipDatum,
   relationshipToDatum,
   toFullRelationshipString,
 } from "../spicedb-common/components/relationshipeditor/data";
+import {
+  RelationTupleHighlight,
+  RelationshipEditor,
+} from "../spicedb-common/components/relationshipeditor/RelationshipEditor";
 import { RelationshipOrComment, parseRelationshipsAndComments } from "../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperError_Source,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { Theme } from "@glideapps/glide-data-grid";
-import { useCallback, useMemo, useState } from "react";
-import useDeepCompareEffect from "use-deep-compare-effect";
-import { DataStore, DataStoreItemKind } from "../services/datastore";
-import { Services } from "../services/services";
-import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 
 const partialRelationshipCommentPrefix = "partial relationship: ";
 

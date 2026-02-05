@@ -1,11 +1,12 @@
+import type { MessageInitShape } from "@bufbuild/protobuf";
+import { create } from "@bufbuild/protobuf";
+import { Timestamp, timestampDate, timestampFromMs } from "@bufbuild/protobuf/wkt";
+
 import {
   ContextualizedCaveatSchema,
   RelationTuple as Relationship,
   RelationTupleSchema as RelationshipSchema,
 } from "./protodefs/core/v1/core_pb";
-import { Timestamp, timestampDate, timestampFromMs } from "@bufbuild/protobuf/wkt";
-import type { MessageInitShape } from "@bufbuild/protobuf";
-import { create } from "@bufbuild/protobuf";
 
 export const CAVEAT_NAME_EXPR = "([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]";
 

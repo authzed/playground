@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+
 import { assert } from "../test/utils";
+
 import {
   convertRelationshipToString,
   mergeRelationshipsStringAndComments,

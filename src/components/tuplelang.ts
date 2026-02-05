@@ -1,5 +1,6 @@
 import { editor, Position } from "monaco-editor";
 import * as monacoEditor from "monaco-editor";
+
 import { LocalParseState } from "../services/localparse";
 import {
   getCaveatDefinitions,

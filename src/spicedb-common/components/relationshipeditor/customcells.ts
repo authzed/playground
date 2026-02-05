@@ -1,11 +1,13 @@
+import { Resolver } from "@authzed/spicedb-parser-js";
 import {
   type DataEditorProps,
   type CustomRenderer,
   type GridSelection,
 } from "@glideapps/glide-data-grid";
 import { useMemo, useRef } from "react";
-import { Resolver } from "@authzed/spicedb-parser-js";
+
 import { RelationshipsService } from "../../services/relationshipsservice";
+
 import { COLUMNS, Column, DataKind } from "./columns";
 import { CommentCell, CommentCellRenderer } from "./commentcell";
 import { AnnotatedData } from "./data";

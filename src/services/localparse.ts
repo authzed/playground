@@ -5,8 +5,10 @@ import {
   Resolver,
 } from "@authzed/spicedb-parser-js";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import { parseRelationshipsWithErrors, RelationshipFound } from "../spicedb-common/parsing";
 import { useEffect, useMemo, useState } from "react";
+
+import { parseRelationshipsWithErrors, RelationshipFound } from "../spicedb-common/parsing";
+
 import { DataStore, DataStoreItemKind } from "./datastore";
 
 export interface LocalParseService {

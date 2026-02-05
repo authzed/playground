@@ -1,4 +1,5 @@
 import { SizedGridColumn } from "@glideapps/glide-data-grid";
+
 import {
   CAVEAT_NAME_EXPR,
   NAMESPACE_REGEX,

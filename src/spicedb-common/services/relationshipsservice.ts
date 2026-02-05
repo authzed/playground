@@ -9,6 +9,7 @@ import {
   interpolateYlOrBr,
 } from "d3-scale-chromatic";
 import { useMemo } from "react";
+
 import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
 
 /**

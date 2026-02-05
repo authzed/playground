@@ -1,4 +1,5 @@
 import useMediaQuery from "@material-ui/core/useMediaQuery";
+
 import AUTHZED_DM_SMALL_LOGO from "../assets/favicon-dark-mode.svg?react";
 import AUTHZED_SMALL_LOGO from "../assets/favicon.svg?react";
 

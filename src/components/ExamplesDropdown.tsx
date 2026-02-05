@@ -1,6 +1,5 @@
-import { Example, LoadExamples } from "../spicedb-common/examples";
-
-import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
+import { usePostHog } from "@posthog/react";
+import { useEffect, useState } from "react";
 
 import {
   AlertDialog,
@@ -12,9 +11,9 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/ui/select";
 
-import { useEffect, useState } from "react";
-import { usePostHog } from "@posthog/react";
+import { Example, LoadExamples } from "../spicedb-common/examples";
 
 export function ExamplesDropdown({
   disabled,

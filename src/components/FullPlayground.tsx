@@ -1,19 +1,10 @@
-import { useEffect, useMemo, useState, type ReactNode, type ChangeEvent } from "react";
+import "react-reflex/styles.css";
 
-import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
-import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
-import TabLabel from "../playground-ui/TabLabel";
-import { Example } from "../spicedb-common/examples";
-import { useDeveloperService } from "../spicedb-common/services/developerservice";
-import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
-import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 import { LinearProgress, Tab, Tabs } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
-import TextField from "@material-ui/core/TextField";
 import { Theme, createStyles, darken, makeStyles } from "@material-ui/core/styles";
 import { alpha } from "@material-ui/core/styles/colorManipulator";
+import TextField from "@material-ui/core/TextField";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CodeIcon from "@material-ui/icons/Code";
@@ -26,17 +17,25 @@ import HighlightOffIcon from "@material-ui/icons/HighlightOff";
 import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
 import RefreshIcon from "@material-ui/icons/Refresh";
 import ShareIcon from "@material-ui/icons/Share";
-import { Alert, AlertTitle } from "./ui/alert";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import { useNavigate, useLocation } from "@tanstack/react-router";
 import clsx from "clsx";
 import { saveAs } from "file-saver";
 import { fileDialog } from "file-select-dialog";
+import { CircleX, MessageCircleWarning } from "lucide-react";
+import { useEffect, useMemo, useState, type ReactNode, type ChangeEvent } from "react";
 import { useCookies } from "react-cookie";
-import "react-reflex/styles.css";
-import { useNavigate, useLocation } from "@tanstack/react-router";
 import sjcl from "sjcl";
+import { toast } from "sonner";
 import { useKeyboardShortcuts } from "use-keyboard-shortcuts";
+
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+
 import DISCORD from "../assets/discord.svg?react";
+import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
+import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
+import TabLabel from "../playground-ui/TabLabel";
 import { useLiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
@@ -52,14 +51,17 @@ import { ProblemService, useProblemService } from "../services/problem";
 import { Services } from "../services/services";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
 import { createValidationYAML, normalizeValidationYAML } from "../services/validationfileformat";
+import { Example } from "../spicedb-common/examples";
+import { useDeveloperService } from "../spicedb-common/services/developerservice";
+import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
+import { parseValidationYAML } from "../spicedb-common/validationfileformat";
+
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay, EditorDisplayProps } from "./EditorDisplay";
 import { ExamplesDropdown } from "./ExamplesDropdown";
 import { GuidedTour, TourElementClass } from "./GuidedTour";
 import { AT, ET, NS, VL } from "./KindIcons";
 import { NormalLogo, SmallLogo } from "./Logos";
-import { ShareLoader } from "./ShareLoader";
-import { ValidateButton } from "./ValidationButton";
 import { Panel, useSummaryStyles } from "./panels/base/common";
 import { ReflexedPanelDisplay } from "./panels/base/reflexed";
 import { ProblemsPanel, ProblemsSummary } from "./panels/problems";
@@ -67,8 +69,9 @@ import { TerminalPanel, TerminalSummary } from "./panels/terminal";
 import { ValidationPanel, ValidationSummary } from "./panels/validation";
 import { VisualizerPanel, VisualizerSummary } from "./panels/visualizer";
 import { WatchesPanel, WatchesSummary } from "./panels/watches";
-import { toast } from "sonner";
-import { CircleX, MessageCircleWarning } from "lucide-react";
+import { ShareLoader } from "./ShareLoader";
+import { Alert, AlertTitle } from "./ui/alert";
+import { ValidateButton } from "./ValidationButton";
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
 

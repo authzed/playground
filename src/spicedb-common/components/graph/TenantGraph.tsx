@@ -1,9 +1,11 @@
-import { useMemo } from "react";
-import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import type { TextRange, ParsedSchema } from "@authzed/spicedb-parser-js";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import type { TextRange, ParsedSchema } from "@authzed/spicedb-parser-js";
+import { useMemo } from "react";
+
+import VisNetworkGraph from "../../../playground-ui/VisNetworkGraph";
+import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+
 import {
   ActiveInfo,
   findActive,

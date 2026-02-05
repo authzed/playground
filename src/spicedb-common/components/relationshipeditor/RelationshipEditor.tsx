@@ -1,4 +1,7 @@
-import { toast } from "sonner";
+// Bring in the CSS for glide-data-grid
+import "@glideapps/glide-data-grid/dist/index.css";
+
+import { Resolver } from "@authzed/spicedb-parser-js";
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
@@ -11,15 +14,14 @@ import DataEditor, {
   type Theme,
   type Highlight,
 } from "@glideapps/glide-data-grid";
-// Bring in the CSS for glide-data-grid
-import "@glideapps/glide-data-grid/dist/index.css";
 import { Checkbox, FormControlLabel, IconButton, Tooltip } from "@material-ui/core";
 import { createStyles, makeStyles, Theme as MuiTheme, useTheme } from "@material-ui/core/styles";
 import { Assignment, Comment, Delete } from "@material-ui/icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useCookies } from "react-cookie";
+import { toast } from "sonner";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
-import { Resolver } from "@authzed/spicedb-parser-js";
+
 import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
@@ -27,6 +29,7 @@ import {
 } from "../../parsing";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 import { useRelationshipsService } from "../../services/relationshipsservice";
+
 import {
   Column,
   COLUMNS,
