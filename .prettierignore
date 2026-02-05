@@ -1,6 +1,0 @@
-src/spicedb-common/protodefs
-examples
-public
-
-# We use yamllint in most places and they disagree
-**/*.yaml
