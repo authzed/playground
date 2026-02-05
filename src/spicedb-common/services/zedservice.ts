@@ -32,7 +32,11 @@ export interface ZedService {
    * @param args The args for the zed command without the `zed` itself.
    * @returns The result of the command run.
    */
-  runCommand: (schema: string, relationshipsString: string, args: string[]) => CommandResult;
+  runCommand: (
+    schema: string,
+    relationshipsString: string,
+    args: string[],
+  ) => CommandResult;
 }
 
 export type CommandResult = {
@@ -44,7 +48,12 @@ export type CommandResult = {
 
 export type ZedServiceState =
   | {
-      status: "standby" | "initializing" | "unsupported" | "loaderror" | "ready";
+      status:
+        | "standby"
+        | "initializing"
+        | "unsupported"
+        | "loaderror"
+        | "ready";
     }
   | {
       status: "loading";
@@ -79,7 +88,9 @@ export function useZedService(): ZedService {
 
     // Fetch the WASM file with progress tracking.
     const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
-    const contentLength = +(fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE);
+    const contentLength = +(
+      fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE
+    );
 
     const reader = fetched.body?.getReader();
     if (!reader) {
@@ -109,7 +120,10 @@ export function useZedService(): ZedService {
     const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
 
     try {
-      const result = await WebAssembly.instantiateStreaming(refetched, go.importObject);
+      const result = await WebAssembly.instantiateStreaming(
+        refetched,
+        go.importObject,
+      );
       go.run(result.instance);
       setState({
         status: "ready",
@@ -175,7 +189,11 @@ export function useZedService(): ZedService {
         return;
       }
     },
-    runCommand: (schema: string, relationshipsString: string, args: string[]): CommandResult => {
+    runCommand: (
+      schema: string,
+      relationshipsString: string,
+      args: string[],
+    ): CommandResult => {
       const reqContext = {
         schema: schema,
         relationships: parseRelationships(relationshipsString),

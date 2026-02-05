@@ -9,7 +9,11 @@ describe("Navigation", () => {
   it("displays schema tab", () => {
     cy.tab("Schema");
     // Default editor content
-    cy.editorText().containsAll(["definition user {}", "definition resource {", "}"]);
+    cy.editorText().containsAll([
+      "definition user {}",
+      "definition resource {",
+      "}",
+    ]);
     // Sub-menu buttons
     cy.get("button").contains("Format").should("exist");
   });

@@ -19,7 +19,11 @@ import { flushSync } from "react-dom";
 import "react-reflex/styles.css";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
-import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
+import {
+  DataStore,
+  DataStoreItem,
+  DataStoreItemKind,
+} from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
 import { Services } from "../services/services";
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
@@ -68,7 +72,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const monacoRef = useMonaco();
   const [monacoReady, setMonacoReady] = useState(false);
   const [localIndex, setLocalIndex] = useState(0);
-  const localParseState = useRef<LocalParseState>(props.services.localParseService.state);
+  const localParseState = useRef<LocalParseState>(
+    props.services.localParseService.state,
+  );
 
   // Effect: Register the languages in monaco.
   useEffect(() => {
@@ -90,7 +96,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const datastore = props.datastore;
   const currentItem = props.currentItem;
 
-  const editorRefs = useRef<Record<string, monaco.editor.IStandaloneCodeEditor>>({});
+  const editorRefs = useRef<
+    Record<string, monaco.editor.IStandaloneCodeEditor>
+  >({});
 
   // Select the theme and language.
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
@@ -194,22 +202,24 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
     // Generate markers for invalid validation relationships.
     if (currentItem.kind === DataStoreItemKind.RELATIONSHIPS) {
-      props.services.problemService.invalidRelationships.forEach((invalid: RelationshipFound) => {
-        if (!("errorMessage" in invalid.parsed)) {
-          return;
-        }
+      props.services.problemService.invalidRelationships.forEach(
+        (invalid: RelationshipFound) => {
+          if (!("errorMessage" in invalid.parsed)) {
+            return;
+          }
 
-        if (monacoRef) {
-          markers.push({
-            startLineNumber: invalid.lineNumber + 1,
-            startColumn: 0,
-            endLineNumber: invalid.lineNumber + 1,
-            endColumn: invalid.text.length + 1,
-            message: `Malformed or invalid test data relationship: ${invalid.parsed.errorMessage}`,
-            severity: monacoRef.MarkerSeverity.Error,
-          });
-        }
-      });
+          if (monacoRef) {
+            markers.push({
+              startLineNumber: invalid.lineNumber + 1,
+              startColumn: 0,
+              endLineNumber: invalid.lineNumber + 1,
+              endColumn: invalid.text.length + 1,
+              message: `Malformed or invalid test data relationship: ${invalid.parsed.errorMessage}`,
+              severity: monacoRef.MarkerSeverity.Error,
+            });
+          }
+        },
+      );
     }
 
     const contents = currentItem?.editableContents ?? "";
@@ -218,20 +228,22 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
     // Generate markers for warnings.
     if (currentItem.kind === DataStoreItemKind.SCHEMA) {
-      props.services.problemService.warnings.forEach((warning: DeveloperWarning) => {
-        const line = lines[warning.line - 1];
-        const index = line.indexOf(warning.sourceCode, warning.column - 1);
-        if (monacoRef) {
-          markers.push({
-            startLineNumber: warning.line,
-            startColumn: index + 1,
-            endLineNumber: warning.line,
-            endColumn: index + warning.sourceCode.length + 1,
-            message: warning.message,
-            severity: monacoRef.MarkerSeverity.Warning,
-          });
-        }
-      });
+      props.services.problemService.warnings.forEach(
+        (warning: DeveloperWarning) => {
+          const line = lines[warning.line - 1];
+          const index = line.indexOf(warning.sourceCode, warning.column - 1);
+          if (monacoRef) {
+            markers.push({
+              startLineNumber: warning.line,
+              startColumn: index + 1,
+              endLineNumber: warning.line,
+              endColumn: index + warning.sourceCode.length + 1,
+              message: warning.message,
+              severity: monacoRef.MarkerSeverity.Warning,
+            });
+          }
+        },
+      );
     }
 
     // Generate markers for all other kinds of errors.
@@ -269,7 +281,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
             return;
           }
 
-          if (contents.substring(index, de.context.length + index) !== de.context) {
+          if (
+            contents.substring(index, de.context.length + index) !== de.context
+          ) {
             const updatedIndex = contents.indexOf(de.context, index);
             if (updatedIndex < index) {
               return;
@@ -304,7 +318,11 @@ export function EditorDisplay(props: EditorDisplayProps) {
       }
     });
 
-    monacoRef?.editor.setModelMarkers(editors[currentItem.id].getModel()!, "someowner", markers);
+    monacoRef?.editor.setModelMarkers(
+      editors[currentItem.id].getModel()!,
+      "someowner",
+      markers,
+    );
   };
 
   const locationState = location.state as LocationState | undefined | null;
@@ -338,12 +356,14 @@ export function EditorDisplay(props: EditorDisplayProps) {
         [currentItem.id]: editor,
       };
 
-      editor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
-        debouncedSetEditorPosition(e.position);
-        if (props.onPositionChange !== undefined) {
-          props.onPositionChange(e);
-        }
-      });
+      editor.onDidChangeCursorPosition(
+        (e: monaco.editor.ICursorPositionChangedEvent) => {
+          debouncedSetEditorPosition(e.position);
+          if (props.onPositionChange !== undefined) {
+            props.onPositionChange(e);
+          }
+        },
+      );
 
       editor.onDidScrollChange((e: monaco.IScrollEvent) => {
         debouncedSetEditorScroll([e.scrollTop, e.scrollLeft]);
@@ -390,7 +410,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
         column: column,
       };
 
-      const validatedPosition = editor.getModel()?.validatePosition(editorPosition);
+      const validatedPosition = editor
+        .getModel()
+        ?.validatePosition(editorPosition);
       if (!validatedPosition) {
         return;
       }
@@ -399,7 +421,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
       // Set the scroll position to either that last stored in cookies, or, if none,
       // just show the cursor on screen.
-      const lastScrollPosition = cookieService.lookupEditorScroll(currentItem.kind);
+      const lastScrollPosition = cookieService.lookupEditorScroll(
+        currentItem.kind,
+      );
       if (lastScrollPosition) {
         const [top, left] = lastScrollPosition;
         editor.setScrollLeft(left);
@@ -451,10 +475,14 @@ export function EditorDisplay(props: EditorDisplayProps) {
           <Component
             key={`${currentItem.id}-${props.diff ? "diff" : ""}`}
             height={
-              props.dimensions ? `${props.dimensions.height}px` : (props.defaultHeight ?? "40vh")
+              props.dimensions
+                ? `${props.dimensions.height}px`
+                : (props.defaultHeight ?? "40vh")
             }
             width={
-              props.dimensions ? `${props.dimensions.width}px` : (props.defaultWidth ?? "60vw")
+              props.dimensions
+                ? `${props.dimensions.width}px`
+                : (props.defaultWidth ?? "60vw")
             }
             defaultLanguage={languageName}
             value={currentItem.editableContents}
@@ -470,7 +498,8 @@ export function EditorDisplay(props: EditorDisplayProps) {
               readOnly: props.isReadOnly || !!props.diff,
               scrollbar: {
                 handleMouseWheel:
-                  props.disableScrolling !== true && props.disableMouseWheelScrolling !== true,
+                  props.disableScrolling !== true &&
+                  props.disableMouseWheelScrolling !== true,
                 vertical: props.disableScrolling ? "hidden" : undefined,
               },
               "semanticHighlighting.enabled": true,
@@ -480,7 +509,8 @@ export function EditorDisplay(props: EditorDisplayProps) {
               },
               fontSize: props.fontSize,
               scrollBeyondLastLine:
-                props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
+                props.scrollBeyondLastLine ??
+                (props.disableScrolling === true ? false : true),
             }}
             {...extraProps}
           />

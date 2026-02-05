@@ -31,7 +31,9 @@ export function PanelSummaryBar(props: {
 
   const coordinator = props.coordinator;
   const panels =
-    props.overrideSummaryDisplay === undefined ? coordinator.panelsInLocation(props.location) : [];
+    props.overrideSummaryDisplay === undefined
+      ? coordinator.panelsInLocation(props.location)
+      : [];
 
   return (
     <AppBar position="relative" color="default">
@@ -42,7 +44,8 @@ export function PanelSummaryBar(props: {
         }}
         variant="dense"
       >
-        {props.overrideSummaryDisplay !== undefined && props.overrideSummaryDisplay}
+        {props.overrideSummaryDisplay !== undefined &&
+          props.overrideSummaryDisplay}
         {panels.map((panel: Panel) => {
           // NOTE: Using this as a tag here is important for React's state system. Otherwise,
           // it'll run hooks outside of the normal flow, which breaks things.
@@ -168,7 +171,10 @@ export function PanelDisplay(props: {
                   return <div key={locData.location} />;
                 }
                 return (
-                  <Tooltip key={locData.location} title={`Move to ${locData.metadata.title}`}>
+                  <Tooltip
+                    key={locData.location}
+                    title={`Move to ${locData.metadata.title}`}
+                  >
                     <IconButton
                       size="small"
                       edge="start"
@@ -204,7 +210,9 @@ export function PanelDisplay(props: {
         // NOTE: Using this as a tag here is important for React's state system. Otherwise,
         // it'll run hooks outside of the normal flow, which breaks things.
         const height =
-          (props.dimensions?.height ?? 0 >= 48) ? (props.dimensions?.height ?? 0) - 48 : "auto";
+          (props.dimensions?.height ?? 0 >= 48)
+            ? (props.dimensions?.height ?? 0) - 48
+            : "auto";
 
         return (
           <TabPanel

@@ -65,7 +65,10 @@ export const useGoogleAnalytics = (measurementId?: string) => {
     }
   });
 
-  const pushEvent = (eventName: string, eventParams: Record<string, object | string | boolean>) => {
+  const pushEvent = (
+    eventName: string,
+    eventParams: Record<string, object | string | boolean>,
+  ) => {
     if (!tagInjected) {
       return;
     }

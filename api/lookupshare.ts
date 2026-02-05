@@ -1,7 +1,8 @@
 import { GetObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+const encodeURL =
+  "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   const shareid = req.query.shareid ?? "";

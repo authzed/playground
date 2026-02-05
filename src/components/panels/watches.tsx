@@ -1,6 +1,9 @@
 import { type ReactNode } from "react";
 import TabLabel from "../../playground-ui/TabLabel";
-import type { ParsedPermission, ParsedRelation } from "@authzed/spicedb-parser-js";
+import type {
+  ParsedPermission,
+  ParsedRelation,
+} from "@authzed/spicedb-parser-js";
 import { parseRelationships } from "../../spicedb-common/parsing";
 import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import CircularProgress from "@material-ui/core/CircularProgress";
@@ -14,7 +17,12 @@ import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 import TextField from "@material-ui/core/TextField";
 import Tooltip from "@material-ui/core/Tooltip";
-import { Theme, createStyles, makeStyles, useTheme } from "@material-ui/core/styles";
+import {
+  Theme,
+  createStyles,
+  makeStyles,
+  useTheme,
+} from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ChevronRightIcon from "@material-ui/icons/ChevronRight";
 import ControlPointIcon from "@material-ui/icons/ControlPoint";
@@ -30,7 +38,11 @@ import WarningIcon from "@material-ui/icons/Warning";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 import Autocomplete from "@material-ui/lab/Autocomplete";
 import clsx from "clsx";
-import { interpolateBlues, interpolateOranges, interpolatePurples } from "d3-scale-chromatic";
+import {
+  interpolateBlues,
+  interpolateOranges,
+  interpolatePurples,
+} from "d3-scale-chromatic";
 import { useMemo, useState, type ChangeEvent } from "react";
 import "react-reflex/styles.css";
 import {
@@ -130,7 +142,11 @@ export function WatchesSummary(props: PanelSummaryProps) {
       })}
     >
       <TabLabel
-        icon={<VisibilityIcon htmlColor={liveCheckService.items.length === 0 ? "grey" : ""} />}
+        icon={
+          <VisibilityIcon
+            htmlColor={liveCheckService.items.length === 0 ? "grey" : ""}
+          />
+        }
         title="Check Watches"
       />
       {!hasServerErr && hasItems && (
@@ -209,7 +225,11 @@ export function WatchesPanel(props: PanelProps) {
               </>
             )}
             <TableCell>
-              <IconButton size="small" edge="end" onClick={liveCheckService.addItem}>
+              <IconButton
+                size="small"
+                edge="end"
+                onClick={liveCheckService.addItem}
+              >
                 <ControlPointIcon />
               </IconButton>
             </TableCell>
@@ -362,7 +382,8 @@ function LiveCheckRow(props: {
   };
 
   const relationshipContents =
-    props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "";
+    props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
+      .editableContents ?? "";
   const relationships = useMemo(() => {
     return parseRelationships(relationshipContents);
   }, [relationshipContents]);
@@ -432,7 +453,11 @@ function LiveCheckRow(props: {
   ) => {
     return (
       <div className={classes.editorContainer}>
-        <DotDisplay colorSet={colorSet} valueSet={optionSet} value={option ?? ""} />
+        <DotDisplay
+          colorSet={colorSet}
+          valueSet={optionSet}
+          value={option ?? ""}
+        />
         {option}
       </div>
     );
@@ -497,17 +522,27 @@ function LiveCheckRow(props: {
             {status === LiveCheckStatus.CHECKING && (
               <CircularProgress className={classes.progress} size="1.5em" />
             )}
-            {status === LiveCheckStatus.PARSE_ERROR && <WarningIcon className={classes.gray} />}
-            {status === LiveCheckStatus.SERVICE_ERROR && <ErrorOutlineIcon color="error" />}
-            {status === LiveCheckStatus.NEVER_RUN && <RadioButtonUncheckedIcon />}
+            {status === LiveCheckStatus.PARSE_ERROR && (
+              <WarningIcon className={classes.gray} />
+            )}
+            {status === LiveCheckStatus.SERVICE_ERROR && (
+              <ErrorOutlineIcon color="error" />
+            )}
+            {status === LiveCheckStatus.NEVER_RUN && (
+              <RadioButtonUncheckedIcon />
+            )}
             {status === LiveCheckStatus.NOT_CHECKING &&
               item.status === LiveCheckItemStatus.FOUND && (
                 <CheckCircleIcon className={classes.success} />
               )}
             {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.NOT_FOUND && <HighlightOffIcon color="error" />}
+              item.status === LiveCheckItemStatus.NOT_FOUND && (
+                <HighlightOffIcon color="error" />
+              )}
             {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.NOT_CHECKED && <RadioButtonUncheckedIcon />}
+              item.status === LiveCheckItemStatus.NOT_CHECKED && (
+                <RadioButtonUncheckedIcon />
+              )}
             {status === LiveCheckStatus.NOT_CHECKING &&
               item.status === LiveCheckItemStatus.NOT_VALID && (
                 <RemoveCircleOutlineIcon className={classes.gray} />
@@ -524,12 +559,18 @@ function LiveCheckRow(props: {
         </TableCell>
         {wrap(
           <div className={classes.editorContainer}>
-            <DotDisplay colorSet={interpolatePurples} valueSet={objects} value={objectInputValue} />
+            <DotDisplay
+              colorSet={interpolatePurples}
+              valueSet={objects}
+              value={objectInputValue}
+            />
             <Autocomplete
               freeSolo
               options={objects}
               getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, objects, interpolatePurples)}
+              renderOption={(option) =>
+                renderOption(option, objects, interpolatePurples)
+              }
               value={object}
               inputValue={objectInputValue}
               onInputChange={handleChangeObjectInput}
@@ -554,12 +595,18 @@ function LiveCheckRow(props: {
         )}
         {wrap(
           <div className={classes.editorContainer}>
-            <DotDisplay colorSet={interpolateBlues} valueSet={actions} value={actionInputValue} />
+            <DotDisplay
+              colorSet={interpolateBlues}
+              valueSet={actions}
+              value={actionInputValue}
+            />
             <Autocomplete
               freeSolo
               options={actions}
               getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, actions, interpolateBlues)}
+              renderOption={(option) =>
+                renderOption(option, actions, interpolateBlues)
+              }
               value={action}
               inputValue={actionInputValue}
               onInputChange={handleChangeActionInput}
@@ -593,7 +640,9 @@ function LiveCheckRow(props: {
               freeSolo
               options={subjects}
               getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, subjects, interpolateOranges)}
+              renderOption={(option) =>
+                renderOption(option, subjects, interpolateOranges)
+              }
               value={subject}
               inputValue={subjectInputValue}
               onInputChange={handleChangeSubjectInput}
@@ -664,7 +713,8 @@ function DotDisplay(props: {
     <div
       className={classes.dot}
       style={{
-        backgroundColor: props.valueSet.indexOf(props.value) >= 0 ? color : "transparent",
+        backgroundColor:
+          props.valueSet.indexOf(props.value) >= 0 ? color : "transparent",
       }}
     />
   );

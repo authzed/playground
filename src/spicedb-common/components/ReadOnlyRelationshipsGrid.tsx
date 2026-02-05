@@ -51,11 +51,15 @@ export function ReadOnlyRelationshipsGrid(props: {
               <TableCell className={classes.def}>
                 {relationship.resourceAndRelation?.namespace}
               </TableCell>
-              <TableCell>{relationship.resourceAndRelation?.objectId}</TableCell>
+              <TableCell>
+                {relationship.resourceAndRelation?.objectId}
+              </TableCell>
               <TableCell className={classes.rel}>
                 {relationship.resourceAndRelation?.relation}
               </TableCell>
-              <TableCell className={classes.def}>{relationship.subject?.namespace}</TableCell>
+              <TableCell className={classes.def}>
+                {relationship.subject?.namespace}
+              </TableCell>
               <TableCell>{relationship.subject?.objectId}</TableCell>
               {props.hideSubjectRelation !== true && (
                 <TableCell>{relationship.subject?.relation}</TableCell>

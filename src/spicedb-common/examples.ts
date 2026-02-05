@@ -12,11 +12,14 @@ const readmesImports = import.meta.glob("/examples/schemas/*/README.md", {
   query: "?raw",
   eager: true,
 });
-const schemasImports = import.meta.glob("/examples/schemas/*/schema-and-data.yaml", {
-  // Get just the raw text
-  query: "?raw",
-  eager: true,
-});
+const schemasImports = import.meta.glob(
+  "/examples/schemas/*/schema-and-data.yaml",
+  {
+    // Get just the raw text
+    query: "?raw",
+    eager: true,
+  },
+);
 
 const isTextImport = (input: unknown): input is { default: string } => {
   return typeof input === "object" && input !== null && "default" in input;
@@ -41,8 +44,10 @@ export function LoadExamples(): Example[] {
     })
     .sort()
     .map((name) => {
-      const readmeModule = readmesImports[`/examples/schemas/${name}/README.md`];
-      const schemaModule = schemasImports[`/examples/schemas/${name}/schema-and-data.yaml`];
+      const readmeModule =
+        readmesImports[`/examples/schemas/${name}/README.md`];
+      const schemaModule =
+        schemasImports[`/examples/schemas/${name}/schema-and-data.yaml`];
 
       const readme = isTextImport(readmeModule) ? readmeModule.default : "";
       const schema = isTextImport(schemaModule) ? schemaModule.default : "";

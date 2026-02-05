@@ -88,9 +88,14 @@ const colorSchemes = [
  * based on entered test relationships.
  * @param relationshipsString The encoded string of test relationships.
  */
-export function useRelationshipsService(relationships: Relationship[]): RelationshipsService {
+export function useRelationshipsService(
+  relationships: Relationship[],
+): RelationshipsService {
   return useMemo(() => {
-    const buildingObjectsByType: Map<string, Set<string>> = new Map<string, Set<string>>();
+    const buildingObjectsByType: Map<string, Set<string>> = new Map<
+      string,
+      Set<string>
+    >();
 
     const addObject = (objectType: string, objectId: string) => {
       if (!buildingObjectsByType.has(objectType)) {
@@ -149,7 +154,11 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
       }),
     );
 
-    const calculateColor = (colorSet: (n: number) => string, valueSet: string[], value: string) => {
+    const calculateColor = (
+      colorSet: (n: number) => string,
+      valueSet: string[],
+      value: string,
+    ) => {
       if (valueSet.indexOf(value) < 0) {
         return undefined;
       }
@@ -184,13 +193,20 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
           .filter((value: string) => !!value);
         return Array.from(new Set<string>([...resourceIDs, ...subjectIDs]));
       },
-      getObjectColor: (objectType: string, objectId: string): string | undefined => {
+      getObjectColor: (
+        objectType: string,
+        objectId: string,
+      ): string | undefined => {
         const index = objectTypes.indexOf(objectType);
         const scheme = colorSchemes[index % colorSchemes.length];
         if (!scheme) {
           return undefined;
         }
-        return calculateColor(scheme, objectsByType[objectType] ?? [], objectId);
+        return calculateColor(
+          scheme,
+          objectsByType[objectType] ?? [],
+          objectId,
+        );
       },
       getTypeColor: (objectType: string): string | undefined => {
         const index = objectTypes.indexOf(objectType);

@@ -61,7 +61,9 @@ export function ProblemsSummary(props: PanelSummaryProps) {
       <TabLabel
         icon={
           <ErrorOutlineIcon
-            htmlColor={props.services.problemService.errorCount > 0 ? "" : "grey"}
+            htmlColor={
+              props.services.problemService.errorCount > 0 ? "" : "grey"
+            }
           />
         }
         title="Problems"
@@ -101,40 +103,47 @@ export function ProblemsPanel({ services }: PanelProps) {
               <div>
                 <div className={classes.validationErrorContext}>
                   In
-                  <Link className={classes.link} to={DataStorePaths.Relationships()}>
+                  <Link
+                    className={classes.link}
+                    to={DataStorePaths.Relationships()}
+                  >
                     Test Relationships
                   </Link>
                   :
                 </div>
                 <div className={classes.tupleError}>
-                  Invalid relationship <code>{invalid.text}</code> on line {invalid.lineNumber + 1}:{" "}
-                  {invalid.parsed.errorMessage}
+                  Invalid relationship <code>{invalid.text}</code> on line{" "}
+                  {invalid.lineNumber + 1}: {invalid.parsed.errorMessage}
                 </div>
               </div>
             </Paper>
           );
         },
       )}
-      {services.problemService.requestErrors.map((de: DeveloperError, index: number) => {
-        return (
-          <Paper className={classes.errorContainer} key={`de${index}`}>
-            <div>
-              <DeveloperSourceDisplay error={de} />
-              <DeveloperErrorDisplay error={de} />
-            </div>
-          </Paper>
-        );
-      })}
-      {services.problemService.warnings.map((dw: DeveloperWarning, index: number) => {
-        return (
-          <Paper className={classes.errorContainer} key={`dw${index}`}>
-            <div>
-              <DeveloperWarningSourceDisplay warning={dw} />
-              <DeveloperWarningDisplay warning={dw} />
-            </div>
-          </Paper>
-        );
-      })}
+      {services.problemService.requestErrors.map(
+        (de: DeveloperError, index: number) => {
+          return (
+            <Paper className={classes.errorContainer} key={`de${index}`}>
+              <div>
+                <DeveloperSourceDisplay error={de} />
+                <DeveloperErrorDisplay error={de} />
+              </div>
+            </Paper>
+          );
+        },
+      )}
+      {services.problemService.warnings.map(
+        (dw: DeveloperWarning, index: number) => {
+          return (
+            <Paper className={classes.errorContainer} key={`dw${index}`}>
+              <div>
+                <DeveloperWarningSourceDisplay warning={dw} />
+                <DeveloperWarningDisplay warning={dw} />
+              </div>
+            </Paper>
+          );
+        },
+      )}
     </div>
   );
 }

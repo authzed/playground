@@ -3,12 +3,21 @@ import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
 import { TextRange } from "../../spicedb-common/include/protobuf-parser";
 import { ParseRelationshipError } from "../../spicedb-common/parsing";
 import { RelationTuple } from "../../spicedb-common/protodefs/core/v1/core_pb";
-import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
+import {
+  createStyles,
+  darken,
+  makeStyles,
+  Theme,
+} from "@material-ui/core/styles";
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
 import monaco from "monaco-editor";
 import "react-reflex/styles.css";
 import { useNavigate } from "@tanstack/react-router";
-import { DataStoreItem, DataStoreItemKind, DataStorePaths } from "../../services/datastore";
+import {
+  DataStoreItem,
+  DataStoreItemKind,
+  DataStorePaths,
+} from "../../services/datastore";
 import { PanelProps } from "./base/common";
 
 declare module "@tanstack/react-router" {
@@ -77,7 +86,10 @@ export function VisualizerPanel({
     .filter(isRelationship);
 
   return (
-    <div className={classes.tenantGraphContainer} style={{ height: dimensions?.height ?? 0 }}>
+    <div
+      className={classes.tenantGraphContainer}
+      style={{ height: dimensions?.height ?? 0 }}
+    >
       <TenantGraph
         key={location}
         schema={services.localParseService.state.parsed}

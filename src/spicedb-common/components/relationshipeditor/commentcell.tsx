@@ -1,4 +1,8 @@
-import { CustomCell, CustomRenderer, GridCellKind } from "@glideapps/glide-data-grid";
+import {
+  CustomCell,
+  CustomRenderer,
+  GridCellKind,
+} from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
 import React, { MutableRefObject, useEffect, useRef } from "react";
 import { Column, CommentCellPrefix } from "./columns";
@@ -36,13 +40,18 @@ type CommentCellEditorProps = {
 const CommentCellEditor = (props: CommentCellEditorProps) => {
   // From: https://github.com/mui/material-ui/issues/12779
   // Ensures that the autofocus jumps to the end of the input's value.
-  const handleFocus = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFocus = (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
+  ) => {
     const lengthOfInput = event.target.value.length;
     return event.target.setSelectionRange(lengthOfInput, lengthOfInput);
   };
 
   let adjustedInitialValue = props.initialValue;
-  if (adjustedInitialValue && !adjustedInitialValue.startsWith(CommentCellPrefix)) {
+  if (
+    adjustedInitialValue &&
+    !adjustedInitialValue.startsWith(CommentCellPrefix)
+  ) {
     adjustedInitialValue = `${CommentCellPrefix} ${adjustedInitialValue}`;
   }
 
@@ -102,7 +111,12 @@ export const CommentCellRenderer = (
       ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
       ctx.fillStyle = "#608b4e";
       ctx.font = "10pt Courier";
-      ctx.fillText(dataValue, rect.x + 10, rect.y + rect.height / 2 + 1, rect.width);
+      ctx.fillText(
+        dataValue,
+        rect.x + 10,
+        rect.y + rect.height / 2 + 1,
+        rect.width,
+      );
       ctx.restore();
       return true;
     },

@@ -1,4 +1,10 @@
-import { useCallback, useContext, useState, createContext, type ReactNode } from "react";
+import {
+  useCallback,
+  useContext,
+  useState,
+  createContext,
+  type ReactNode,
+} from "react";
 import {
   ConfirmCallback,
   ConfirmDialog,
@@ -31,8 +37,13 @@ export interface ConfirmProps {
   children?: ReactNode;
 }
 
-export type ShowConfirm = (props: ConfirmProps, callback: ShowConfirmCallback) => void;
-export type ShowConfirmCallback = (result: [ConfirmValue, string | undefined]) => void;
+export type ShowConfirm = (
+  props: ConfirmProps,
+  callback: ShowConfirmCallback,
+) => void;
+export type ShowConfirmCallback = (
+  result: [ConfirmValue, string | undefined],
+) => void;
 
 const ConfirmDialogContext = createContext<ShowConfirm | undefined>(undefined);
 
@@ -72,7 +83,11 @@ export function ConfirmDialogProvider(props: { children: ReactNode }) {
 
   return (
     <>
-      <ConfirmDialog isOpen={isConfirmOpen} handleComplete={handleCompleted} {...confirmProps} />
+      <ConfirmDialog
+        isOpen={isConfirmOpen}
+        handleComplete={handleCompleted}
+        {...confirmProps}
+      />
       <ConfirmDialogContext.Provider value={showConfirm}>
         {props.children}
       </ConfirmDialogContext.Provider>
@@ -101,7 +116,11 @@ export function useConfirmDialog() {
     (props: ConfirmProps) => {
       const promise = new Promise<[ConfirmValue, string?]>(
         (
-          resolve: (value: [ConfirmValue, string?] | PromiseLike<[ConfirmValue, string?]>) => void,
+          resolve: (
+            value:
+              | [ConfirmValue, string?]
+              | PromiseLike<[ConfirmValue, string?]>,
+          ) => void,
         ) => {
           showConfirmCallback(props, resolve);
         },

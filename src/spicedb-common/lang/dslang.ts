@@ -1,6 +1,11 @@
 import * as monacoEditor from "monaco-editor";
 import { Position, editor, languages } from "monaco-editor";
-import { findReferenceNode, parse, ResolvedReference, Resolver } from "@authzed/spicedb-parser-js";
+import {
+  findReferenceNode,
+  parse,
+  ResolvedReference,
+  Resolver,
+} from "@authzed/spicedb-parser-js";
 
 export const DS_LANGUAGE_NAME = "dsl";
 export const DS_THEME_NAME = "dsl-theme";
@@ -71,11 +76,15 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
   };
 
   monaco.languages.register({ id: DS_LANGUAGE_NAME });
-  monaco.languages.setLanguageConfiguration(DS_LANGUAGE_NAME, richEditConfiguration);
+  monaco.languages.setLanguageConfiguration(
+    DS_LANGUAGE_NAME,
+    richEditConfiguration,
+  );
   monaco.languages.setMonarchTokensProvider(DS_LANGUAGE_NAME, {
     keywords: [],
     symbols: /[=><!~?:&|+\-*^%]+/,
-    escapes: /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
+    escapes:
+      /\\(?:[abfnrtv\\"']|x[0-9A-Fa-f]{1,4}|u[0-9A-Fa-f]{4}|U[0-9A-Fa-f]{8})/,
     tokenizer: {
       root: [
         [
@@ -86,7 +95,10 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
             next: "@definition",
           },
         ],
-        [/caveat/, { token: "keyword.caveat", bracket: "@open", next: "@caveat" }],
+        [
+          /caveat/,
+          { token: "keyword.caveat", bracket: "@open", next: "@caveat" },
+        ],
         [/use expiration$/, { token: "keyword.expiration" }],
         [
           /permission/,
@@ -96,7 +108,10 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
             next: "@permission",
           },
         ],
-        [/relation/, { token: "keyword.relation", bracket: "@open", next: "@relation" }],
+        [
+          /relation/,
+          { token: "keyword.relation", bracket: "@open", next: "@relation" },
+        ],
         { include: "@whitespace" },
 
         // delimiters and operators
@@ -111,12 +126,22 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         ],
       ],
       caveat: [
-        [/([a-z0-9_]+\/)+/, { token: "identifier.caveat-prefix", next: "@subcav" }],
+        [
+          /([a-z0-9_]+\/)+/,
+          { token: "identifier.caveat-prefix", next: "@subcav" },
+        ],
         [/[a-z0-9_]+/, { token: "identifier.caveat", next: "@caveatparams" }],
       ],
-      subcav: [[/[a-z0-9_]+/, { token: "identifier.caveat", next: "@caveatparams" }]],
+      subcav: [
+        [/[a-z0-9_]+/, { token: "identifier.caveat", next: "@caveatparams" }],
+      ],
       caveatparams: [[/\(/, { token: "@rematch", next: "@caveatparam" }]],
-      caveatparam: [[/[a-z0-9_]+/, { token: "identifier.caveat-param-name", next: "@caveattype" }]],
+      caveatparam: [
+        [
+          /[a-z0-9_]+/,
+          { token: "identifier.caveat-param-name", next: "@caveattype" },
+        ],
+      ],
       caveattype: [
         [
           /[a-z0-9_]+/,
@@ -210,11 +235,18 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         ],
       ],
       definition: [
-        [/([a-z0-9_]+\/)+/, { token: "identifier.definition-prefix", next: "@subdef" }],
+        [
+          /([a-z0-9_]+\/)+/,
+          { token: "identifier.definition-prefix", next: "@subdef" },
+        ],
         [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
       ],
-      subdef: [[/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }]],
-      permission: [[/[a-z0-9_]+/, { token: "identifier.permission", next: "@expr" }]],
+      subdef: [
+        [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
+      ],
+      permission: [
+        [/[a-z0-9_]+/, { token: "identifier.permission", next: "@expr" }],
+      ],
       expr: [
         [/$/, { token: "close", next: "@popall" }],
         [/}/, { token: "@rematch", next: "@popall" }],
@@ -240,14 +272,19 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         [/\w+/, { token: "identifier.relorperm" }],
         { include: "@whitespace" },
       ],
-      relation: [[/[a-z0-9_]+/, { token: "identifier.relation", next: "@allowed" }]],
+      relation: [
+        [/[a-z0-9_]+/, { token: "identifier.relation", next: "@allowed" }],
+      ],
       allowed: [[/:/, { token: "allowed", next: "@typedef" }]],
       typedef: [
         [/$/, { token: "close", next: "@popall" }],
         [/}/, { token: "@rematch", next: "@popall" }],
         [/relation/, { token: "@rematch", next: "@popall" }],
         [/permission/, { token: "@rematch", next: "@popall" }],
-        [/([a-z0-9_]+\/)+/, { token: "identifier.type-prefix", next: "@typedef" }],
+        [
+          /([a-z0-9_]+\/)+/,
+          { token: "identifier.type-prefix", next: "@typedef" },
+        ],
         [/\w+#/, { token: "@rematch", next: "@relationref" }],
         [/\w+:/, { token: "@rematch", next: "@wildcardref" }],
         [/expiration/, { token: "keyword.expiration" }],
@@ -327,7 +364,11 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         return;
       }
 
-      const found = findReferenceNode(parserResult.schema!, position.lineNumber, position.column);
+      const found = findReferenceNode(
+        parserResult.schema!,
+        position.lineNumber,
+        position.column,
+      );
       if (!found) {
         return;
       }
@@ -338,7 +379,9 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
           const def = resolution.lookupDefinition(found.node.path);
           if (def) {
             if (found.node.relationName) {
-              const relation = def.lookupRelationOrPermission(found.node.relationName);
+              const relation = def.lookupRelationOrPermission(
+                found.node.relationName,
+              );
               if (relation) {
                 return {
                   uri: model.uri,
@@ -366,7 +409,10 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         }
 
         case "relationref": {
-          const relation = resolution.resolveRelationOrPermission(found.node, found.def);
+          const relation = resolution.resolveRelationOrPermission(
+            found.node,
+            found.def,
+          );
           if (relation) {
             return {
               uri: model.uri,
@@ -389,7 +435,13 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
   monaco.languages.registerDocumentSemanticTokensProvider(DS_LANGUAGE_NAME, {
     getLegend: function (): languages.SemanticTokensLegend {
       return {
-        tokenTypes: ["type", "property", "member", "type.unknown", "member.unknown"],
+        tokenTypes: [
+          "type",
+          "property",
+          "member",
+          "type.unknown",
+          "member.unknown",
+        ],
         tokenModifiers: ["declaration"],
       };
     },
@@ -454,7 +506,13 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
               return;
             }
 
-            appendData(lineNumber, colPosition, resolved.reference.path.length, /* type */ 0, 0);
+            appendData(
+              lineNumber,
+              colPosition,
+              resolved.reference.path.length,
+              /* type */ 0,
+              0,
+            );
 
             if (resolved.reference.relationName) {
               if (resolved.referencedTypeAndRelation.relation !== undefined) {
@@ -465,7 +523,9 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
                   /* member */ 2,
                   0,
                 );
-              } else if (resolved.referencedTypeAndRelation.permission !== undefined) {
+              } else if (
+                resolved.referencedTypeAndRelation.permission !== undefined
+              ) {
                 appendData(
                   lineNumber,
                   colPosition + 1 + resolved.reference.path.length,

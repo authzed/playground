@@ -40,7 +40,10 @@ export interface ConfirmDialogButton {
   isEnabled?: (promptValue?: string) => boolean;
 }
 
-export type ConfirmCallback = (value: ConfirmValue, promptValue?: string) => void;
+export type ConfirmCallback = (
+  value: ConfirmValue,
+  promptValue?: string,
+) => void;
 
 /**
  * ConfirmDialogProps are the props for the confirm dialog.
@@ -137,7 +140,8 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
               color={button.color}
               disabled={
                 !!props.withPrompt &&
-                (!promptValue.length || (button.isEnabled && !button.isEnabled(promptValue))) &&
+                (!promptValue.length ||
+                  (button.isEnabled && !button.isEnabled(promptValue))) &&
                 !!button.value
               }
               autoFocus={button.color === "primary"}

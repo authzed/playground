@@ -28,15 +28,29 @@ export default function registerTupleLanguage(
         [/:/, { token: "object.start", bracket: "@open", next: "@object" }],
         [/@/, { token: "userset.start", bracket: "@open", next: "@userset" }],
         [/#/, { token: "relation.start", bracket: "@open", next: "@relation" }],
-        [/\[([^\]]+)\]/, { token: "userset-caveat", bracket: "@close", next: "@popall" }],
+        [
+          /\[([^\]]+)\]/,
+          { token: "userset-caveat", bracket: "@close", next: "@popall" },
+        ],
         [/[A-Za-z0-9]+/, "invalid"],
 
         { include: "@whitespace" },
       ],
-      object: [[/[a-zA-Z0-9/_|\-=+]+/, { token: "object", bracket: "@close", next: "@popall" }]],
+      object: [
+        [
+          /[a-zA-Z0-9/_|\-=+]+/,
+          { token: "object", bracket: "@close", next: "@popall" },
+        ],
+      ],
       relation: [
-        [/[a-z0-9_]+/, { token: "relation", bracket: "@close", next: "@popall" }],
-        [/\.\.\./, { token: "dotdotdotrel", bracket: "@close", next: "@popall" }],
+        [
+          /[a-z0-9_]+/,
+          { token: "relation", bracket: "@close", next: "@popall" },
+        ],
+        [
+          /\.\.\./,
+          { token: "dotdotdotrel", bracket: "@close", next: "@popall" },
+        ],
       ],
       whitespace: [
         [/\s+/, "white"],
@@ -44,7 +58,10 @@ export default function registerTupleLanguage(
       ],
       caveatorend: [
         [/$/, { token: "userset.end", bracket: "@close", next: "@popall" }],
-        [/\[([^\]]+)\]$/, { token: "userset-caveat", bracket: "@close", next: "@popall" }],
+        [
+          /\[([^\]]+)\]$/,
+          { token: "userset-caveat", bracket: "@close", next: "@popall" },
+        ],
       ],
       relationorcaveatorend: [
         [/$/, { token: "userset.end", bracket: "@close", next: "@popall" }],
@@ -64,7 +81,10 @@ export default function registerTupleLanguage(
             next: "@caveatorend",
           },
         ],
-        [/\[([^\]]+)\]$/, { token: "userset-caveat", bracket: "@close", next: "@popall" }],
+        [
+          /\[([^\]]+)\]$/,
+          { token: "userset-caveat", bracket: "@close", next: "@popall" },
+        ],
       ],
       userset: [
         [/$/, { token: "userset.end", bracket: "@close", next: "@popall" }],
@@ -84,7 +104,10 @@ export default function registerTupleLanguage(
             next: "@caveatorend",
           },
         ],
-        [/:[a-zA-Z0-9/_|\-=+]+$/, { token: "userset-object", bracket: "@close", next: "@popall" }],
+        [
+          /:[a-zA-Z0-9/_|\-=+]+$/,
+          { token: "userset-object", bracket: "@close", next: "@popall" },
+        ],
         [
           /:\*$/,
           {
@@ -118,7 +141,10 @@ export default function registerTupleLanguage(
     // but the `range` field isn't listed as optional.
     // This may also go away when we upgrade monaco.
     // @ts-expect-error range isn't actually required
-    provideCompletionItems: function (model: editor.ITextModel, position: Position) {
+    provideCompletionItems: function (
+      model: editor.ITextModel,
+      position: Position,
+    ) {
       // Based on: https://gist.github.com/mwrouse/05d8c11cd3872c19c684bd1904a2202e
       // Split everything the user has typed on the current line up at each space, and only look at the last word
       const lastChars = model.getValueInRange({
@@ -133,59 +159,67 @@ export default function registerTupleLanguage(
       switch (activeTyping[activeTyping.length - 1]) {
         case "/":
           return {
-            suggestions: getRelatableDefinitions(localParseState()).map((namespaceName: string) => {
-              const hasPrefix = namespaceName.indexOf("/") > -1;
-              return {
-                label: namespaceName,
-                kind: monaco.languages.CompletionItemKind.Module,
-                detail: "",
-                insertText: hasPrefix ? namespaceName.split("/")[1] : namespaceName,
-              };
-            }),
+            suggestions: getRelatableDefinitions(localParseState()).map(
+              (namespaceName: string) => {
+                const hasPrefix = namespaceName.indexOf("/") > -1;
+                return {
+                  label: namespaceName,
+                  kind: monaco.languages.CompletionItemKind.Module,
+                  detail: "",
+                  insertText: hasPrefix
+                    ? namespaceName.split("/")[1]
+                    : namespaceName,
+                };
+              },
+            ),
           };
 
         case "#":
           return {
-            suggestions: getStorableRelations(words[words.length - 1], localParseState()).map(
-              (found: StorableRelation) => {
-                return {
-                  label: found.name,
-                  kind: found.isPermission
-                    ? monaco.languages.CompletionItemKind.Property
-                    : monaco.languages.CompletionItemKind.Field,
-                  detail: "",
-                  insertText: found.name,
-                };
-              },
-            ),
+            suggestions: getStorableRelations(
+              words[words.length - 1],
+              localParseState(),
+            ).map((found: StorableRelation) => {
+              return {
+                label: found.name,
+                kind: found.isPermission
+                  ? monaco.languages.CompletionItemKind.Property
+                  : monaco.languages.CompletionItemKind.Field,
+                detail: "",
+                insertText: found.name,
+              };
+            }),
           };
 
         case "@":
           return {
-            suggestions: getSubjectDefinitions(words[words.length - 1], localParseState()).map(
-              (sd: SubjectDefinition) => {
-                return {
-                  label: sd.name,
-                  kind: sd.isUserDefinition
-                    ? monaco.languages.CompletionItemKind.User
-                    : monaco.languages.CompletionItemKind.Class,
-                  detail: "",
-                  insertText: sd.name,
-                };
-              },
-            ),
+            suggestions: getSubjectDefinitions(
+              words[words.length - 1],
+              localParseState(),
+            ).map((sd: SubjectDefinition) => {
+              return {
+                label: sd.name,
+                kind: sd.isUserDefinition
+                  ? monaco.languages.CompletionItemKind.User
+                  : monaco.languages.CompletionItemKind.Class,
+                detail: "",
+                insertText: sd.name,
+              };
+            }),
           };
 
         case "[":
           return {
-            suggestions: getCaveatDefinitions(localParseState()).map((caveatName: string) => {
-              return {
-                label: caveatName,
-                kind: monaco.languages.CompletionItemKind.Function,
-                detail: "",
-                insertText: caveatName,
-              };
-            }),
+            suggestions: getCaveatDefinitions(localParseState()).map(
+              (caveatName: string) => {
+                return {
+                  label: caveatName,
+                  kind: monaco.languages.CompletionItemKind.Function,
+                  detail: "",
+                  insertText: caveatName,
+                };
+              },
+            ),
           };
       }
 

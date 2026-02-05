@@ -5,7 +5,12 @@ import { parseRelationships } from "../spicedb-common/parsing";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 import AppBar from "@material-ui/core/AppBar";
 import Button from "@material-ui/core/Button";
-import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
+import {
+  createStyles,
+  darken,
+  makeStyles,
+  Theme,
+} from "@material-ui/core/styles";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
@@ -13,7 +18,11 @@ import LaunchIcon from "@material-ui/icons/Launch";
 import clsx from "clsx";
 import React, { useState } from "react";
 import { useLiveCheckService } from "../services/check";
-import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
+import {
+  DataStore,
+  DataStoreItemKind,
+  useReadonlyDatastore,
+} from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { useValidationService } from "../services/validation";
@@ -86,7 +95,11 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const localParseService = useLocalParseService(datastore);
   const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
-  const problemService = useProblemService(localParseService, liveCheckService, validationService);
+  const problemService = useProblemService(
+    localParseService,
+    liveCheckService,
+    validationService,
+  );
   const zedTerminalService = undefined; // not used
 
   const services = {
@@ -98,12 +111,16 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     zedTerminalService,
   };
 
-  const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
+  const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] =
+    useState(true);
   const [currentTabName, setCurrentTabName] = useState(
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
   );
 
-  const handleChangeTab = (_event: React.ChangeEvent<object>, selectedTabName: string) => {
+  const handleChangeTab = (
+    _event: React.ChangeEvent<object>,
+    selectedTabName: string,
+  ) => {
     setCurrentTabName(selectedTabName);
   };
 
@@ -112,7 +129,8 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!,
   );
   const relationships = parseRelationships(
-    datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents!,
+    datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
+      .editableContents!,
   );
   const [resizeIndex, setResizeIndex] = useState(0);
 
@@ -129,7 +147,10 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   }, [resizeIndex, setResizeIndex]);
 
   return (
-    <div onClick={() => setDisableMouseWheelScrolling(false)} className={clsx(classes.root)}>
+    <div
+      onClick={() => setDisableMouseWheelScrolling(false)}
+      className={clsx(classes.root)}
+    >
       <AppBar className={classes.tabBar} position="static" color="default">
         <Tabs
           value={currentTabName}
@@ -145,7 +166,9 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id}
+            value={
+              datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id
+            }
             label={<TabLabel icon={<VL small />} title="Test Data" />}
           />
           <Tab
@@ -155,12 +178,17 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id}
+            value={
+              datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id
+            }
             label={<TabLabel icon={<AT small />} title="Assert" />}
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).id}
+            value={
+              datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS)
+                .id
+            }
             label={<TabLabel icon={<ET small />} title="Expected" />}
           />
         </Tabs>
@@ -196,18 +224,19 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         />
       )}
 
-      {currentItem !== undefined && currentItem.kind !== DataStoreItemKind.RELATIONSHIPS && (
-        <EditorDisplay
-          services={services}
-          datastore={datastore}
-          isReadOnly={true}
-          currentItem={currentItem}
-          datastoreUpdated={() => null}
-          disableMouseWheelScrolling={disableMouseWheelScrolling}
-          defaultWidth="100vw"
-          defaultHeight="100%"
-        />
-      )}
+      {currentItem !== undefined &&
+        currentItem.kind !== DataStoreItemKind.RELATIONSHIPS && (
+          <EditorDisplay
+            services={services}
+            datastore={datastore}
+            isReadOnly={true}
+            currentItem={currentItem}
+            datastoreUpdated={() => null}
+            disableMouseWheelScrolling={disableMouseWheelScrolling}
+            defaultWidth="100vw"
+            defaultHeight="100%"
+          />
+        )}
     </div>
   );
 }

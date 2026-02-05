@@ -67,7 +67,9 @@ export type TerminalSection = TerminalCommand | TerminalOutput;
 export function useZedTerminalService(): ZedTerminalService {
   const zedService = useZedService();
 
-  const [terminalSections, setTerminalSections] = useState<TerminalSection[]>([]);
+  const [terminalSections, setTerminalSections] = useState<TerminalSection[]>(
+    [],
+  );
   const [commandHistory, setCommandHistory] = useState<string[]>([]);
 
   return {

@@ -26,7 +26,9 @@ export class TypeSet {
   public types: Record<string, TypeHandle>;
 
   constructor(schema: ParsedSchema, relationships?: Relationship[]) {
-    const objectDefs = schema.definitions.filter((def) => def.kind === "objectDef");
+    const objectDefs = schema.definitions.filter(
+      (def) => def.kind === "objectDef",
+    );
 
     this.types = Object.fromEntries(
       objectDefs.map((def: ParsedObjectDefinition, index: number) => {
@@ -119,7 +121,9 @@ export class RelationTracker {
     const key = `${objectRelation.key()}=>${subjectType.key()}${
       subjectRelation ? `#${subjectRelation}` : ""
     }`;
-    const existing = this.inferredLinks.find((link: RelationLink) => link.key === key);
+    const existing = this.inferredLinks.find(
+      (link: RelationLink) => link.key === key,
+    );
     if (existing !== undefined) {
       existing.relationships.push(rel);
     }
@@ -193,7 +197,9 @@ export class TypeHandle {
    * lookupRelationOrPermission returns the handle of the relation or permission with the given name in the type,
    * or undefined if none.
    */
-  public lookupRelationOrPermission(name: string): RelationOrPermissionHandle | undefined {
+  public lookupRelationOrPermission(
+    name: string,
+  ): RelationOrPermissionHandle | undefined {
     const relation = this.lookupRelation(name);
     if (relation !== undefined) {
       return relation;

@@ -72,7 +72,10 @@ export function useCustomCells(
     }
 
     const dataKind = COLUMNS[col].dataKind;
-    if (dataKind !== DataKind.RESOURCE_TYPE && dataKind !== DataKind.SUBJECT_TYPE) {
+    if (
+      dataKind !== DataKind.RESOURCE_TYPE &&
+      dataKind !== DataKind.SUBJECT_TYPE
+    ) {
       return undefined;
     }
 

@@ -86,7 +86,8 @@ export function useProblemService(
     const allProblems = Array.from(requestErrors);
     allProblems.push(...(validationService.state.validationErrors ?? []));
     let foundCount = allProblems.filter(
-      (problem: DeveloperError) => ERROR_SOURCE_TO_ITEM[problem.source] === kind,
+      (problem: DeveloperError) =>
+        ERROR_SOURCE_TO_ITEM[problem.source] === kind,
     ).length;
     if (kind === DataStoreItemKind.RELATIONSHIPS) {
       foundCount += invalidRelationships.length;
@@ -95,7 +96,8 @@ export function useProblemService(
   };
 
   const isUpdating =
-    liveCheckService.state.status === LiveCheckStatus.CHECKING || validationService.isRunning;
+    liveCheckService.state.status === LiveCheckStatus.CHECKING ||
+    validationService.isRunning;
   const validationErrors = validationService.state.validationErrors ?? [];
   const stateKey = `${isUpdating}:${errorCount}-${validationErrors.length}-${invalidRelationships.length}`;
 

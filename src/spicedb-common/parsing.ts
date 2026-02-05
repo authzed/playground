@@ -3,20 +3,27 @@ import {
   RelationTuple as Relationship,
   RelationTupleSchema as RelationshipSchema,
 } from "./protodefs/core/v1/core_pb";
-import { Timestamp, timestampDate, timestampFromMs } from "@bufbuild/protobuf/wkt";
+import {
+  Timestamp,
+  timestampDate,
+  timestampFromMs,
+} from "@bufbuild/protobuf/wkt";
 import type { MessageInitShape } from "@bufbuild/protobuf";
 import { create } from "@bufbuild/protobuf";
 
-export const CAVEAT_NAME_EXPR = "([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]";
+export const CAVEAT_NAME_EXPR =
+  "([a-z][a-z0-9_]{1,61}[a-z0-9]/)?[a-z][a-z0-9_]{1,62}[a-z0-9]";
 
-const namespaceNameExpr = "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
+const namespaceNameExpr =
+  "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
 const resourceIDExpr = "([a-zA-Z0-9/_|\\-=+]{1,})";
 const subjectIDExpr = "([a-zA-Z0-9/_|\\-=+]{1,})|\\*";
 const relationExpr = "([a-z][a-z0-9_]{1,62}[a-z0-9])";
 
 const resourceExpr = `(?<resourceType>${namespaceNameExpr}):(?<resourceID>${resourceIDExpr})#(?<resourceRel>${relationExpr})`;
 const subjectExpr = `(?<subjectType>${namespaceNameExpr}):(?<subjectID>${subjectIDExpr})(#(?<subjectRel>${relationExpr}|\\.\\.\\.))?`;
-const caveatNameExpr = "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
+const caveatNameExpr =
+  "([a-z][a-z0-9_]{1,61}[a-z0-9]/)*[a-z][a-z0-9_]{1,62}[a-z0-9]";
 const caveatExpr = `\\[(?<caveatName>(${caveatNameExpr}))(:(?<caveatContext>(\\{(.+)\\})))?\\]`;
 
 const expirationExpr = `\\[expiration:(?<expirationDateTime>([\\d\\-\\.:TZ]+))\\]`;
@@ -25,7 +32,8 @@ const RELATIONSHIP_REGEX = new RegExp(
   `^${resourceExpr}@${subjectExpr}(${caveatExpr})?(${expirationExpr})?$`,
 );
 
-export const NAMESPACE_REGEX = /^([a-z][a-z0-9_]{1,61}[a-z0-9]\/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$/;
+export const NAMESPACE_REGEX =
+  /^([a-z][a-z0-9_]{1,61}[a-z0-9]\/)*[a-z][a-z0-9_]{1,62}[a-z0-9]$/;
 export const RESOURCE_ID_REGEX = /^([a-zA-Z0-9/_|\-=+]{1,1024})$/;
 export const SUBJECT_ID_REGEX = /^(([a-zA-Z0-9/_|\-=+]{1,1024})|\*)$/;
 export const RELATION_REGEX = /^(\.\.\.|[a-z][a-z0-9_]{1,62}[a-z0-9])$/;
@@ -149,8 +157,9 @@ export const parseRelationshipWithError = (
     };
   }
 
-  let contextualizedCaveat: MessageInitShape<typeof ContextualizedCaveatSchema> | undefined =
-    undefined;
+  let contextualizedCaveat:
+    | MessageInitShape<typeof ContextualizedCaveatSchema>
+    | undefined = undefined;
   if (parsed.groups["caveatName"]) {
     contextualizedCaveat = {
       caveatName: parsed.groups["caveatName"] ?? "",
@@ -240,7 +249,9 @@ export const parseRelationships = (value: string): Relationship[] => {
  * parseRelationshipsWithErrors parses relationships in the string and returns them, or errors
  * for each invalid one found.
  */
-export const parseRelationshipsWithErrors = (relsStr: string): RelationshipFound[] => {
+export const parseRelationshipsWithErrors = (
+  relsStr: string,
+): RelationshipFound[] => {
   const lines = relsStr.split("\n");
   return lines
     .map((line: string, index: number) => {
@@ -279,14 +290,18 @@ export const convertRelationshipToString = (rel: Relationship) => {
   }
 
   const subjectRelation =
-    rel.subject?.relation && rel.subject.relation !== "..." ? `#${rel.subject.relation}` : "";
+    rel.subject?.relation && rel.subject.relation !== "..."
+      ? `#${rel.subject.relation}`
+      : "";
   return `${rel.resourceAndRelation?.namespace}:${rel.resourceAndRelation?.objectId}#${rel.resourceAndRelation?.relation}@${rel.subject?.namespace}:${rel.subject?.objectId}${subjectRelation}${caveatString}${expirationString}`;
 };
 
 /**
  * convertRelationshipsToStrings converts a list of Relationship into string forms.
  */
-export const convertRelationshipsToStrings = (rels: Relationship[]): string[] => {
+export const convertRelationshipsToStrings = (
+  rels: Relationship[],
+): string[] => {
   return rels.map(convertRelationshipToString);
 };
 
@@ -300,7 +315,9 @@ export type RelationshipOrComment =
  * parseRelationshipsAndComments parses the relationships and comments found in the given string
  * and returns them.
  */
-export const parseRelationshipsAndComments = (value: string): RelationshipOrComment[] => {
+export const parseRelationshipsAndComments = (
+  value: string,
+): RelationshipOrComment[] => {
   const lines = value.split("\n");
   const found: RelationshipOrComment[] = [];
 
@@ -341,7 +358,9 @@ export interface RelationshipWithComments {
  * parseRelationshipsWithComments parses the relationships found in the given string
  * and returns them.
  */
-export const parseRelationshipsWithComments = (value: string): RelationshipWithComments[] => {
+export const parseRelationshipsWithComments = (
+  value: string,
+): RelationshipWithComments[] => {
   const lines = value.split("\n");
   const rels: RelationshipWithComments[] = [];
   let comments: string[] = [];
@@ -377,7 +396,10 @@ export const parseRelationshipsWithComments = (value: string): RelationshipWithC
  * maintained. If a relationship is not found in updated, it is removed and
  * if it is new in updated, it is added.
  */
-export const mergeRelationshipsStringAndComments = (existing: string, updated: Relationship[]) => {
+export const mergeRelationshipsStringAndComments = (
+  existing: string,
+  updated: Relationship[],
+) => {
   const parsed = parseRelationshipsAndComments(existing);
   return mergeRelationshipsAndComments(parsed, updated);
 };

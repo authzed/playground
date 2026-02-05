@@ -25,7 +25,10 @@ export enum DataKind {
 
 export type DataValidator = RegExp | ((input: string) => boolean);
 
-export function validate(validator: DataValidator, dataValue: string | undefined): boolean {
+export function validate(
+  validator: DataValidator,
+  dataValue: string | undefined,
+): boolean {
   const isValid =
     typeof validator === "function"
       ? validator(dataValue ?? "")

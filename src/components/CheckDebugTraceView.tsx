@@ -97,7 +97,9 @@ export function CheckDebugTraceView(props: {
     }
 
     t.resource?.objectId.split(",").forEach((resourceID: string) => {
-      defaultExpanded.push(`${t.resource?.objectType}:${resourceID}#${t.permission}`);
+      defaultExpanded.push(
+        `${t.resource?.objectType}:${resourceID}#${t.permission}`,
+      );
     });
 
     if (t.resolution.case === "subProblems") {
@@ -153,9 +155,12 @@ function CheckDebugTraceItems(props: {
             : [];
 
         if (
-          (props.trace.result === CheckDebugTrace_Permissionship.HAS_PERMISSION ||
-            props.trace.result === CheckDebugTrace_Permissionship.CONDITIONAL_PERMISSION) &&
-          props.trace.permissionType === CheckDebugTrace_PermissionType.RELATION &&
+          (props.trace.result ===
+            CheckDebugTrace_Permissionship.HAS_PERMISSION ||
+            props.trace.result ===
+              CheckDebugTrace_Permissionship.CONDITIONAL_PERMISSION) &&
+          props.trace.permissionType ===
+            CheckDebugTrace_PermissionType.RELATION &&
           children.length === 0
         ) {
           children.push(
@@ -163,8 +168,12 @@ function CheckDebugTraceItems(props: {
               nodeId="subject"
               label={
                 <div className={classes.subject}>
-                  <CheckCircleIcon className={classes.success} fontSize="small" />
-                  {props.trace.subject?.object?.objectType}:{props.trace.subject?.object?.objectId}
+                  <CheckCircleIcon
+                    className={classes.success}
+                    fontSize="small"
+                  />
+                  {props.trace.subject?.object?.objectType}:
+                  {props.trace.subject?.object?.objectId}
                   {props.trace.subject?.optionalRelation &&
                     `#${props.trace.subject?.optionalRelation}`}
                 </div>
@@ -181,23 +190,38 @@ function CheckDebugTraceItems(props: {
             nodeId={nodeID}
             label={
               <div className={classes.dispatchHeader}>
-                {isMember && <CheckCircleIcon className={classes.success} fontSize="small" />}
-                {isNotMember && <HighlightOffIcon color="error" fontSize="small" />}
-                {result === CheckDebugTrace_Permissionship.CONDITIONAL_PERMISSION &&
+                {isMember && (
+                  <CheckCircleIcon
+                    className={classes.success}
+                    fontSize="small"
+                  />
+                )}
+                {isNotMember && (
+                  <HighlightOffIcon color="error" fontSize="small" />
+                )}
+                {result ===
+                  CheckDebugTrace_Permissionship.CONDITIONAL_PERMISSION &&
                   props.trace.caveatEvaluationInfo?.result ===
                     CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
-                    <HelpOutlineIcon fontSize="small" style={{ color: "#8787ff" }} />
+                    <HelpOutlineIcon
+                      fontSize="small"
+                      style={{ color: "#8787ff" }}
+                    />
                   )}
                 <span>
-                  <span className={classes.resourceType}>{props.trace.resource?.objectType}</span>:
-                  {resourceID}
+                  <span className={classes.resourceType}>
+                    {props.trace.resource?.objectType}
+                  </span>
+                  :{resourceID}
                 </span>
                 <span
                   className={clsx({
                     [classes.permission]:
-                      props.trace.permissionType === CheckDebugTrace_PermissionType.PERMISSION,
+                      props.trace.permissionType ===
+                      CheckDebugTrace_PermissionType.PERMISSION,
                     [classes.relation]:
-                      props.trace.permissionType === CheckDebugTrace_PermissionType.RELATION,
+                      props.trace.permissionType ===
+                      CheckDebugTrace_PermissionType.RELATION,
                   })}
                 >
                   {props.trace?.permission}
@@ -206,7 +230,10 @@ function CheckDebugTraceItems(props: {
             }
           >
             {props.trace.caveatEvaluationInfo?.caveatName && (
-              <CaveatTreeItem evalInfo={props.trace.caveatEvaluationInfo} nodeIDPrefix={nodeID} />
+              <CaveatTreeItem
+                evalInfo={props.trace.caveatEvaluationInfo}
+                nodeIDPrefix={nodeID}
+              />
             )}
             {children}
           </TreeItem>
@@ -216,7 +243,10 @@ function CheckDebugTraceItems(props: {
   );
 }
 
-function CaveatTreeItem(props: { evalInfo: CaveatEvalInfo; nodeIDPrefix: string }) {
+function CaveatTreeItem(props: {
+  evalInfo: CaveatEvalInfo;
+  nodeIDPrefix: string;
+}) {
   const classes = useStyles();
 
   return (
@@ -230,7 +260,8 @@ function CaveatTreeItem(props: { evalInfo: CaveatEvalInfo; nodeIDPrefix: string 
           {props.evalInfo.result === CaveatEvalInfo_Result.FALSE && (
             <HighlightOffIcon color="error" fontSize="small" />
           )}
-          {props.evalInfo.result === CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
+          {props.evalInfo.result ===
+            CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
             <HelpOutlineIcon fontSize="small" style={{ color: "#8787ff" }} />
           )}
           <span>{props.evalInfo.caveatName}</span>

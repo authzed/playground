@@ -1,13 +1,29 @@
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import HorizontalSplitIcon from "@material-ui/icons/HorizontalSplit";
 import VerticalSplitIcon from "@material-ui/icons/VerticalSplit";
-import { useEffect, useState, Children, isValidElement, cloneElement, type ReactNode } from "react";
-import { HandlerProps, ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
+import {
+  useEffect,
+  useState,
+  Children,
+  isValidElement,
+  cloneElement,
+  type ReactNode,
+} from "react";
+import {
+  HandlerProps,
+  ReflexContainer,
+  ReflexElement,
+  ReflexSplitter,
+} from "react-reflex";
 import "react-reflex/styles.css";
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
 import { Panel } from "./common";
-import { PanelDisplay, PanelSummaryBar, SUMMARY_BAR_HEIGHT } from "./components";
+import {
+  PanelDisplay,
+  PanelSummaryBar,
+  SUMMARY_BAR_HEIGHT,
+} from "./components";
 import { PanelsCoordinator, usePanelsCoordinator } from "./coordinator";
 
 const HORIZONTAL_FLEX_KEY = "horizontal-flex";
@@ -68,13 +84,17 @@ export function ReflexedPanelDisplay(props: PanelDefProps) {
     autoCloseDisplayWhenEmpty: true,
   });
 
-  const horizontalDisplayVisible = coordinator.isDisplayVisible("horizontal") && !props.disabled;
+  const horizontalDisplayVisible =
+    coordinator.isDisplayVisible("horizontal") && !props.disabled;
 
   const cachedHorizontalFlex = parseFloat(
-    localStorage.getItem(HORIZONTAL_FLEX_KEY) ?? DEFAULT_HORIZONTAL_FLEX.toString(),
+    localStorage.getItem(HORIZONTAL_FLEX_KEY) ??
+      DEFAULT_HORIZONTAL_FLEX.toString(),
   );
   const [horizontalFlex, setHorizontalFlex] = useState(
-    horizontalDisplayVisible ? Math.max(cachedHorizontalFlex, MINIMUM_HORIZONTAL_FLEX) : 0,
+    horizontalDisplayVisible
+      ? Math.max(cachedHorizontalFlex, MINIMUM_HORIZONTAL_FLEX)
+      : 0,
   );
 
   const handleHorizontalResize = (event: HandlerProps) => {
@@ -89,7 +109,9 @@ export function ReflexedPanelDisplay(props: PanelDefProps) {
 
   useEffect(() => {
     if (horizontalDisplayVisible && horizontalFlex < MINIMUM_HORIZONTAL_FLEX) {
-      setHorizontalFlex(Math.max(cachedHorizontalFlex, MINIMUM_HORIZONTAL_FLEX));
+      setHorizontalFlex(
+        Math.max(cachedHorizontalFlex, MINIMUM_HORIZONTAL_FLEX),
+      );
     } else if (!horizontalDisplayVisible && horizontalFlex > 0) {
       setHorizontalFlex(0);
     }
@@ -142,7 +164,8 @@ function MainDisplayWithSummaryBar(props: {
   services: Services;
 }) {
   const coordinator = props.coordinator;
-  const displayVisible = coordinator.isDisplayVisible("horizontal") && !props.disabled;
+  const displayVisible =
+    coordinator.isDisplayVisible("horizontal") && !props.disabled;
 
   /*
    * NOTE: The comparison to window.innerHeight below ensures that we only render the
@@ -159,7 +182,9 @@ function MainDisplayWithSummaryBar(props: {
   return (
     <div style={{ height: "100%", width: "100%" }}>
       <MainDisplayAndVertical {...props} />
-      {displaySummaryBar && <PanelSummaryBar location="horizontal" {...props} />}
+      {displaySummaryBar && (
+        <PanelSummaryBar location="horizontal" {...props} />
+      )}
     </div>
   );
 }
@@ -186,7 +211,9 @@ function MainDisplayAndVertical(props: {
     localStorage.getItem(VERTICAL_FLEX_KEY) ?? DEFAULT_VERTICAL_FLEX.toString(),
   );
   const [verticalFlex, setVerticalFlex] = useState(
-    verticalDisplayVisible ? Math.max(cachedVerticalFlex, MINIMUM_VERTICAL_FLEX) : 0,
+    verticalDisplayVisible
+      ? Math.max(cachedVerticalFlex, MINIMUM_VERTICAL_FLEX)
+      : 0,
   );
 
   useEffect(() => {
@@ -222,7 +249,11 @@ function MainDisplayAndVertical(props: {
     }
 
     const elementChild: React.ReactElement<EnrichedChildren> = child;
-    return cloneElement(elementChild, { dimensions: contentDimensions, ...child.props }, null);
+    return cloneElement(
+      elementChild,
+      { dimensions: contentDimensions, ...child.props },
+      null,
+    );
   });
 
   return (

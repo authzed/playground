@@ -26,7 +26,9 @@ const useStyles = makeStyles((theme: Theme) =>
     terminalOutput: {
       padding: theme.spacing(1),
       margin: theme.spacing(1),
-      backgroundColor: theme.palette.getContrastText(theme.palette.text.primary),
+      backgroundColor: theme.palette.getContrastText(
+        theme.palette.text.primary,
+      ),
       border: "1px solid transparent",
       borderColor: theme.palette.divider,
     },
@@ -54,7 +56,12 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export function TerminalSummary() {
-  return <TabLabel icon={<FontAwesomeIcon icon={faTerminal} />} title="Zed Terminal" />;
+  return (
+    <TabLabel
+      icon={<FontAwesomeIcon icon={faTerminal} />}
+      title="Zed Terminal"
+    />
+  );
 }
 
 export function TerminalPanel(props: PanelProps) {
@@ -101,16 +108,24 @@ export function TerminalPanel(props: PanelProps) {
 
     const cmd = command.trim();
     if (e.key.toLowerCase() === "enter" && cmd.length > 0) {
-      const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
+      const schema = datastore.getSingletonByKind(
+        DataStoreItemKind.SCHEMA,
+      ).editableContents!;
       const relationshipsString = datastore.getSingletonByKind(
         DataStoreItemKind.RELATIONSHIPS,
       ).editableContents!;
-      const [result, historyCount] = zts.runCommand(cmd, schema, relationshipsString);
+      const [result, historyCount] = zts.runCommand(
+        cmd,
+        schema,
+        relationshipsString,
+      );
       setCommand("");
       setHistoryIndex(historyCount);
 
       if (result?.updatedRelationships) {
-        const relItem = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
+        const relItem = datastore.getSingletonByKind(
+          DataStoreItemKind.RELATIONSHIPS,
+        );
         const merged = mergeRelationshipsStringAndComments(
           relItem.editableContents,
           result.updatedRelationships,
@@ -134,7 +149,10 @@ export function TerminalPanel(props: PanelProps) {
         return (
           <div className={classes.loadBar}>
             Loading Terminal:
-            <LinearProgress variant="determinate" value={Math.floor(zedState.progress * 100)} />
+            <LinearProgress
+              variant="determinate"
+              value={Math.floor(zedState.progress * 100)}
+            />
           </div>
         );
 
@@ -143,7 +161,8 @@ export function TerminalPanel(props: PanelProps) {
           <Alert variant="destructive">
             <CircleX />
             <AlertTitle>
-              Could not start the Terminal. Please make sure you have WebAssembly enabled.
+              Could not start the Terminal. Please make sure you have
+              WebAssembly enabled.
             </AlertTitle>
           </Alert>
         );
@@ -184,7 +203,10 @@ export function TerminalPanel(props: PanelProps) {
       {zedStateStatusDisplay}
       {zedState.status === "ready" && (
         <>
-          <TerminalOutputDisplay sections={zts.outputSections} onRefocus={handleRefocus} />
+          <TerminalOutputDisplay
+            sections={zts.outputSections}
+            onRefocus={handleRefocus}
+          />
           <Input
             inputRef={inputRef}
             className={classes.input}
@@ -241,7 +263,8 @@ function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
   const output =
     // TODO: rewrite this to remove use of replaceAll
     // @ts-expect-error replaceAll comes from a string polyfill.
-    convert.toHtml(o.replaceAll(" ", "\xa0").replaceAll("\t", "\xa0\xa0")) || "&nbsp;";
+    convert.toHtml(o.replaceAll(" ", "\xa0").replaceAll("\t", "\xa0\xa0")) ||
+    "&nbsp;";
   return <div dangerouslySetInnerHTML={{ __html: output }}></div>;
 }
 
@@ -303,7 +326,9 @@ function getSelectedTextWithin(el: Element) {
           selRange.compareBoundaryPoints(range.START_TO_END, range) === 1 &&
           selRange.compareBoundaryPoints(range.END_TO_START, range) === -1
         ) {
-          if (selRange.compareBoundaryPoints(range.START_TO_START, range) === 1) {
+          if (
+            selRange.compareBoundaryPoints(range.START_TO_START, range) === 1
+          ) {
             range.setStart(selRange.startContainer, selRange.startOffset);
           }
           if (selRange.compareBoundaryPoints(range.END_TO_END, range) === -1) {

@@ -54,7 +54,9 @@ export default function PlaygroundUIThemed({
           type: darkMode ? "dark" : "light",
           primary: darkMode ? dark : light,
           action: {
-            hover: darkMode ? "rgba(255, 255, 255, 0.05)" : "rgba(0, 0, 0, 0.1)",
+            hover: darkMode
+              ? "rgba(255, 255, 255, 0.05)"
+              : "rgba(0, 0, 0, 0.1)",
             selected: darkMode ? undefined : "rgba(0, 0, 0, 0.1)",
           },
         },
@@ -80,13 +82,16 @@ export default function PlaygroundUIThemed({
             root: {
               "& input": {
                 "&:-webkit-autofill": {
-                  transition: "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
+                  transition:
+                    "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
                 },
                 "&:-webkit-autofill:focus": {
-                  transition: "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
+                  transition:
+                    "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
                 },
                 "&:-webkit-autofill:hover": {
-                  transition: "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
+                  transition:
+                    "background-color 50000s ease-in-out 0s, color 50000s ease-in-out 0s",
                 },
               },
             },

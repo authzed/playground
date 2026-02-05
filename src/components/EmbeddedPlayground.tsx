@@ -1,5 +1,8 @@
 import { DS_EMBED_DARK_THEME_NAME } from "../spicedb-common/lang/dslang";
-import { RelationshipFound, parseRelationship } from "../spicedb-common/parsing";
+import {
+  RelationshipFound,
+  parseRelationship,
+} from "../spicedb-common/parsing";
 import {
   CheckOperationParametersSchema,
   CheckOperationsResult,
@@ -24,7 +27,11 @@ import clsx from "clsx";
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { useLiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
-import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
+import {
+  DataStore,
+  DataStoreItemKind,
+  useReadonlyDatastore,
+} from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { Services } from "../services/services";
@@ -88,7 +95,8 @@ const useStyles = makeStyles(() =>
       borderRadius: "8px",
       textTransform: "uppercase",
       padding: "8px",
-      background: "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
+      background:
+        "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
     },
     queryBox: {
       border: "1px outset #6d49ac",
@@ -121,7 +129,8 @@ const useStyles = makeStyles(() =>
       border: `1px solid rgba(232, 232, 232, 0.21)`,
       borderRadius: "8px",
       padding: "8px",
-      background: "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
+      background:
+        "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
       verticalAlign: "middle",
       cursor: "pointer",
       "&:hover": {
@@ -212,7 +221,11 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
   const localParseService = useLocalParseService(datastore);
   const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
-  const problemService = useProblemService(localParseService, liveCheckService, validationService);
+  const problemService = useProblemService(
+    localParseService,
+    liveCheckService,
+    validationService,
+  );
   const zedTerminalService = undefined; // not used
 
   const services = {
@@ -224,9 +237,12 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
     zedTerminalService,
   };
 
-  const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
+  const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] =
+    useState(true);
 
-  const schema = datastore.getById(datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id);
+  const schema = datastore.getById(
+    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
+  );
   const [resizeIndex, setResizeIndex] = useState(0);
 
   React.useEffect(() => {
@@ -263,7 +279,9 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       return;
     }
 
-    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
+    const schema = datastore.getSingletonByKind(
+      DataStoreItemKind.SCHEMA,
+    ).editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
       DataStoreItemKind.RELATIONSHIPS,
     ).editableContents!;
@@ -291,7 +309,9 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+        const errorData = await response
+          .json()
+          .catch(() => ({ error: "Unknown error" }));
         toast.error("Error sharing", {
           description: errorData.error || "Failed to share playground",
         });
@@ -303,7 +323,8 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       window.open(`${window.location.origin}/s/${reference}`);
     } catch (error: unknown) {
       toast.error("Error sharing", {
-        description: error instanceof Error ? error.message : "Failed to share playground",
+        description:
+          error instanceof Error ? error.message : "Failed to share playground",
       });
       return;
     }
@@ -329,11 +350,17 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
           },
         }}
       >
-        <MenuItem className={classes.menuItem} onClick={() => setCurrentMode("schema")}>
+        <MenuItem
+          className={classes.menuItem}
+          onClick={() => setCurrentMode("schema")}
+        >
           <SchemaIcon />
           Definitions
         </MenuItem>
-        <MenuItem className={classes.menuItem} onClick={() => setCurrentMode("relationships")}>
+        <MenuItem
+          className={classes.menuItem}
+          onClick={() => setCurrentMode("relationships")}
+        >
           <RelationshipsIcon />
           Relationships
         </MenuItem>
@@ -344,7 +371,10 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       >
         <div className={classes.column}>
           <div>
-            <div className={clsx(classes.header, classes.buttonHeader)} onClick={handleOpenMenu}>
+            <div
+              className={clsx(classes.header, classes.buttonHeader)}
+              onClick={handleOpenMenu}
+            >
               {mode === "schema" && (
                 <>
                   <SchemaIcon />
@@ -455,15 +485,20 @@ function EmbeddedQuery(props: { services: Services }) {
       return undefined;
     }
 
-    const relationship = parseRelationship(`${resource}#${permission}@${subject}`);
+    const relationship = parseRelationship(
+      `${resource}#${permission}@${subject}`,
+    );
     if (relationship === undefined) {
       return undefined;
     }
 
     const request = devService.newRequest(schemaText, relsText);
-    let checkResult: CheckOperationsResult = create(CheckOperationsResultSchema, {
-      membership: CheckOperationsResult_Membership.UNKNOWN,
-    });
+    let checkResult: CheckOperationsResult = create(
+      CheckOperationsResultSchema,
+      {
+        membership: CheckOperationsResult_Membership.UNKNOWN,
+      },
+    );
     request?.check(
       create(CheckOperationParametersSchema, {
         resource: relationship.resourceAndRelation!,
@@ -473,7 +508,10 @@ function EmbeddedQuery(props: { services: Services }) {
         checkResult = r;
       },
     );
-    if (request?.execute().developerErrors || request?.execute().internalError) {
+    if (
+      request?.execute().developerErrors ||
+      request?.execute().internalError
+    ) {
       return undefined;
     }
     return checkResult;
@@ -512,11 +550,14 @@ function EmbeddedQuery(props: { services: Services }) {
           className={clsx(classes.resultBoxColor, {
             [classes.indeterminate]: queryResult === undefined,
             [classes.noPermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.NOT_MEMBER,
+              queryResult?.membership ===
+              CheckOperationsResult_Membership.NOT_MEMBER,
             [classes.hasPermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.MEMBER,
+              queryResult?.membership ===
+              CheckOperationsResult_Membership.MEMBER,
             [classes.maybePermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.CAVEATED_MEMBER,
+              queryResult?.membership ===
+              CheckOperationsResult_Membership.CAVEATED_MEMBER,
           })}
         />
         <div className={classes.queryResult}>
@@ -541,7 +582,10 @@ function EmbeddedQuery(props: { services: Services }) {
             </>
           )}
           {devService.state.status === "ready" && !queryResult && (
-            <>Sorry, there is an issue in the provided schema, relationships or query</>
+            <>
+              Sorry, there is an issue in the provided schema, relationships or
+              query
+            </>
           )}
           {queryResult?.checkError !== undefined && (
             <>
@@ -549,17 +593,19 @@ function EmbeddedQuery(props: { services: Services }) {
               <div>{queryResult.checkError.message}</div>
             </>
           )}
-          {queryResult?.membership === CheckOperationsResult_Membership.NOT_MEMBER && (
+          {queryResult?.membership ===
+            CheckOperationsResult_Membership.NOT_MEMBER && (
             <>
               <ErrorOutlineIcon className={classes.noPermissionIcon} />
               <div>
-                <Display kind="subject">{subject}</Display> does not have permission{" "}
-                <Display kind="permission">{permission}</Display> on{" "}
+                <Display kind="subject">{subject}</Display> does not have
+                permission <Display kind="permission">{permission}</Display> on{" "}
                 <Display kind="resource">{resource}</Display>
               </div>
             </>
           )}
-          {queryResult?.membership === CheckOperationsResult_Membership.MEMBER && (
+          {queryResult?.membership ===
+            CheckOperationsResult_Membership.MEMBER && (
             <>
               <CheckCircleIcon className={classes.hasPermissionIcon} />
               <div>
@@ -569,15 +615,19 @@ function EmbeddedQuery(props: { services: Services }) {
               </div>
             </>
           )}
-          {queryResult?.membership === CheckOperationsResult_Membership.CAVEATED_MEMBER && (
+          {queryResult?.membership ===
+            CheckOperationsResult_Membership.CAVEATED_MEMBER && (
             <>
               <HelpOutlineIcon className={classes.maybePermissionIcon} />
               <div>
-                <Display kind="subject">{subject}</Display> might have permission{" "}
-                <Display kind="permission">{permission}</Display> on{" "}
-                <Display kind="resource">{resource}</Display> depending on the value(s) of{" "}
+                <Display kind="subject">{subject}</Display> might have
+                permission <Display kind="permission">{permission}</Display> on{" "}
+                <Display kind="resource">{resource}</Display> depending on the
+                value(s) of{" "}
                 <Display kind="caveatfields">
-                  {queryResult.partialCaveatInfo?.missingRequiredContext.join(", ")}
+                  {queryResult.partialCaveatInfo?.missingRequiredContext.join(
+                    ", ",
+                  )}
                 </Display>
               </div>
             </>
@@ -603,7 +653,9 @@ function Display(
     }[props.kind];
   }, [props.kind, classes]);
 
-  return <code className={clsx(classes.display, kindClass)}>{props.children}</code>;
+  return (
+    <code className={clsx(classes.display, kindClass)}>{props.children}</code>
+  );
 }
 
 function Selector(props: {
@@ -670,7 +722,9 @@ function Selector(props: {
       if (!found) {
         return false;
       }
-      return !!(found as ParsedObjectDefinition).permissions.find((p) => p.name === permission);
+      return !!(found as ParsedObjectDefinition).permissions.find(
+        (p) => p.name === permission,
+      );
     };
 
     const unfilteredPermissions =
@@ -681,7 +735,9 @@ function Selector(props: {
         return [];
       }) ?? [];
 
-    const [resourceType] = currentResource ? currentResource.split(":", 2) : [""];
+    const [resourceType] = currentResource
+      ? currentResource.split(":", 2)
+      : [""];
 
     return unfilteredPermissions.filter((p) => {
       return !resourceType || hasPermission(resourceType, p);
@@ -770,7 +826,13 @@ function Selector(props: {
 
 function SchemaIcon() {
   return (
-    <svg width="16" height="12" viewBox="0 0 16 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <svg
+      width="16"
+      height="12"
+      viewBox="0 0 16 12"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+    >
       <path
         d="M1.15723 9.40234C1.6403 9.40234 1.88184 9.16081 1.88184 8.67773V3.5166C1.88184 3.03353 1.6403 2.79199 1.15723 2.79199C0.674154 2.79199 0.432617 3.03353 0.432617 3.5166V8.67773C0.432617 9.16081 0.674154 9.40234 1.15723 9.40234ZM4.58203 7.76172C5.0651 7.76172 5.30664 7.52018 5.30664 7.03711V5.15723C5.30664 4.67415 5.0651 4.43262 4.58203 4.43262C4.09896 4.43262 3.85742 4.67415 3.85742 5.15723V7.03711C3.85742 7.52018 4.09896 7.76172 4.58203 7.76172ZM8 11.9932C8.48307 11.9932 8.72461 11.7516 8.72461 11.2686V0.925781C8.72461 0.442708 8.48307 0.201172 8 0.201172C7.51693 0.201172 7.27539 0.442708 7.27539 0.925781V11.2686C7.27539 11.7516 7.51693 11.9932 8 11.9932ZM11.418 7.76172C11.901 7.76172 12.1426 7.52018 12.1426 7.03711V5.15723C12.1426 4.67415 11.901 4.43262 11.418 4.43262C10.9395 4.43262 10.7002 4.67415 10.7002 5.15723V7.03711C10.7002 7.52018 10.9395 7.76172 11.418 7.76172ZM14.8428 9.40234C15.3258 9.40234 15.5674 9.16081 15.5674 8.67773V3.5166C15.5674 3.03353 15.3258 2.79199 14.8428 2.79199C14.3597 2.79199 14.1182 3.03353 14.1182 3.5166V8.67773C14.1182 9.16081 14.3597 9.40234 14.8428 9.40234Z"
         fill="#08C4FF"

@@ -42,7 +42,10 @@ export interface DeveloperService {
    * newRequest creates and returns a new request to the developer service, with the given schema
    * and relationships (as a newline separated string) as test data.
    */
-  newRequest: (schema: string, relationshipsString: string) => DeveloperServiceRequest | undefined;
+  newRequest: (
+    schema: string,
+    relationshipsString: string,
+  ) => DeveloperServiceRequest | undefined;
 }
 
 /**
@@ -171,7 +174,10 @@ class DeveloperServiceRequest {
   /**
    * runAssertions adds a run assertions operation to be executed.
    */
-  public runAssertions(yaml: string, callback: DevServiceCallback<RunAssertionsResult>) {
+  public runAssertions(
+    yaml: string,
+    callback: DevServiceCallback<RunAssertionsResult>,
+  ) {
     this.operations.push({
       operation: "runAssertions",
       parameters: {
@@ -188,7 +194,10 @@ class DeveloperServiceRequest {
   /**
    * runValidation adds a run validation operation to be executed.
    */
-  public runValidation(yaml: string, callback: DevServiceCallback<RunValidationResult>) {
+  public runValidation(
+    yaml: string,
+    callback: DevServiceCallback<RunValidationResult>,
+  ) {
     this.operations.push({
       operation: "runValidation",
       parameters: {
@@ -211,13 +220,16 @@ class DeveloperServiceRequest {
         schema: this.schema,
         relationships: this.relationships,
       },
-      operations: this.operations.map((opc: OperationAndCallback) => opc.parameters),
+      operations: this.operations.map(
+        (opc: OperationAndCallback) => opc.parameters,
+      ),
     });
 
     const developerRequest = toJsonString(DeveloperRequestSchema, request);
     // NOTE: the "" codepath should not be hit under normal operation; this function
     // won't be invoked if WASM isn't available.
-    const encodedResponse = window.runSpiceDBDeveloperRequest?.(developerRequest) ?? "";
+    const encodedResponse =
+      window.runSpiceDBDeveloperRequest?.(developerRequest) ?? "";
 
     const response = fromJsonString(DeveloperResponseSchema, encodedResponse, {
       ignoreUnknownFields: true,
@@ -267,7 +279,9 @@ export function useDeveloperService(): DeveloperService {
 
     // Fetch the WASM file with progress tracking.
     const fetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
-    const contentLength = +(fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE);
+    const contentLength = +(
+      fetched.headers.get("Content-Length") ?? ESTIMATED_WASM_BINARY_SIZE
+    );
 
     const reader = fetched.body?.getReader();
     if (!reader) {
@@ -297,7 +311,10 @@ export function useDeveloperService(): DeveloperService {
     const refetched = await fetch(`${WASM_FILE}?_r=${wasmVersion}`);
 
     try {
-      const result = await WebAssembly.instantiateStreaming(refetched, go.importObject);
+      const result = await WebAssembly.instantiateStreaming(
+        refetched,
+        go.importObject,
+      );
       go.run(result.instance);
       setState({
         status: "ready",
