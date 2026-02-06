@@ -1,7 +1,5 @@
 import "react-reflex/styles.css";
 
-import { createStyles, makeStyles } from "@material-ui/core/styles";
-import useMediaQuery from "@material-ui/core/useMediaQuery";
 import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useNavigate, useLocation } from "@tanstack/react-router";
@@ -10,6 +8,7 @@ import monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
+import { useMediaQuery } from "@/hooks/use-media-query";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
@@ -32,15 +31,6 @@ import registerTupleLanguage, {
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
 } from "./tuplelang";
-
-const useStyles = makeStyles(() =>
-  createStyles({
-    editorContainer: {
-      height: "100%",
-      width: "100%",
-    },
-  }),
-);
 
 export type EditorDisplayProps = {
   datastore: DataStore;
@@ -86,7 +76,6 @@ export function EditorDisplay(props: EditorDisplayProps) {
     localParseState.current = props.services.localParseService.state;
   }, [props.services.localParseService.state]);
 
-  const classes = useStyles();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -450,7 +439,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   return (
     <div>
       {monacoReady && currentItem && (
-        <div className={classes.editorContainer}>
+        <div className="w-full h-full">
           <Component
             key={`${currentItem.id}-${props.diff ? "diff" : ""}`}
             height={
