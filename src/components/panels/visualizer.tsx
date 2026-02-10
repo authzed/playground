@@ -1,7 +1,6 @@
 import "react-reflex/styles.css";
 
-import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
-import BubbleChartIcon from "@material-ui/icons/BubbleChart";
+import { Bubbles } from 'lucide-react'
 import { useNavigate } from "@tanstack/react-router";
 import monaco from "monaco-editor";
 
@@ -20,29 +19,25 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    tenantGraphContainer: {
-      width: "100%",
-      height: "100%",
-      backgroundColor: theme.palette.background.default,
+const darken = () => {}
+
+const backgroundStyles = {
       backgroundSize: "20px 20px",
+      backgroundColor: "default",
       backgroundImage: `
               linear-gradient(to right, ${darken(
-                theme.palette.background.default,
+                "default",
                 0.1,
               )} 1px, transparent 1px),
               linear-gradient(to bottom, ${darken(
-                theme.palette.background.default,
+                "default",
                 0.1,
               )} 1px, transparent 1px)
             `,
-    },
-  }),
-);
+    }
 
 export function VisualizerSummary() {
-  return <TabLabel icon={<BubbleChartIcon />} title="System Visualization" />;
+  return <TabLabel icon={<Bubbles />} title="System Visualization" />;
 }
 
 function isRelationship(
@@ -52,17 +47,15 @@ function isRelationship(
 }
 
 export function VisualizerPanel({
-  location,
   services,
   dimensions,
   editorPosition,
   currentItem,
 }: PanelProps & {
   dimensions?: { width: number; height: number };
-  editorPosition?: monaco.Position | undefined;
-  currentItem?: DataStoreItem | undefined;
+  editorPosition?: monaco.Position;
+  currentItem?: DataStoreItem;
 }) {
-  const classes = useStyles();
   const navigate = useNavigate();
 
   const handleBrowseRequested = (range?: TextRange) => {
@@ -80,9 +73,8 @@ export function VisualizerPanel({
     .filter(isRelationship);
 
   return (
-    <div className={classes.tenantGraphContainer} style={{ height: dimensions?.height ?? 0 }}>
+    <div className="w-full h-full" style={{ height: dimensions?.height ?? 0 }}>
       <TenantGraph
-        key={location}
         schema={services.localParseService.state.parsed}
         relationships={relationships}
         onBrowseRequested={handleBrowseRequested}
