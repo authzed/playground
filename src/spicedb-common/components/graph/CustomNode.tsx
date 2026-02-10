@@ -32,11 +32,11 @@ export function CustomNode({ data, selected }: NodeProps) {
         justifyContent: "center",
       }}
     >
-      <Handle type="target" position={Position.Top} />
+      <Handle type="source" position={Position.Top} />
       <div className="text-center font-medium text-sm break-all">
         {nodeData.label}
       </div>
-      <Handle type="source" position={Position.Bottom} />
+      <Handle type="target" position={Position.Bottom} />
     </div>
   );
 }
