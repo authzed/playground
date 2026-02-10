@@ -19,7 +19,7 @@ declare module "@tanstack/react-router" {
   }
 }
 
-const darken = () => {}
+const darken = (_color: string, _amount: number) => "rgba(0, 0, 0, 0.1)"
 
 const backgroundStyles = {
       backgroundSize: "20px 20px",
@@ -68,6 +68,15 @@ export function VisualizerPanel({
     });
   };
 
+  const handleNodeClick = (namespace: string, objectId: string) => {
+    // Navigate to relationships tab
+    // In the future, this could highlight specific relationships in the editor
+    const relationshipsPath = DataStorePaths.Relationships();
+    navigate({
+      to: relationshipsPath,
+    });
+  };
+
   const relationships = services.localParseService.state.relationships
     .map((relFound) => relFound.parsed)
     .filter(isRelationship);
@@ -78,6 +87,7 @@ export function VisualizerPanel({
         schema={services.localParseService.state.parsed}
         relationships={relationships}
         onBrowseRequested={handleBrowseRequested}
+        onNodeClick={handleNodeClick}
         active={
           editorPosition
             ? {
