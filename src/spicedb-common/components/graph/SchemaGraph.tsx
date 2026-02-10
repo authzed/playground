@@ -149,7 +149,7 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
     });
   });
 
-  // Group edges by source-target pair to handle overlapping edges
+  // Group edges by source-target pair and combine labels
   const edgeGroups = new Map<string, Edge[]>();
   edges.forEach((edge) => {
     const key = `${edge.source}->${edge.target}`;
@@ -159,32 +159,33 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
     edgeGroups.get(key)!.push(edge);
   });
 
-  // Apply offsets to create non-overlapping bezier curves
-  const edgesWithOffsets: Edge[] = [];
+  // Combine multiple edges into single edges with combined labels
+  const consolidatedEdges: Edge[] = [];
   edgeGroups.forEach((group) => {
     if (group.length === 1) {
-      // Single edge: no offset needed
-      edgesWithOffsets.push(group[0]);
+      // Single edge: use as-is
+      consolidatedEdges.push(group[0]);
     } else {
-      // Multiple edges: apply symmetric offsets to fan them out
-      const offsetStep = 40; // Spacing between edges
-      const totalWidth = (group.length - 1) * offsetStep;
-      const startOffset = -totalWidth / 2;
+      // Multiple edges: combine into one with comma-separated labels
+      const labels = group.map(e => e.label).filter(Boolean);
+      const combinedLabel = labels.join(', ');
 
-      group.forEach((edge, index) => {
-        const offset = startOffset + (index * offsetStep);
-        edgesWithOffsets.push({
-          ...edge,
-          data: {
-            ...edge.data,
-            offset,
-          },
-        });
-      });
+      // Use the first edge as the base and update its label
+      const consolidatedEdge = {
+        ...group[0],
+        label: combinedLabel,
+        data: {
+          ...group[0].data,
+          relationNames: group.filter(e => e.data?.type === 'relation').map(e => e.data?.relationName).filter(Boolean),
+          permissionNames: group.filter(e => e.data?.type === 'permission').map(e => e.data?.permissionName).filter(Boolean),
+        },
+      };
+
+      consolidatedEdges.push(consolidatedEdge);
     }
   });
 
-  return edgesWithOffsets;
+  return consolidatedEdges;
 }
 
 /**
