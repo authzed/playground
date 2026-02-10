@@ -11,6 +11,7 @@ import {
   useEdgesState,
   MarkerType,
   NodeTypes,
+  EdgeTypes,
 } from "@xyflow/react";
 import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
@@ -18,6 +19,7 @@ import dagre from "dagre";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 import { useRelationshipsService } from "../../services/relationshipsservice";
 import { CustomNode, CustomNodeData } from "./CustomNode";
+import CustomBezierEdge from "./CustomBezierEdge";
 
 export interface SchemaGraphProps {
   /**
@@ -76,6 +78,11 @@ const nodeTypes: NodeTypes = {
   custom: CustomNode,
 };
 
+// Define custom edge types
+const edgeTypes: EdgeTypes = {
+  customBezier: CustomBezierEdge,
+};
+
 // Helper to generate schema edges from definitions
 function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
   const edges: Edge[] = [];
@@ -104,6 +111,7 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
 
         edges.push({
           id: `edge-${edgeId++}`,
+          type: 'customBezier',
           source: def.name,
           target: typeRef.path,
           label: label,
@@ -123,6 +131,7 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
     def.permissions.forEach((permission) => {
       edges.push({
         id: `edge-${edgeId++}`,
+        type: 'customBezier',
         source: def.name,
         target: def.name,
         label: permission.name,
@@ -140,7 +149,42 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
     });
   });
 
-  return edges;
+  // Group edges by source-target pair to handle overlapping edges
+  const edgeGroups = new Map<string, Edge[]>();
+  edges.forEach((edge) => {
+    const key = `${edge.source}->${edge.target}`;
+    if (!edgeGroups.has(key)) {
+      edgeGroups.set(key, []);
+    }
+    edgeGroups.get(key)!.push(edge);
+  });
+
+  // Apply offsets to create non-overlapping bezier curves
+  const edgesWithOffsets: Edge[] = [];
+  edgeGroups.forEach((group) => {
+    if (group.length === 1) {
+      // Single edge: no offset needed
+      edgesWithOffsets.push(group[0]);
+    } else {
+      // Multiple edges: apply symmetric offsets to fan them out
+      const offsetStep = 40; // Spacing between edges
+      const totalWidth = (group.length - 1) * offsetStep;
+      const startOffset = -totalWidth / 2;
+
+      group.forEach((edge, index) => {
+        const offset = startOffset + (index * offsetStep);
+        edgesWithOffsets.push({
+          ...edge,
+          data: {
+            ...edge.data,
+            offset,
+          },
+        });
+      });
+    }
+  });
+
+  return edgesWithOffsets;
 }
 
 /**
@@ -224,6 +268,7 @@ export default function SchemaGraph({
         nodes={nodes}
         edges={edges}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onNodeClick={handleSchemaNodeClick}
