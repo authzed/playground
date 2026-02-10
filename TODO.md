@@ -1,0 +1,1 @@
+- [ ] Make the same custom edge change to the written relations list

@@ -19,7 +19,7 @@ import dagre from "dagre";
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 import { useRelationshipsService } from "../../services/relationshipsservice";
 import { CustomNode, CustomNodeData } from "./CustomNode";
-import CustomBezierEdge from "./CustomBezierEdge";
+import CustomEdge from "./CustomEdge";
 
 export interface SchemaGraphProps {
   /**
@@ -80,7 +80,7 @@ const nodeTypes: NodeTypes = {
 
 // Define custom edge types
 const edgeTypes: EdgeTypes = {
-  customBezier: CustomBezierEdge,
+  custom: CustomEdge as any,
 };
 
 // Helper to generate schema edges from definitions
@@ -111,7 +111,7 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
 
         edges.push({
           id: `edge-${edgeId++}`,
-          type: 'customBezier',
+          type: 'custom',
           source: def.name,
           target: typeRef.path,
           label: label,
@@ -124,27 +124,6 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
             typeRef: typeRef,
           },
         });
-      });
-    });
-
-    // Process permissions (show as self-referencing edges)
-    def.permissions.forEach((permission) => {
-      edges.push({
-        id: `edge-${edgeId++}`,
-        type: 'customBezier',
-        source: def.name,
-        target: def.name,
-        label: permission.name,
-        markerEnd: { type: MarkerType.ArrowClosed },
-        animated: false,
-        style: {
-          stroke: '#9333ea',        // Purple color
-          strokeDasharray: '5,5'    // Dashed line
-        },
-        data: {
-          type: 'permission',
-          permissionName: permission.name,
-        },
       });
     });
   });
@@ -163,19 +142,37 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
   const consolidatedEdges: Edge[] = [];
   edgeGroups.forEach((group) => {
     if (group.length === 1) {
-      // Single edge: use as-is
-      consolidatedEdges.push(group[0]);
-    } else {
-      // Multiple edges: combine into one with comma-separated labels
-      const labels = group.map(e => e.label).filter(Boolean);
-      const combinedLabel = labels.join(', ');
-
-      // Use the first edge as the base and update its label
-      const consolidatedEdge = {
+      // Single edge: move label to data.label for consistency
+      const edge = {
         ...group[0],
-        label: combinedLabel,
+        label: undefined,
         data: {
           ...group[0].data,
+          label: group[0].label,
+        },
+      };
+      consolidatedEdges.push(edge);
+    } else {
+      // Multiple edges: combine into one with bulleted list labels
+      const labels = group.map(e => e.label).filter(Boolean);
+      const combinedLabel = (
+        <div>
+          <strong>Relations:</strong>
+          <ul style={{ margin: '2px 0 0 0', paddingLeft: '12px', listStyleType: 'disc' }}>
+            {labels.map((label, idx) => (
+              <li key={idx}>{label}</li>
+            ))}
+          </ul>
+        </div>
+      );
+
+      // Use the first edge as the base and update its data.label
+      const consolidatedEdge = {
+        ...group[0],
+        label: undefined,
+        data: {
+          ...group[0].data,
+          label: combinedLabel,
           relationNames: group.filter(e => e.data?.type === 'relation').map(e => e.data?.relationName).filter(Boolean),
           permissionNames: group.filter(e => e.data?.type === 'permission').map(e => e.data?.permissionName).filter(Boolean),
         },
