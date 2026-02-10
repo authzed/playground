@@ -247,6 +247,7 @@ export default function TenantGraph({
   const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
 
   // Update nodes and edges when relationships change
+  // TODO: this is bad
   useMemo(() => {
     setNodes(initialNodes);
     setEdges(initialEdges);
@@ -321,12 +322,19 @@ export default function TenantGraph({
         onNodeMouseLeave={handleNodeMouseLeave}
         onEdgeMouseEnter={handleEdgeMouseEnter}
         onEdgeMouseLeave={handleEdgeMouseLeave}
+        colorMode="system"
         fitView
         attributionPosition="bottom-left"
       >
         <Background />
         <Controls />
-        <MiniMap />
+        <MiniMap
+          nodeColor={(node) => {
+            const nodeData = node.data as CustomNodeData;
+            return nodeData.backgroundColor || '#e2e2e2';
+          }}
+          maskColor="rgba(0, 0, 0, 0.1)"
+        />
       </ReactFlow>
 
       {/* Tooltip for nodes */}

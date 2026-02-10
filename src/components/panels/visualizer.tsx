@@ -82,7 +82,7 @@ export function VisualizerPanel({
     .filter(isRelationship);
 
   return (
-    <div className="w-full h-full" style={{ height: dimensions?.height ?? 0 }}>
+    <div className="w-full h-full" style={dimensions?.height ? { height: dimensions.height } : undefined}>
       <TenantGraph
         schema={services.localParseService.state.parsed}
         relationships={relationships}
