@@ -1,21 +1,26 @@
-import { Handle, Position, NodeProps } from "@xyflow/react";
+import { Handle, Position, NodeProps, Node } from "@xyflow/react";
 
 import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
 
-export interface CustomNodeData extends Record<string, unknown> {
+export type RelationshipNode = Node<{
   label: string;
   backgroundColor: string;
   namespace: string;
   objectId: string;
   relationships: Relationship[];
-}
+}>
+
+/*
+ *export type CounterNode = Node<{ initialCount?: number }, 'counter'>;
+ *
+ *export default function CounterNode(props: NodeProps<CounterNode>) {
+ *  const [count, setCount] = useState(props.data?.initialCount ?? 0);
+*/
 
 /**
  * CustomNode renders a styled node with D3 color background
  */
-export function CustomNode({ data, selected }: NodeProps) {
-  const nodeData = data as CustomNodeData;
-
+export function RelationshipNode({ data, selected }: NodeProps<RelationshipNode>) {
   return (
     <div
       className={`
@@ -24,7 +29,7 @@ export function CustomNode({ data, selected }: NodeProps) {
         hover:shadow-lg
       `}
       style={{
-        backgroundColor: nodeData.backgroundColor || "#ffffff",
+        backgroundColor: data.backgroundColor || "#ffffff",
         minWidth: "200px",
         minHeight: "80px",
         display: "flex",
@@ -34,7 +39,7 @@ export function CustomNode({ data, selected }: NodeProps) {
     >
       <Handle type="source" position={Position.Top} />
       <div className="text-center font-medium text-sm break-all">
-        {nodeData.label}
+        {data.label}
       </div>
       <Handle type="target" position={Position.Bottom} />
     </div>

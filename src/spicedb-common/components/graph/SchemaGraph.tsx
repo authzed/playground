@@ -214,7 +214,6 @@ export default function SchemaGraph({
           namespace: def.name,
           objectId: '',
           backgroundColor: color,
-          relationships: [],
         },
         position: { x: 0, y: 0 },
       };

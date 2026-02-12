@@ -1,40 +1,15 @@
 import "react-reflex/styles.css";
 
 import { Bubbles } from 'lucide-react'
-import { useNavigate } from "@tanstack/react-router";
 import monaco from "monaco-editor";
 
 import TabLabel from "../../playground-ui/TabLabel";
-import { DataStoreItem, DataStoreItemKind, DataStorePaths } from "../../services/datastore";
+import { DataStoreItem } from "../../services/datastore";
 import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
-import { TextRange } from "../../spicedb-common/include/protobuf-parser";
 import { ParseRelationshipError } from "../../spicedb-common/parsing";
 import { RelationTuple } from "../../spicedb-common/protodefs/core/v1/core_pb";
 
 import { PanelProps } from "./base/common";
-
-declare module "@tanstack/react-router" {
-  interface HistoryState {
-    range?: TextRange;
-  }
-}
-
-const darken = (_color: string, _amount: number) => "rgba(0, 0, 0, 0.1)"
-
-const backgroundStyles = {
-      backgroundSize: "20px 20px",
-      backgroundColor: "default",
-      backgroundImage: `
-              linear-gradient(to right, ${darken(
-                "default",
-                0.1,
-              )} 1px, transparent 1px),
-              linear-gradient(to bottom, ${darken(
-                "default",
-                0.1,
-              )} 1px, transparent 1px)
-            `,
-    }
 
 export function VisualizerSummary() {
   return <TabLabel icon={<Bubbles />} title="System Visualization" />;
@@ -49,34 +24,11 @@ function isRelationship(
 export function VisualizerPanel({
   services,
   dimensions,
-  editorPosition,
-  currentItem,
 }: PanelProps & {
   dimensions?: { width: number; height: number };
   editorPosition?: monaco.Position;
   currentItem?: DataStoreItem;
 }) {
-  const navigate = useNavigate();
-
-  const handleBrowseRequested = (range?: TextRange) => {
-    // TODO: make this functionality use querystrings instead of history state
-    navigate({
-      to: DataStorePaths.Schema(),
-      state: {
-        range,
-      },
-    });
-  };
-
-  const handleNodeClick = (namespace: string, objectId: string) => {
-    // Navigate to relationships tab
-    // In the future, this could highlight specific relationships in the editor
-    const relationshipsPath = DataStorePaths.Relationships();
-    navigate({
-      to: relationshipsPath,
-    });
-  };
-
   const relationships = services.localParseService.state.relationships
     .map((relFound) => relFound.parsed)
     .filter(isRelationship);
@@ -86,16 +38,6 @@ export function VisualizerPanel({
       <TenantGraph
         schema={services.localParseService.state.parsed}
         relationships={relationships}
-        onBrowseRequested={handleBrowseRequested}
-        onNodeClick={handleNodeClick}
-        active={
-          editorPosition
-            ? {
-                isSchema: currentItem?.kind === DataStoreItemKind.SCHEMA,
-                position: editorPosition,
-              }
-            : undefined
-        }
       />
     </div>
   );
