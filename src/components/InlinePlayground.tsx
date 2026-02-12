@@ -9,13 +9,15 @@ import LaunchIcon from "@material-ui/icons/Launch";
 import clsx from "clsx";
 import React, { useState } from "react";
 
+// TODO: rename
+import TenantGraph from "@/components/visualizer/TenantGraph";
+
 import TabLabel from "../playground-ui/TabLabel";
 import { useLiveCheckService } from "../services/check";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { useValidationService } from "../services/validation";
-import TenantGraph from "../spicedb-common/components/graph/TenantGraph";
 import { parseRelationships } from "../spicedb-common/parsing";
 import { useDeveloperService } from "../spicedb-common/services/developerservice";
 

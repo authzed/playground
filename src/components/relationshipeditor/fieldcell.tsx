@@ -11,7 +11,7 @@ import Autocomplete, { type AutocompleteRenderInputParams } from "@material-ui/l
 import { MutableRefObject, useRef } from "react";
 import stc from "string-to-color";
 
-import { RelationshipsService } from "../../services/relationshipsservice";
+import { RelationshipsService } from "@/spicedb-common/services/relationshipsservice";
 
 import { COLUMNS, Column, DataKind, DataTitle, RelationshipSection } from "./columns";
 import { AnnotatedData } from "./data";

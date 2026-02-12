@@ -1,27 +1,13 @@
-import { BaseEdge, EdgeLabelRenderer, getBezierPath, Position } from '@xyflow/react';
-import type { CSSProperties } from 'react';
+import { BaseEdge, EdgeLabelRenderer, getBezierPath, EdgeProps, Edge } from "@xyflow/react";
+import { ReactNode } from "react";
 
-export type CustomEdgeData = {
+export type CustomEdgeType = Edge<{
   type?: string;
   relationName?: string;
   relationNames?: string[];
   permissionNames?: string[];
-  typeRef?: any;
-  label?: React.ReactNode; // JSX label content
-};
-
-type CustomEdgeProps = {
-  id: string;
-  sourceX: number;
-  sourceY: number;
-  targetX: number;
-  targetY: number;
-  sourcePosition: Position;
-  targetPosition: Position;
-  style?: CSSProperties;
-  markerEnd?: string;
-  data?: CustomEdgeData;
-};
+  label?: ReactNode; // JSX label content
+}>;
 
 export default function CustomEdge({
   id,
@@ -34,7 +20,7 @@ export default function CustomEdge({
   style,
   markerEnd,
   data,
-}: CustomEdgeProps) {
+}: EdgeProps<CustomEdgeType>) {
   // Calculate bezier path and label position
   const [edgePath, labelX, labelY] = getBezierPath({
     sourceX,
@@ -54,17 +40,18 @@ export default function CustomEdge({
       {data?.label && (
         <EdgeLabelRenderer>
           <div
+            // TODO: Make this use Tailwind
             style={{
-              position: 'absolute',
+              position: "absolute",
               transform: `translate(-50%, -50%) translate(${labelX}px, ${labelY}px)`,
-              background: 'var(--card)',
-              color: 'var(--card-foreground)',
-              padding: '4px 8px',
-              borderRadius: '4px',
-              border: '1px solid var(--border)',
-              fontSize: '10px',
-              lineHeight: '1.2',
-              pointerEvents: 'all',
+              background: "var(--card)",
+              color: "var(--card-foreground)",
+              padding: "4px 8px",
+              borderRadius: "4px",
+              border: "1px solid var(--border)",
+              fontSize: "10px",
+              lineHeight: "1.2",
+              pointerEvents: "all",
             }}
             className="nodrag nopan"
           >

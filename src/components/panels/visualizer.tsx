@@ -1,11 +1,13 @@
 import "react-reflex/styles.css";
 
-import { Bubbles } from 'lucide-react'
+import { Bubbles } from "lucide-react";
 import monaco from "monaco-editor";
+
+// TODO: rename
+import TenantGraph from "@/components/visualizer/TenantGraph";
 
 import TabLabel from "../../playground-ui/TabLabel";
 import { DataStoreItem } from "../../services/datastore";
-import TenantGraph from "../../spicedb-common/components/graph/TenantGraph";
 import { ParseRelationshipError } from "../../spicedb-common/parsing";
 import { RelationTuple } from "../../spicedb-common/protodefs/core/v1/core_pb";
 
@@ -34,11 +36,14 @@ export function VisualizerPanel({
     .filter(isRelationship);
 
   return (
-    <div className="w-full h-full" style={dimensions?.height ? { height: dimensions.height } : undefined}>
-      <TenantGraph
-        schema={services.localParseService.state.parsed}
-        relationships={relationships}
-      />
+    <div
+      className="w-full h-full"
+      // NOTE: this style is to allow the reflexed pane to control the height of the container.
+      // Without this it doesn't render correctly, though there may be a different way
+      // to get the same behavior.
+      style={dimensions?.height ? { height: dimensions.height } : undefined}
+    >
+      <TenantGraph schema={services.localParseService.state.parsed} relationships={relationships} />
     </div>
   );
 }

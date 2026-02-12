@@ -1,4 +1,4 @@
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";
 
 export interface NodeTooltipProps {
   namespace: string;
@@ -16,11 +16,7 @@ export interface EdgeTooltipProps {
 /**
  * NodeTooltip displays relationships involving a node
  */
-export function NodeTooltip({
-  namespace,
-  objectId,
-  relationships,
-}: NodeTooltipProps) {
+export function NodeTooltip({ namespace, objectId, relationships }: NodeTooltipProps) {
   return (
     <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg max-w-md">
       <div className="font-semibold mb-2 border-b border-gray-700 pb-2">
@@ -58,12 +54,7 @@ export function NodeTooltip({
 /**
  * EdgeTooltip displays relationship details for an edge
  */
-export function EdgeTooltip({
-  relation,
-  subjectRelation,
-  caveat,
-  expiration,
-}: EdgeTooltipProps) {
+export function EdgeTooltip({ relation, subjectRelation, caveat, expiration }: EdgeTooltipProps) {
   return (
     <div className="bg-gray-900 text-white text-xs rounded-lg p-3 shadow-lg">
       <div className="space-y-1">

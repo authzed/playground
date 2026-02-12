@@ -1,5 +1,6 @@
-import { useCallback, useMemo } from "react";
-import type { TextRange, ParsedSchema, ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
+import "@xyflow/react/dist/style.css";
+
+import type { ParsedSchema, ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import {
   ReactFlow,
   Node,
@@ -7,19 +8,19 @@ import {
   Background,
   Controls,
   MiniMap,
-  useNodesState,
-  useEdgesState,
   MarkerType,
   NodeTypes,
   EdgeTypes,
+  useNodesState,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
+import { useMemo, useEffect } from "react";
 
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
-import { useRelationshipsService } from "../../services/relationshipsservice";
-import { CustomNode, CustomNodeData } from "./CustomNode";
-import CustomEdge from "./CustomEdge";
+import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";
+import { useRelationshipsService } from "@/spicedb-common/services/relationshipsservice";
+
+import CustomEdge, { CustomEdgeType } from "./CustomEdge";
+import { RelationshipNode, RelationshipNodeType } from "./RelationshipNode";
 
 export interface SchemaGraphProps {
   /**
@@ -31,16 +32,13 @@ export interface SchemaGraphProps {
    * relationships are optional, for color consistency.
    */
   relationships?: Relationship[];
-
-  /**
-   * onBrowseRequested is invoked if the user has requested a browse to the specific
-   * range in the schema.
-   */
-  onBrowseRequested?: (range: TextRange | undefined) => void;
 }
 
 // Use dagre to compute the layout for schema graph
-function getLayoutedElements(nodes: Node[], edges: Edge[]) {
+function getLayoutedElements<NodeType extends Node, EdgeType extends Edge>(
+  nodes: NodeType[],
+  edges: EdgeType[],
+) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({
@@ -75,21 +73,22 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
 
 // Define custom node types
 const nodeTypes: NodeTypes = {
-  custom: CustomNode,
+  relationship: RelationshipNode,
 };
 
 // Define custom edge types
 const edgeTypes: EdgeTypes = {
-  custom: CustomEdge as any,
+  custom: CustomEdge,
 };
 
 // Helper to generate schema edges from definitions
+// TODO: refactor to use maps and flatmaps
 function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
   const edges: Edge[] = [];
   let edgeId = 0;
 
   // Create set of valid definition names to validate targets
-  const definitionNames = new Set(definitions.map(d => d.name));
+  const definitionNames = new Set(definitions.map((d) => d.name));
 
   definitions.forEach((def) => {
     // Process relations
@@ -111,15 +110,15 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
 
         edges.push({
           id: `edge-${edgeId++}`,
-          type: 'custom',
+          type: "custom",
           source: def.name,
           target: typeRef.path,
           label: label,
           markerEnd: { type: MarkerType.ArrowClosed },
           animated: false,
-          style: { stroke: '#666' },
+          style: { stroke: "#666" },
           data: {
-            type: 'relation',
+            type: "relation",
             relationName: relation.name,
             typeRef: typeRef,
           },
@@ -154,11 +153,11 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
       consolidatedEdges.push(edge);
     } else {
       // Multiple edges: combine into one with bulleted list labels
-      const labels = group.map(e => e.label).filter(Boolean);
+      const labels = group.map((e) => e.label).filter(Boolean);
       const combinedLabel = (
         <div>
           <strong>Relations:</strong>
-          <ul style={{ margin: '2px 0 0 0', paddingLeft: '12px', listStyleType: 'disc' }}>
+          <ul style={{ margin: "2px 0 0 0", paddingLeft: "12px", listStyleType: "disc" }}>
             {labels.map((label, idx) => (
               <li key={idx}>{label}</li>
             ))}
@@ -173,8 +172,14 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
         data: {
           ...group[0].data,
           label: combinedLabel,
-          relationNames: group.filter(e => e.data?.type === 'relation').map(e => e.data?.relationName).filter(Boolean),
-          permissionNames: group.filter(e => e.data?.type === 'permission').map(e => e.data?.permissionName).filter(Boolean),
+          relationNames: group
+            .filter((e) => e.data?.type === "relation")
+            .map((e) => e.data?.relationName)
+            .filter(Boolean),
+          permissionNames: group
+            .filter((e) => e.data?.type === "permission")
+            .map((e) => e.data?.permissionName)
+            .filter(Boolean),
         },
       };
 
@@ -188,70 +193,55 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
 /**
  * SchemaGraph renders a graphical view of the schema structure.
  */
-export default function SchemaGraph({
-  schema,
-  relationships,
-  onBrowseRequested,
-}: SchemaGraphProps) {
+export default function SchemaGraph({ schema, relationships }: SchemaGraphProps) {
   const relationshipsService = useRelationshipsService(relationships ?? []);
 
-  // Build schema graph nodes and edges
-  const { initialNodes, initialEdges } = useMemo(() => {
-    // Filter to object definitions only
-    const definitions = schema.definitions.filter(
-      (def): def is ParsedObjectDefinition => def.kind === 'objectDef'
-    );
-
-    // Create node for each definition
-    const nodes: Node<CustomNodeData>[] = definitions.map((def) => {
-      const color = relationshipsService.getTypeColor(def.name) || '#e0e0e0';
-
-      return {
-        id: def.name,
-        type: 'custom',
-        data: {
-          label: def.name,
-          namespace: def.name,
-          objectId: '',
-          backgroundColor: color,
-        },
-        position: { x: 0, y: 0 },
-      };
-    });
-
-    // Generate edges
-    const edges = generateSchemaEdges(definitions);
-
-    const layouted = getLayoutedElements(nodes, edges);
-    return { initialNodes: layouted.nodes, initialEdges: layouted.edges };
-  }, [schema, relationshipsService]);
-
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // Update nodes and edges when data changes
-  useMemo(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
-
-  // Handle schema node click
-  const handleSchemaNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      const definition = schema.definitions.find(
-        (def): def is ParsedObjectDefinition =>
-          def.kind === 'objectDef' && def.name === node.id
-      );
-
-      if (definition && onBrowseRequested) {
-        onBrowseRequested(definition.range);
-      }
-    },
-    [schema, onBrowseRequested]
+  const definitions = useMemo(
+    () =>
+      schema.definitions.filter((def): def is ParsedObjectDefinition => def.kind === "objectDef"),
+    [schema],
   );
 
+  // Build schema graph nodes and edges
+  const { nodes, edges }: { nodes: RelationshipNodeType[]; edges: CustomEdgeType[] } =
+    useMemo(() => {
+      // Create node for each definition
+      const nodes: RelationshipNodeType[] = definitions.map((def) => {
+        const color = relationshipsService.getTypeColor(def.name) || "#e0e0e0";
+
+        return {
+          id: def.name,
+          type: "relationship",
+          data: {
+            label: def.name,
+            namespace: def.name,
+            objectId: "",
+            backgroundColor: color,
+            // TODO: this is a misuse
+            relationships: [],
+          },
+          position: { x: 0, y: 0 },
+        };
+      });
+
+      // Generate edges
+      const edges = generateSchemaEdges(definitions);
+
+      const layouted: { nodes: RelationshipNodeType[]; edges: CustomEdgeType[] } =
+        getLayoutedElements(nodes, edges);
+      return { nodes: layouted.nodes, edges: layouted.edges };
+    }, [definitions, relationshipsService]);
+
+  // NOTE: this statefulness is required because otherwise setting the position of the nodes
+  // via layout prevents the nodes from being dragged around.
+  const [statefulNodes, setNodesState, onNodesChange] = useNodesState(nodes);
+
+  useEffect(() => {
+    setNodesState(nodes);
+  }, [setNodesState, nodes]);
+
   // Check for empty state
-  if (!schema || schema.definitions.filter(d => d.kind === 'objectDef').length === 0) {
+  if (!schema || schema.definitions.filter((d) => d.kind === "objectDef").length === 0) {
     return (
       <div className="w-full h-full flex items-center justify-center text-gray-500">
         No schema to visualize. Add schema definitions to see the graph.
@@ -262,13 +252,11 @@ export default function SchemaGraph({
   return (
     <div className="w-full h-full relative">
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={statefulNodes}
         nodeTypes={nodeTypes}
-        edgeTypes={edgeTypes}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={handleSchemaNodeClick}
+        edges={edges}
+        edgeTypes={edgeTypes}
         colorMode="system"
         fitView
         attributionPosition="bottom-left"
@@ -276,9 +264,9 @@ export default function SchemaGraph({
         <Background />
         <Controls />
         <MiniMap
-          nodeColor={(node) => {
-            const nodeData = node.data as CustomNodeData;
-            return nodeData.backgroundColor || '#e2e2e2';
+          nodeColor={(node: RelationshipNodeType) => {
+            const nodeData = node.data;
+            return nodeData.backgroundColor || "#e2e2e2";
           }}
           maskColor="rgba(0, 0, 0, 0.1)"
         />

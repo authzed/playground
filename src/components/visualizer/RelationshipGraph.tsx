@@ -1,4 +1,5 @@
-import { useCallback, useMemo, useState } from "react";
+import "@xyflow/react/dist/style.css";
+
 import {
   ReactFlow,
   Node,
@@ -6,29 +7,25 @@ import {
   Background,
   Controls,
   MiniMap,
-  useNodesState,
-  useEdgesState,
   MarkerType,
   NodeTypes,
+  useNodesState,
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import dagre from "dagre";
+import { useCallback, useMemo, useState, useEffect, MouseEvent } from "react";
 
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
-import { useRelationshipsService } from "../../services/relationshipsservice";
-import { CustomNode, CustomNodeData } from "./CustomNode";
+import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";
+import { useRelationshipsService } from "@/spicedb-common/services/relationshipsservice";
+
+import { CustomEdgeType } from "./CustomEdge";
 import { NodeTooltip, EdgeTooltip } from "./GraphTooltip";
+import { RelationshipNode, RelationshipNodeType } from "./RelationshipNode";
 
 export interface RelationshipGraphProps {
   /**
    * relationships are the test relationships for the schema.
    */
   relationships: Relationship[];
-
-  /**
-   * onNodeClick is invoked when a node is clicked
-   */
-  onNodeClick?: (namespace: string, objectId: string) => void;
 }
 
 // Helper to create a unique node ID from namespace and object ID
@@ -42,7 +39,11 @@ function createNodeLabel(namespace: string, objectId: string): string {
 }
 
 // Use dagre to compute the layout
-function getLayoutedElements(nodes: Node[], edges: Edge[]) {
+// TODO: refactor to reuse?
+function getLayoutedElements<NodeType extends Node, EdgeType extends Edge>(
+  nodes: NodeType[],
+  edges: EdgeType[],
+) {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
   dagreGraph.setGraph({
@@ -77,25 +78,32 @@ function getLayoutedElements(nodes: Node[], edges: Edge[]) {
 
 // Define custom node types
 const nodeTypes: NodeTypes = {
-  custom: CustomNode,
+  relationship: RelationshipNode,
+};
+
+// TODO: this type is a hack
+type RelationshipGraphEdgeType = Omit<CustomEdgeType, "data"> & {
+  data: CustomEdgeType["data"] & {
+    relation: string;
+    subjectRelation?: string;
+    caveat?: string;
+    expiration?: string;
+  };
 };
 
 /**
  * RelationshipGraph renders a graphical view of relationship instances.
  */
-export default function RelationshipGraph({
-  relationships,
-  onNodeClick,
-}: RelationshipGraphProps) {
+export default function RelationshipGraph({ relationships }: RelationshipGraphProps) {
   const relationshipsService = useRelationshipsService(relationships);
-  const [hoveredNode, setHoveredNode] = useState<string | null>(null);
-  const [hoveredEdge, setHoveredEdge] = useState<string | null>(null);
+  const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
+  const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   // Build nodes and edges from relationships with colors
-  const { initialNodes, initialEdges } = useMemo(() => {
+  const { nodes, edges } = useMemo(() => {
     if (!relationships || relationships.length === 0) {
-      return { initialNodes: [], initialEdges: [] };
+      return { nodes: [], edges: [] };
     }
 
     const nodeMap = new Map<
@@ -106,9 +114,10 @@ export default function RelationshipGraph({
         relationships: Relationship[];
       }
     >();
-    const edges: Edge[] = [];
+    const edges: RelationshipGraphEdgeType[] = [];
 
     // First pass: collect all nodes and their relationships
+    // TODO: just do this in a single pass
     relationships.forEach((rel) => {
       if (!rel.resourceAndRelation || !rel.subject) {
         return;
@@ -118,10 +127,7 @@ export default function RelationshipGraph({
         rel.resourceAndRelation.namespace,
         rel.resourceAndRelation.objectId,
       );
-      const subjectId = createNodeId(
-        rel.subject.namespace,
-        rel.subject.objectId,
-      );
+      const subjectId = createNodeId(rel.subject.namespace, rel.subject.objectId);
 
       // Track relationships for resource node
       if (!nodeMap.has(resourceId)) {
@@ -145,17 +151,14 @@ export default function RelationshipGraph({
     });
 
     // Second pass: create nodes with colors
-    const nodes: Node<CustomNodeData>[] = Array.from(nodeMap.entries()).map(
+    const nodes: RelationshipNodeType[] = Array.from(nodeMap.entries()).map(
       ([nodeId, nodeData]) => {
         const color =
-          relationshipsService.getObjectColor(
-            nodeData.namespace,
-            nodeData.objectId,
-          ) || "#e0e0e0";
+          relationshipsService.getObjectColor(nodeData.namespace, nodeData.objectId) || "#e0e0e0";
 
         return {
           id: nodeId,
-          type: "custom",
+          type: "relationship",
           data: {
             label: createNodeLabel(nodeData.namespace, nodeData.objectId),
             namespace: nodeData.namespace,
@@ -169,7 +172,8 @@ export default function RelationshipGraph({
     );
 
     // Third pass: create edges with labels and data
-    relationships.forEach((rel, index) => {
+    // TODO: use a map() for this
+    relationships.forEach((rel) => {
       if (!rel.resourceAndRelation || !rel.subject) {
         return;
       }
@@ -178,10 +182,7 @@ export default function RelationshipGraph({
         rel.resourceAndRelation.namespace,
         rel.resourceAndRelation.objectId,
       );
-      const subjectId = createNodeId(
-        rel.subject.namespace,
-        rel.subject.objectId,
-      );
+      const subjectId = createNodeId(rel.subject.namespace, rel.subject.objectId);
 
       // Add edge from subject to resource with relation label
       const relationLabel = rel.resourceAndRelation.relation
@@ -189,7 +190,8 @@ export default function RelationshipGraph({
         : "";
 
       edges.push({
-        id: `edge-${index}`,
+        id: `${resourceId}:${relationLabel}:${subjectId}`,
+        type: "custom",
         source: resourceId,
         target: subjectId,
         label: relationLabel,
@@ -205,9 +207,7 @@ export default function RelationshipGraph({
               : undefined,
           caveat: rel.caveat?.caveatName || undefined,
           expiration: rel.optionalExpirationTime
-            ? new Date(
-                Number(rel.optionalExpirationTime.seconds) * 1000,
-              ).toISOString()
+            ? new Date(Number(rel.optionalExpirationTime.seconds) * 1000).toISOString()
             : undefined,
         },
       });
@@ -216,59 +216,41 @@ export default function RelationshipGraph({
     const layouted = getLayoutedElements(nodes, edges);
 
     return {
-      initialNodes: layouted.nodes,
-      initialEdges: layouted.edges,
+      nodes: layouted.nodes,
+      edges: layouted.edges,
     };
   }, [relationships, relationshipsService]);
 
-  const [nodes, setNodes, onNodesChange] = useNodesState(initialNodes);
-  const [edges, setEdges, onEdgesChange] = useEdgesState(initialEdges);
-
-  // Update nodes and edges when data changes
-  useMemo(() => {
-    setNodes(initialNodes);
-    setEdges(initialEdges);
-  }, [initialNodes, initialEdges, setNodes, setEdges]);
-
-  // Handle node click
-  const handleNodeClick = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      const nodeData = node.data as CustomNodeData;
-      if (onNodeClick && nodeData) {
-        onNodeClick(nodeData.namespace, nodeData.objectId);
-      }
-    },
-    [onNodeClick],
-  );
-
   // Handle mouse move to track position for tooltip
-  const handleMouseMove = useCallback((event: React.MouseEvent) => {
+  const handleMouseMove = useCallback((event: MouseEvent) => {
     setMousePosition({ x: event.clientX, y: event.clientY });
   }, []);
 
   // Handle node mouse enter/leave for tooltip
-  const handleNodeMouseEnter = useCallback(
-    (_: React.MouseEvent, node: Node) => {
-      setHoveredNode(node.id);
-    },
-    [],
-  );
+  const handleNodeMouseEnter = useCallback((_: MouseEvent, node: Node) => {
+    setHoveredNodeId(node.id);
+  }, []);
 
   const handleNodeMouseLeave = useCallback(() => {
-    setHoveredNode(null);
+    setHoveredNodeId(null);
   }, []);
 
   // Handle edge mouse enter/leave for tooltip
-  const handleEdgeMouseEnter = useCallback(
-    (_: React.MouseEvent, edge: Edge) => {
-      setHoveredEdge(edge.id);
-    },
-    [],
-  );
+  const handleEdgeMouseEnter = useCallback((_: MouseEvent, edge: Edge) => {
+    setHoveredEdgeId(edge.id);
+  }, []);
 
   const handleEdgeMouseLeave = useCallback(() => {
-    setHoveredEdge(null);
+    setHoveredEdgeId(null);
   }, []);
+
+  // NOTE: this statefulness is required because otherwise setting the position of the nodes
+  // via layout prevents the nodes from being dragged around.
+  const [statefulNodes, setNodesState, onNodesChange] = useNodesState(nodes);
+
+  useEffect(() => {
+    setNodesState(nodes);
+  }, [setNodesState, nodes]);
 
   // Check for empty state
   if (!relationships || relationships.length === 0) {
@@ -280,24 +262,18 @@ export default function RelationshipGraph({
   }
 
   // Find hovered node/edge data for tooltip
-  const hoveredNodeData = hoveredNode
-    ? (nodes.find((n) => n.id === hoveredNode)?.data as CustomNodeData | undefined)
-    : undefined;
-  const hoveredEdgeData = hoveredEdge
-    ? (edges.find((e) => e.id === hoveredEdge)?.data as any)
-    : undefined;
+  const hoveredNode = hoveredNodeId ? nodes?.find((n) => n.id === hoveredNodeId) : undefined;
+  const hoveredEdge = hoveredEdgeId ? edges?.find((e) => e.id === hoveredEdgeId) : undefined;
 
   return (
     <div className="w-full h-full relative" onMouseMove={handleMouseMove}>
       <ReactFlow
-        nodes={nodes}
-        edges={edges}
+        nodes={statefulNodes}
         nodeTypes={nodeTypes}
         onNodesChange={onNodesChange}
-        onEdgesChange={onEdgesChange}
-        onNodeClick={handleNodeClick}
         onNodeMouseEnter={handleNodeMouseEnter}
         onNodeMouseLeave={handleNodeMouseLeave}
+        edges={edges}
         onEdgeMouseEnter={handleEdgeMouseEnter}
         onEdgeMouseLeave={handleEdgeMouseLeave}
         colorMode="system"
@@ -307,17 +283,18 @@ export default function RelationshipGraph({
         <Background />
         <Controls />
         <MiniMap
-          nodeColor={(node) => {
-            const nodeData = node.data as CustomNodeData;
-            return nodeData.backgroundColor || '#e2e2e2';
+          nodeColor={(node: RelationshipNodeType) => {
+            const nodeData = node.data;
+            return nodeData.backgroundColor || "#e2e2e2";
           }}
           maskColor="rgba(0, 0, 0, 0.1)"
         />
       </ReactFlow>
 
       {/* Tooltip for nodes */}
-      {hoveredNodeData && (
+      {hoveredNode && (
         <div
+          // TODO: use tailwind for this
           style={{
             position: "fixed",
             left: mousePosition.x + 10,
@@ -327,16 +304,17 @@ export default function RelationshipGraph({
           }}
         >
           <NodeTooltip
-            namespace={hoveredNodeData.namespace}
-            objectId={hoveredNodeData.objectId}
-            relationships={hoveredNodeData.relationships}
+            namespace={hoveredNode.data.namespace}
+            objectId={hoveredNode.data.objectId}
+            relationships={hoveredNode.data.relationships}
           />
         </div>
       )}
 
       {/* Tooltip for edges */}
-      {hoveredEdgeData && (
+      {hoveredEdge && (
         <div
+          // TODO: use tailwind for this.
           style={{
             position: "fixed",
             left: mousePosition.x + 10,
@@ -346,10 +324,10 @@ export default function RelationshipGraph({
           }}
         >
           <EdgeTooltip
-            relation={hoveredEdgeData.relation}
-            subjectRelation={hoveredEdgeData.subjectRelation}
-            caveat={hoveredEdgeData.caveat}
-            expiration={hoveredEdgeData.expiration}
+            relation={hoveredEdge.data?.relation}
+            subjectRelation={hoveredEdge.data?.subjectRelation}
+            caveat={hoveredEdge.data?.caveat}
+            expiration={hoveredEdge.data?.expiration}
           />
         </div>
       )}

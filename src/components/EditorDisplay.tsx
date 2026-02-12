@@ -1,5 +1,6 @@
 import "react-reflex/styles.css";
 
+import { TextRange } from "@authzed/spicedb-parser-js";
 import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useNavigate, useLocation } from "@tanstack/react-router";
@@ -14,7 +15,6 @@ import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
 import { Services } from "../services/services";
-import { TextRange } from "../spicedb-common/include/protobuf-parser";
 import registerDSLanguage, {
   DS_DARK_THEME_NAME,
   DS_LANGUAGE_NAME,
@@ -31,7 +31,7 @@ import registerTupleLanguage, {
   TUPLE_DARK_THEME_NAME,
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
-} from "./tuplelang";
+} from "./relationshipeditor/tuplelang";
 
 export type EditorDisplayProps = {
   datastore: DataStore;
