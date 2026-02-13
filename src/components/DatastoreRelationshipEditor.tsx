@@ -3,23 +3,25 @@ import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useCallback, useMemo, useState } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
+import {
+  DeveloperError,
+  DeveloperError_Source,
+} from "@/spicedb-common/protodefs/developer/v1/developer_pb";
+
 import { DataStore, DataStoreItemKind } from "../services/datastore";
 import { Services } from "../services/services";
-import { CommentCellPrefix } from "../spicedb-common/components/relationshipeditor/columns";
+import { RelationshipOrComment, parseRelationshipsAndComments } from "../spicedb-common/parsing";
+
+import { CommentCellPrefix } from "./relationshipeditor/columns";
 import {
   RelationshipDatum,
   relationshipToDatum,
   toFullRelationshipString,
-} from "../spicedb-common/components/relationshipeditor/data";
+} from "./relationshipeditor/data";
 import {
   RelationTupleHighlight,
   RelationshipEditor,
-} from "../spicedb-common/components/relationshipeditor/RelationshipEditor";
-import { RelationshipOrComment, parseRelationshipsAndComments } from "../spicedb-common/parsing";
-import {
-  DeveloperError,
-  DeveloperError_Source,
-} from "../spicedb-common/protodefs/developer/v1/developer_pb";
+} from "./relationshipeditor/RelationshipEditor";
 
 const partialRelationshipCommentPrefix = "partial relationship: ";
 

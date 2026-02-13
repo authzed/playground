@@ -6,7 +6,7 @@ import {
   RELATION_REGEX,
   RESOURCE_ID_REGEX,
   SUBJECT_ID_REGEX,
-} from "../../parsing";
+} from "@/spicedb-common/parsing";
 
 /**
  * DataKind defines the different kinds of data that can be found in columns.

@@ -1,7 +1,7 @@
 import { editor, Position } from "monaco-editor";
 import * as monacoEditor from "monaco-editor";
 
-import { LocalParseState } from "../services/localparse";
+import { LocalParseState } from "@/services/localparse";
 import {
   getCaveatDefinitions,
   getRelatableDefinitions,
@@ -9,7 +9,7 @@ import {
   getSubjectDefinitions,
   StorableRelation,
   SubjectDefinition,
-} from "../services/semantics";
+} from "@/services/semantics";
 
 export const TUPLE_LANGUAGE_NAME = "tuple";
 export const TUPLE_THEME_NAME = "tuple-theme";

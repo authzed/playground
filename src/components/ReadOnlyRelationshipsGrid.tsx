@@ -5,7 +5,7 @@ import TableCell from "@material-ui/core/TableCell";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
 
-import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
+import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({

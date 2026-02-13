@@ -6,7 +6,7 @@ import {
 } from "@glideapps/glide-data-grid";
 import { useMemo, useRef } from "react";
 
-import { RelationshipsService } from "../../services/relationshipsservice";
+import { RelationshipsService } from "@/spicedb-common/services/relationshipsservice";
 
 import { COLUMNS, Column, DataKind } from "./columns";
 import { CommentCell, CommentCellRenderer } from "./commentcell";

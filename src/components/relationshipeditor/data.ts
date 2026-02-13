@@ -1,7 +1,7 @@
 import { timestampDate } from "@bufbuild/protobuf/wkt";
 
-import { RelationshipWithComments } from "../../parsing";
-import { RelationTuple as Relationship } from "../../protodefs/core/v1/core_pb";
+import { RelationshipWithComments } from "@/spicedb-common/parsing";
+import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";
 
 import { COLUMNS } from "./columns";
 
