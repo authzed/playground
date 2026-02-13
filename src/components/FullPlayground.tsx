@@ -26,7 +26,6 @@ import { useEffect, useMemo, useState, type ReactNode, type ChangeEvent } from "
 import { useCookies } from "react-cookie";
 import sjcl from "sjcl";
 import { toast } from "sonner";
-import { useKeyboardShortcuts } from "use-keyboard-shortcuts";
 
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
@@ -371,15 +370,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const [cookies, setCookie] = useCookies(["dismiss-tour"]);
   const [showTour, setShowTour] = useState(cookies["dismiss-tour"] !== "true");
-
-  useKeyboardShortcuts([
-    {
-      keys: ["ctrl", "s"],
-      onEvent: () => {
-        // Do nothing. We save automatically.
-      },
-    },
-  ]);
 
   // Effect: If the user lands on the `/` route, redirect them to the schema editor.
   // TODO: this should probably be a redirect at the routing layer.

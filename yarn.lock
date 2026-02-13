@@ -9208,11 +9208,6 @@ use-isomorphic-layout-effect@^1.2.0:
   resolved "https://registry.yarnpkg.com/use-isomorphic-layout-effect/-/use-isomorphic-layout-effect-1.2.1.tgz#2f11a525628f56424521c748feabc2ffcc962fce"
   integrity sha512-tpZZ+EX0gaghDAiFR37hj5MgY6ZN55kLiPkJsKxBMZ6GZdOSPJXiOzPM984oPYZ5AnehYx5WQp1+ME8I/P/pRA==
 
-use-keyboard-shortcuts@^2.2.2:
-  version "2.2.3"
-  resolved "https://registry.yarnpkg.com/use-keyboard-shortcuts/-/use-keyboard-shortcuts-2.2.3.tgz#42ff30cee1e0ea78a4e344eaa6b05f8a5f545f4b"
-  integrity sha512-v6qrl3Oz2BRZx9lOW8Vg5LdrmwvMV6jfbofsJeLYMMX6Kwasa6OrpjVprMTavOXtARoTTQqz72Z+edNyBLVR1w==
-
 use-sidecar@^1.1.3:
   version "1.1.3"
   resolved "https://registry.yarnpkg.com/use-sidecar/-/use-sidecar-1.1.3.tgz#10e7fd897d130b896e2c546c63a5e8233d00efdb"
