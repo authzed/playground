@@ -5,7 +5,7 @@ import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import lineColumn from "line-column";
-import monaco from "monaco-editor";
+import * as monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
@@ -163,7 +163,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       // TODO: this shouldn't be necessary. Moving to redux may make this less painful.
       const updated = datastore.update(currentItem!, value || "");
       if (updated && updated.pathname !== location.pathname) {
-        navigate({ to: updated.pathname, replace: true });
+        void navigate({ to: updated.pathname, replace: true });
       }
 
       props.datastoreUpdated();

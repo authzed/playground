@@ -1,0 +1,24 @@
+/* vi:ft=jsonc */
+// NOTE: this file is interpreted as jsonc, but you can't
+// use a jsonc file extension or oxlint will ignore it, hence
+// the modeline.
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "error"
+    // TODO: un-comment these and fix the issues
+    // "suspicious": "error",
+    // "restriction": "error"
+  },
+  "plugins": ["eslint", "import", "oxc", "promise", "react", "typescript", "unicorn"],
+  "ignorePatterns": ["dist", "src/spicedb-common/protodefs", "public"],
+  "rules": {
+    // TODO: fix this and get rid of it
+    "react/only-export-components": [
+      "warn",
+      {
+        "allowConstantExport": true
+      }
+    ]
+  }
+}

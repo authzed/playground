@@ -58,7 +58,7 @@ export function ShareLoader(props: {
     setLoadingStatus(SharedLoadingStatus.LOADING);
 
     // Load the shared data.
-    (async () => {
+    void (async () => {
       const apiEndpoint = AppConfig().shareApiEndpoint;
       if (!apiEndpoint) {
         return;
@@ -67,7 +67,7 @@ export function ShareLoader(props: {
       // TODO: use routing for this instead of string manipulation
       const pieces = location.pathname.replace(urlPrefix, "").split("/");
       if (pieces.length < 1 && !props.sharedRequired) {
-        navigate({ to: "/" });
+        await navigate({ to: "/" });
         return;
       }
 
@@ -144,7 +144,7 @@ export function ShareLoader(props: {
 
         if (!props.sharedRequired) {
           // TODO: do this with routing as well
-          navigate({
+          await navigate({
             to: location.pathname.slice(0, urlPrefix.length + shareReference.length),
             replace: true,
           });

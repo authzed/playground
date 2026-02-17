@@ -31,7 +31,10 @@ export function DeveloperErrorDisplay({ error }: { error: DeveloperError }) {
           <ul className="">
             {error.path.map((item) => (
               // NOTE: the \2192 here is the → character; tailwind needs it as an escape sequence.
-              <li className="after:content-['\2192'] after:ml-2 last:after:content-none" key={item}>
+              <li
+                className="after:content-['\u2192'] after:ml-2 last:after:content-none"
+                key={item}
+              >
                 {item}
               </li>
             ))}

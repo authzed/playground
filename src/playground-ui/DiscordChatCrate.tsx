@@ -80,7 +80,7 @@ export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps)
     if (crate.current !== undefined || injected.current || !serverId || !channelId) {
       return;
     }
-    (async () => {
+    void (async () => {
       injected.current = true;
 
       const CrateConstructor = await loadFromCDN();

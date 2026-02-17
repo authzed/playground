@@ -28,12 +28,9 @@ export function ExamplesDropdown({
   const posthog = usePostHog();
 
   useEffect(() => {
-    const fetchExamples = async () => {
-      if (examples === undefined) {
-        setExamples(await LoadExamples());
-      }
-    };
-    fetchExamples();
+    if (examples === undefined) {
+      setExamples(LoadExamples());
+    }
   }, [examples]);
 
   return (

@@ -271,7 +271,7 @@ function ContextTreeView(context: JsonObject | undefined) {
     }
 
     return (
-      <TreeItem nodeId="" label={label}>
+      <TreeItem key={key} nodeId="" label={label}>
         {isItemValue ? value : undefined}
       </TreeItem>
     );
@@ -280,13 +280,19 @@ function ContextTreeView(context: JsonObject | undefined) {
 
 function ContextTreeValue(value: JsonValue) {
   if (value === null) {
+    // NOTE: i'm not sure why this triggers on array literals.
+    // oxlint-disable-next-line eslint-plugin-react(jsx-key)
     return [<code>null</code>, false];
   }
   if (typeof value === "boolean") {
+    // oxlint-disable-next-line eslint-plugin-react(jsx-key)
     return [<code>{value.toString()}</code>, false];
   }
   if (Array.isArray(value)) {
     return [
+      // NOTE: not sure what the key would be in this case. I think I'd rather get rid
+      // of this code.
+      // oxlint-disable-next-line eslint-plugin-react(jsx-key)
       value.map((v) => {
         return <TreeItem nodeId="">{ContextTreeValue(v)}</TreeItem>;
       }),
@@ -298,5 +304,6 @@ function ContextTreeValue(value: JsonValue) {
     return [ContextTreeView(value), true];
   }
   // If we've gotten this far, we have a number or a string and we can render it straight out.
+  // oxlint-disable-next-line eslint-plugin-react(jsx-key)
   return [<code>{value}</code>, false];
 }

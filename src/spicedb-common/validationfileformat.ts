@@ -60,7 +60,8 @@ export const parseValidationYAML = (contents: string): ParsedValidation | ParseV
   try {
     parsed = yaml.parse(contents);
   } catch (e) {
-    return { message: `parse error: ${e}` };
+    const errorText = e instanceof Error ? e.message : "unknown";
+    return { message: `parse error: ${errorText}` };
   }
 
   const ajv = new Ajv();
