@@ -107,6 +107,9 @@ export const COLUMNS: Column[] = [
     group: "Resource",
     dataKind: DataKind.RESOURCE_TYPE,
     section: RelationshipSection.RESOURCE,
+    trailingRowOptions: {
+      hint: "Add relationship",
+    },
     dataDescription: "definition name",
   },
   {
@@ -116,10 +119,6 @@ export const COLUMNS: Column[] = [
     group: "Resource",
     dataKind: DataKind.RESOURCE_ID,
     section: RelationshipSection.RESOURCE,
-    trailingRowOptions: {
-      hint: "Add relationship",
-      targetColumn: 0,
-    },
     dataDescription: "object ID",
   },
   {
