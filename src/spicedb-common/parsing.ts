@@ -168,8 +168,9 @@ export const parseRelationshipWithError = (
 
         contextualizedCaveat.context = caveatContext;
       } catch (e) {
+        const errorText = e instanceof Error ? e.message : "";
         return {
-          errorMessage: `Invalid caveat context: ${e}`,
+          errorMessage: `Invalid caveat context: ${parsed.groups["caveatContext"]}: ${errorText}`,
         };
       }
     }
@@ -186,8 +187,9 @@ export const parseRelationshipWithError = (
       const milliseconds = Date.parse(dtString);
       optionalExpirationTime = timestampFromMs(milliseconds);
     } catch (e) {
+      const errorText = e instanceof Error ? e.message : "";
       return {
-        errorMessage: `Invalid expiration time: ${e}`,
+        errorMessage: `Invalid expiration time: ${parsed.groups["expirationDateTime"]}: ${errorText}`,
       };
     }
   }

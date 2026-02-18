@@ -145,7 +145,7 @@ export function useZedService(): ZedService {
           return;
         }
 
-        loadWebAssembly();
+        void loadWebAssembly();
         break;
 
       case "ready":

@@ -268,7 +268,7 @@ type FieldCellEditorProps<T extends CustomCell<Q>, Q extends FieldCellProps> = {
   onChange: (newValue: T) => void;
   value: T;
   initialValue: string | undefined;
-  onFinishedEditing: (newValue?: T | undefined) => void;
+  onFinishedEditing: (newValue?: T) => void;
   getAutocompleteOptions: GetAutocompleteOptions<Q>;
   kind: string;
 };

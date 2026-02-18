@@ -1,7 +1,7 @@
 import "react-reflex/styles.css";
 
 import { Bubbles } from "lucide-react";
-import monaco from "monaco-editor";
+import type { Position } from "monaco-editor";
 
 // TODO: rename
 import TenantGraph from "@/components/visualizer/TenantGraph";
@@ -28,7 +28,7 @@ export function VisualizerPanel({
   dimensions,
 }: PanelProps & {
   dimensions?: { width: number; height: number };
-  editorPosition?: monaco.Position;
+  editorPosition?: Position;
   currentItem?: DataStoreItem;
 }) {
   const relationships = services.localParseService.state.relationships

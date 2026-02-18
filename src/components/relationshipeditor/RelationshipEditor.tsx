@@ -174,6 +174,7 @@ export function RelationshipEditor({
     // NOTE: we do not want to rerun this if the dataUpdated callback has changed (which it should
     // not, ideally).
     // TODO: dataUpdated is currently changing on every render because the debouncer isn't memoized.
+    // oxlint-disable-next-line eslint-plugin-react-hooks(exhaustive-deps)
   }, [data]);
 
   // relationships holds a filtered form of the grid, containing only valid relationships.
@@ -418,7 +419,7 @@ export function RelationshipEditor({
       baseFontStyle: "13px",
       fontFamily:
         "Inter, Roboto, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, noto, arial, sans-serif",
-      ...(themeOverrides ?? {}),
+      ...themeOverrides,
     };
   }, [theme, themeOverrides]);
 
@@ -696,7 +697,7 @@ export function RelationshipEditor({
     }
   };
 
-  const copySelectedRows = () => {
+  const copySelectedRows = async () => {
     if (gridSelection?.rows) {
       const selected = data.filter((annotated: RelationshipDatumAndMetadata) =>
         gridSelection?.rows.hasIndex(annotated.dataRowIndex),
@@ -712,7 +713,7 @@ export function RelationshipEditor({
           })
           .join("\n");
 
-        navigator.clipboard.writeText(data);
+        await navigator.clipboard.writeText(data);
       }
     }
   };

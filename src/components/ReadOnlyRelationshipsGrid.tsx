@@ -46,9 +46,11 @@ export function ReadOnlyRelationshipsGrid(props: {
         </TableRow>
       </TableHead>
       <TableBody>
-        {props.relationships.map((relationship: Relationship) => {
+        {props.relationships.map((relationship, index) => {
           return (
-            <TableRow>
+            // NOTE: an index is appropriate here because a user could theoretically
+            // write a duplicate relationship, and the position makes some sense as a key
+            <TableRow key={index}>
               <TableCell className={classes.def}>
                 {relationship.resourceAndRelation?.namespace}
               </TableCell>

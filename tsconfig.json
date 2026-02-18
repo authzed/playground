@@ -25,7 +25,6 @@
     "noUncheckedSideEffectImports": true,
 
     /* Aliasing of imports */
-    "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }

@@ -374,11 +374,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   // Effect: If the user lands on the `/` route, redirect them to the schema editor.
   // TODO: this should probably be a redirect at the routing layer.
   useEffect(() => {
-    (async () => {
-      if (currentItem === undefined) {
-        navigate({ to: DataStorePaths.Schema(), replace: true });
-      }
-    })();
+    if (currentItem === undefined) {
+      void navigate({ to: DataStorePaths.Schema(), replace: true });
+    }
   }, [datastore, currentItem, navigate]);
 
   const conductDownload = () => {
@@ -389,35 +387,33 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     saveAs(blob, `authzed-download-${hash}.yaml`);
   };
 
-  const conductUpload = () => {
-    (async () => {
-      const file = await fileDialog({
-        multiple: false,
-        strict: true,
-        accept: ".yaml",
+  const conductUpload = async () => {
+    const file = await fileDialog({
+      multiple: false,
+      strict: true,
+      accept: ".yaml",
+    });
+    if (file) {
+      pushEvent("load-yaml", {
+        filename: file.name,
       });
-      if (file) {
-        pushEvent("load-yaml", {
-          filename: file.name,
+
+      const contents = await file.text();
+      const uploaded = parseValidationYAML(contents);
+      if ("message" in uploaded) {
+        toast.error("Could not load uploaded YAML", {
+          description: `The uploaded validation YAML is invalid: ${uploaded.message}`,
         });
-
-        const contents = await getFileContentsAsText(file);
-        const uploaded = parseValidationYAML(contents);
-        if ("message" in uploaded) {
-          toast.error("Could not load uploaded YAML", {
-            description: `The uploaded validation YAML is invalid: ${uploaded.message}`,
-          });
-          return;
-        }
-
-        services.liveCheckService.clear();
-
-        datastore.loadFromParsed(uploaded);
-        datastoreUpdated();
-
-        navigate({ to: DataStorePaths.Schema(), replace: true });
+        return;
       }
-    })();
+
+      services.liveCheckService.clear();
+
+      datastore.loadFromParsed(uploaded);
+      datastoreUpdated();
+
+      void navigate({ to: DataStorePaths.Schema(), replace: true });
+    }
   };
 
   const formatSchema = () => {
@@ -518,7 +514,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     datastoreUpdated();
 
     services.liveCheckService.clear();
-    navigate({ to: DataStorePaths.Schema(), replace: true });
+    void navigate({ to: DataStorePaths.Schema(), replace: true });
   };
 
   const [previousValidationForDiff, setPreviousValidationForDiff] = useState<string | undefined>(
@@ -593,19 +589,19 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     selectedTabValue: string,
   ) => {
     const item = datastore.getById(selectedTabValue)!;
-    navigate({ to: item.pathname });
+    void navigate({ to: item.pathname });
   };
 
   const setDismissTour = () => {
     setShowTour(false);
     setCookie("dismiss-tour", true);
-    navigate({ to: DataStorePaths.Schema() });
+    void navigate({ to: DataStorePaths.Schema() });
   };
 
   const handleTourBeforeStep = (selector: string) => {
     // Activate the Assertions tab before the assertions dialogs
     if (selector.includes(TourElementClass.assert)) {
-      navigate({ to: DataStorePaths.Assertions() });
+      void navigate({ to: DataStorePaths.Assertions() });
     }
   };
 
@@ -1135,16 +1131,3 @@ function IsolatedEditorDisplay(props: EditorDisplayProps) {
 
   return <EditorDisplay {...props} datastoreUpdated={datastoreUpdated} />;
 }
-
-const getFileContentsAsText = async (file: File): Promise<string> => {
-  return new Promise(
-    (resolve: (value: string | PromiseLike<string>) => void, reject: () => void) => {
-      const reader = new FileReader();
-      reader.onloadend = function (e: ProgressEvent<FileReader>) {
-        resolve(e.target?.result?.toString() ?? "");
-      };
-      reader.onerror = reject;
-      reader.readAsText(file);
-    },
-  );
-};

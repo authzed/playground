@@ -9,7 +9,7 @@ import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Convert from "ansi-to-html";
 import { CircleX, MessageCircleWarning } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { MouseEvent, KeyboardEvent, ChangeEvent, ReactNode } from "react";
+import type { MouseEvent, KeyboardEvent, ChangeEvent } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import TabLabel from "../../playground-ui/TabLabel";
@@ -170,10 +170,12 @@ export function TerminalPanel(props: PanelProps) {
     inputRef.current?.focus();
   };
 
-  const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
-    const hasSelection = !!getSelectedTextWithin(event.target as Element);
-    if (!hasSelection) {
-      inputRef.current?.focus();
+  const handleMouseUp = (event: MouseEvent) => {
+    if (event.target instanceof Element) {
+      const hasSelection = !!getSelectedTextWithin(event.target);
+      if (!hasSelection) {
+        inputRef.current?.focus();
+      }
     }
   };
 
@@ -261,12 +263,12 @@ function TerminalOutputDisplay({
   const convert = new Convert({
     escapeXML: true,
   });
-  const children = sections.flatMap((section: TerminalSection): ReactNode => {
+  const children = sections.flatMap((section, index) => {
     if ("command" in section) {
-      return <div>$ {section.command}</div>;
+      return <div key={index}>$ {section.command}</div>;
     } else {
       return (
-        <div className={classes.terminalOutput}>
+        <div key={index} className={classes.terminalOutput}>
           {section.output
             .split("\n")
             .map((o) => convertStringOutput(convert, o, showLogs ?? false))}
@@ -274,13 +276,15 @@ function TerminalOutputDisplay({
       );
     }
   });
-  const handleMouseUp = (event: MouseEvent<HTMLDivElement>) => {
-    const hasSelection = !!getSelectedTextWithin(event.target as Element);
-    if (onRefocus && !hasSelection) {
-      onRefocus();
-    }
-    if (hasSelection) {
-      event.stopPropagation();
+  const handleMouseUp = (event: MouseEvent) => {
+    if (event.target instanceof Element) {
+      const hasSelection = !!getSelectedTextWithin(event.target);
+      if (onRefocus && !hasSelection) {
+        onRefocus();
+      }
+      if (hasSelection) {
+        event.stopPropagation();
+      }
     }
   };
 

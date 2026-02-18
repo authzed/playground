@@ -330,7 +330,7 @@ export function useDeveloperService(): DeveloperService {
           return;
         }
 
-        loadWebAssembly();
+        void loadWebAssembly();
         break;
 
       case "ready":

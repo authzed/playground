@@ -8,7 +8,6 @@ import clsx from "clsx";
 
 import TabLabel from "../../playground-ui/TabLabel";
 import { DataStorePaths } from "../../services/datastore";
-import { RelationshipFound } from "../../spicedb-common/parsing";
 import {
   DeveloperError,
   DeveloperWarning,
@@ -94,13 +93,15 @@ export function ProblemsPanel({ services }: PanelProps) {
     <div className={clsx(classes.apiOutput)}>
       {!services.problemService.hasProblems && <span>No problems found</span>}
       {services.problemService.invalidRelationships.map(
-        (invalid: RelationshipFound, index: number) => {
+        // NOTE: an index is appropriate here because a user could theoretically
+        // write a duplicate relationship, and the position makes some sense as a key
+        (invalid, index) => {
           if (!("errorMessage" in invalid.parsed)) {
-            return <div />;
+            return <div key={index} />;
           }
 
           return (
-            <Paper className={classes.errorContainer} key={`ir${index}`}>
+            <Paper className={classes.errorContainer} key={index}>
               <div>
                 <div className={classes.validationErrorContext}>
                   In

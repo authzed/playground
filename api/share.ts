@@ -1,7 +1,7 @@
 import { createHash } from "crypto";
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import type { VercelRequest, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelRequestBody, VercelResponse } from "@vercel/node";
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
@@ -31,7 +31,7 @@ function computeShareHash(salt: string, data: string): string {
   return b64.substring(0, hashLen);
 }
 
-function validateSharedDataV2(data): data is SharedDataV2 {
+function validateSharedDataV2(data: VercelRequestBody): data is SharedDataV2 {
   if (typeof data !== "object" || data === null) {
     return false;
   }
