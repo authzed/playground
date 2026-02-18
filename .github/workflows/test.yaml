@@ -9,16 +9,13 @@ on:
       - "*"
 jobs:
   test:
-    name: "Run Tests"
+    name: "Run Unit Tests"
     runs-on: "depot-ubuntu-24.04-small"
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v6"
         with:
           submodules: true
-      - uses: "authzed/action-spicedb@v1"
-        with:
-          version: "latest"
-      - uses: "actions/setup-node@v4"
+      - uses: "actions/setup-node@v6"
         with:
           node-version: 22
           cache-dependency-path: "yarn.lock"
@@ -26,3 +23,29 @@ jobs:
       - uses: "bahmutov/npm-install@v1"
       - name: "Run tests"
         run: "yarn test"
+  e2e-tests:
+    name: "Run E2E Tests"
+    runs-on: "depot-ubuntu-24.04-arm-small" # Use a larger instance for E2E tests
+    steps:
+      - uses: "actions/checkout@v6"
+      - uses: "actions/setup-node@v6"
+        with:
+          node-version: 22
+          cache-dependency-path: "yarn.lock"
+          cache: "yarn"
+      - uses: "bahmutov/npm-install@v1"
+      - name: "Cypress run"
+        uses: "cypress-io/github-action@v6"
+        with:
+          browser: chrome
+          start: HTTPS=true vite preview -l info --strictPort --port 5173
+          wait-on: "http://localhost:5173"
+          wait-on-timeout: 120
+      - uses: "actions/upload-artifact@v4"
+        if: always()
+        with:
+          name: "cypress-artifacts" # see in "summary" tab of the workflow run
+          path: |
+            cypress/screenshots/
+            cypress/videos/
+            cypress/logs/

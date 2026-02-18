@@ -17,12 +17,14 @@
 import "./commands";
 
 // Handle uncaught exceptions
-Cypress.on("uncaught:exception", (err) => {
-  // TODO: Ignore transient network errors until either browser caching
-  // or js fixtures are supported
-  // https://github.com/cypress-io/cypress/issues/18335
-  // https://github.com/cypress-io/cypress/issues/1271
-  if (err.message.includes("Uncaught NetworkError")) {
-    return false;
-  }
+Cypress.on("uncaught:exception", (err: Error) => {
+  // https://github.com/suren-atoyan/monaco-react/issues/440
+  // if (err.message.includes("operation is manually canceled")) {
+  //   return false; // Prevents Cypress from failing the test
+  // }
+  //   // https://github.com/cypress-io/cypress/issues/28400
+  //   if (err.message.match(`Uncaught NetworkError: Failed to execute 'importScripts' on 'WorkerGlobalScope'`)) {
+  //       return false;
+  //   }
+    return true; // Let other exceptions fail the test
 });
