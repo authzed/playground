@@ -6,14 +6,14 @@
   "scripts": {
     "dev": "HTTPS=true vite",
     "build": "tsc -b && vite build",
-    "test": "vitest",
+    "test": "vitest --config vitest.config.ts",
     "lint": "oxlint --type-aware --type-check",
     "lint-fix": "oxlint --type-aware --type-check --fix",
     "typecheck": "tsc --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "cy:run": "cypress run --browser chrome",
-    "cy:open": "cypress open",
+    "test:browser": "vitest --config vitest.config.browser.ts",
+    "test:browser:ui": "vitest --config vitest.config.browser.ts --ui",
     "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
   },
   "dependencies": {
@@ -79,7 +79,8 @@
     "zod": "^4.2.1"
   },
   "devDependencies": {
-    "@testing-library/react": "^14.0.0",
+    "@playwright/test": "^1.58.2",
+    "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.4.3",
     "@types/d3-scale-chromatic": "^3.0.0",
     "@types/dagre": "^0.7.53",
@@ -96,8 +97,7 @@
     "@types/use-deep-compare-effect": "^1.5.1",
     "@types/uuid": "^9.0.1",
     "@vitejs/plugin-react": "^4.3.4",
-    "cypress": "^12.9.0",
-    "cypress-wait-until": "^1.7.2",
+    "@vitest/browser": "4.0.18",
     "globals": "^15.14.0",
     "oxfmt": "^0.28.0",
     "oxlint": "^1.48.0",
@@ -106,7 +106,7 @@
     "typescript": "~5.7.3",
     "vite": "^6.0.7",
     "vite-plugin-svgr": "^4.3.0",
-    "vitest": "^2.1.8"
+    "vitest": "^4.0.18"
   },
   "browserslist": {
     "production": [
