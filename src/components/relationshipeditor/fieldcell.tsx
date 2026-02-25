@@ -8,7 +8,7 @@ import {
 import { Popper, PopperProps, alpha } from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
 import Autocomplete, { type AutocompleteRenderInputParams } from "@material-ui/lab/Autocomplete";
-import { MutableRefObject, useRef } from "react";
+import { RefObject, useRef } from "react";
 import stc from "string-to-color";
 
 import { RelationshipsService } from "@/spicedb-common/services/relationshipsservice";
@@ -102,7 +102,7 @@ export interface FieldCellRendererProps {
 }
 
 type GetAutocompleteOptions<Q extends FieldCellProps> = (
-  props: FieldCellRendererProps,
+  props: FieldCellRendererProps | null,
   cellProps: Q,
 ) => string[];
 
@@ -110,7 +110,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
   kind: string,
   getAutocompleteOptions: GetAutocompleteOptions<Q>,
 ) {
-  return (propsRefs: MutableRefObject<FieldCellRendererProps>) => {
+  return (propsRefs: RefObject<FieldCellRendererProps>) => {
     return {
       // TODO: see if there's a way to do this without the as
       isMatch: (cell: CustomCell): cell is T => (cell as T).data.kind === kind,
@@ -146,17 +146,17 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         const props = propsRefs.current;
 
         const selectedType: SelectedType | undefined =
-          props.selected.selectedType ||
-          props.selected.selectedObject ||
-          props.selected.selectedRelation;
+          props?.selected.selectedType ||
+          props?.selected.selectedObject ||
+          props?.selected.selectedRelation;
         const selectedObject: SelectedObject | undefined =
-          props.selected.selectedObject || props.selected.selectedRelation;
-        const selectedRelation: SelectedRelation | undefined = props.selected.selectedRelation;
+          props?.selected.selectedObject || props?.selected.selectedRelation;
+        const selectedRelation: SelectedRelation | undefined = props?.selected.selectedRelation;
         const selectedCaveatName: SelectedCaveatName | undefined =
-          props.selected.selectedCaveatName;
+          props?.selected.selectedCaveatName;
 
         let similarColor: string | undefined = undefined;
-        if (props.similarHighlighting) {
+        if (props?.similarHighlighting) {
           switch (dataKind) {
             case DataKind.RESOURCE_TYPE:
             case DataKind.SUBJECT_TYPE:
@@ -264,7 +264,7 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
 }
 
 type FieldCellEditorProps<T extends CustomCell<Q>, Q extends FieldCellProps> = {
-  fieldPropsRef: MutableRefObject<FieldCellRendererProps>;
+  fieldPropsRef: RefObject<FieldCellRendererProps>;
   onChange: (newValue: T) => void;
   value: T;
   initialValue: string | undefined;
@@ -356,8 +356,8 @@ const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
 
 export const TypeCellRenderer = fieldCellRenderer<TypeCell, TypeCellProps>(
   TYPE_CELL_KIND,
-  (props: FieldCellRendererProps, cellProps: TypeCellProps) => {
-    if (props.resolver === undefined) {
+  (props: FieldCellRendererProps | null, cellProps: TypeCellProps) => {
+    if (props?.resolver === undefined) {
       return [];
     }
 
@@ -380,8 +380,8 @@ export const TypeCellRenderer = fieldCellRenderer<TypeCell, TypeCellProps>(
 
 export const ObjectIdCellRenderer = fieldCellRenderer<ObjectIdCell, ObjectIdCellProps>(
   OBJECTID_CELL_KIND,
-  (props: FieldCellRendererProps, cellProps: ObjectIdCellProps) => {
-    if (props.resolver === undefined) {
+  (props: FieldCellRendererProps | null, cellProps: ObjectIdCellProps) => {
+    if (props?.resolver === undefined) {
       return [];
     }
 
@@ -400,8 +400,8 @@ export const ObjectIdCellRenderer = fieldCellRenderer<ObjectIdCell, ObjectIdCell
 
 export const RelationCellRenderer = fieldCellRenderer<RelationCell, RelationCellProps>(
   RELATION_CELL_KIND,
-  (props: FieldCellRendererProps, cellProps: RelationCellProps) => {
-    if (props.resolver === undefined) {
+  (props: FieldCellRendererProps | null, cellProps: RelationCellProps) => {
+    if (props?.resolver === undefined) {
       return [];
     }
 
@@ -422,8 +422,8 @@ export const RelationCellRenderer = fieldCellRenderer<RelationCell, RelationCell
 
 export const CaveatNameCellRenderer = fieldCellRenderer<CaveatNameCell, CaveatNameCellProps>(
   CAVEATNAME_CELL_KIND,
-  (props: FieldCellRendererProps) => {
-    if (props.resolver === undefined) {
+  (props: FieldCellRendererProps | null) => {
+    if (props?.resolver === undefined) {
       return [];
     }
 

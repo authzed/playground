@@ -1,6 +1,6 @@
 import { CustomCell, CustomRenderer, GridCellKind } from "@glideapps/glide-data-grid";
 import TextField from "@material-ui/core/TextField";
-import React, { MutableRefObject, useEffect, useRef } from "react";
+import React, { RefObject, useEffect, useRef } from "react";
 
 import { Column, CommentCellPrefix } from "./columns";
 import { FieldCellRendererProps } from "./fieldcell";
@@ -28,7 +28,7 @@ export function copyDataForCommentCell(dataValue: string): string {
 }
 
 type CommentCellEditorProps = {
-  columnsWithWidths: Column[];
+  columnsWithWidths?: Column[];
   onChange: (newValue: CommentCell) => void;
   value: CommentCell;
   initialValue: string | undefined;
@@ -49,7 +49,7 @@ const CommentCellEditor = (props: CommentCellEditorProps) => {
 
   const defaultValue = adjustedInitialValue || props.value.data.dataValue || "";
   const width = props.columnsWithWidths
-    .slice(props.value.data.col)
+    ?.slice(props.value.data.col)
     .map((col: Column) => col.width)
     .reduce((n, m) => n + m);
   const fieldRef = useRef<HTMLDivElement | null>(null);
@@ -88,7 +88,7 @@ const CommentCellEditor = (props: CommentCellEditorProps) => {
 };
 
 export const CommentCellRenderer = (
-  props: MutableRefObject<FieldCellRendererProps>,
+  props: RefObject<FieldCellRendererProps>,
 ): CustomRenderer<CommentCell> => {
   return {
     kind: GridCellKind.Custom,
@@ -114,7 +114,7 @@ export const CommentCellRenderer = (
           onChange={onChange}
           value={value}
           initialValue={initialValue}
-          columnsWithWidths={props.current.columnsWithWidths}
+          columnsWithWidths={props.current?.columnsWithWidths}
         />
       );
     },

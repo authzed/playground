@@ -1,21 +1,12 @@
-import "./fonts.css";
-
 import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import { create } from "@bufbuild/protobuf";
-import {
-  faCaretDown,
-  faDatabase,
-  faFile,
-  faThumbsUp,
-  faUser,
-} from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { Button, CircularProgress, Menu, MenuItem } from "@material-ui/core";
+import { Button, Menu, MenuItem } from "@material-ui/core";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 import clsx from "clsx";
+import { ChevronDown, Loader, File, User, ThumbsUp, Database } from "lucide-react";
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
@@ -38,6 +29,7 @@ import { useDeveloperService } from "../spicedb-common/services/developerservice
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
+import "./fonts.css";
 import { ShareLoader } from "./ShareLoader";
 
 const useStyles = makeStyles(() =>
@@ -336,7 +328,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
           Definitions
         </MenuItem>
         <MenuItem className={classes.menuItem} onClick={() => setCurrentMode("relationships")}>
-          <RelationshipsIcon />
+          <Database />
           Relationships
         </MenuItem>
       </Menu>
@@ -355,12 +347,12 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
               )}
               {mode === "relationships" && (
                 <>
-                  <RelationshipsIcon />
+                  <Database />
                   Example Relationships
                 </>
               )}
               <span className={classes.caret}>
-                <FontAwesomeIcon icon={faCaretDown} />
+                <ChevronDown />
               </span>
             </div>
           </div>
@@ -524,7 +516,7 @@ function EmbeddedQuery(props: { services: Services }) {
         <div className={classes.queryResult}>
           {devService.state.status === "loading" && (
             <>
-              <CircularProgress size="sm" color="primary" />
+              <Loader size="sm" />
               Loading developer system
             </>
           )}
@@ -706,9 +698,9 @@ function Selector(props: {
 
   const icon = useMemo(() => {
     return {
-      resource: <FontAwesomeIcon icon={faFile} />,
-      subject: <FontAwesomeIcon icon={faUser} />,
-      permission: <FontAwesomeIcon icon={faThumbsUp} />,
+      resource: <File />,
+      subject: <User />,
+      permission: <ThumbsUp />,
     }[props.type];
   }, [props.type]);
 
@@ -740,7 +732,7 @@ function Selector(props: {
         {icon}
         {current}
         <span className={classes.caret}>
-          <FontAwesomeIcon icon={faCaretDown} />
+          <ChevronDown />
         </span>
       </div>
       <Menu
@@ -779,8 +771,4 @@ function SchemaIcon() {
       />
     </svg>
   );
-}
-
-function RelationshipsIcon() {
-  return <FontAwesomeIcon icon={faDatabase} />;
 }

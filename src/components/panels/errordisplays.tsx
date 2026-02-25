@@ -1,7 +1,6 @@
-import "react-reflex/styles.css";
-
 import { Link } from "@tanstack/react-router";
 import { CircleX, MessageCircleWarning } from "lucide-react";
+import "react-reflex/styles.css";
 
 import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
 import {

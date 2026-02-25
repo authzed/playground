@@ -1,7 +1,6 @@
-import "react-reflex/styles.css";
-
 import { useTheme } from "@material-ui/core/styles";
 import { useState } from "react";
+import "react-reflex/styles.css";
 import { toast } from "sonner";
 
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";

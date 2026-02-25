@@ -1,7 +1,6 @@
-import "react-reflex/styles.css";
-
 import { Bubbles } from "lucide-react";
 import type { Position } from "monaco-editor";
+import "react-reflex/styles.css";
 
 // TODO: rename
 import TenantGraph from "@/components/visualizer/TenantGraph";

@@ -1,29 +1,30 @@
-import "react-reflex/styles.css";
-
 import { LinearProgress, Tab, Tabs } from "@material-ui/core";
 import AppBar from "@material-ui/core/AppBar";
 import { Theme, createStyles, darken, makeStyles } from "@material-ui/core/styles";
 import { alpha } from "@material-ui/core/styles/colorManipulator";
 import TextField from "@material-ui/core/TextField";
 import useMediaQuery from "@material-ui/core/useMediaQuery";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import CodeIcon from "@material-ui/icons/Code";
-import CompareIcon from "@material-ui/icons/Compare";
-import DescriptionIcon from "@material-ui/icons/Description";
-import FormatTextdirectionLToRIcon from "@material-ui/icons/FormatTextdirectionLToR";
-import GetAppIcon from "@material-ui/icons/GetApp";
 import GridOnIcon from "@material-ui/icons/GridOn";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-import InsertDriveFileIcon from "@material-ui/icons/InsertDriveFile";
-import RefreshIcon from "@material-ui/icons/Refresh";
-import ShareIcon from "@material-ui/icons/Share";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import clsx from "clsx";
 import { saveAs } from "file-saver";
 import { fileDialog } from "file-select-dialog";
-import { CircleX, MessageCircleWarning } from "lucide-react";
+import {
+  BookOpenText,
+  CircleCheck,
+  CircleX,
+  Download,
+  File,
+  Form,
+  GitCompare,
+  MessageCircleWarning,
+  RefreshCw,
+  Share2,
+} from "lucide-react";
 import { useEffect, useMemo, useState, type ReactNode, type ChangeEvent } from "react";
 import { useCookies } from "react-cookie";
+import "react-reflex/styles.css";
 import sjcl from "sjcl";
 import { toast } from "sonner";
 
@@ -692,7 +693,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                   validationState.status === ValidationStatus.RUNNING
                 }
               >
-                <ShareIcon />
+                <Share2 />
                 <span className="hidden md:inline">Share</span>
               </Button>
             )}
@@ -706,7 +707,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 validationState.status === ValidationStatus.RUNNING
               }
             >
-              <GetAppIcon />
+              <Download />
               <span className="hidden md:inline">Download</span>
             </Button>
             <Button
@@ -719,7 +720,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                 validationState.status === ValidationStatus.RUNNING
               }
             >
-              <InsertDriveFileIcon />
+              <File />
               <span className="hidden md:inline">Load From File</span>
             </Button>
           </>
@@ -790,7 +791,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           <div className={classes.contextTools}>
             {currentItem?.kind === DataStoreItemKind.SCHEMA && (
               <Button onClick={formatSchema} variant="outline">
-                <FormatTextdirectionLToRIcon />
+                <Form />
                 Format
               </Button>
             )}
@@ -846,7 +847,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                     }
                     onClick={() => handleGenerateAndUpdate(false)}
                   >
-                    <RefreshIcon />
+                    <RefreshCw />
                     Re-Generate
                   </Button>
                   <Button
@@ -857,7 +858,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                     }
                     onClick={() => handleGenerateAndUpdate(true)}
                   >
-                    <CompareIcon />
+                    <GitCompare />
                     Compute and Diff
                   </Button>
                 </ButtonGroup>
@@ -866,11 +867,11 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               previousValidationForDiff !== undefined && (
                 <ButtonGroup>
                   <Button onClick={handleAcceptDiff}>
-                    <CheckCircleIcon />
+                    <CircleCheck />
                     Accept Update
                   </Button>
                   <Button variant="destructive" onClick={handleRevertDiff}>
-                    <HighlightOffIcon />
+                    <CircleX />
                     Revert Update
                   </Button>
                 </ButtonGroup>
@@ -925,7 +926,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 const DocLink = ({ title, href }: { title: string; href: string }) => (
   <Button asChild variant="ghost" title={title}>
     <a href={href} target="_blank">
-      <DescriptionIcon />
+      <BookOpenText />
       <span className="hidden sm:inline">{title}</span>
     </a>
   </Button>

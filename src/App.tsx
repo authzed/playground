@@ -1,7 +1,3 @@
-import "react-reflex/styles.css";
-import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
-import "./App.css";
-
 import { PostHogProvider } from "@posthog/react";
 import {
   Outlet,
@@ -12,9 +8,13 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
+import { CookiesProvider } from "react-cookie";
+import "react-reflex/styles.css";
+import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
 import { ThemeProvider } from "@/components/ThemeProvider";
 
+import "./App.css";
 import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
 import { FullPlayground } from "./components/FullPlayground";
 import { InlinePlayground } from "./components/InlinePlayground";
@@ -71,15 +71,18 @@ function App() {
   return (
     <>
       <Toaster />
-      <PostHogProvider client={posthog}>
-        <ThemeProvider>
-          <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
-            <ConfirmDialogProvider>
-              <RouterProvider router={router} />
-            </ConfirmDialogProvider>
-          </PlaygroundUIThemed>
-        </ThemeProvider>
-      </PostHogProvider>
+      {/* @ts-ignore-error react-cookie's types are screwy; CI and (local and vercel) disagree about whether there's an error or not. */}
+      <CookiesProvider>
+        <PostHogProvider client={posthog}>
+          <ThemeProvider>
+            <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
+              <ConfirmDialogProvider>
+                <RouterProvider router={router} />
+              </ConfirmDialogProvider>
+            </PlaygroundUIThemed>
+          </ThemeProvider>
+        </PostHogProvider>
+      </CookiesProvider>
     </>
   );
 }

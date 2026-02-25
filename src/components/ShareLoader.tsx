@@ -1,8 +1,7 @@
-import "react-reflex/styles.css";
-
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import { CircleX } from "lucide-react";
 import React, { useEffect, useState } from "react";
+import "react-reflex/styles.css";
 import { toast } from "sonner";
 
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";

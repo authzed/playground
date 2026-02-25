@@ -1,10 +1,9 @@
-import "react-reflex/styles.css";
-
 import { Paper } from "@material-ui/core";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import PlaylistAddCheckIcon from "@material-ui/icons/PlaylistAddCheck";
 import clsx from "clsx";
+import "react-reflex/styles.css";
 
 import TabLabel from "../../playground-ui/TabLabel";
 import { ValidationStatus } from "../../services/validation";

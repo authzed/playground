@@ -5,19 +5,19 @@ import { parseValidationYAML } from "./validationfileformat";
 describe("parsing validation YAML", () => {
   it("returns undefined for an empty file", () => {
     expect(parseValidationYAML("")).toEqual({
-      message: "data should be object",
+      message: "data must be object",
     });
   });
 
   it("returns undefined for an invalid file", () => {
     expect(parseValidationYAML("sdfdsfsdf")).toEqual({
-      message: "data should be object",
+      message: "data must be object",
     });
   });
 
   it("returns undefined for a file missing schema", () => {
     expect(parseValidationYAML("schema: null")).toEqual({
-      message: "data.schema should be string",
+      message: "data must have required property 'relationships'",
     });
   });
 
@@ -27,7 +27,7 @@ describe("parsing validation YAML", () => {
 relationships: null    
 `),
     ).toEqual({
-      message: "data.relationships should be string",
+      message: "data/relationships must be string",
     });
   });
 
@@ -73,7 +73,7 @@ assertions: {}
 relationships: hello
 assertions: invalid
 `),
-    ).toEqual({ message: "data.assertions should be object,null" });
+    ).toEqual({ message: "data/assertions must be object,null" });
   });
 
   it("returns properly for invalid assertions list", () => {
@@ -82,7 +82,7 @@ assertions: invalid
 relationships: hello
 assertions: []
 `),
-    ).toEqual({ message: "data.assertions should be object,null" });
+    ).toEqual({ message: "data/assertions must be object,null" });
   });
 
   it("returns properly for invalid validation", () => {
@@ -91,7 +91,7 @@ assertions: []
 relationships: hello
 validation: invalid
 `),
-    ).toEqual({ message: "data.validation should be object,null" });
+    ).toEqual({ message: "data/validation must be object,null" });
   });
 
   it("returns properly for fully valid", () => {
