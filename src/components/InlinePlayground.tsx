@@ -1,6 +1,5 @@
 import { parseSchema } from "@authzed/spicedb-parser-js";
 import AppBar from "@material-ui/core/AppBar";
-import Button from "@material-ui/core/Button";
 import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
@@ -9,6 +8,7 @@ import LaunchIcon from "@material-ui/icons/Launch";
 import clsx from "clsx";
 import React, { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 // TODO: rename
 import TenantGraph from "@/components/visualizer/TenantGraph";
 
@@ -169,14 +169,11 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
         </Tabs>
         <div className={classes.buttonContainer}>
-          <Button
-            variant="contained"
-            color="primary"
-            href={window.location.toString().replace("/i/", "/s/")}
-            target="_blank"
-            startIcon={<LaunchIcon />}
-          >
-            Open
+          <Button asChild variant="link">
+            <a href={window.location.toString().replace("/i/", "/s/")} target="_blank">
+              <LaunchIcon />
+              Open
+            </a>
           </Button>
         </div>
       </AppBar>
