@@ -1,9 +1,6 @@
-import "react-reflex/styles.css";
-
-import { faDatabase } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import WarningIcon from "@material-ui/icons/Warning";
+import { Database, TriangleAlert } from "lucide-react";
+import "react-reflex/styles.css";
 
 interface StyleProps {
   small?: boolean;
@@ -49,7 +46,7 @@ export function VL(props: { small?: boolean }) {
   const classes = useStyles(props);
   return (
     <span className={classes.vl}>
-      <FontAwesomeIcon icon={faDatabase} />
+      <Database />
     </span>
   );
 }
@@ -58,7 +55,7 @@ export function AT(props: { small?: boolean }) {
   const classes = useStyles(props);
   return (
     <span className={classes.at}>
-      <WarningIcon />
+      <TriangleAlert />
     </span>
   );
 }

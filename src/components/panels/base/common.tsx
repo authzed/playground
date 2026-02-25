@@ -1,7 +1,6 @@
-import "react-reflex/styles.css";
-
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import { type ReactNode } from "react";
+import "react-reflex/styles.css";
 
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";

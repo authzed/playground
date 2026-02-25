@@ -1,15 +1,13 @@
-import "react-reflex/styles.css";
-
-import { faTerminal } from "@fortawesome/free-solid-svg-icons";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import Input from "@material-ui/core/Input";
 import InputAdornment from "@material-ui/core/InputAdornment";
 import LinearProgress from "@material-ui/core/LinearProgress";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import Convert from "ansi-to-html";
+import { Terminal } from "lucide-react";
 import { CircleX, MessageCircleWarning } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { MouseEvent, KeyboardEvent, ChangeEvent } from "react";
+import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import TabLabel from "../../playground-ui/TabLabel";
@@ -57,7 +55,7 @@ const useStyles = makeStyles((theme: Theme) =>
 );
 
 export function TerminalSummary() {
-  return <TabLabel icon={<FontAwesomeIcon icon={faTerminal} />} title="Zed Terminal" />;
+  return <TabLabel icon={<Terminal />} title="Zed Terminal" />;
 }
 
 export function TerminalPanel(props: PanelProps) {
@@ -164,7 +162,7 @@ export function TerminalPanel(props: PanelProps) {
     }
   }, [zedState, classes.loadBar]);
 
-  const inputRef = useRef<HTMLInputElement>();
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleRefocus = () => {
     inputRef.current?.focus();

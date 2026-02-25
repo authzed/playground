@@ -11,7 +11,7 @@
     // "restriction": "error"
   },
   "plugins": ["eslint", "import", "oxc", "promise", "react", "typescript", "unicorn"],
-  "ignorePatterns": ["dist", "src/spicedb-common/protodefs", "public"],
+  "ignorePatterns": ["dist", "src/spicedb-common/protodefs", "public", "src/components/ui"],
   "rules": {
     // TODO: fix this and get rid of it
     "react/only-export-components": [

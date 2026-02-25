@@ -1,13 +1,12 @@
-import "react-reflex/styles.css";
-
 import { TextRange } from "@authzed/spicedb-parser-js";
-import Editor, { DiffEditor, useMonaco } from "@monaco-editor/react";
+import { Editor, DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useNavigate, useLocation } from "@tanstack/react-router";
 import lineColumn from "line-column";
 import * as monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
+import "react-reflex/styles.css";
 
 import { useMediaQuery } from "@/hooks/use-media-query";
 
@@ -428,55 +427,69 @@ export function EditorDisplay(props: EditorDisplayProps) {
     props.services.problemService.stateKey,
   ]);
 
-  const Component = props.diff ? DiffEditor : Editor;
-  const extraProps = props.diff
-    ? {
-        original: props.diff,
-        modified: currentItem?.editableContents,
-        language: languageName,
-      }
-    : {};
-
   return (
     <div>
       {monacoReady && currentItem && (
         <div className="w-full h-full">
-          <Component
-            key={`${currentItem.id}-${props.diff ? "diff" : ""}`}
-            height={
-              props.dimensions ? `${props.dimensions.height}px` : (props.defaultHeight ?? "40vh")
-            }
-            width={
-              props.dimensions ? `${props.dimensions.width}px` : (props.defaultWidth ?? "60vw")
-            }
-            defaultLanguage={languageName}
-            value={currentItem.editableContents}
-            theme={themeName}
-            onChange={handleEditorChange}
-            // TODO: this is weirdly typed because we're conditionally rendering
-            // a diff editor or a code editor and typescript doesn't know about that.
-            // It'd be better to separate this into two different components that
-            // reuse their internals.
-            // @ts-expect-error the mount handler is a no-op if the component is in diff mode
-            onMount={handleEditorMounted}
-            options={{
-              readOnly: props.isReadOnly || !!props.diff,
-              scrollbar: {
-                handleMouseWheel:
-                  props.disableScrolling !== true && props.disableMouseWheelScrolling !== true,
-                vertical: props.disableScrolling ? "hidden" : undefined,
-              },
-              "semanticHighlighting.enabled": true,
-              fixedOverflowWidgets: true,
-              minimap: {
-                enabled: props.hideMinimap !== true,
-              },
-              fontSize: props.fontSize,
-              scrollBeyondLastLine:
-                props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
-            }}
-            {...extraProps}
-          />
+          {props.diff ? (
+            <DiffEditor
+              height={
+                props.dimensions ? `${props.dimensions.height}px` : (props.defaultHeight ?? "40vh")
+              }
+              width={
+                props.dimensions ? `${props.dimensions.width}px` : (props.defaultWidth ?? "60vw")
+              }
+              theme={themeName}
+              options={{
+                readOnly: props.isReadOnly || !!props.diff,
+                scrollbar: {
+                  handleMouseWheel:
+                    props.disableScrolling !== true && props.disableMouseWheelScrolling !== true,
+                  vertical: props.disableScrolling ? "hidden" : undefined,
+                },
+                fixedOverflowWidgets: true,
+                minimap: {
+                  enabled: props.hideMinimap !== true,
+                },
+                fontSize: props.fontSize,
+                scrollBeyondLastLine:
+                  props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
+              }}
+              original={props.diff}
+              modified={currentItem?.editableContents}
+              language={languageName}
+            />
+          ) : (
+            <Editor
+              height={
+                props.dimensions ? `${props.dimensions.height}px` : (props.defaultHeight ?? "40vh")
+              }
+              width={
+                props.dimensions ? `${props.dimensions.width}px` : (props.defaultWidth ?? "60vw")
+              }
+              defaultLanguage={languageName}
+              value={currentItem.editableContents}
+              theme={themeName}
+              onChange={handleEditorChange}
+              onMount={handleEditorMounted}
+              options={{
+                readOnly: props.isReadOnly || !!props.diff,
+                scrollbar: {
+                  handleMouseWheel:
+                    props.disableScrolling !== true && props.disableMouseWheelScrolling !== true,
+                  vertical: props.disableScrolling ? "hidden" : undefined,
+                },
+                "semanticHighlighting.enabled": true,
+                fixedOverflowWidgets: true,
+                minimap: {
+                  enabled: props.hideMinimap !== true,
+                },
+                fontSize: props.fontSize,
+                scrollBeyondLastLine:
+                  props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
+              }}
+            />
+          )}
         </div>
       )}
     </div>

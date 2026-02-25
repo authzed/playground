@@ -1,5 +1,3 @@
-import "@xyflow/react/dist/style.css";
-
 import type { ParsedSchema, ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import dagre from "@dagrejs/dagre";
 import {
@@ -14,6 +12,7 @@ import {
   EdgeTypes,
   useNodesState,
 } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { useMemo, useEffect } from "react";
 
 import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";

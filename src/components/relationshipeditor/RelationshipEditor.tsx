@@ -1,6 +1,3 @@
-// Bring in the CSS for glide-data-grid
-import "@glideapps/glide-data-grid/dist/index.css";
-
 import { Resolver } from "@authzed/spicedb-parser-js";
 import DataEditor, {
   CompactSelection,
@@ -14,6 +11,8 @@ import DataEditor, {
   type Theme,
   type Highlight,
 } from "@glideapps/glide-data-grid";
+// Bring in the CSS for glide-data-grid
+import "@glideapps/glide-data-grid/dist/index.css";
 import { Checkbox, FormControlLabel, IconButton, Tooltip } from "@material-ui/core";
 import { createStyles, makeStyles, Theme as MuiTheme, useTheme } from "@material-ui/core/styles";
 import { Assignment, Comment, Delete } from "@material-ui/icons";

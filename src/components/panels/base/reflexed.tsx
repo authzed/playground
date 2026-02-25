@@ -1,10 +1,8 @@
-import "react-reflex/styles.css";
-
 import { createStyles, makeStyles } from "@material-ui/core/styles";
-import HorizontalSplitIcon from "@material-ui/icons/HorizontalSplit";
-import VerticalSplitIcon from "@material-ui/icons/VerticalSplit";
+import { SquareSplitHorizontal, SquareSplitVertical } from "lucide-react";
 import { useEffect, useState, Children, isValidElement, cloneElement, type ReactNode } from "react";
 import { HandlerProps, ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
+import "react-reflex/styles.css";
 
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
@@ -60,11 +58,11 @@ export function ReflexedPanelDisplay(props: PanelDefProps) {
     locations: {
       horizontal: {
         title: "Bottom",
-        icon: <HorizontalSplitIcon />,
+        icon: <SquareSplitHorizontal />,
       },
       vertical: {
         title: "Side",
-        icon: <VerticalSplitIcon />,
+        icon: <SquareSplitVertical />,
       },
     },
     defaultLocation: "horizontal",
@@ -99,7 +97,7 @@ export function ReflexedPanelDisplay(props: PanelDefProps) {
   }, [horizontalFlex, horizontalDisplayVisible, cachedHorizontalFlex]);
 
   return (
-    <div style={{ height: "100%", width: "100%" }}>
+    <div className="w-full h-full">
       <ReflexContainer orientation="horizontal" windowResizeAware={true}>
         <ReflexElement
           className={classes.noOverflow}

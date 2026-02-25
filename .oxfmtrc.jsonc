@@ -1,9 +1,10 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "ignorePatterns": ["src/spicedb-common/protodefs", "examples", "public"],
-  "experimentalSortImports": {
+  "sortImports": {
+    // This is for `import "foo.css"` type stuff
+    "sortSideEffects": true,
     "groups": [
-      ["side-effect"],
       ["builtin"],
       ["external", "type-external"],
       ["internal", "type-internal"],

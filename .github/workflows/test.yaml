@@ -12,15 +12,15 @@ jobs:
     name: "Run Tests"
     runs-on: "depot-ubuntu-24.04-small"
     steps:
-      - uses: "actions/checkout@v4"
+      - uses: "actions/checkout@v6"
         with:
           submodules: true
       - uses: "authzed/action-spicedb@v1"
         with:
           version: "latest"
-      - uses: "actions/setup-node@v4"
+      - uses: "actions/setup-node@v6"
         with:
-          node-version: 22
+          node-version: 24
           cache-dependency-path: "yarn.lock"
           cache: "yarn"
       - uses: "bahmutov/npm-install@v1"

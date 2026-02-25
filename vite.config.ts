@@ -11,6 +11,7 @@ export default defineConfig({
   build: {
     // This matches Vercel's expectations.
     outDir: "build",
+    sourcemap: true,
   },
   resolve: {
     alias: {

@@ -1,5 +1,3 @@
-import "@xyflow/react/dist/style.css";
-
 import dagre from "@dagrejs/dagre";
 import {
   ReactFlow,
@@ -12,6 +10,7 @@ import {
   NodeTypes,
   useNodesState,
 } from "@xyflow/react";
+import "@xyflow/react/dist/style.css";
 import { useCallback, useMemo, useState, useEffect, MouseEvent } from "react";
 
 import { RelationTuple as Relationship } from "@/spicedb-common/protodefs/core/v1/core_pb";

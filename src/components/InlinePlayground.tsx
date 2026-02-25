@@ -4,8 +4,8 @@ import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/style
 import Tab from "@material-ui/core/Tab";
 import Tabs from "@material-ui/core/Tabs";
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
-import LaunchIcon from "@material-ui/icons/Launch";
 import clsx from "clsx";
+import { SquareArrowOutUpRight } from "lucide-react";
 import React, { useState } from "react";
 
 import { Button } from "@/components/ui/button";
@@ -171,7 +171,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         <div className={classes.buttonContainer}>
           <Button asChild variant="link">
             <a href={window.location.toString().replace("/i/", "/s/")} target="_blank">
-              <LaunchIcon />
+              <SquareArrowOutUpRight />
               Open
             </a>
           </Button>

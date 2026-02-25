@@ -1,5 +1,3 @@
-import "react-reflex/styles.css";
-
 import type { ParsedPermission, ParsedRelation } from "@authzed/spicedb-parser-js";
 import CircularProgress from "@material-ui/core/CircularProgress";
 import IconButton from "@material-ui/core/IconButton";
@@ -31,6 +29,7 @@ import { interpolateBlues, interpolateOranges, interpolatePurples } from "d3-sca
 import { CircleX, Info, MessageCircleWarning } from "lucide-react";
 import { type ReactNode } from "react";
 import { useMemo, useState, type ChangeEvent } from "react";
+import "react-reflex/styles.css";
 
 import TabLabel from "../../playground-ui/TabLabel";
 import {
@@ -196,8 +195,8 @@ export function WatchesPanel(props: PanelProps) {
       <Table stickyHeader size="small">
         <TableHead>
           <TableRow>
-            <TableCell></TableCell>
-            <TableCell></TableCell>
+            <TableCell />
+            <TableCell />
             {props.location === "horizontal" && (
               <>
                 <TableCell>Resource</TableCell>
@@ -207,9 +206,7 @@ export function WatchesPanel(props: PanelProps) {
               </>
             )}
             {props.location === "vertical" && (
-              <>
-                <TableCell>Resource, Permission, Subject, Context</TableCell>
-              </>
+              <TableCell>Resource, Permission, Subject, Context</TableCell>
             )}
             <TableCell>
               <IconButton size="small" edge="end" onClick={liveCheckService.addItem}>

@@ -1,10 +1,9 @@
-import "react-reflex/styles.css";
-
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
+import "react-reflex/styles.css";
 
 import TabLabel from "../../playground-ui/TabLabel";
 import { DataStorePaths } from "../../services/datastore";
