@@ -242,22 +242,6 @@ const useStyles = makeStyles((theme: Theme) =>
       height: "60vh",
       width: "100%",
     },
-    hideTextOnMed: {
-      [theme.breakpoints.down("md")]: {
-        justifyContent: "flex-start",
-        overflow: "hidden",
-        width: "28px",
-        minWidth: "28px",
-        "& .MuiButton-label": {
-          justifyContent: "flex-start",
-          overflow: "hidden",
-          width: "28px",
-          "& .MuiButton-startIcon.MuiButton-iconSizeSmall": {
-            marginLeft: "0px",
-          },
-        },
-      },
-    },
     hide: {
       display: "none",
     },
@@ -691,7 +675,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             </div>
             {AppConfig().discord.inviteUrl && (
               <Button asChild size="sm" title="Discord" variant="ghost">
-                <a href={AppConfig().discord.inviteUrl}>
+                <a href={AppConfig().discord.inviteUrl} target="_blank" rel="noreferrer">
                   <DISCORD viewBox="0 0 71 55" style={{ height: "1em", width: "1em" }} />
                   <span className="hidden md:inline">Discuss on Discord</span>
                 </a>
@@ -839,23 +823,17 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               </div>
             )}
 
-            {currentItem?.kind === DataStoreItemKind.ASSERTIONS && (
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-            )}
-
-            {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS && (
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-            )}
+            {currentItem?.kind &&
+              [DataStoreItemKind.ASSERTIONS, DataStoreItemKind.EXPECTED_RELATIONS].includes(
+                currentItem.kind,
+              ) && (
+                <ValidateButton
+                  datastore={datastore}
+                  validationState={validationState}
+                  conductValidation={conductValidation}
+                  developerService={developerService}
+                />
+              )}
 
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff === undefined && (

@@ -1,10 +1,10 @@
 import { CheckCircle, CircleX, CirclePlay } from "lucide-react";
 
+import { Button } from "@/components/ui/button";
+
 import { DataStore } from "../services/datastore";
 import { ValidationState, ValidationStatus } from "../services/validation";
 import { DeveloperService } from "../spicedb-common/services/developerservice";
-
-import { Button } from "./ui/button";
 
 export function ValidateButton({
   conductValidation,
