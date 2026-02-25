@@ -9,7 +9,7 @@ import { ReflexedPanelLocation } from "../types";
 /**
  * Panel defines a single panel found in the panel display component.
  */
-export interface Panel {
+export type Panel = {
   /**
    * id is the unique ID for the panel. Must be stable across loads.
    */
@@ -29,7 +29,7 @@ export interface Panel {
 /**
  * PanelProps are the props passed to all panels content tags.
  */
-export interface PanelProps {
+export type PanelProps = {
   datastore: DataStore;
   services: Services;
   location: ReflexedPanelLocation;
@@ -38,7 +38,7 @@ export interface PanelProps {
 /**
  * PanelSummaryProps are the props passed to all panel summary tags.
  */
-export interface PanelSummaryProps {
+export type PanelSummaryProps = {
   services: Services;
   location: ReflexedPanelLocation;
 }

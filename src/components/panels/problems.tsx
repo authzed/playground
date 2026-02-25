@@ -1,6 +1,5 @@
 import Paper from "@material-ui/core/Paper";
 import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import { Link } from "@tanstack/react-router";
 import clsx from "clsx";
 import "react-reflex/styles.css";
@@ -20,6 +19,7 @@ import {
   DeveloperWarningDisplay,
   DeveloperWarningSourceDisplay,
 } from "./errordisplays";
+import { CircleX } from "lucide-react";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -52,17 +52,17 @@ const useStyles = makeStyles((theme: Theme) =>
 /**
  * ProblemsSummary displays a summary of the problems found.
  */
-export function ProblemsSummary(props: PanelSummaryProps) {
+export function ProblemsSummary({ services }: PanelSummaryProps) {
   const classes = useSummaryStyles();
-  const errorCount = props.services.problemService.errorCount;
-  const warningCount = props.services.problemService.warnings.length;
+  const errorCount = services.problemService.errorCount;
+  const warningCount = services.problemService.warnings.length;
 
   return (
     <div className={clsx(classes.problemTab, TourElementClass.problems)}>
       <TabLabel
         icon={
-          <ErrorOutlineIcon
-            htmlColor={props.services.problemService.errorCount > 0 ? "" : "grey"}
+          <CircleX
+          stroke={services.problemService.errorCount > 0 ? "" : "grey"}
           />
         }
         title="Problems"
