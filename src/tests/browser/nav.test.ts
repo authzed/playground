@@ -32,7 +32,7 @@ describe("Navigation", () => {
     await expect
       .element(screen.getByText("Highlight same types, objects and relations"))
       .toBeVisible();
-    await screen.getByRole("code").click();
+    await screen.getByTitle("Text Editor (Advanced)").click();
     await expect
       .element(
         screen.getByText(

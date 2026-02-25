@@ -1,11 +1,31 @@
-import path from "path";
+import { mergeConfig, defineConfig } from "vitest/config";
+import { playwright } from '@vitest/browser-playwright'
+import config from './vite.config'
 
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
+export default mergeConfig(config, defineConfig({
   test: {
-    // Exclude browser-mode tests from the regular unit test runner
-    exclude: ["src/tests/browser/**", "node_modules/**"],
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "unit",
+          // Exclude browser-mode tests from the regular unit test runner
+          exclude: ["src/tests/browser/**", "node_modules/**"],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          browser: {
+            enabled: true,
+            provider: playwright(),
+            instances: [{ browser: "chromium" }],
+            screenshotFailures: true,
+          },
+          include: ["src/tests/browser/**/*.test.{ts,tsx}"],
+          setupFiles: ["./src/tests/browser/setup.ts"],
+        }
+      }
+    ]
   },
-});
+}));

@@ -12,8 +12,8 @@
     "typecheck": "tsc --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "test:browser": "vitest --config vitest.config.browser.ts",
-    "test:browser:ui": "vitest --config vitest.config.browser.ts --ui",
+    "test:unit": "vitest --project unit",
+    "test:browser": "vitest --project browser",
     "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
   },
   "dependencies": {

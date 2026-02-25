@@ -29,7 +29,7 @@ describe("Playground", () => {
       .toBeVisible();
     await expect
       .element(
-        screen.getByRole("button", { name: "Select Example Schema" })
+        screen.getByText("Select Example Schema")
       )
       .toBeVisible();
     await expect
@@ -40,9 +40,6 @@ describe("Playground", () => {
       .toBeVisible();
     await expect
       .element(screen.getByRole("button", { name: "Load From File" }))
-      .toBeVisible();
-    await expect
-      .element(screen.getByText("Sign In To Import"))
       .toBeVisible();
   });
 

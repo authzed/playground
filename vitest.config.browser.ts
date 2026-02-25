@@ -1,20 +1,7 @@
-import path from "path";
-import { playwright } from '@vitest/browser-playwright'
+import { mergeConfig, defineConfig } from "vitest/config";
+import config from './vite.config'
 
-import { defineConfig } from "vitest/config";
-
-export default defineConfig({
-  resolve: { alias: { "@": path.resolve(__dirname, "./src") } },
+export default mergeConfig(config, defineConfig({
   test: {
-    browser: {
-      enabled: true,
-      provider: playwright(),
-      instances: [{ browser: "chromium" }],
-      screenshotFailures: true,
-    },
-    include: ["src/tests/browser/**/*.test.{ts,tsx}"],
-    setupFiles: ["./src/tests/browser/setup.ts"],
-    testTimeout: 60000,
-    hookTimeout: 60000,
   },
-});
+}));
