@@ -15,15 +15,16 @@ import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 import { ThemeProvider } from "@/components/ThemeProvider";
 
 import "./App.css";
-import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
-import { FullPlayground } from "./components/FullPlayground";
-import { InlinePlayground } from "./components/InlinePlayground";
-import { Toaster } from "./components/ui/sonner";
-import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
-import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
-import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
-import AppConfig from "./services/configservice";
-import { PLAYGROUND_UI_COLORS } from "./theme";
+import { EmbeddedPlayground } from "@/components/EmbeddedPlayground";
+import { FullPlayground } from "@/components/FullPlayground";
+import { InlinePlayground } from "@/components/InlinePlayground";
+import { Toaster } from "@/components/ui/sonner";
+import { ConfirmDialogProvider } from "@/playground-ui/ConfirmDialogProvider";
+import { useGoogleAnalytics } from "@/playground-ui/GoogleAnalyticsHook";
+import PlaygroundUIThemed from "@/playground-ui/PlaygroundUIThemed";
+import AppConfig from "@/services/configservice";
+import { PLAYGROUND_UI_COLORS } from "@/theme";
+import { TooltipProvider } from "@/components/ui/tooltip";
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -73,6 +74,7 @@ function App() {
       <Toaster />
       {/* @ts-ignore-error react-cookie's types are screwy; CI and (local and vercel) disagree about whether there's an error or not. */}
       <CookiesProvider>
+      <TooltipProvider>
         <PostHogProvider client={posthog}>
           <ThemeProvider>
             <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
@@ -82,6 +84,7 @@ function App() {
             </PlaygroundUIThemed>
           </ThemeProvider>
         </PostHogProvider>
+        </TooltipProvider>
       </CookiesProvider>
     </>
   );

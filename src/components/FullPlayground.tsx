@@ -824,7 +824,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               </div>
             )}
 
-            {currentItem?.kind &&
+            {/* NOTE: the kind here is an enum, so 0 will render. */}
+            {currentItem?.kind !== undefined &&
               [DataStoreItemKind.ASSERTIONS, DataStoreItemKind.EXPECTED_RELATIONS].includes(
                 currentItem.kind,
               ) && (
@@ -834,7 +835,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
                   conductValidation={conductValidation}
                   developerService={developerService}
                 />
-              )}
+                )}
 
             {currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS &&
               previousValidationForDiff === undefined && (

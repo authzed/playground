@@ -1,20 +1,20 @@
-import { Button, Tooltip, Typography } from "@material-ui/core";
-import AppBar from "@material-ui/core/AppBar";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
 import { Theme, createStyles, makeStyles } from "@material-ui/core/styles";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import Toolbar from "@material-ui/core/Toolbar";
-import CloseIcon from "@material-ui/icons/Close";
-import { useCallback, type ReactNode } from "react";
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { type ReactNode } from "react";
+import { Loader, X } from "lucide-react";
 
-import TabPanel from "../../../playground-ui/TabPanel";
 import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
 import { ReflexedPanelLocation } from "../types";
 
-import { Panel, useSummaryStyles } from "./common";
+import { Panel } from "./common";
 import { LocationData, PanelsCoordinator } from "./coordinator";
 
 export const SUMMARY_BAR_HEIGHT = 48; // Pixels
@@ -22,86 +22,58 @@ export const SUMMARY_BAR_HEIGHT = 48; // Pixels
 /**
  * PanelSummaryBar is the summary bar displayed when a panel display is closed.
  */
-export function PanelSummaryBar(props: {
+export function PanelSummaryBar({
+  coordinator,
+  overrideSummaryDisplay,
+  location,
+  services,
+  disabled,
+}: {
   location: ReflexedPanelLocation;
   coordinator: PanelsCoordinator;
   services: Services;
-  disabled?: boolean | undefined;
+  disabled?: boolean;
   overrideSummaryDisplay?: ReactNode;
 }) {
-  const classes = useSummaryStyles();
-
-  const coordinator = props.coordinator;
-  const panels =
-    props.overrideSummaryDisplay === undefined ? coordinator.panelsInLocation(props.location) : [];
+  const currentTabName = coordinator.getActivePanel(location)?.id || "";
 
   return (
-    <AppBar position="relative" color="default">
-      <Toolbar
-        className={classes.summaryBar}
-        style={{
-          gridTemplateColumns: `${panels.map(() => "auto").join(" ")} 1fr auto`,
-        }}
-        variant="dense"
+      <ToggleGroup type="single"
+      value={currentTabName}
+      className="justify-between"
       >
-        {props.overrideSummaryDisplay !== undefined && props.overrideSummaryDisplay}
-        {panels.map((panel: Panel) => {
+        {overrideSummaryDisplay ?? coordinator.panelsInLocation(location).map((panel: Panel) => {
           // NOTE: Using this as a tag here is important for React's state system. Otherwise,
           // it'll run hooks outside of the normal flow, which breaks things.
           const Summary = panel.Summary;
           return (
-            <Button
+            <ToggleGroupItem
               key={panel.id}
-              disabled={!!props.disabled}
-              onClick={() => coordinator.showPanel(panel, props.location)}
+              value={panel.id}
+              disabled={disabled}
+              onClick={() => coordinator.showPanel(panel, location)}
             >
-              <Summary {...props} />
-            </Button>
+              <Summary 
+              location={location}
+              services={services}
+              />
+            </ToggleGroupItem>
           );
         })}
+        {/* TODO: this feels like a hack */}
         <span />
         <span>
-          {props.services.problemService.isUpdating && (
-            <CircularProgress className={classes.throbber} size="26px" />
+          {services.problemService.isUpdating && (
+            <Loader size="26px" />
           )}
+            <Loader size="26px" />
         </span>
-      </Toolbar>
-    </AppBar>
+        </ToggleGroup>
   );
 }
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
-    validationToolBar: {
-      display: "grid",
-      gridTemplateColumns: "1fr auto auto",
-      width: "100%",
-      padding: 0,
-      paddingRight: theme.spacing(1),
-    },
-    apiOutput: {
-      fontFamily: "Roboto Mono, monospace",
-      padding: theme.spacing(2),
-    },
-    tabContent: {
-      overflow: "auto",
-      borderRadius: 0,
-      height: "100%",
-    },
-    notRun: {
-      color: theme.palette.grey[500],
-    },
-    link: {
-      color: theme.palette.text.primary,
-    },
-    validationErrorContainer: {
-      padding: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-    },
-    validationErrorContext: {
-      padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.default,
-    },
     noPanels: {
       padding: theme.spacing(2),
       textAlign: "center",
@@ -109,12 +81,16 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-const TOOLBAR_HEIGHT = 48; // Pixels
-
 /**
  * PanelDisplay displays the panels in a specific location.
  */
-export function PanelDisplay(props: {
+export function PanelDisplay({
+  location,
+  coordinator,
+  datastore,
+  services,
+  dimensions,
+}: {
   location: ReflexedPanelLocation;
   coordinator: PanelsCoordinator;
   datastore: DataStore;
@@ -122,113 +98,116 @@ export function PanelDisplay(props: {
   dimensions?: { width: number; height: number };
 }) {
   const classes = useStyles();
-  const coordinator = props.coordinator;
 
-  const currentTabName = coordinator.getActivePanel(props.location)?.id || "";
+  const currentTabName = coordinator.getActivePanel(location)?.id || "";
 
-  const handleChangeTab = useCallback(
-    (_event: object, selectedPanelId: string) => {
-      coordinator.setActivePanel(selectedPanelId, props.location);
-    },
-    [coordinator, props.location],
-  );
-
-  const panels = coordinator.panelsInLocation(props.location);
-  const adjustedDimensions = props.dimensions
-    ? {
-        width: props.dimensions.width,
-        height: props.dimensions.height - TOOLBAR_HEIGHT,
-      }
-    : undefined;
-
-  const contentProps = {
-    ...props,
-    dimensions: adjustedDimensions,
-  };
-
+  const panels = coordinator.panelsInLocation(location);
   return (
-    <div>
-      <AppBar position="static" color="default">
-        <Toolbar className={classes.validationToolBar} variant="dense">
+    <>
           <Tabs
             value={currentTabName}
-            onChange={handleChangeTab}
-            aria-label="Tabs"
-            variant="fullWidth"
+            onValueChange={(selectedPanelId: string) => {
+              coordinator.setActivePanel(selectedPanelId, location);
+            }}
           >
-            {panels.map(({ id, Summary }: Panel) => {
-              // NOTE: Using this as a tag here is important for React's state system. Otherwise,
-              // it'll run hooks outside of the normal flow, which breaks things.
-              return <Tab key={id} value={id} label={<Summary {...props} />} />;
-            })}
+          <TabsList
+          className="w-full"
+          variant="line"
+          >
+            {panels.map(({ id, Summary }: Panel) => (
+              <TabsTrigger key={id} value={id}>
+              {/*
+              NOTE: Using this as a tag here is important for React's state system. Otherwise,
+              it'll run hooks outside of the normal flow, which breaks things.
+              */}
+              <Summary
+              services={services}
+              location={location}
+              />
+              </TabsTrigger>
+            ))}
+            <TabControls location={location} coordinator={coordinator} />
+          </TabsList>
+      {panels.map(({ id, Content }: Panel) => {
+        // NOTE: Using this as a tag here is important for React's state system. Otherwise,
+        // it'll run hooks outside of the normal flow, which breaks things.
+        const height =
+          (dimensions?.height ?? 0 >= 48) ? (dimensions?.height ?? 0) - 48 : "auto";
+
+        return (
+          <TabsContent
+            key={id}
+            value={id}
+            className="overflow-auto relative"
+            style={{ height: height }}
+          >
+          {/* NOTE: we conditionally render here because we don't actually want to
+            have all of the panels mounted all of the time. */}
+            {currentTabName === id && <Content
+              datastore={datastore}
+              services={services}
+              location={location}
+              />}
+          </TabsContent>
+        );
+      })}
           </Tabs>
 
-          <span>
+          <div className="absolute right-0 top-0">
+          {/* TODO: reposition this as outside of the tab flow */}
+          </div>
+
+      {panels.length === 0 && (
+        // TODO: style here
+        <span className={classes.noPanels}>
+          No Panels are attached here
+        </span>
+      )}
+    </>
+  );
+}
+
+const TabControls = ({ coordinator, location }: { coordinator: PanelsCoordinator, location: ReflexedPanelLocation}) => {
+  const currentTabName = coordinator.getActivePanel(location)?.id || "";
+  return (
+    <>
             {currentTabName &&
+              // TODO: this is probably unnecessarily complicated. there's two locations.
               coordinator.listLocations().map((locData: LocationData) => {
-                if (locData.location === props.location) {
-                  return <div key={locData.location} />;
+                if (locData.location === location) {
+                  return null;
                 }
                 return (
-                  <Tooltip key={locData.location} title={`Move to ${locData.metadata.title}`}>
-                    <IconButton
-                      size="small"
-                      edge="start"
-                      color="inherit"
+                  // TODO: this is wrong for whatever reason.
+                  <Tooltip key={locData.location}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      size="sm"
                       aria-label="move"
+                      variant="ghost"
                       onClick={() =>
                         coordinator.showPanel(
-                          coordinator.getActivePanel(props.location)!,
+                          coordinator.getActivePanel(location)!,
                           locData.location,
                         )
                       }
                     >
                       {locData.metadata.icon}
-                    </IconButton>
+                    </Button>
+                    </TooltipTrigger>
+                    <TooltipContent>Move to {locData.metadata.title}</TooltipContent>
                   </Tooltip>
                 );
               })}
-          </span>
 
-          <IconButton
-            size="small"
-            edge="start"
-            color="inherit"
+          <Button
+            size="sm"
+            variant="ghost"
             aria-label="close"
-            onClick={() => coordinator.closeDisplay(props.location)}
+            onClick={() => coordinator.closeDisplay(location)}
           >
-            <CloseIcon />
-          </IconButton>
-        </Toolbar>
-      </AppBar>
-
-      {panels.map(({ id, Content }: Panel) => {
-        // NOTE: Using this as a tag here is important for React's state system. Otherwise,
-        // it'll run hooks outside of the normal flow, which breaks things.
-        const height =
-          (props.dimensions?.height ?? 0 >= 48) ? (props.dimensions?.height ?? 0) - 48 : "auto";
-
-        return (
-          <TabPanel
-            key={id}
-            index={id}
-            value={currentTabName}
-            style={{
-              overflow: "auto",
-              height: height || "auto",
-              position: "relative",
-            }}
-          >
-            {currentTabName === id && <Content {...contentProps} />}
-          </TabPanel>
-        );
-      })}
-
-      {panels.length === 0 && (
-        <Typography className={classes.noPanels} color="textSecondary">
-          No Panels are attached here
-        </Typography>
-      )}
-    </div>
-  );
+            <X />
+          </Button>
+          </>
+  )
 }
