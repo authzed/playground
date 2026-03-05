@@ -601,8 +601,7 @@ export function RelationshipEditor({
       return false;
     }
 
-    const [oneIndexedColumn, startingRow] = target;
-    const startingCol = oneIndexedColumn - 1; // col is +1 for the checkbox.
+    const [startingCol, startingRow] = target;
 
     let adjustedData = inFlightData.current;
     let rowOffset = 0;
