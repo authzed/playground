@@ -8,6 +8,7 @@ import {
 } from "@tanstack/react-router";
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
+import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
 import "react-reflex/styles.css";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
@@ -55,12 +56,19 @@ const routeTree = rootRoute.addChildren([indexRoute, inlineRoute, embeddedRoute]
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
-if (config.posthog.apiKey && config.posthog.host) {
-  posthog.init(config.posthog.apiKey, {
-    api_host: config.posthog.host,
-    person_profiles: "identified_only",
-    defaults: "2025-11-30", // Enables automatic SPA pageview tracking via history API
-  });
+
+function PHProvider({ children }: PropsWithChildren) {
+  useEffect(() => {
+    if (config.posthog.apiKey && config.posthog.host) {
+      posthog.init(config.posthog.apiKey, {
+        api_host: config.posthog.host,
+        person_profiles: "identified_only",
+        defaults: "2025-11-30", // Enables automatic SPA pageview tracking via history API
+      });
+    }
+  }, []);
+
+  return <PostHogProvider client={posthog}>{children}</PostHogProvider>;
 }
 
 function App() {
@@ -73,7 +81,7 @@ function App() {
       <Toaster />
       {/* @ts-ignore-error react-cookie's types are screwy; CI and (local and vercel) disagree about whether there's an error or not. */}
       <CookiesProvider>
-        <PostHogProvider client={posthog}>
+        <PHProvider>
           <ThemeProvider>
             <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
               <ConfirmDialogProvider>
@@ -81,7 +89,7 @@ function App() {
               </ConfirmDialogProvider>
             </PlaygroundUIThemed>
           </ThemeProvider>
-        </PostHogProvider>
+        </PHProvider>
       </CookiesProvider>
     </>
   );
