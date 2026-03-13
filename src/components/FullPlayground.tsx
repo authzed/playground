@@ -354,7 +354,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const currentItem = datastore.get(location.pathname);
 
   const [cookies, setCookie] = useCookies(["dismiss-tour"]);
-  const [showTour, setShowTour] = useState(cookies["dismiss-tour"] !== "true");
+  const [showTour, setShowTour] = useState(!cookies["dismiss-tour"]);
 
   // Effect: If the user lands on the `/` route, redirect them to the schema editor.
   // TODO: this should probably be a redirect at the routing layer.
@@ -579,7 +579,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const setDismissTour = () => {
     setShowTour(false);
-    setCookie("dismiss-tour", true);
+    setCookie("dismiss-tour", "true");
     void navigate({ to: DataStorePaths.Schema() });
   };
 

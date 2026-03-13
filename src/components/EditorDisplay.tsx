@@ -467,7 +467,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
               width={
                 props.dimensions ? `${props.dimensions.width}px` : (props.defaultWidth ?? "60vw")
               }
-              defaultLanguage={languageName}
+              language={languageName}
               value={currentItem.editableContents}
               theme={themeName}
               onChange={handleEditorChange}
