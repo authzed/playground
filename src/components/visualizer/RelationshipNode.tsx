@@ -29,9 +29,9 @@ export function RelationshipNode({ data, selected }: NodeProps<RelationshipNodeT
         justifyContent: "center",
       }}
     >
-      <Handle type="source" position={Position.Top} />
+      <Handle type="source" position={Position.Top} className="!w-0 !h-0 !border-0 !bg-transparent" />
       <div className="text-center font-medium text-sm break-all">{data.label}</div>
-      <Handle type="target" position={Position.Bottom} />
+      <Handle type="target" position={Position.Bottom} className="!w-0 !h-0 !border-0 !bg-transparent" />
     </div>
   );
 }
