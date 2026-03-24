@@ -17,7 +17,7 @@
     "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
   },
   "dependencies": {
-    "@authzed/spicedb-parser-js": "^1.0.5",
+    "@authzed/spicedb-parser-js": "^1.1.0",
     "@aws-sdk/client-s3": "^3.997.0",
     "@bufbuild/protobuf": "^2.4.0",
     "@dagrejs/dagre": "^2.0.4",
