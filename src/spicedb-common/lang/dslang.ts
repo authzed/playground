@@ -79,15 +79,31 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     tokenizer: {
       root: [
         [
-          /definition/,
+          /^definition/,
           {
             token: "keyword.definition",
             bracket: "@open",
             next: "@definition",
           },
         ],
-        [/caveat/, { token: "keyword.caveat", bracket: "@open", next: "@caveat" }],
-        [/use expiration$/, { token: "keyword.expiration" }],
+        [
+          /^partial/,
+          {
+            token: "keyword.partial",
+            bracket: "@open",
+            next: "@definition",
+          },
+        ],
+        [
+          /^import/,
+          {
+            token: "keyword.import",
+            bracket: "@open",
+            next: "@definition",
+          },
+        ],
+        [/^caveat/, { token: "keyword.caveat", bracket: "@open", next: "@caveat" }],
+        [/^use/, { token: "keyword.use" }],
         [
           /permission/,
           {
