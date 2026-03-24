@@ -1,4 +1,4 @@
-// Copyright 2021 Google LLC
+// Copyright 2022 Google LLC
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -477,9 +477,11 @@ export type Decl = Message<"google.api.expr.v1alpha1.Decl"> & {
    * Declarations are organized in containers and this represents the full path
    * to the declaration in its container, as in `google.api.expr.Decl`.
    *
-   * Declarations used as [FunctionDecl.Overload][google.api.expr.v1alpha1.Decl.FunctionDecl.Overload] parameters may or may not
-   * have a name depending on whether the overload is function declaration or a
-   * function definition containing a result [Expr][google.api.expr.v1alpha1.Expr].
+   * Declarations used as
+   * [FunctionDecl.Overload][google.api.expr.v1alpha1.Decl.FunctionDecl.Overload]
+   * parameters may or may not have a name depending on whether the overload is
+   * function declaration or a function definition containing a result
+   * [Expr][google.api.expr.v1alpha1.Expr].
    *
    * @generated from field: string name = 1;
    */
@@ -584,8 +586,8 @@ export const Decl_FunctionDeclSchema: GenMessage<Decl_FunctionDecl> = /*@__PURE_
 
 /**
  * An overload indicates a function's parameter types and return type, and
- * may optionally include a function body described in terms of [Expr][google.api.expr.v1alpha1.Expr]
- * values.
+ * may optionally include a function body described in terms of
+ * [Expr][google.api.expr.v1alpha1.Expr] values.
  *
  * Functions overloads are declared in either a function or method
  * call-style. For methods, the `params[0]` is the expected type of the
@@ -601,15 +603,17 @@ export type Decl_FunctionDecl_Overload = Message<"google.api.expr.v1alpha1.Decl.
    * Required. Globally unique overload name of the function which reflects
    * the function name and argument types.
    *
-   * This will be used by a [Reference][google.api.expr.v1alpha1.Reference] to indicate the `overload_id` that
-   * was resolved for the function `name`.
+   * This will be used by a [Reference][google.api.expr.v1alpha1.Reference]
+   * to indicate the `overload_id` that was resolved for the function
+   * `name`.
    *
    * @generated from field: string overload_id = 1;
    */
   overloadId: string;
 
   /**
-   * List of function parameter [Type][google.api.expr.v1alpha1.Type] values.
+   * List of function parameter [Type][google.api.expr.v1alpha1.Type]
+   * values.
    *
    * Param types are disjoint after generic type parameters have been
    * replaced with the type `DYN`. Since the `DYN` type is compatible with
@@ -689,7 +693,8 @@ export type Reference = Message<"google.api.expr.v1alpha1.Reference"> & {
    * presented candidates must happen at runtime because of dynamic types. The
    * type checker attempts to narrow down this list as much as possible.
    *
-   * Empty if this is not a reference to a [Decl.FunctionDecl][google.api.expr.v1alpha1.Decl.FunctionDecl].
+   * Empty if this is not a reference to a
+   * [Decl.FunctionDecl][google.api.expr.v1alpha1.Decl.FunctionDecl].
    *
    * @generated from field: repeated string overload_id = 3;
    */
