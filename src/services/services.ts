@@ -12,5 +12,5 @@ export interface Services {
   validationService: ValidationService;
   problemService: ProblemService;
   developerService: DeveloperService;
-  zedTerminalService: ZedTerminalService | undefined;
+  zedTerminalService?: ZedTerminalService;
 }
