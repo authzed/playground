@@ -7,7 +7,8 @@ import { toast } from "sonner";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import LoadingView from "../playground-ui/LoadingView";
 import AppConfig from "../services/configservice";
-import { DataStore } from "../services/datastore";
+import { useAppDispatch } from "@/hooks";
+import { load } from "@/store/editorSlice";
 
 import { Alert, AlertTitle } from "./ui/alert";
 
@@ -26,15 +27,14 @@ enum SharedLoadingStatus {
  */
 export function ShareLoader(props: {
   shareUrlRoot: string;
-  datastore: DataStore;
   children: React.ReactNode;
   sharedRequired: boolean;
 }) {
   const { showConfirm } = useConfirmDialog();
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useAppDispatch();
 
-  const datastore = props.datastore;
   const urlPrefix = `/${props.shareUrlRoot}/`;
   const [loadingStatus, setLoadingStatus] = useState(SharedLoadingStatus.NOT_CHECKED);
 
@@ -114,7 +114,7 @@ export function ShareLoader(props: {
 
         // Valid reference.
         let updateDatastore = true;
-        if (!props.sharedRequired && datastore.isPopulated()) {
+        if (!props.sharedRequired) {
           setLoadingStatus(SharedLoadingStatus.CONFIRMING);
           const [result] = await showConfirm({
             title: `Replace your existing Playground content?`,
@@ -133,12 +133,12 @@ export function ShareLoader(props: {
         }
 
         if (updateDatastore) {
-          datastore.load({
+          dispatch(load({
             schema: shareData.schema || "",
-            relationshipsYaml: shareData.relationships_yaml || "",
-            assertionsYaml: shareData.assertions_yaml || "",
-            verificationYaml: shareData.validation_yaml || "",
-          });
+            relationships: shareData.relationships_yaml || "",
+            assertions: shareData.assertions_yaml || "",
+            expectedRelations: shareData.validation_yaml || "",
+          }));
         }
 
         if (!props.sharedRequired) {
@@ -169,8 +169,8 @@ export function ShareLoader(props: {
   }, [
     location.pathname,
     loadingStatus,
-    datastore,
     navigate,
+    dispatch,
     showConfirm,
     urlPrefix,
     props.sharedRequired,
@@ -198,5 +198,5 @@ export function ShareLoader(props: {
     );
   }
 
-  return <div>{props.children}</div>;
+  return props.children;
 }

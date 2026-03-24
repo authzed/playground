@@ -4,9 +4,8 @@ import type {
   TypeRef,
   ResolvedCaveatDefinition,
   ResolvedDefinition,
+  Resolver,
 } from "@authzed/spicedb-parser-js";
-
-import { LocalParseState } from "./localparse";
 
 const TYPE_AND_OBJECT_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)(#?)/g;
 const TYPE_OBJECT_AND_REL_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)#(?<rel>[^@]+)/g;
@@ -14,8 +13,7 @@ const TYPE_OBJECT_AND_REL_REGEX = /(?<typepath>[^:@]+):(?<object_id>[^#]+)#(?<re
 /**
  * getRelatableDefinitions returns the name of all definitions found in the local parse state.
  */
-export const getRelatableDefinitions = (localParseState: LocalParseState): string[] => {
-  const resolver = localParseState.resolver;
+export const getRelatableDefinitions = (resolver: Resolver): string[] => {
   if (resolver === undefined) {
     return [];
   }
@@ -42,9 +40,8 @@ export interface StorableRelation {
  */
 export const getStorableRelations = (
   onrs: string,
-  localParseState: LocalParseState,
+  resolver: Resolver,
 ): StorableRelation[] => {
-  const resolver = localParseState.resolver;
   if (resolver === undefined) {
     return [];
   }
@@ -107,9 +104,8 @@ export interface SubjectDefinition {
  */
 export const getSubjectDefinitions = (
   objectString: string,
-  localParseState: LocalParseState,
+  resolver: Resolver,
 ): SubjectDefinition[] => {
-  const resolver = localParseState.resolver;
   if (resolver === undefined) {
     return [];
   }
@@ -155,8 +151,7 @@ export const getSubjectDefinitions = (
 /**
  * getCaveatDefinitions returns the name of all caveats found in the local parse state.
  */
-export const getCaveatDefinitions = (localParseState: LocalParseState): string[] => {
-  const resolver = localParseState.resolver;
+export const getCaveatDefinitions = (resolver: Resolver): string[] => {
   if (resolver === undefined) {
     return [];
   }

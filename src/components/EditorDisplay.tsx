@@ -11,8 +11,7 @@ import "react-reflex/styles.css";
 import { useMediaQuery } from "@/hooks/use-media-query";
 
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
-import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
-import { LocalParseState } from "../services/localparse";
+import { useLocalParseService } from "../services/localparse";
 import { Services } from "../services/services";
 import registerDSLanguage, {
   DS_DARK_THEME_NAME,
@@ -31,13 +30,11 @@ import registerTupleLanguage, {
   TUPLE_LANGUAGE_NAME,
   TUPLE_THEME_NAME,
 } from "./relationshipeditor/tuplelang";
+import { PATHS } from "@/constants";
 
 export type EditorDisplayProps = {
-  datastore: DataStore;
   services: Services;
-  currentItem: DataStoreItem | undefined;
   isReadOnly: boolean;
-  datastoreUpdated: () => void;
   defaultWidth?: string;
   defaultHeight?: string;
   disableMouseWheelScrolling?: boolean;
@@ -54,6 +51,13 @@ interface LocationState {
   range?: TextRange | undefined;
 }
 
+const languageNameMap = {
+  [PATHS.SCHEMA]: DS_LANGUAGE_NAME,
+  [PATHS.RELATIONSHIPS]: TUPLE_LANGUAGE_NAME,
+  [PATHS.ASSERTIONS]: "yaml",
+  [PATHS.EXPECTED_RELATIONS]: "yaml",
+}
+
 /**
  * EditorDisplays display the editor in the playground.
  */
@@ -61,26 +65,22 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const monacoRef = useMonaco();
   const [monacoReady, setMonacoReady] = useState(false);
   const [localIndex, setLocalIndex] = useState(0);
-  const localParseState = useRef<LocalParseState>(props.services.localParseService.state);
+  // TODO: this should be global?
+  const { resolver } = useLocalParseService()
 
   // Effect: Register the languages in monaco.
   useEffect(() => {
     if (monacoRef) {
       registerDSLanguage(monacoRef);
-      registerTupleLanguage(monacoRef, () => localParseState.current);
+      if (resolver) {
+        registerTupleLanguage(monacoRef, resolver);
+      }
       setMonacoReady(true);
     }
-  }, [monacoRef]);
-
-  useEffect(() => {
-    localParseState.current = props.services.localParseService.state;
-  }, [props.services.localParseService.state]);
+  }, [monacoRef, resolver]);
 
   const navigate = useNavigate();
   const location = useLocation();
-
-  const datastore = props.datastore;
-  const currentItem = props.currentItem;
 
   const editorRefs = useRef<Record<string, monaco.editor.IStandaloneCodeEditor>>({});
 
@@ -92,20 +92,20 @@ export function EditorDisplay(props: EditorDisplayProps) {
       return props.themeName;
     }
 
-    switch (currentItem?.kind) {
-      case DataStoreItemKind.SCHEMA:
+    switch (location.pathname) {
+      case PATHS.SCHEMA:
         // Schema.
         return prefersDarkMode ? DS_DARK_THEME_NAME : DS_THEME_NAME;
 
-      case DataStoreItemKind.RELATIONSHIPS:
+      case PATHS.RELATIONSHIPS:
         // Validation tuples.
         return prefersDarkMode ? TUPLE_DARK_THEME_NAME : TUPLE_THEME_NAME;
 
-      case DataStoreItemKind.EXPECTED_RELATIONS:
+      case PATHS.EXPECTED_RELATIONS:
         // Expected Relations YAML.
         return prefersDarkMode ? "vs-dark" : "vs";
 
-      case DataStoreItemKind.ASSERTIONS:
+      case PATHS.ASSERTIONS:
         // Assertions YAML.
         return prefersDarkMode ? "vs-dark" : "vs";
 
@@ -114,33 +114,12 @@ export function EditorDisplay(props: EditorDisplayProps) {
         return prefersDarkMode ? DS_DARK_THEME_NAME : DS_THEME_NAME;
 
       default:
-        console.log(`Unknown item kind ${currentItem?.kind} in theme name`);
+        console.log(`Unknown path ${location.pathname} in theme name`);
         return "vs";
     }
-  }, [prefersDarkMode, currentItem?.kind, props.themeName]);
+  }, [prefersDarkMode, location.pathname, props.themeName]);
 
-  const languageName = useMemo(() => {
-    switch (currentItem?.kind) {
-      case DataStoreItemKind.SCHEMA:
-        return DS_LANGUAGE_NAME;
-
-      case DataStoreItemKind.RELATIONSHIPS:
-        // Validation tuples.
-        return TUPLE_LANGUAGE_NAME;
-
-      case DataStoreItemKind.EXPECTED_RELATIONS:
-        // Expected Relations => YAML.
-        return "yaml";
-
-      case DataStoreItemKind.ASSERTIONS:
-        // Assertions => YAML.
-        return "yaml";
-
-      default:
-        console.log("Unknown item kind in language name");
-        return "yaml";
-    }
-  }, [currentItem?.kind]);
+  const languageName = languageNameMap[location.pathname] || "yaml";
 
   const handleEditorChange = (value: string | undefined) => {
     if (props.services.validationService.isRunning || props.isReadOnly) {
@@ -164,8 +143,6 @@ export function EditorDisplay(props: EditorDisplayProps) {
       if (updated && updated.pathname !== location.pathname) {
         void navigate({ to: updated.pathname, replace: true });
       }
-
-      props.datastoreUpdated();
     });
   };
 

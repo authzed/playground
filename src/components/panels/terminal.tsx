@@ -11,12 +11,13 @@ import "react-reflex/styles.css";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import TabLabel from "../../playground-ui/TabLabel";
-import { DataStoreItemKind } from "../../services/datastore";
 import { mergeRelationshipsStringAndComments } from "../../spicedb-common/parsing";
-import { TerminalSection } from "../../spicedb-common/services/zedterminalservice";
+import { TerminalSection } from "@/store/zedTerminalSlice";
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 import { PanelProps } from "./base/common";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { setRelationships } from "@/store/editorSlice";
 
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -69,7 +70,10 @@ export function TerminalPanel(props: PanelProps) {
   const [command, setCommand] = useState("");
   const [historyIndex, setHistoryIndex] = useState(zts.commandHistory.length);
 
-  const datastore = props.datastore;
+  const schema = useAppSelector(state => state.editor.schema)
+  const relationships = useAppSelector(state => state.editor.relationships)
+  const dispatch = useAppDispatch()
+
   const endOfContainer = useRef<HTMLDivElement>(null);
 
   useDeepCompareEffect(() => {
@@ -102,21 +106,16 @@ export function TerminalPanel(props: PanelProps) {
 
     const cmd = command.trim();
     if (e.key.toLowerCase() === "enter" && cmd.length > 0) {
-      const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
-      const relationshipsString = datastore.getSingletonByKind(
-        DataStoreItemKind.RELATIONSHIPS,
-      ).editableContents!;
-      const [result, historyCount] = zts.runCommand(cmd, schema, relationshipsString);
+      const [result, historyCount] = zts.runCommand(cmd, schema, relationships);
       setCommand("");
       setHistoryIndex(historyCount);
 
       if (result?.updatedRelationships) {
-        const relItem = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
         const merged = mergeRelationshipsStringAndComments(
-          relItem.editableContents,
+          relationships,
           result.updatedRelationships,
         );
-        datastore.update(relItem, merged);
+        dispatch(setRelationships(merged))
       }
     }
   };

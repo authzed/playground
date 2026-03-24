@@ -1,7 +1,6 @@
 import { editor, Position } from "monaco-editor";
 import * as monacoEditor from "monaco-editor";
 
-import { LocalParseState } from "@/services/localparse";
 import {
   getCaveatDefinitions,
   getRelatableDefinitions,
@@ -10,6 +9,7 @@ import {
   StorableRelation,
   SubjectDefinition,
 } from "@/services/semantics";
+import { Resolver } from "@authzed/spicedb-parser-js";
 
 export const TUPLE_LANGUAGE_NAME = "tuple";
 export const TUPLE_THEME_NAME = "tuple-theme";
@@ -17,7 +17,7 @@ export const TUPLE_DARK_THEME_NAME = "tuple-theme-dark";
 
 export default function registerTupleLanguage(
   monaco: typeof monacoEditor,
-  localParseState: () => LocalParseState,
+  resolver: Resolver
 ) {
   // Based on: https://raw.githubusercontent.com/Aedron/monaco-protobuf/master/index.js
   monaco.languages.register({ id: TUPLE_LANGUAGE_NAME });
@@ -134,7 +134,7 @@ export default function registerTupleLanguage(
       switch (activeTyping[activeTyping.length - 1]) {
         case "/":
           return {
-            suggestions: getRelatableDefinitions(localParseState()).map((namespaceName: string) => {
+            suggestions: getRelatableDefinitions(resolver).map((namespaceName: string) => {
               const hasPrefix = namespaceName.indexOf("/") > -1;
               return {
                 label: namespaceName,
@@ -147,7 +147,7 @@ export default function registerTupleLanguage(
 
         case "#":
           return {
-            suggestions: getStorableRelations(words[words.length - 1], localParseState()).map(
+            suggestions: getStorableRelations(words[words.length - 1], resolver).map(
               (found: StorableRelation) => {
                 return {
                   label: found.name,
@@ -163,7 +163,7 @@ export default function registerTupleLanguage(
 
         case "@":
           return {
-            suggestions: getSubjectDefinitions(words[words.length - 1], localParseState()).map(
+            suggestions: getSubjectDefinitions(words[words.length - 1], resolver).map(
               (sd: SubjectDefinition) => {
                 return {
                   label: sd.name,
@@ -179,7 +179,7 @@ export default function registerTupleLanguage(
 
         case "[":
           return {
-            suggestions: getCaveatDefinitions(localParseState()).map((caveatName: string) => {
+            suggestions: getCaveatDefinitions(resolver).map((caveatName: string) => {
               return {
                 label: caveatName,
                 kind: monaco.languages.CompletionItemKind.Function,

@@ -1,53 +1,23 @@
-import Ajv from "ajv";
 import yaml from "yaml";
+import z from "zod";
 
-export type AssertionData = {
-  assertTrue?: string[];
-  assertFalse?: string[];
-};
+export const AssertionData = z.object({
+  assertTrue: z.array(z.string()).optional(),
+  assertFalse: z.array(z.string()).optional(),
+});
 
-export interface ParsedValidation {
-  schema: string;
-  relationships: string;
-  assertions?: AssertionData;
-  validation?: ValidationData;
-}
+export const ExpectedRelationData = z.record(z.string(), z.array(z.string()))
 
-export type ValidationData = Record<string, string[]>;
+const ParsedValidation = z.object({
+  schema: z.string(),
+  relationships: z.string(),
+  assertions: AssertionData.optional(),
+  validation: ExpectedRelationData.optional(),
+})
 
-const schema = {
-  type: "object",
-  properties: {
-    schema: { type: "string" },
-    relationships: { type: "string" },
-    assertions: {
-      type: ["object", "null"],
-      properties: {
-        assertTrue: {
-          type: "array",
-          items: {
-            type: "string",
-          },
-        },
-        assertFalse: {
-          type: "array",
-          items: {
-            type: "string",
-          },
-        },
-        additionalProperties: false,
-      },
-    },
-    validation: {
-      type: ["object", "null"],
-      additionalProperties: true,
-    },
-  },
-  required: ["schema", "relationships"],
-  additionalProperties: false,
-};
+type ParsedValidationType = z.infer<typeof ParsedValidation>
 
-export interface ParseValidationError {
+export type ParseValidationError = {
   message: string;
 }
 
@@ -55,7 +25,7 @@ export interface ParseValidationError {
  * parseValidationYAML parses the contents as a validation YAML, returning the ParsedValidation
  * file or undefined if invalid.
  */
-export const parseValidationYAML = (contents: string): ParsedValidation | ParseValidationError => {
+export const parseValidationYAML = (contents: string): ParsedValidationType | ParseValidationError => {
   let parsed = undefined;
   try {
     parsed = yaml.parse(contents);
@@ -64,16 +34,11 @@ export const parseValidationYAML = (contents: string): ParsedValidation | ParseV
     return { message: `parse error: ${errorText}` };
   }
 
-  const ajv = new Ajv();
-  const valid = ajv.validate(schema, parsed);
-  if (!valid) {
-    return {
-      message: ajv.errorsText(ajv.errors),
-    };
+  const result = ParsedValidation.safeParse(parsed);
+  if (!result.success) {
+    return result.error
   }
-
-  // TODO: type this better
-  return parsed as unknown as ParsedValidation;
+  return result.data
 };
 
 /**

@@ -5,6 +5,7 @@ import wasmConfig from "../../wasm-config.json";
 import { parseRelationships } from "../parsing";
 import { RelationTuple as Relationship } from "../protodefs/core/v1/core_pb";
 import { RequestContextSchema } from "../protodefs/developer/v1/developer_pb";
+import { useAppSelector } from "@/hooks";
 
 const WASM_FILE = `/static/zed.wasm`;
 const ESTIMATED_WASM_BINARY_SIZE = 55126053; // bytes
@@ -43,20 +44,12 @@ export type CommandResult = {
   error?: string;
 };
 
-export type ZedServiceState =
-  | {
-      status: "standby" | "initializing" | "unsupported" | "loaderror" | "ready";
-    }
-  | {
-      status: "loading";
-      progress: number;
-    };
-
 const wasmVersion: number | string = wasmConfig?.zed
   ? encodeURIComponent(wasmConfig.zed)
   : Math.random();
 
 export function useZedService(): ZedService {
+  const zedState = useAppSelector(state => state.)
   const [state, setState] = useState<ZedServiceState>({
     status: "standby",
   });
