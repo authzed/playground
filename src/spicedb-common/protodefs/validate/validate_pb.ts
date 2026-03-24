@@ -1182,7 +1182,6 @@ export type StringRules = Message<"validate.StringRules"> & {
 
   /**
    * LenBytes specifies that this field must be the specified number of bytes
-   * at a minimum
    *
    * @generated from field: optional uint64 len_bytes = 20;
    */
