@@ -239,6 +239,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         [/any/, { token: "keyword.any", next: "@arrowopen" }],
         [/all/, { token: "keyword.all", next: "@arrowopen" }],
         [/nil/, { token: "keyword.nil" }],
+        [/self/, { token: "keyword.self" }],
         [/\w+/, { token: "identifier.relorperm" }],
         { include: "@whitespace" },
       ],
@@ -503,6 +504,9 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
 
           case "expression":
             if (resolved.resolvedRelationOrPermission === undefined) {
+              if (resolved.reference.relationName === "self") {
+                break;
+              }
               appendData(
                 lineNumber,
                 colPosition,
@@ -577,6 +581,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
       { token: "keyword.definition", foreground: "4242ff" },
       { token: "keyword.caveat", foreground: "ff4271" },
       { token: "keyword.nil", foreground: "999999" },
+      { token: "keyword.self", foreground: "999999" },
       { token: "keyword.any", foreground: "23974d" },
       { token: "keyword.all", foreground: "972323" },
 
@@ -623,6 +628,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     { token: "keyword.definition", foreground: "8787ff" },
     { token: "keyword.caveat", foreground: "ff87a6" },
     { token: "keyword.nil", foreground: "cccccc" },
+    { token: "keyword.self", foreground: "cccccc" },
     { token: "keyword.any", foreground: "abe5ff" },
     { token: "keyword.all", foreground: "ffabab" },
 
