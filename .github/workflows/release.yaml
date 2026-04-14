@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=https://json.schemastore.org/github-workflow.json
 ---
 name: "Release"
 on:
@@ -16,20 +17,20 @@ jobs:
           lfs: "true"
           submodules: "recursive"
       - name: "Set up QEMU"
-        uses: "docker/setup-qemu-action@v3"
+        uses: "docker/setup-qemu-action@v4"
       - name: "Set up Docker Buildx"
-        uses: "docker/setup-buildx-action@v3"
+        uses: "docker/setup-buildx-action@v4"
         with:
           platforms: linux/amd64,linux/arm64,linux/arm/v8
       - name: "Log in to quay, ghcr and dockerhub"
-        uses: "authzed/actions/docker-login@11667c9b2e8b3649ad2af4d788e57d18f8e8eaf1" # main
+        uses: "authzed/actions/docker-login@main"
         with:
           quayio_token: "${{ secrets.QUAYIO_PASSWORD }}"
           github_token: "${{ secrets.GITHUB_TOKEN }}"
           dockerhub_token: "${{ secrets.DOCKERHUB_ACCESS_TOKEN }}"
       - name: "Extract metadata (tags, labels) for Docker"
         id: meta
-        uses: "docker/metadata-action@v5.5.1"
+        uses: "docker/metadata-action@v6"
         with:
           images: |
             quay.io/authzed/spicedb-playground
@@ -38,7 +39,7 @@ jobs:
           tags: |
             type=semver,pattern={{raw}}
       - name: "Build and push images to various registries"
-        uses: "docker/build-push-action@v5.3.0"
+        uses: "docker/build-push-action@v7"
         with:
           context: .
           platforms: linux/amd64,linux/arm64,linux/arm/v8
@@ -47,9 +48,9 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
       - name: "Notify Slack if failure"
         if: "failure()"
-        uses: "slackapi/slack-github-action@91efab103c0de0a537f72a35f6b8cda0ee76bf0a" # v2.1.1
+        uses: "slackapi/slack-github-action@v3"
         with:
-          webhook: "${{ secrets.SLACK_WEBHOOK_URL }}"
+          webhook: "${{ secrets.SLACK_BUILDS_WEBHOOK_URL }}"
           webhook-type: "incoming-webhook"
           payload: |
             text: "*Playground Release Failed*"
