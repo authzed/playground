@@ -9,6 +9,7 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
 import { PropsWithChildren, useEffect } from "react";
+import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 import { CookiesProvider } from "react-cookie";
 import "react-reflex/styles.css";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
@@ -60,10 +61,16 @@ const config = AppConfig();
 function PHProvider({ children }: PropsWithChildren) {
   useEffect(() => {
     if (config.posthog.apiKey && config.posthog.host) {
+      const optOut = shouldOptOutCapturing(isEUVisitor());
+
       posthog.init(config.posthog.apiKey, {
         api_host: config.posthog.host,
         person_profiles: "identified_only",
-        defaults: "2025-11-30", // Enables automatic SPA pageview tracking via history API
+        cross_subdomain_cookie: true,
+        defaults: "2025-11-30",
+        opt_out_capturing_by_default: optOut,
+        opt_out_persistence_by_default: optOut,
+        cookieless_mode: "on_reject",
       });
     }
   }, []);
