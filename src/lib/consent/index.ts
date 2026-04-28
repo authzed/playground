@@ -14,6 +14,6 @@ export {
   consentedIdentify,
   shouldOptOutCapturing,
   CONSENT_COOKIE_NAME,
-} from './storage';
-export { isEUVisitor } from './eu-detection';
-export type { ConsentPreferences } from './types';
+} from "./storage";
+export { isEUVisitor } from "./eu-detection";
+export type { ConsentPreferences } from "./types";

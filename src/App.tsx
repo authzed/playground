@@ -9,12 +9,12 @@ import {
 import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
 import { PropsWithChildren, useEffect } from "react";
-import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 import { CookiesProvider } from "react-cookie";
 import "react-reflex/styles.css";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 
 import "./App.css";
 import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
