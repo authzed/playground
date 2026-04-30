@@ -1,23 +1,22 @@
 import { TextRange } from "@authzed/spicedb-parser-js";
 import { Editor, DiffEditor, useMonaco } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import { useNavigate, useLocation } from "@tanstack/react-router";
+import { useLocation } from "@tanstack/react-router";
 import lineColumn from "line-column";
 import * as monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
-import "react-reflex/styles.css";
 
-import { useMediaQuery } from "@/hooks/use-media-query";
+import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
 import { Services } from "../services/services";
 import registerDSLanguage, {
-  DS_DARK_THEME_NAME,
   DS_LANGUAGE_NAME,
-  DS_THEME_NAME,
+  PLAYGROUND_DARK_THEME_NAME,
+  PLAYGROUND_LIGHT_THEME_NAME,
 } from "../spicedb-common/lang/dslang";
 import { RelationshipFound } from "../spicedb-common/parsing";
 import {
@@ -25,12 +24,18 @@ import {
   DeveloperWarning,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 
+import { useDrawerStore } from "./drawer/state";
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
-import registerTupleLanguage, {
-  TUPLE_DARK_THEME_NAME,
-  TUPLE_LANGUAGE_NAME,
-  TUPLE_THEME_NAME,
-} from "./relationshipeditor/tuplelang";
+import registerTupleLanguage, { TUPLE_LANGUAGE_NAME } from "./relationshipeditor/tuplelang";
+
+// Module-level singletons for one-shot language registration. Monaco's
+// `register*` calls are global; calling them on every editor mount can stack
+// providers (each registration adds a new completion/definition/semantic-tokens
+// provider rather than replacing). The `latestLocalParseStateRef` lets the
+// registered tuple completion provider always read the most recent parse
+// state without re-registering.
+let languagesRegistered = false;
+const latestLocalParseStateRef: { current: LocalParseState | null } = { current: null };
 
 export type EditorDisplayProps = {
   datastore: DataStore;
@@ -61,63 +66,50 @@ export function EditorDisplay(props: EditorDisplayProps) {
   const monacoRef = useMonaco();
   const [monacoReady, setMonacoReady] = useState(false);
   const [localIndex, setLocalIndex] = useState(0);
-  const localParseState = useRef<LocalParseState>(props.services.localParseService.state);
 
-  // Effect: Register the languages in monaco.
+  // Keep the module-level ref in sync so the (one-shot) tuple completion
+  // provider always reads the latest parse state.
+  latestLocalParseStateRef.current = props.services.localParseService.state;
+
+  // Effect: Register the languages in monaco. Runs ONCE per page load — Monaco
+  // language providers are global state and re-registering stacks providers.
   useEffect(() => {
     if (monacoRef) {
-      registerDSLanguage(monacoRef);
-      registerTupleLanguage(monacoRef, () => localParseState.current);
+      if (!languagesRegistered) {
+        registerDSLanguage(monacoRef);
+        registerTupleLanguage(monacoRef, () => latestLocalParseStateRef.current!);
+        languagesRegistered = true;
+      }
       setMonacoReady(true);
     }
   }, [monacoRef]);
 
   useEffect(() => {
-    localParseState.current = props.services.localParseService.state;
+    latestLocalParseStateRef.current = props.services.localParseService.state;
   }, [props.services.localParseService.state]);
 
-  const navigate = useNavigate();
   const location = useLocation();
 
   const datastore = props.datastore;
   const currentItem = props.currentItem;
 
   const editorRefs = useRef<Record<string, monaco.editor.IStandaloneCodeEditor>>({});
+  const containerRef = useRef<HTMLDivElement | null>(null);
 
   // Select the theme and language.
-  const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
+  const resolvedTheme = useResolvedTheme();
+  const prefersDarkMode = resolvedTheme === "dark";
 
+  // A single unified theme is used for every editor instance regardless of
+  // language. Monaco's `setTheme` is global — applying different themes per
+  // editor causes the last mount/update to win and visually corrupt the
+  // others. The unified theme contains rules for every language we render.
   const themeName = useMemo(() => {
     if (props.themeName) {
       return props.themeName;
     }
-
-    switch (currentItem?.kind) {
-      case DataStoreItemKind.SCHEMA:
-        // Schema.
-        return prefersDarkMode ? DS_DARK_THEME_NAME : DS_THEME_NAME;
-
-      case DataStoreItemKind.RELATIONSHIPS:
-        // Validation tuples.
-        return prefersDarkMode ? TUPLE_DARK_THEME_NAME : TUPLE_THEME_NAME;
-
-      case DataStoreItemKind.EXPECTED_RELATIONS:
-        // Expected Relations YAML.
-        return prefersDarkMode ? "vs-dark" : "vs";
-
-      case DataStoreItemKind.ASSERTIONS:
-        // Assertions YAML.
-        return prefersDarkMode ? "vs-dark" : "vs";
-
-      case undefined:
-        // Schema.
-        return prefersDarkMode ? DS_DARK_THEME_NAME : DS_THEME_NAME;
-
-      default:
-        console.log(`Unknown item kind ${currentItem?.kind} in theme name`);
-        return "vs";
-    }
-  }, [prefersDarkMode, currentItem?.kind, props.themeName]);
+    return prefersDarkMode ? PLAYGROUND_DARK_THEME_NAME : PLAYGROUND_LIGHT_THEME_NAME;
+  }, [prefersDarkMode, props.themeName]);
 
   const languageName = useMemo(() => {
     switch (currentItem?.kind) {
@@ -156,15 +148,19 @@ export function EditorDisplay(props: EditorDisplayProps) {
     // ms. To avoid this behavior, we tell React we want these updates to occur immediately
     // via the `flushSync` call.
     // See: https://reactjs.org/blog/2022/03/08/react-18-upgrade-guide.html#automatic-batching
+    //
+    // NOTE: We do NOT navigate the URL based on the edited item's pathname here.
+    // With the editor-groups split layout the URL is owned by the primary group's
+    // active tab. Typing in the secondary group must not change the URL — doing
+    // so triggers the URL->primary bridge in FullPlayground which would force the
+    // primary group to switch to whatever document the secondary is editing,
+    // causing both Monaco editors to swap models on every keystroke (perceived
+    // as a hard freeze). `datastore.update` never mutates `pathname`, so the
+    // previous navigate-on-mismatch was also dead code for the single-editor
+    // case.
     flushSync(() => {
       setLocalIndex(localIndex + 1);
-
-      // TODO: this shouldn't be necessary. Moving to redux may make this less painful.
-      const updated = datastore.update(currentItem!, value || "");
-      if (updated && updated.pathname !== location.pathname) {
-        void navigate({ to: updated.pathname, replace: true });
-      }
-
+      datastore.update(currentItem!, value || "");
       props.datastoreUpdated();
     });
   };
@@ -211,18 +207,28 @@ export function EditorDisplay(props: EditorDisplayProps) {
     // Generate markers for warnings.
     if (currentItem.kind === DataStoreItemKind.SCHEMA) {
       props.services.problemService.warnings.forEach((warning: DeveloperWarning) => {
-        const line = lines[warning.line - 1];
-        const index = line.indexOf(warning.sourceCode, warning.column - 1);
-        if (monacoRef) {
-          markers.push({
-            startLineNumber: warning.line,
-            startColumn: index + 1,
-            endLineNumber: warning.line,
-            endColumn: index + warning.sourceCode.length + 1,
-            message: warning.message,
-            severity: monacoRef.MarkerSeverity.Warning,
-          });
+        const lineText = lines[warning.line - 1];
+        if (lineText === undefined || !monacoRef) {
+          return;
         }
+        // Locate the source code on the line, starting near the reported column.
+        // Falls back to a full-line search if the reported column lands past the token.
+        const searchFrom = Math.max(0, (warning.column ?? 1) - 1);
+        let index = lineText.indexOf(warning.sourceCode, searchFrom);
+        if (index < 0) {
+          index = lineText.indexOf(warning.sourceCode);
+        }
+        if (index < 0) {
+          return;
+        }
+        markers.push({
+          startLineNumber: warning.line,
+          startColumn: index + 1,
+          endLineNumber: warning.line,
+          endColumn: index + warning.sourceCode.length + 1,
+          message: warning.message,
+          severity: monacoRef.MarkerSeverity.Warning,
+        });
       });
     }
 
@@ -241,46 +247,68 @@ export function EditorDisplay(props: EditorDisplayProps) {
       let column = de.column;
       let endColumn = column;
 
-      if (de.context) {
-        // If there is no line information, then search for the first occurrence of the context.
+      // Trim leading/trailing whitespace from the context. Note: per the
+      // developer.v1 proto, `context` may be a broad string (e.g. the full
+      // relationship for relationship issues, or the object type name for
+      // schema issues) — NOT necessarily the offending token. So we only
+      // use it to refine width when it's a clean single-word token; otherwise
+      // we fall back to a tight 1-char squiggle at the reported column.
+      const rawContext = de.context ?? "";
+      const trimmedContext = rawContext.trim();
+      const isSingleWordToken = !!trimmedContext && !/\s/.test(trimmedContext);
+
+      if (isSingleWordToken) {
+        // If there is no line information, search the entire document for the
+        // first occurrence of the trimmed context.
         if (!line) {
-          const index = contents.indexOf(de.context);
-          if (index !== undefined && index >= 0) {
+          const index = contents.indexOf(trimmedContext);
+          if (index >= 0) {
             const found = finder.fromIndex(index);
             if (found) {
               line = found.line;
               column = found.col;
-              endColumn = column + de.context.length;
+              endColumn = column + trimmedContext.length;
             }
           }
         } else {
-          // If there is, ensure the position is still valid.
-          endColumn = column + de.context.length;
-          const index = finder.toIndex(line, column);
-          if (index === undefined) {
-            return;
+          // Anchor to the actual occurrence of the trimmed context on (or near)
+          // the reported line. This is robust against off-by-one / 0-vs-1
+          // indexed columns coming from different error producers.
+          const lineText = lines[line - 1] ?? "";
+          const searchFrom = Math.max(0, (column ?? 1) - 1);
+          let onLineIndex = lineText.indexOf(trimmedContext, searchFrom);
+          if (onLineIndex < 0) {
+            onLineIndex = lineText.indexOf(trimmedContext);
           }
-
-          if (contents.substring(index, de.context.length + index) !== de.context) {
-            const updatedIndex = contents.indexOf(de.context, index);
-            if (updatedIndex < index) {
-              return;
-            }
-
-            const translated = finder.fromIndex(updatedIndex);
-            if (translated?.line !== line) {
-              return;
-            }
-
-            line = translated.line;
-            column = translated.col;
-            endColumn = column + de.context.length;
+          if (onLineIndex >= 0) {
+            column = onLineIndex + 1;
+            endColumn = column + trimmedContext.length;
+          } else {
+            // Token not found on the reported line — trust the column and
+            // underline a single character there.
+            endColumn = (column ?? 1) + 1;
           }
+        }
+      } else {
+        // Context is empty or multi-word (e.g. a full relationship string).
+        // Trust the reported line/column and use a tight 1-char squiggle.
+        // A narrow marker is far better than a wrong wide one.
+        if (line && column !== undefined) {
+          endColumn = column + 1;
         }
       }
 
       if (!line || column === undefined) {
         return;
+      }
+
+      // Clamp endColumn to the line's actual content length so the squiggle
+      // does not visually run onto the next line when context is empty or
+      // miscalculated.
+      const targetLineText = lines[line - 1] ?? "";
+      const maxEndColumn = targetLineText.length + 1;
+      if (endColumn <= column || endColumn > maxEndColumn) {
+        endColumn = Math.max(column + 1, Math.min(endColumn, maxEndColumn));
       }
 
       if (monacoRef) {
@@ -323,11 +351,55 @@ export function EditorDisplay(props: EditorDisplayProps) {
     { wait: 250 },
   );
 
+  // Manual layout: explicitly drive editor.layout() from a ResizeObserver on the
+  // container. This avoids contention between Monaco's per-instance internal
+  // observer (`automaticLayout: true`) when multiple editors are visible at once
+  // (e.g. in split view), which can stall the UI.
+  const resizeObserversRef = useRef<Record<string, ResizeObserver>>({});
+
+  const attachResizeObserver = (editor: monaco.editor.IStandaloneCodeEditor, key: string) => {
+    // Observe our React-owned outer wrapper, NOT the Monaco internal DOM.
+    // Monaco caches its rendered size after each layout() call, so observing
+    // its own DOM means resize events from CSS-driven parent shrinkage
+    // (e.g. drawer resize) are missed — the outer flex container shrinks
+    // but Monaco's frozen-size DOM doesn't, leading to overlap. Observing
+    // containerRef catches every CSS layout change since it's the outer
+    // <div className="h-full w-full"> that we render in JSX.
+    const observeTarget = containerRef.current;
+    if (!observeTarget) return;
+    // Tear down any prior observer for this key before re-attaching.
+    resizeObserversRef.current[key]?.disconnect();
+    // Dedupe identical sizes and coalesce to a single rAF to avoid the
+    // ResizeObserver -> editor.layout() -> reflow -> ResizeObserver feedback
+    // loop that can stall the UI when two editors are visible at once.
+    let lastWidth = 0;
+    let lastHeight = 0;
+    let rafId: number | null = null;
+    const ro = new ResizeObserver((entries) => {
+      const entry = entries[entries.length - 1];
+      if (!entry) return;
+      const { width, height } = entry.contentRect;
+      if (width === lastWidth && height === lastHeight) return;
+      lastWidth = width;
+      lastHeight = height;
+      if (rafId !== null) return;
+      rafId = requestAnimationFrame(() => {
+        rafId = null;
+        editor.layout({ width: lastWidth, height: lastHeight });
+      });
+    });
+    ro.observe(observeTarget);
+    resizeObserversRef.current[key] = ro;
+    // Initial layout so the editor sizes itself once parent is laid out.
+    editor.layout();
+  };
+
   const handleEditorMounted = (editor: monaco.editor.IStandaloneCodeEditor) => {
     if (currentItem !== undefined && props.diff === undefined) {
+      const itemId = currentItem.id;
       editorRefs.current = {
         ...editorRefs.current,
-        [currentItem.id]: editor,
+        [itemId]: editor,
       };
 
       editor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
@@ -341,10 +413,65 @@ export function EditorDisplay(props: EditorDisplayProps) {
         debouncedSetEditorScroll([e.scrollTop, e.scrollLeft]);
       });
 
+      attachResizeObserver(editor, itemId);
+
+      // Clean up our refs when this editor instance is disposed (e.g. when
+      // the host pane unmounts). Avoids unbounded growth of editorRefs and
+      // dangling ResizeObservers pointing at detached DOM.
+      editor.onDidDispose(() => {
+        if (editorRefs.current[itemId] === editor) {
+          delete editorRefs.current[itemId];
+        }
+        resizeObserversRef.current[itemId]?.disconnect();
+        delete resizeObserversRef.current[itemId];
+      });
+
       updateMarkers();
       updatePosition();
     }
   };
+
+  const handleDiffEditorMounted = (editor: monaco.editor.IStandaloneDiffEditor) => {
+    if (currentItem === undefined) return;
+    const modified = editor.getModifiedEditor();
+    const key = `${currentItem.id}-diff`;
+    attachResizeObserver(modified, key);
+    modified.onDidDispose(() => {
+      resizeObserversRef.current[key]?.disconnect();
+      delete resizeObserversRef.current[key];
+    });
+  };
+
+  // Tear down all observers on unmount.
+  useEffect(() => {
+    return () => {
+      Object.values(resizeObserversRef.current).forEach((ro) => ro.disconnect());
+      resizeObserversRef.current = {};
+    };
+  }, []);
+
+  // Drawer-driven relayout: the bottom drawer's resize handle mutates zustand
+  // state synchronously during mousemove, but the drawer's height change
+  // doesn't reliably propagate as a contentRect change to ResizeObserver
+  // observed on our outer wrapper during a drag (the browser batches resize
+  // observation and may skip frames mid-drag). Subscribe directly to the
+  // drawer's open/active-panel/per-panel-height state and force a relayout
+  // on every change, on the next animation frame so layout has settled.
+  const drawerOpen = useDrawerStore((s) => s.open);
+  const drawerActivePanel = useDrawerStore((s) => s.activePanel);
+  const drawerHeight = useDrawerStore((s) =>
+    s.activePanel ? s.perPanelHeight[s.activePanel] : 0,
+  );
+  useEffect(() => {
+    const editors = editorRefs.current;
+    if (Object.keys(editors).length === 0) return;
+    const rafId = requestAnimationFrame(() => {
+      for (const ed of Object.values(editors)) {
+        ed.layout();
+      }
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [drawerOpen, drawerActivePanel, drawerHeight]);
 
   const updatePosition = () => {
     const editors = editorRefs.current;
@@ -419,16 +546,21 @@ export function EditorDisplay(props: EditorDisplayProps) {
       updateMarkers();
     }
 
-    // NOTE: We only care if the currentItem changes or the errors change.
+    // NOTE: We depend on the actual problem arrays (not just stateKey/count)
+    // so the markers re-render whenever errors/warnings change identity even
+    // if the count happens to stay the same (e.g. one error replaced by another).
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     currentItem?.pathname,
     props.services.problemService.isUpdating,
-    props.services.problemService.stateKey,
+    props.services.problemService.requestErrors,
+    props.services.problemService.warnings,
+    props.services.problemService.validationErrors,
+    props.services.problemService.invalidRelationships,
   ]);
 
   return (
-    <div>
+    <div ref={containerRef} className="h-full w-full">
       {monacoReady && currentItem && (
         <div className="w-full h-full">
           {props.diff ? (
@@ -454,10 +586,14 @@ export function EditorDisplay(props: EditorDisplayProps) {
                 fontSize: props.fontSize,
                 scrollBeyondLastLine:
                   props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
+                automaticLayout: false,
               }}
               original={props.diff}
               modified={currentItem?.editableContents}
               language={languageName}
+              originalModelPath={`${currentItem.id}-original`}
+              modifiedModelPath={currentItem.id}
+              onMount={handleDiffEditorMounted}
             />
           ) : (
             <Editor
@@ -487,7 +623,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
                 fontSize: props.fontSize,
                 scrollBeyondLastLine:
                   props.scrollBeyondLastLine ?? (props.disableScrolling === true ? false : true),
+                automaticLayout: false,
               }}
+              path={currentItem.id}
             />
           )}
         </div>

@@ -258,7 +258,7 @@ export default function registerTupleLanguage(
       { token: "userset.start", foreground: "ffffff", fontStyle: "bold" },
     ],
     colors: {
-      "editor.background": "#0e0d11",
+      "editor.background": "#0a0a0a",
     },
   });
 }
