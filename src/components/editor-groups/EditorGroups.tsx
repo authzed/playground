@@ -3,12 +3,15 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 
 import { EditorGroup } from "./EditorGroup";
+import { type TabDiagnostics } from "./EditorTab";
 import { useEditorStore } from "./state";
 import { DocumentRef } from "./types";
 
 interface EditorGroupsProps {
   /** Render function for an active document's content (one per group). */
   renderContent: (active: DocumentRef) => React.ReactNode;
+  /** Per-document diagnostic counts, forwarded to every group. */
+  tabDiagnostics?: Partial<Record<DocumentRef, TabDiagnostics>>;
   className?: string;
 }
 
@@ -26,7 +29,7 @@ function loadInitialRatio(): number {
   return Math.max(MIN_RATIO, Math.min(MAX_RATIO, parsed));
 }
 
-export function EditorGroups({ renderContent, className }: EditorGroupsProps) {
+export function EditorGroups({ renderContent, tabDiagnostics, className }: EditorGroupsProps) {
   const layout = useEditorStore((s) => s.layout);
   const closeGroup = useEditorStore((s) => s.closeGroup);
 
@@ -99,7 +102,12 @@ export function EditorGroups({ renderContent, className }: EditorGroupsProps) {
   if (layout.kind === "single") {
     return (
       <div ref={containerRef} className={cn("flex h-full min-h-0 flex-col", className)}>
-        <EditorGroup group={layout.group} closable={false} renderContent={renderContent} />
+        <EditorGroup
+          group={layout.group}
+          closable={false}
+          renderContent={renderContent}
+          tabDiagnostics={tabDiagnostics}
+        />
       </div>
     );
   }
@@ -114,7 +122,12 @@ export function EditorGroups({ renderContent, className }: EditorGroupsProps) {
         className="min-w-0 min-h-0"
         style={{ flex: `${primaryRatio} 1 0%` }}
       >
-        <EditorGroup group={layout.primary} closable renderContent={renderContent} />
+        <EditorGroup
+          group={layout.primary}
+          closable
+          renderContent={renderContent}
+          tabDiagnostics={tabDiagnostics}
+        />
       </div>
       <div
         className={cn(
@@ -129,7 +142,12 @@ export function EditorGroups({ renderContent, className }: EditorGroupsProps) {
         className="min-w-0 min-h-0"
         style={{ flex: `${1 - primaryRatio} 1 0%` }}
       >
-        <EditorGroup group={layout.secondary} closable renderContent={renderContent} />
+        <EditorGroup
+          group={layout.secondary}
+          closable
+          renderContent={renderContent}
+          tabDiagnostics={tabDiagnostics}
+        />
       </div>
     </div>
   );

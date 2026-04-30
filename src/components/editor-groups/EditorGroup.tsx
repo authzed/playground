@@ -5,9 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
-import { EditorTab } from "./EditorTab";
+import { EditorTab, type TabDiagnostics } from "./EditorTab";
 import { OpenDocumentMenu } from "./OpenDocumentMenu";
 import { SplitMenu } from "./SplitMenu";
+import { TabContextMenu } from "./TabContextMenu";
 import { useEditorStore } from "./state";
 import { DocumentRef, EditorGroup as EditorGroupType } from "./types";
 
@@ -19,6 +20,8 @@ interface EditorGroupProps {
   closable: boolean;
   /** Render function for the active tab's content. */
   renderContent: (active: DocumentRef) => React.ReactNode;
+  /** Per-document diagnostic counts; undefined entries mean no badges. */
+  tabDiagnostics?: Partial<Record<DocumentRef, TabDiagnostics>>;
   className?: string;
 }
 
@@ -33,6 +36,7 @@ export function EditorGroup({
   group,
   closable,
   renderContent,
+  tabDiagnostics,
   className,
 }: EditorGroupProps) {
   const setActiveTab = useEditorStore((s) => s.setActiveTab);
@@ -106,16 +110,19 @@ export function EditorGroup({
         {group.tabs.map((tab, i) => (
           <React.Fragment key={tab}>
             {dropIndicator?.index === i && <DropMarker />}
-            <EditorTab
-              document={tab}
-              active={tab === group.activeTab}
-              canClose={canCloseTabs}
-              onClick={() => setActiveTab(group.id, tab)}
-              onClose={() => closeTab(tab)}
-              onDragStart={(e) => handleDragStart(e, tab)}
-              onDragOver={(e) => handleTabDragOver(e, tab)}
-              onDrop={handleDrop}
-            />
+            <TabContextMenu tab={tab} groupId={group.id} canClose={canCloseTabs}>
+              <EditorTab
+                document={tab}
+                active={tab === group.activeTab}
+                canClose={canCloseTabs}
+                diagnostics={tabDiagnostics?.[tab]}
+                onClick={() => setActiveTab(group.id, tab)}
+                onClose={() => closeTab(tab)}
+                onDragStart={(e) => handleDragStart(e, tab)}
+                onDragOver={(e) => handleTabDragOver(e, tab)}
+                onDrop={handleDrop}
+              />
+            </TabContextMenu>
           </React.Fragment>
         ))}
         {dropIndicator?.index === group.tabs.length && <DropMarker />}

@@ -843,7 +843,27 @@ export function ThemedAppView(props: {
 
       {/* === Editor groups (tab strip + content per group) === */}
       <div className="flex-1 min-h-0">
-        <EditorGroups renderContent={renderDocument} />
+        <EditorGroups
+          renderContent={renderDocument}
+          tabDiagnostics={{
+            schema: {
+              errors: services.problemService.getErrorCount(DataStoreItemKind.SCHEMA),
+              warnings: services.problemService.warnings.length,
+            },
+            relationships: {
+              errors: services.problemService.getErrorCount(DataStoreItemKind.RELATIONSHIPS),
+              warnings: 0,
+            },
+            assertions: {
+              errors: services.problemService.getErrorCount(DataStoreItemKind.ASSERTIONS),
+              warnings: 0,
+            },
+            expected: {
+              errors: services.problemService.getErrorCount(DataStoreItemKind.EXPECTED_RELATIONS),
+              warnings: 0,
+            },
+          }}
+        />
       </div>
 
       {/* === Bottom drawer (one panel at a time) === */}
