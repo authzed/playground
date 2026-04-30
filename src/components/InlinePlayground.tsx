@@ -1,6 +1,6 @@
 import { parseSchema } from "@authzed/spicedb-parser-js";
 import { SquareArrowOutUpRight } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { ConnectedTabsList, ConnectedTabsTrigger, Tabs } from "@/components/ui/tabs";
@@ -18,14 +18,12 @@ import { useDeveloperService } from "../spicedb-common/services/developerservice
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
-import { ShareLoader } from "./ShareLoader";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 
 export function InlinePlayground() {
   const datastore = useReadonlyDatastore();
   return (
-    <ShareLoader datastore={datastore} shareUrlRoot="i" sharedRequired={true}>
-      <InlinePlaygroundUI datastore={datastore} />
-    </ShareLoader>
+    <InlinePlaygroundUI datastore={datastore} />
   );
 }
 
@@ -69,6 +67,10 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
 
+  const routeApi = getRouteApi("/i/$shareId")
+  const shareData = routeApi.useLoaderData()
+  const { shareId } = routeApi.useParams()
+
   const services = {
     localParseService,
     liveCheckService,
@@ -77,6 +79,20 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     developerService,
     zedTerminalService: undefined,
   };
+
+  // Load the datastore from what's loaded by the route loader
+  useEffect(() => {
+    datastore.load({
+      schema: shareData.schema || "",
+      relationshipsYaml: shareData.relationships_yaml || "",
+      assertionsYaml: shareData.assertions_yaml || "",
+      verificationYaml: shareData.validation_yaml || "",
+    });
+    datastore.setBaseline("shared", shareId);
+    if (liveCheckService) {
+      liveCheckService.loadWatches(shareData.check_watches ?? []);
+    }
+  }, [shareData, datastore, shareId, liveCheckService])
 
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
   const [tab, setTab] = useState<InlineTab>("schema");
