@@ -88,7 +88,7 @@ export const EditorTab = React.forwardRef<
       className={cn(
         "group inline-flex items-center gap-1.5 px-3 py-2 text-sm select-none cursor-pointer",
         active
-          ? "bg-background text-foreground"
+          ? "bg-chrome-panel text-foreground"
           : "text-muted-foreground hover:text-foreground",
         className,
       )}
