@@ -81,7 +81,12 @@ export function useProblemService(
   const invalidRelationships = localParseService.state.relationships.filter(
     (rel: RelationshipFound) => "errorMessage" in rel.parsed,
   );
-  const errorCount = requestErrors.length + invalidRelationships.length;
+  const validationErrors = validationService.state.validationErrors ?? [];
+  // Include validation errors in the rollup so that StatusStrip's compact
+  // Problems indicator expands when validation produces errors (not just when
+  // a request errors out).
+  const errorCount =
+    requestErrors.length + invalidRelationships.length + validationErrors.length;
 
   const getErrorCount = (kind: DataStoreItemKind) => {
     const allProblems = Array.from(requestErrors);
@@ -97,7 +102,6 @@ export function useProblemService(
 
   const isUpdating =
     liveCheckService.state.status === LiveCheckStatus.CHECKING || validationService.isRunning;
-  const validationErrors = validationService.state.validationErrors ?? [];
   const stateKey = `${isUpdating}:${errorCount}-${validationErrors.length}-${invalidRelationships.length}`;
 
   return {

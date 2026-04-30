@@ -5,12 +5,17 @@ import {
   DrawCellCallback,
   GridSelection,
 } from "@glideapps/glide-data-grid";
-import { Popper, PopperProps, alpha } from "@material-ui/core";
-import TextField from "@material-ui/core/TextField";
-import Autocomplete, { type AutocompleteRenderInputParams } from "@material-ui/lab/Autocomplete";
-import { RefObject, useRef } from "react";
+import { RefObject, useEffect, useRef, useState } from "react";
 import stc from "string-to-color";
 
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandItem,
+  CommandList,
+} from "@/components/ui/command";
+import { Popover, PopoverAnchor, PopoverContent } from "@/components/ui/popover";
 import { RelationshipsService } from "@/spicedb-common/services/relationshipsservice";
 
 import { COLUMNS, Column, DataKind, DataTitle, RelationshipSection } from "./columns";
@@ -227,8 +232,11 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
           ctx.lineWidth = 2;
           ctx.setLineDash([7, 5]);
 
-          ctx.fillStyle = alpha(similarColor, 0.2);
+          const previousAlpha = ctx.globalAlpha;
+          ctx.globalAlpha = 0.2;
+          ctx.fillStyle = similarColor;
           ctx.fillRect(rect.x, rect.y, rect.width, rect.height);
+          ctx.globalAlpha = previousAlpha;
           ctx.strokeRect(rect.x + 2, rect.y + 2, rect.width - 3, rect.height - 3);
         }
 
@@ -277,6 +285,8 @@ const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
   props: FieldCellEditorProps<T, Q>,
 ) => {
   const edited = useRef(false);
+  const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement | null>(null);
+  const [open, setOpen] = useState(true);
 
   // NOTE: In order to handle the initialValue correctly, we have to include it as
   // the default for the field, but *only* if the user hasn't manually edited the
@@ -284,73 +294,125 @@ const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
   // always appearing for an otherwise empty value, preventing users from deleting
   // the contents completely.
   // We could probably work around this by setting a defaultValue, but that has odd
-  // interactions with the Autocomplete, so we use this approach instead.
+  // interactions with autocomplete, so we use this approach instead.
   const editableValue = edited.current
     ? props.value.data.dataValue
     : props.value.data.dataValue || props.initialValue;
 
-  const DecoratedPopperComponent = (props: PopperProps) => {
-    // NOTE: the special className of `click-outside-ignore` is necessary to prevent
-    // clicking the autocomplete from closing the editor.
-    // See: https://github.com/glideapps/glide-data-grid/blob/main/packages/core/src/click-outside-container/click-outside-container.tsx#L23
-    return <Popper {...props} className="click-outside-ignore" />;
-  };
+  // Auto-focus on mount so the editor behaves like a typical grid cell editor.
+  useEffect(() => {
+    inputRef.current?.focus();
+  }, []);
 
-  const handleKeyDown = () => {
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     // Mark that a user edit has occurred.
     edited.current = true;
+
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      event.stopPropagation();
+      const newValue = (event.target as HTMLInputElement | HTMLTextAreaElement).value;
+      props.onFinishedEditing({
+        ...props.value,
+        copyData: newValue,
+        data: {
+          ...props.value.data,
+          dataValue: newValue,
+        },
+      });
+    }
+  };
+
+  const handleInputChange = (newValue: string) => {
+    props.onChange({
+      ...props.value,
+      copyData: newValue,
+      data: {
+        ...props.value.data,
+        dataValue: newValue,
+      },
+    });
+  };
+
+  const handleSelect = (selected: string) => {
+    props.onFinishedEditing({
+      ...props.value,
+      copyData: selected,
+      data: {
+        ...props.value.data,
+        dataValue: selected,
+      },
+    });
   };
 
   const autocompleteOptions: string[] = props.getAutocompleteOptions(
     props.fieldPropsRef.current,
     props.value.data,
   );
-  return (
-    <Autocomplete
-      PopperComponent={DecoratedPopperComponent}
-      options={autocompleteOptions}
-      getOptionLabel={(option: string) => option}
-      style={{ width: "150px", zIndex: 9999999999 }}
-      freeSolo
-      onChange={(event, newValue) => {
-        props.onFinishedEditing({
-          ...props.value,
-          copyData: newValue ?? "",
-          data: {
-            ...props.value.data,
-            dataValue: newValue ?? "",
-          },
-        });
-        event.stopPropagation();
-        event.preventDefault();
-      }}
-      onInputChange={(event, newValue) => {
-        // If the event and value are empty, this is a synthetic event created by
-        // the grid to "clear" the value; we only allow it if there is an initial
-        // value to replace the current value.
-        if (!newValue && !event && !props.initialValue) {
-          return;
-        }
 
-        props.onChange({
-          ...props.value,
-          copyData: newValue ?? "",
-          data: {
-            ...props.value.data,
-            dataValue: newValue ?? "",
-          },
-        });
-      }}
-      inputValue={editableValue ?? ""}
-      renderInput={(params: AutocompleteRenderInputParams) => (
-        <TextField
-          {...params}
-          autoFocus={true}
-          onKeyDown={handleKeyDown}
-          multiline={props.kind === CAVEATCONTEXT_CELL_KIND}
-        />
+  const isMultiline = props.kind === CAVEATCONTEXT_CELL_KIND;
+  const inputValue = editableValue ?? "";
+  const inputClass =
+    "w-full bg-transparent px-3 py-2 text-sm outline-none border border-input rounded-md font-mono";
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverAnchor asChild>
+        <div style={{ width: "150px", zIndex: 9999999999 }}>
+          {isMultiline ? (
+            <textarea
+              ref={(el) => {
+                inputRef.current = el;
+              }}
+              value={inputValue}
+              className={inputClass}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setOpen(true)}
+            />
+          ) : (
+            <input
+              ref={(el) => {
+                inputRef.current = el;
+              }}
+              value={inputValue}
+              className={inputClass}
+              onChange={(e) => handleInputChange(e.target.value)}
+              onKeyDown={handleKeyDown}
+              onFocus={() => setOpen(true)}
+            />
+          )}
+        </div>
+      </PopoverAnchor>
+      {autocompleteOptions.length > 0 && (
+        <PopoverContent
+          // NOTE: the special className of `click-outside-ignore` is necessary to prevent
+          // clicking the autocomplete from closing the editor.
+          // See: https://github.com/glideapps/glide-data-grid/blob/main/packages/core/src/click-outside-container/click-outside-container.tsx#L23
+          className="click-outside-ignore w-[250px] p-0"
+          align="start"
+          onOpenAutoFocus={(e) => e.preventDefault()}
+          style={{ zIndex: 9999999999 }}
+        >
+          <Command shouldFilter={true}>
+            <CommandList>
+              <CommandEmpty>No matches</CommandEmpty>
+              <CommandGroup>
+                {autocompleteOptions.map((option) => (
+                  <CommandItem
+                    key={option}
+                    value={option}
+                    onSelect={() => handleSelect(option)}
+                  >
+                    {option}
+                  </CommandItem>
+                ))}
+              </CommandGroup>
+            </CommandList>
+          </Command>
+        </PopoverContent>
       )}
-    />
+    </Popover>
   );
 };
 

@@ -1,143 +1,273 @@
-import Paper from "@material-ui/core/Paper";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import { Link } from "@tanstack/react-router";
-import clsx from "clsx";
-import "react-reflex/styles.css";
+import { ChevronDown, ChevronRight, CircleX, Play, TriangleAlert } from "lucide-react";
+import * as React from "react";
 
-import TabLabel from "../../playground-ui/TabLabel";
-import { DataStorePaths } from "../../services/datastore";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+
+import { Services } from "../../services/services";
 import {
   DeveloperError,
+  DeveloperError_Source,
   DeveloperWarning,
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
-import { TourElementClass } from "../GuidedTour";
+import { DocumentLink } from "../document-link";
 
-import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
 import {
-  DeveloperErrorDisplay,
   DeveloperSourceDisplay,
-  DeveloperWarningDisplay,
   DeveloperWarningSourceDisplay,
 } from "./errordisplays";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    apiOutput: {
-      fontFamily: "Roboto Mono, monospace",
-      padding: theme.spacing(2),
-    },
-    link: {
-      color: theme.palette.text.primary,
-    },
-    errorContainer: {
-      padding: theme.spacing(1),
-      marginBottom: theme.spacing(1),
-      display: "grid",
-      gridTemplateRows: "1fr auto",
-      width: "100%",
-      columnGap: theme.spacing(2),
-    },
-    validationErrorContext: {
-      padding: theme.spacing(1),
-      backgroundColor: theme.palette.background.default,
-    },
-    tupleError: {
-      padding: theme.spacing(1),
-    },
-    helpButton: {},
-  }),
-);
+interface ProblemsPanelProps {
+  services: Services;
+}
 
-/**
- * ProblemsSummary displays a summary of the problems found.
- */
-export function ProblemsSummary(props: PanelSummaryProps) {
-  const classes = useSummaryStyles();
-  const errorCount = props.services.problemService.errorCount;
-  const warningCount = props.services.problemService.warnings.length;
+export function ProblemsPanel({ services }: ProblemsPanelProps) {
+  const requestErrors = services.problemService.requestErrors;
+  const warnings = services.problemService.warnings;
+  const invalidRels = services.problemService.invalidRelationships;
+  const validationErrors = services.problemService.validationErrors;
+
+  const schemaErrors = requestErrors.filter(
+    (e) => e.source === DeveloperError_Source.SCHEMA,
+  );
+  const relationshipRequestErrors = requestErrors.filter(
+    (e) => e.source === DeveloperError_Source.RELATIONSHIP,
+  );
+  const assertionErrors = requestErrors.filter(
+    (e) => e.source === DeveloperError_Source.ASSERTION,
+  );
 
   return (
-    <div className={clsx(classes.problemTab, TourElementClass.problems)}>
-      <TabLabel
-        icon={
-          <ErrorOutlineIcon
-            htmlColor={props.services.problemService.errorCount > 0 ? "" : "grey"}
-          />
+    <div className="p-2 space-y-1">
+      <Group title="Schema" errorCount={schemaErrors.length} warningCount={warnings.length}>
+        {schemaErrors.map((de, i) => (
+          <ErrorRow key={`s${i}`} error={de} />
+        ))}
+        {warnings.map((dw, i) => (
+          <WarningRow key={`w${i}`} warning={dw} />
+        ))}
+      </Group>
+
+      <Group
+        title="Relationships"
+        errorCount={invalidRels.length + relationshipRequestErrors.length}
+      >
+        {invalidRels.map((invalid, i) => {
+          if (!("errorMessage" in invalid.parsed)) return null;
+          return (
+            <InvalidRelationshipRow
+              key={`r${i}`}
+              text={invalid.text}
+              lineNumber={invalid.lineNumber}
+              errorMessage={invalid.parsed.errorMessage}
+            />
+          );
+        })}
+        {relationshipRequestErrors.map((de, i) => (
+          <ErrorRow key={`re${i}`} error={de} />
+        ))}
+      </Group>
+
+      <Group title="Assertions" errorCount={assertionErrors.length}>
+        {assertionErrors.map((de, i) => (
+          <ErrorRow key={`a${i}`} error={de} />
+        ))}
+      </Group>
+
+      <Group
+        title="Validation"
+        errorCount={validationErrors.length}
+        action={
+          <Button
+            size="xs"
+            variant="ghost"
+            onClick={() => services.validationService.conductValidation(() => false)}
+          >
+            <Play /> Re-run
+          </Button>
         }
-        title="Problems"
-      />
-      <span
-        className={clsx(classes.badge, {
-          [classes.failBadge]: errorCount > 0,
-        })}
       >
-        {errorCount}
-      </span>
-      <span
-        className={clsx(classes.badge, {
-          [classes.warningBadge]: warningCount > 0,
-        })}
-      >
-        {warningCount}
-      </span>
+        {validationErrors.map((ve, i) => (
+          <ErrorRow key={`v${i}`} error={ve} />
+        ))}
+      </Group>
     </div>
   );
 }
 
-export function ProblemsPanel({ services }: PanelProps) {
-  const classes = useStyles();
+function Group({
+  title,
+  errorCount,
+  warningCount = 0,
+  action,
+  children,
+}: {
+  title: string;
+  errorCount: number;
+  warningCount?: number;
+  action?: React.ReactNode;
+  children: React.ReactNode;
+}) {
+  const total = errorCount + warningCount;
+  const [expanded, setExpanded] = React.useState(total > 0);
+
+  // Re-expand when count transitions from 0 to >0 so newly-introduced problems
+  // are not hidden inside a previously-empty collapsed group.
+  const prevTotalRef = React.useRef(total);
+  React.useEffect(() => {
+    if (prevTotalRef.current === 0 && total > 0) {
+      setExpanded(true);
+    }
+    prevTotalRef.current = total;
+  }, [total]);
 
   return (
-    <div className={clsx(classes.apiOutput)}>
-      {!services.problemService.hasProblems && <span>No problems found</span>}
-      {services.problemService.invalidRelationships.map(
-        // NOTE: an index is appropriate here because a user could theoretically
-        // write a duplicate relationship, and the position makes some sense as a key
-        (invalid, index) => {
-          if (!("errorMessage" in invalid.parsed)) {
-            return <div key={index} />;
-          }
+    <div>
+      <div className="flex items-center gap-2 px-1 py-1 text-xs">
+        <button
+          type="button"
+          onClick={() => setExpanded((e) => !e)}
+          className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
+        >
+          {expanded ? (
+            <ChevronDown className="size-3" />
+          ) : (
+            <ChevronRight className="size-3" />
+          )}
+          <span className="uppercase tracking-wide">{title}</span>
+          {errorCount > 0 && (
+            <CountBadge value={errorCount} variant="error" />
+          )}
+          {warningCount > 0 && (
+            <CountBadge value={warningCount} variant="warning" />
+          )}
+          {total === 0 && <CountBadge value={0} variant="empty" />}
+        </button>
+        <div className="ml-auto">{action}</div>
+      </div>
+      {expanded && <div className="pl-4 space-y-1">{children}</div>}
+    </div>
+  );
+}
 
-          return (
-            <Paper className={classes.errorContainer} key={index}>
-              <div>
-                <div className={classes.validationErrorContext}>
-                  In
-                  <Link className={classes.link} to={DataStorePaths.Relationships()}>
-                    Test Relationships
-                  </Link>
-                  :
-                </div>
-                <div className={classes.tupleError}>
-                  Invalid relationship <code>{invalid.text}</code> on line {invalid.lineNumber + 1}:{" "}
-                  {invalid.parsed.errorMessage}
-                </div>
-              </div>
-            </Paper>
-          );
-        },
+function CountBadge({
+  value,
+  variant,
+}: {
+  value: number;
+  variant: "error" | "warning" | "empty";
+}) {
+  return (
+    <span
+      className={cn(
+        "inline-flex h-4 min-w-4 items-center justify-center rounded px-1 text-[10px] font-semibold",
+        variant === "error" && "bg-destructive text-white",
+        variant === "warning" && "bg-yellow-600 text-white",
+        variant === "empty" && "bg-muted text-muted-foreground",
       )}
-      {services.problemService.requestErrors.map((de: DeveloperError, index: number) => {
-        return (
-          <Paper className={classes.errorContainer} key={`de${index}`}>
-            <div>
-              <DeveloperSourceDisplay error={de} />
-              <DeveloperErrorDisplay error={de} />
-            </div>
-          </Paper>
-        );
-      })}
-      {services.problemService.warnings.map((dw: DeveloperWarning, index: number) => {
-        return (
-          <Paper className={classes.errorContainer} key={`dw${index}`}>
-            <div>
-              <DeveloperWarningSourceDisplay warning={dw} />
-              <DeveloperWarningDisplay warning={dw} />
-            </div>
-          </Paper>
-        );
-      })}
+    >
+      {value}
+    </span>
+  );
+}
+
+/** Splits the error message into a short summary (first sentence) and remainder. */
+function splitMessage(message: string): { summary: string; rest: string } {
+  // Prefer the first ; or . boundary if it appears within a reasonable length.
+  const trimmed = message.trim();
+  const semi = trimmed.indexOf(";");
+  const dot = trimmed.search(/\.\s/);
+  const candidates = [semi, dot].filter((i) => i > 0 && i < 120);
+  if (candidates.length > 0) {
+    const cut = Math.min(...candidates);
+    return {
+      summary: trimmed.slice(0, cut).trim(),
+      rest: trimmed.slice(cut + 1).trim(),
+    };
+  }
+  if (trimmed.length > 100) {
+    return { summary: trimmed.slice(0, 100).trim() + "…", rest: trimmed };
+  }
+  return { summary: trimmed, rest: "" };
+}
+
+function ErrorRow({ error }: { error: DeveloperError }) {
+  const { summary, rest } = splitMessage(error.message);
+  return (
+    <div className="flex items-start gap-3 border-l-2 border-l-destructive bg-card px-3 py-2">
+      <CircleX className="size-4 shrink-0 text-destructive mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm leading-snug">{summary}</div>
+        <div className="text-xs text-muted-foreground mt-1 leading-snug">
+          <DeveloperSourceDisplay error={error} />
+          {(error.line > 0 || error.column > 0) && (
+            <span className="font-mono">
+              :{error.line}:{error.column}
+            </span>
+          )}
+          {(rest || error.context) && <span className="mx-1">·</span>}
+          {rest && <span>{rest}</span>}
+          {error.context && (
+            <>
+              {rest && " "}
+              <code className="font-mono">{error.context}</code>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function WarningRow({ warning }: { warning: DeveloperWarning }) {
+  const { summary, rest } = splitMessage(warning.message);
+  return (
+    <div className="flex items-start gap-3 border-l-2 border-l-yellow-600 bg-card px-3 py-2">
+      <TriangleAlert className="size-4 shrink-0 text-yellow-500 mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm leading-snug">{summary}</div>
+        <div className="text-xs text-muted-foreground mt-1 leading-snug">
+          <DeveloperWarningSourceDisplay warning={warning} />
+          {(warning.line > 0 || warning.column > 0) && (
+            <span className="font-mono">
+              :{warning.line}:{warning.column}
+            </span>
+          )}
+          {(rest || warning.sourceCode) && <span className="mx-1">·</span>}
+          {rest && <span>{rest}</span>}
+          {warning.sourceCode && (
+            <>
+              {rest && " "}
+              <code className="font-mono">{warning.sourceCode}</code>
+            </>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function InvalidRelationshipRow({
+  text,
+  lineNumber,
+  errorMessage,
+}: {
+  text: string;
+  lineNumber: number;
+  errorMessage: string;
+}) {
+  return (
+    <div className="flex items-start gap-3 border-l-2 border-l-destructive bg-card px-3 py-2">
+      <CircleX className="size-4 shrink-0 text-destructive mt-0.5" />
+      <div className="flex-1 min-w-0">
+        <div className="font-medium text-sm leading-snug">{errorMessage}</div>
+        <div className="text-xs text-muted-foreground mt-1 leading-snug">
+          <DocumentLink to="relationships">Test Relationships</DocumentLink>
+          <span className="font-mono ml-1">:{lineNumber + 1}</span>
+          <span className="mx-1">·</span>
+          <code className="font-mono">{text}</code>
+        </div>
+      </div>
     </div>
   );
 }

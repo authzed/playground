@@ -6,14 +6,13 @@ import {
   createRoute,
   createRootRoute,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
 import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
-import "react-reflex/styles.css";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { TooltipProvider } from "@/components/ui/tooltip";
 import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 
 import "./App.css";
@@ -23,17 +22,10 @@ import { InlinePlayground } from "./components/InlinePlayground";
 import { Toaster } from "./components/ui/sonner";
 import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
 import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
-import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
 import AppConfig from "./services/configservice";
-import { PLAYGROUND_UI_COLORS } from "./theme";
 
 const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
+  component: Outlet,
 });
 
 // TODO: extend the routing; the $s are catchalls.
@@ -91,7 +83,6 @@ function App() {
   // Register GA hook.
   useGoogleAnalytics(config.ga.measurementId);
 
-  const isEmbeddedPlayground = window.location.pathname.indexOf("/e/") >= 0;
   return (
     <>
       <Toaster />
@@ -99,11 +90,11 @@ function App() {
       <CookiesProvider>
         <PHProvider>
           <ThemeProvider>
-            <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
-              <ConfirmDialogProvider>
+            <ConfirmDialogProvider>
+              <TooltipProvider delayDuration={400}>
                 <RouterProvider router={router} />
-              </ConfirmDialogProvider>
-            </PlaygroundUIThemed>
+              </TooltipProvider>
+            </ConfirmDialogProvider>
           </ThemeProvider>
         </PHProvider>
       </CookiesProvider>

@@ -13,14 +13,17 @@ import DataEditor, {
 } from "@glideapps/glide-data-grid";
 // Bring in the CSS for glide-data-grid
 import "@glideapps/glide-data-grid/dist/index.css";
-import { Checkbox, FormControlLabel, IconButton, Tooltip } from "@material-ui/core";
-import { createStyles, makeStyles, Theme as MuiTheme, useTheme } from "@material-ui/core/styles";
-import { Assignment, Comment, Delete } from "@material-ui/icons";
+import { ClipboardList, MessageSquare, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useMemo, useRef, useState, type KeyboardEvent } from "react";
 import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 
+import { Button } from "@/components/ui/button";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Label } from "@/components/ui/label";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
@@ -64,48 +67,6 @@ import {
   RELATION_CELL_KIND,
   TYPE_CELL_KIND,
 } from "./fieldcell";
-
-const useStyles = makeStyles((theme: MuiTheme) =>
-  createStyles({
-    root: {
-      "& input": {
-        backgroundColor: `${theme.palette.background.paper} !important`,
-      },
-      position: "relative",
-    },
-    fab: {
-      position: "absolute",
-      bottom: theme.spacing(4),
-      right: theme.spacing(2),
-      zIndex: 9999,
-    },
-    speedDialTooltip: {
-      whiteSpace: "nowrap",
-    },
-    tooltip: {
-      position: "fixed",
-      zIndex: 99999,
-      whiteSpace: "nowrap",
-      padding: "8px 12px",
-      color: "white",
-      font: "500 13px",
-      fontFamily: theme.typography.fontFamily,
-      backgroundColor: "rgba(0, 0, 0, 0.85)",
-      borderRadius: 9,
-    },
-    toolbar: {
-      backgroundColor: theme.palette.background.default,
-      borderBottom: "1px solid transparent",
-      borderBottomColor: theme.palette.divider,
-      display: "grid",
-      gridTemplateColumns: "auto auto 1fr auto",
-      alignItems: "center",
-    },
-    toolbarCheckbox: {
-      padding: "4px",
-    },
-  }),
-);
 
 export type RelationTupleHighlight = {
   tupleString: string;
@@ -376,42 +337,66 @@ export function RelationshipEditor({
     return false;
   };
 
-  const theme = useTheme();
+  const resolvedTheme = useResolvedTheme();
+
   const dataEditorTheme: Partial<Theme> = useMemo(() => {
+    const isDark = resolvedTheme === "dark";
+
+    const palette = isDark
+      ? {
+          textDark: "#e5e5e5",
+          textMedium: "#e5e5e5",
+          textLight: "#a0a0a0",
+          textBubble: "#e5e5e5",
+          bgIconHeader: "#e5e5e5",
+          fgIconHeader: "#e5e5e5",
+          textHeader: "#e5e5e5",
+          textGroupHeader: "#e5e5e5",
+          textHeaderSelected: "#e5e5e5",
+          bgCell: "#0a0a0a",
+          bgCellMedium: "#141414",
+          bgHeader: "#1d1d1d",
+          bgHeaderHovered: "#1e3a8a",
+          bgBubble: "black",
+          bgBubbleSelected: "black",
+          borderColor: "#2a2a2a",
+          horizontalBorderColor: "#2a2a2a",
+          drilldownBorder: "#2a2a2a",
+        }
+      : {
+          textDark: "#1a1a1a",
+          textMedium: "#3a3a3a",
+          textLight: "#666666",
+          textBubble: "#1a1a1a",
+          bgIconHeader: "#3a3a3a",
+          fgIconHeader: "#3a3a3a",
+          textHeader: "#1a1a1a",
+          textGroupHeader: "#1a1a1a",
+          textHeaderSelected: "#1a1a1a",
+          bgCell: "#ffffff",
+          bgCellMedium: "#f7f7f7",
+          bgHeader: "#f5f5f5",
+          bgHeaderHovered: "#dbeafe",
+          bgBubble: "#f5f5f5",
+          bgBubbleSelected: "#e5e5e5",
+          borderColor: "#e5e5e5",
+          horizontalBorderColor: "#e5e5e5",
+          drilldownBorder: "#e5e5e5",
+        };
+
     return {
-      accentColor: theme.palette.primary.light,
-      accentFg: theme.palette.getContrastText(theme.palette.action.focus),
-      accentLight: theme.palette.action.focus,
+      accentColor: "#3b82f6",
+      accentFg: "#ffffff",
+      accentLight: "rgba(59, 130, 246, 0.2)",
 
-      textDark: theme.palette.text.primary,
-      textMedium: theme.palette.text.primary,
-      textLight: theme.palette.grey[500],
-      textBubble: theme.palette.text.primary,
+      ...palette,
 
-      editorFontSize: `${theme.typography.fontSize}px`,
+      editorFontSize: "13px",
 
-      bgIconHeader: theme.palette.text.primary,
-      fgIconHeader: theme.palette.text.primary,
-      textHeader: theme.palette.text.primary,
-      textGroupHeader: theme.palette.text.primary,
-      textHeaderSelected: theme.palette.text.primary,
+      bgHeaderHasFocus: "#3b82f6",
+      bgSearchResult: "#3b82f6",
 
-      bgCell: theme.palette.background.paper,
-      bgCellMedium: theme.palette.background.default,
-      bgHeader: theme.palette.background.default,
-      bgHeaderHasFocus: theme.palette.primary.main,
-      bgHeaderHovered: theme.palette.primary.dark,
-
-      bgBubble: "black",
-      bgBubbleSelected: "black",
-
-      bgSearchResult: theme.palette.primary.light,
-
-      borderColor: theme.palette.divider,
-      horizontalBorderColor: theme.palette.divider,
-      drilldownBorder: theme.palette.divider,
-
-      linkColor: theme.palette.primary.main,
+      linkColor: "#3b82f6",
 
       cellHorizontalPadding: 8,
       cellVerticalPadding: 3,
@@ -422,7 +407,7 @@ export function RelationshipEditor({
         "Inter, Roboto, -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Ubuntu, noto, arial, sans-serif",
       ...themeOverrides,
     };
-  }, [theme, themeOverrides]);
+  }, [themeOverrides, resolvedTheme]);
 
   const getCellData = useCallback(
     ([col, row]: readonly [number, number]): GridCell => {
@@ -581,7 +566,6 @@ export function RelationshipEditor({
     [data],
   );
 
-  const classes = useStyles();
   const handleRowMoved = (startIndex: number, endIndex: number) => {
     if (isReadOnly) {
       return;
@@ -881,11 +865,14 @@ export function RelationshipEditor({
   );
 
   return (
-    <div className={classes.root} onKeyDown={handleKeyDown}>
-      <div className={classes.toolbar} style={{ height: toolbarHeight }}>
+    <div className="relative [&_input]:!bg-background" onKeyDown={handleKeyDown}>
+      <div
+        className="grid grid-cols-[auto_auto_1fr_auto] items-center gap-2 border-b border-border bg-background px-2"
+        style={{ height: toolbarHeight }}
+      >
         {!isReadOnly && (
           <Checkbox
-            className={classes.toolbarCheckbox}
+            className="ml-1"
             checked={allRowsChecked}
             onClick={toggleCheckedRows}
             disabled={data.length === 0}
@@ -893,32 +880,45 @@ export function RelationshipEditor({
         )}
         {isReadOnly && <span />}
         {hasCheckedRows && !isReadOnly && (
-          <span>
-            <Tooltip title="Delete Rows">
-              <IconButton onClick={deleteSelectedRows}>
-                <Delete />
-              </IconButton>
+          <span className="flex items-center gap-1">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon-sm" variant="ghost" onClick={deleteSelectedRows}>
+                  <Trash2 />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Delete Rows</TooltipContent>
             </Tooltip>
-            <Tooltip title="Copy Rows to Clipboard">
-              <IconButton onClick={copySelectedRows}>
-                <Assignment />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon-sm" variant="ghost" onClick={copySelectedRows}>
+                  <ClipboardList />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Copy Rows to Clipboard</TooltipContent>
             </Tooltip>
-            <Tooltip title="Convert to/from comments">
-              <IconButton onClick={convertSelectedRows}>
-                <Comment />
-              </IconButton>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button size="icon-sm" variant="ghost" onClick={convertSelectedRows}>
+                  <MessageSquare />
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Convert to/from comments</TooltipContent>
             </Tooltip>
           </span>
         )}
         {(!hasCheckedRows || isReadOnly) && <span />}
         <span />
-        <FormControlLabel
-          control={
-            <Checkbox checked={similarHighlighting} onClick={handleToggleSimilarHighlighting} />
-          }
-          label="Highlight same types, objects and relations"
-        />
+        <div className="flex items-center gap-2">
+          <Checkbox
+            id="relgrid-similar-highlighting"
+            checked={similarHighlighting}
+            onClick={handleToggleSimilarHighlighting}
+          />
+          <Label htmlFor="relgrid-similar-highlighting">
+            Highlight same types, objects and relations
+          </Label>
+        </div>
       </div>
       <DataEditor
         theme={dataEditorTheme}
@@ -947,7 +947,7 @@ export function RelationshipEditor({
       />
       {tooltip !== undefined && (
         <div
-          className={classes.tooltip}
+          className="fixed z-[99999] whitespace-nowrap rounded-lg bg-black/85 px-3 py-2 text-[13px] font-medium text-white"
           style={{
             top: tooltip.bounds.top,
             left: tooltip.bounds.left,

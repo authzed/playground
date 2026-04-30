@@ -1,47 +1,28 @@
-import CircularProgress from "@material-ui/core/CircularProgress";
-import Paper from "@material-ui/core/Paper";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import Typography from "@material-ui/core/Typography";
+import { Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "absolute",
-      top: "0px",
-      left: "0px",
-      right: "0px",
-      bottom: "0px",
-      zIndex: 9999,
-    },
-    paper: {
-      padding: theme.spacing(3),
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-    },
-    throbber: {
-      color: theme.palette.primary.light,
-      marginRight: "1rem",
-    },
-  }),
-);
+import { Progress } from "@/components/ui/progress";
+
+interface LoadingViewProps {
+  message?: ReactNode;
+  progress?: number; // 0-100
+}
 
 /**
  * LoadingView displays a full page throbber and message for loading.
  * @param props The properties for the loading view.
  */
-export default function LoadingView({ message }: { message: ReactNode }) {
-  const classes = useStyles();
+export default function LoadingView({ message, progress }: LoadingViewProps) {
   return (
-    <div className={classes.root}>
-      <Paper className={classes.paper}>
-        <CircularProgress className={classes.throbber} />
-        <Typography>{message}</Typography>
-      </Paper>
+    <div className="absolute inset-0 z-[9999] flex items-center justify-center">
+      <div className="flex flex-col items-center justify-center gap-3 rounded-md border bg-background p-6 shadow-lg">
+        {progress !== undefined ? (
+          <Progress value={progress} className="w-64" />
+        ) : (
+          <Loader2 className="size-6 animate-spin text-primary" />
+        )}
+        {message && <p className="text-sm text-muted-foreground">{message}</p>}
+      </div>
     </div>
   );
 }

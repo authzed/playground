@@ -1,46 +1,30 @@
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import React from "react";
+import { type ReactNode } from "react";
+
+import { cn } from "@/lib/utils";
 
 /**
  * Defines the properties for the tab label.
  */
 export interface TabLabelProps {
-  icon: React.ReactNode;
+  icon: ReactNode;
   title: string;
+  className?: string;
 }
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    tabLabel: {
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      width: "100%",
-    },
-    tabIcon: {
-      display: "inherit",
-    },
-    title: {
-      display: "inline-block",
-      marginLeft: theme.spacing(1),
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      whiteSpace: "nowrap",
-    },
-  }),
-);
 
 /**
  * TabLabel defines a well-styled label for tabs.
  * @param props The props for the TabelLabel.
  * @example <Tab label={<TabLabel icon={<GroupWork />} title="Groups" />} />
  */
-export default function TabLabel(props: TabLabelProps) {
-  const classes = useStyles();
+export default function TabLabel({ icon, title, className }: TabLabelProps) {
   return (
-    <span className={classes.tabLabel}>
-      <span className={classes.tabIcon}>{props.icon}</span>
-      <span className={classes.title}>{props.title}</span>
+    <span
+      className={cn("inline-flex w-full items-center justify-center gap-1.5", className)}
+    >
+      <span className="inline-flex">{icon}</span>
+      <span className="inline-block overflow-hidden text-ellipsis whitespace-nowrap">
+        {title}
+      </span>
     </span>
   );
 }

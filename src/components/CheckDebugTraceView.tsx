@@ -1,13 +1,14 @@
 import type { JsonObject, JsonValue } from "@bufbuild/protobuf";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-import TreeItem from "@material-ui/lab/TreeItem";
-import TreeView from "@material-ui/lab/TreeView";
-import clsx from "clsx";
+import {
+  CheckCircle2,
+  ChevronDown,
+  ChevronRight,
+  HelpCircle,
+  XCircle,
+} from "lucide-react";
+import { useState } from "react";
+
+import { cn } from "@/lib/utils";
 
 import { LocalParseService } from "../services/localparse";
 import {
@@ -17,57 +18,6 @@ import {
   CheckDebugTrace_Permissionship,
   CheckDebugTrace_PermissionType,
 } from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    root: {
-      backgroundColor: theme.palette.background.default,
-      padding: theme.spacing(0.5),
-    },
-    dispatch: {
-      padding: theme.spacing(0.5),
-    },
-    dispatchHeader: {
-      display: "grid",
-      gridTemplateColumns: "auto auto auto auto 1fr",
-      columnGap: "4px",
-      alignItems: "center",
-    },
-    success: {
-      color: theme.palette.success.main,
-    },
-    subdispatches: {
-      paddingLeft: theme.spacing(2),
-    },
-    permission: {
-      color: "#1acc92",
-    },
-    relation: {
-      color: "#ffa887",
-    },
-    resourceType: {
-      color: "#ccc",
-    },
-    caveat: {
-      color: "#ff4271",
-    },
-    subject: {
-      color: "#9676ff",
-      display: "grid",
-      gridTemplateColumns: "auto auto auto auto 1fr",
-      columnGap: "4px",
-      alignItems: "center",
-    },
-    missingRequiredContext: {
-      color: theme.palette.getContrastText(theme.palette.info.dark),
-      backgroundColor: theme.palette.info.dark,
-      padding: theme.spacing(1),
-      margin: theme.spacing(1),
-      marginLeft: theme.spacing(3),
-      marginBottom: theme.spacing(2),
-    },
-  }),
-);
 
 const hasPermission = (t: CheckDebugTrace) => {
   return (
@@ -85,12 +35,55 @@ const hasNotPermission = (t: CheckDebugTrace) => {
   );
 };
 
+interface TreeItemProps {
+  nodeId: string;
+  label: React.ReactNode;
+  defaultExpanded?: boolean;
+  expandedSet?: Set<string>;
+  children?: React.ReactNode;
+}
+
+function TreeItem({ nodeId, label, defaultExpanded, expandedSet, children }: TreeItemProps) {
+  const initial =
+    defaultExpanded !== undefined
+      ? defaultExpanded
+      : expandedSet
+        ? expandedSet.has(nodeId)
+        : false;
+  const [expanded, setExpanded] = useState(initial);
+  const hasChildren = !!children && (Array.isArray(children) ? children.length > 0 : true);
+
+  return (
+    <div>
+      <div className="flex items-center gap-1">
+        {hasChildren ? (
+          <button
+            type="button"
+            onClick={() => setExpanded((e) => !e)}
+            className="flex size-4 items-center justify-center text-muted-foreground hover:text-foreground"
+            aria-label={expanded ? "Collapse" : "Expand"}
+          >
+            {expanded ? (
+              <ChevronDown className="size-4" />
+            ) : (
+              <ChevronRight className="size-4" />
+            )}
+          </button>
+        ) : (
+          <span className="size-4" />
+        )}
+        <div className="flex-1">{label}</div>
+      </div>
+      {expanded && hasChildren && <div className="ml-4">{children}</div>}
+    </div>
+  );
+}
+
 export function CheckDebugTraceView(props: {
   trace: CheckDebugTrace;
   localParseService: LocalParseService;
 }) {
-  const classes = useStyles();
-  const defaultExpanded: string[] = [];
+  const expandedSet = new Set<string>();
 
   const appendExpanded = (t: CheckDebugTrace) => {
     if (!hasPermission(t)) {
@@ -98,7 +91,7 @@ export function CheckDebugTraceView(props: {
     }
 
     t.resource?.objectId.split(",").forEach((resourceID: string) => {
-      defaultExpanded.push(`${t.resource?.objectType}:${resourceID}#${t.permission}`);
+      expandedSet.add(`${t.resource?.objectType}:${resourceID}#${t.permission}`);
     });
 
     if (t.resolution.case === "subProblems") {
@@ -112,17 +105,8 @@ export function CheckDebugTraceView(props: {
   const key = `${props.trace.resource?.objectType}:${props.trace.resource?.objectId}#${props.trace.permission}@${props.trace.subject?.object?.objectType}:${props.trace.subject?.object?.objectId}#${props.trace.subject?.optionalRelation}`;
 
   return (
-    <div className={classes.root}>
-      <TreeView
-        key={key}
-        selected={[]}
-        className={classes.root}
-        defaultCollapseIcon={<ExpandMoreIcon />}
-        defaultExpandIcon={<ChevronRightIcon />}
-        defaultExpanded={defaultExpanded}
-      >
-        <CheckDebugTraceItems {...props} />
-      </TreeView>
+    <div key={key} className="bg-background p-1">
+      <CheckDebugTraceItems {...props} expandedSet={expandedSet} />
     </div>
   );
 }
@@ -130,9 +114,8 @@ export function CheckDebugTraceView(props: {
 function CheckDebugTraceItems(props: {
   trace: CheckDebugTrace;
   localParseService: LocalParseService;
+  expandedSet: Set<string>;
 }) {
-  const classes = useStyles();
-
   return (
     <>
       {props.trace.resource?.objectId.split(",").map((resourceID) => {
@@ -140,7 +123,7 @@ function CheckDebugTraceItems(props: {
         const isMember = hasPermission(props.trace);
         const isNotMember = hasNotPermission(props.trace);
 
-        const children =
+        const children: React.ReactNode[] =
           props.trace.resolution.case === "subProblems"
             ? props.trace.resolution.value.traces.map((subTrace, index) => {
                 return (
@@ -148,6 +131,7 @@ function CheckDebugTraceItems(props: {
                     key={index}
                     trace={subTrace}
                     localParseService={props.localParseService}
+                    expandedSet={props.expandedSet}
                   />
                 );
               })
@@ -161,10 +145,18 @@ function CheckDebugTraceItems(props: {
         ) {
           children.push(
             <TreeItem
+              key="subject"
               nodeId="subject"
+              defaultExpanded={false}
               label={
-                <div className={classes.subject}>
-                  <CheckCircleIcon className={classes.success} fontSize="small" />
+                <div
+                  className="grid items-center gap-x-1"
+                  style={{
+                    gridTemplateColumns: "auto auto auto auto 1fr",
+                    color: "#9676ff",
+                  }}
+                >
+                  <CheckCircle2 className="size-4 text-emerald-500" />
                   {props.trace.subject?.object?.objectType}:{props.trace.subject?.object?.objectId}
                   {props.trace.subject?.optionalRelation &&
                     `#${props.trace.subject?.optionalRelation}`}
@@ -180,24 +172,28 @@ function CheckDebugTraceItems(props: {
           <TreeItem
             key={resourceID}
             nodeId={nodeID}
+            expandedSet={props.expandedSet}
             label={
-              <div className={classes.dispatchHeader}>
-                {isMember && <CheckCircleIcon className={classes.success} fontSize="small" />}
-                {isNotMember && <HighlightOffIcon color="error" fontSize="small" />}
+              <div
+                className="grid items-center gap-x-1"
+                style={{ gridTemplateColumns: "auto auto auto auto 1fr" }}
+              >
+                {isMember && <CheckCircle2 className="size-4 text-emerald-500" />}
+                {isNotMember && <XCircle className="size-4 text-destructive" />}
                 {result === CheckDebugTrace_Permissionship.CONDITIONAL_PERMISSION &&
                   props.trace.caveatEvaluationInfo?.result ===
                     CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
-                    <HelpOutlineIcon fontSize="small" style={{ color: "#8787ff" }} />
+                    <HelpCircle className="size-4" style={{ color: "#8787ff" }} />
                   )}
                 <span>
-                  <span className={classes.resourceType}>{props.trace.resource?.objectType}</span>:
+                  <span style={{ color: "#ccc" }}>{props.trace.resource?.objectType}</span>:
                   {resourceID}
                 </span>
                 <span
-                  className={clsx({
-                    [classes.permission]:
+                  className={cn({
+                    "text-[#1acc92]":
                       props.trace.permissionType === CheckDebugTrace_PermissionType.PERMISSION,
-                    [classes.relation]:
+                    "text-[#ffa887]":
                       props.trace.permissionType === CheckDebugTrace_PermissionType.RELATION,
                   })}
                 >
@@ -218,29 +214,30 @@ function CheckDebugTraceItems(props: {
 }
 
 function CaveatTreeItem(props: { evalInfo: CaveatEvalInfo; nodeIDPrefix: string }) {
-  const classes = useStyles();
-
   return (
     <TreeItem
       nodeId={props.nodeIDPrefix + ":" + props.evalInfo.caveatName}
       label={
-        <div className={classes.dispatchHeader}>
+        <div
+          className="grid items-center gap-x-1"
+          style={{ gridTemplateColumns: "auto auto auto auto 1fr" }}
+        >
           {props.evalInfo.result === CaveatEvalInfo_Result.TRUE && (
-            <CheckCircleIcon className={classes.success} fontSize="small" />
+            <CheckCircle2 className="size-4 text-emerald-500" />
           )}
           {props.evalInfo.result === CaveatEvalInfo_Result.FALSE && (
-            <HighlightOffIcon color="error" fontSize="small" />
+            <XCircle className="size-4 text-destructive" />
           )}
           {props.evalInfo.result === CaveatEvalInfo_Result.MISSING_SOME_CONTEXT && (
-            <HelpOutlineIcon fontSize="small" style={{ color: "#8787ff" }} />
+            <HelpCircle className="size-4" style={{ color: "#8787ff" }} />
           )}
           <span>{props.evalInfo.caveatName}</span>
-          <span className={classes.caveat}>caveat</span>
+          <span style={{ color: "#ff4271" }}>caveat</span>
         </div>
       }
     >
       {props.evalInfo.partialCaveatInfo?.missingRequiredContext && (
-        <div className={classes.missingRequiredContext}>
+        <div className="m-2 mb-4 ml-6 rounded-md bg-blue-900/40 p-2 text-blue-50">
           Missing required caveat context fields:{" "}
           {props.evalInfo.partialCaveatInfo.missingRequiredContext.join(", ")}
         </div>
@@ -278,23 +275,21 @@ function ContextTreeView(context: JsonObject | undefined) {
   });
 }
 
-function ContextTreeValue(value: JsonValue) {
+function ContextTreeValue(value: JsonValue): [React.ReactNode, boolean] {
   if (value === null) {
-    // NOTE: i'm not sure why this triggers on array literals.
-    // oxlint-disable-next-line eslint-plugin-react(jsx-key)
-    return [<code>null</code>, false];
+    return [<code key="null">null</code>, false];
   }
   if (typeof value === "boolean") {
-    // oxlint-disable-next-line eslint-plugin-react(jsx-key)
-    return [<code>{value.toString()}</code>, false];
+    return [<code key="bool">{value.toString()}</code>, false];
   }
   if (Array.isArray(value)) {
     return [
-      // NOTE: not sure what the key would be in this case. I think I'd rather get rid
-      // of this code.
-      // oxlint-disable-next-line eslint-plugin-react(jsx-key)
-      value.map((v) => {
-        return <TreeItem nodeId="">{ContextTreeValue(v)}</TreeItem>;
+      value.map((v, idx) => {
+        return (
+          <TreeItem key={idx} nodeId="" label={<></>}>
+            {ContextTreeValue(v)[0]}
+          </TreeItem>
+        );
       }),
       true,
     ];
@@ -304,6 +299,5 @@ function ContextTreeValue(value: JsonValue) {
     return [ContextTreeView(value), true];
   }
   // If we've gotten this far, we have a number or a string and we can render it straight out.
-  // oxlint-disable-next-line eslint-plugin-react(jsx-key)
-  return [<code>{value}</code>, false];
+  return [<code key="value">{value}</code>, false];
 }

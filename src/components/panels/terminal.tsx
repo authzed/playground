@@ -1,323 +1,71 @@
-import Input from "@material-ui/core/Input";
-import InputAdornment from "@material-ui/core/InputAdornment";
-import LinearProgress from "@material-ui/core/LinearProgress";
-import { createStyles, makeStyles, Theme } from "@material-ui/core/styles";
-import Convert from "ansi-to-html";
-import { Terminal } from "lucide-react";
-import { CircleX, MessageCircleWarning } from "lucide-react";
-import { useEffect, useMemo, useRef, useState } from "react";
-import type { MouseEvent, KeyboardEvent, ChangeEvent } from "react";
-import "react-reflex/styles.css";
-import useDeepCompareEffect from "use-deep-compare-effect";
+import { CircleX } from "lucide-react";
+import { useEffect } from "react";
 
-import TabLabel from "../../playground-ui/TabLabel";
-import { DataStoreItemKind } from "../../services/datastore";
+import { Alert, AlertTitle } from "@/components/ui/alert";
+import { Progress } from "@/components/ui/progress";
+
+import { DataStore, DataStoreItemKind } from "../../services/datastore";
+import { Services } from "../../services/services";
 import { mergeRelationshipsStringAndComments } from "../../spicedb-common/parsing";
-import { TerminalSection } from "../../spicedb-common/services/zedterminalservice";
-import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
+import { HtmlTerminalRenderer } from "../terminal/HtmlTerminalRenderer";
 
-import { PanelProps } from "./base/common";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    terminalOutputDisplay: {
-      fontFamily: "Roboto Mono, monospace",
-      overflowY: "auto",
-    },
-    terminalOutput: {
-      padding: theme.spacing(1),
-      margin: theme.spacing(1),
-      backgroundColor: theme.palette.getContrastText(theme.palette.text.primary),
-      border: "1px solid transparent",
-      borderColor: theme.palette.divider,
-    },
-    input: {
-      width: "100%",
-      fontFamily: "Roboto Mono, monospace",
-    },
-    root: {
-      padding: theme.spacing(1),
-      position: "absolute",
-      top: "0px",
-      left: "0px",
-      right: "0px",
-      bottom: "0px",
-      overflow: "auto",
-    },
-    loadBar: {
-      padding: theme.spacing(1),
-      display: "grid",
-      gridTemplateColumns: "auto 1fr",
-      columnGap: theme.spacing(1),
-      alignItems: "center",
-    },
-  }),
-);
-
-export function TerminalSummary() {
-  return <TabLabel icon={<Terminal />} title="Zed Terminal" />;
+interface TerminalPanelProps {
+  services: Services;
+  datastore: DataStore;
 }
 
-export function TerminalPanel(props: PanelProps) {
-  const classes = useStyles();
-  const zts = props.services.zedTerminalService!;
+export function TerminalPanel({ services, datastore }: TerminalPanelProps) {
+  const zts = services.zedTerminalService!;
 
   useEffect(() => {
     zts.start();
   }, [zts]);
 
-  const [command, setCommand] = useState("");
-  const [historyIndex, setHistoryIndex] = useState(zts.commandHistory.length);
-
-  const datastore = props.datastore;
-  const endOfContainer = useRef<HTMLDivElement>(null);
-
-  useDeepCompareEffect(() => {
-    if (endOfContainer.current) {
-      endOfContainer.current?.scrollIntoView();
-    }
-  }, [zts.outputSections]);
-
-  const handleKeyUp = (e: KeyboardEvent) => {
-    if (e.key.toLowerCase() === "arrowup") {
-      const updatedHistoryIndex = historyIndex - 1;
-      if (updatedHistoryIndex < 0) {
-        return;
-      }
-
-      setCommand(zts.commandHistory[updatedHistoryIndex]);
-      setHistoryIndex(updatedHistoryIndex);
-    }
-
-    if (e.key.toLowerCase() === "arrowdown") {
-      const updatedHistoryIndex = historyIndex + 1;
-      if (updatedHistoryIndex >= zts.commandHistory.length) {
-        setCommand("");
-        return;
-      }
-
-      setCommand(zts.commandHistory[updatedHistoryIndex]);
-      setHistoryIndex(updatedHistoryIndex);
-    }
-
-    const cmd = command.trim();
-    if (e.key.toLowerCase() === "enter" && cmd.length > 0) {
-      const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
-      const relationshipsString = datastore.getSingletonByKind(
-        DataStoreItemKind.RELATIONSHIPS,
-      ).editableContents!;
-      const [result, historyCount] = zts.runCommand(cmd, schema, relationshipsString);
-      setCommand("");
-      setHistoryIndex(historyCount);
-
-      if (result?.updatedRelationships) {
-        const relItem = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
-        const merged = mergeRelationshipsStringAndComments(
-          relItem.editableContents,
-          result.updatedRelationships,
-        );
-        datastore.update(relItem, merged);
-      }
-    }
-  };
-
-  const handleCommandChanged = (e: ChangeEvent<HTMLInputElement>) => {
-    setCommand(e.target.value);
-  };
-
-  const zedState = zts.state;
-  const zedStateStatusDisplay = useMemo(() => {
-    switch (zedState.status) {
-      case "initializing":
-        return <div>Initializing Terminal</div>;
-
-      case "loading":
-        return (
-          <div className={classes.loadBar}>
-            Loading Terminal:
-            <LinearProgress variant="determinate" value={Math.floor(zedState.progress * 100)} />
-          </div>
-        );
-
-      case "loaderror":
-        return (
-          <Alert variant="destructive">
-            <CircleX />
-            <AlertTitle>
-              Could not start the Terminal. Please make sure you have WebAssembly enabled.
-            </AlertTitle>
-          </Alert>
-        );
-
-      case "unsupported":
-        return (
-          <Alert variant="destructive">
-            <CircleX />
-            <AlertTitle>Your browser does not support WebAssembly</AlertTitle>
-          </Alert>
-        );
-
-      case "ready":
-        return undefined;
-    }
-  }, [zedState, classes.loadBar]);
-
-  const inputRef = useRef<HTMLInputElement>(null);
-
-  const handleRefocus = () => {
-    inputRef.current?.focus();
-  };
-
-  const handleMouseUp = (event: MouseEvent) => {
-    if (event.target instanceof Element) {
-      const hasSelection = !!getSelectedTextWithin(event.target);
-      if (!hasSelection) {
-        inputRef.current?.focus();
-      }
-    }
-  };
-
-  // Focus the command input when the tab is shown.
-  useEffect(() => {
-    inputRef.current?.focus();
-  }, []);
-
-  return (
-    <div className={classes.root} onMouseUp={handleMouseUp}>
-      {zedStateStatusDisplay}
-      {zedState.status === "ready" && (
-        <>
-          <TerminalOutputDisplay sections={zts.outputSections} onRefocus={handleRefocus} />
-          <Input
-            inputRef={inputRef}
-            className={classes.input}
-            startAdornment={<InputAdornment position="start">$</InputAdornment>}
-            onKeyUp={handleKeyUp}
-            value={command}
-            onChange={handleCommandChanged}
-            disableUnderline
-          />
-          <div ref={endOfContainer}></div>
-        </>
-      )}
-    </div>
-  );
-}
-
-function convertStringOutput(convert: Convert, o: string, showLogs: boolean) {
-  let isLog = false;
-  if (o.startsWith("{")) {
-    try {
-      const parsed = JSON.parse(o);
-      isLog = parsed["is-log"];
-      if (isLog) {
-        if (!showLogs) {
-          return undefined;
-        }
-
-        const isError = parsed["level"] === "error";
-        return (
-          <Alert variant={isError ? "destructive" : "default"}>
-            {isError ? <CircleX /> : <MessageCircleWarning />}
-            <AlertDescription>
-              {Object.entries(parsed).map(([key, value]) => {
-                if (key === "is-log") {
-                  return undefined;
-                }
-
-                return (
-                  <span key={key}>
-                    {key}: {JSON.stringify(value)}&nbsp;
-                  </span>
-                );
-              })}
-            </AlertDescription>
-          </Alert>
-        );
-      }
-    } catch (e) {
-      // Do nothing.
-      console.error(e);
-    }
-  }
-
-  const output =
-    // TODO: rewrite this to remove use of replaceAll
-    // @ts-expect-error replaceAll comes from a string polyfill.
-    convert.toHtml(o.replaceAll(" ", "\xa0").replaceAll("\t", "\xa0\xa0")) || "&nbsp;";
-  return <div dangerouslySetInnerHTML={{ __html: output }}></div>;
-}
-
-function TerminalOutputDisplay({
-  sections,
-  showLogs,
-  onRefocus,
-}: {
-  sections: TerminalSection[];
-  showLogs?: boolean;
-  onRefocus?: () => void;
-}) {
-  const classes = useStyles();
-  const convert = new Convert({
-    escapeXML: true,
-  });
-  const children = sections.flatMap((section, index) => {
-    if ("command" in section) {
-      return <div key={index}>$ {section.command}</div>;
-    } else {
-      return (
-        <div key={index} className={classes.terminalOutput}>
-          {section.output
-            .split("\n")
-            .map((o) => convertStringOutput(convert, o, showLogs ?? false))}
-        </div>
+  const handleSubmit = (cmd: string) => {
+    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
+    const relString = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
+      .editableContents!;
+    const [result] = zts.runCommand(cmd, schema, relString);
+    if (result?.updatedRelationships) {
+      const relItem = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
+      const merged = mergeRelationshipsStringAndComments(
+        relItem.editableContents,
+        result.updatedRelationships,
       );
-    }
-  });
-  const handleMouseUp = (event: MouseEvent) => {
-    if (event.target instanceof Element) {
-      const hasSelection = !!getSelectedTextWithin(event.target);
-      if (onRefocus && !hasSelection) {
-        onRefocus();
-      }
-      if (hasSelection) {
-        event.stopPropagation();
-      }
+      datastore.update(relItem, merged);
     }
   };
 
-  return (
-    <div className={classes.terminalOutputDisplay} onMouseUp={handleMouseUp}>
-      {children}
-    </div>
-  );
-}
-
-// Based on: https://stackoverflow.com/a/5801903
-function getSelectedTextWithin(el: Element) {
-  let selectedText = "";
-  if (typeof window.getSelection != "undefined") {
-    const sel = window.getSelection();
-    let rangeCount: number;
-    if (sel && (rangeCount = sel.rangeCount) > 0) {
-      const range = document.createRange();
-      for (let i = 0, selRange: Range; i < rangeCount; ++i) {
-        range.selectNodeContents(el);
-        selRange = sel.getRangeAt(i);
-        if (
-          selRange.compareBoundaryPoints(range.START_TO_END, range) === 1 &&
-          selRange.compareBoundaryPoints(range.END_TO_START, range) === -1
-        ) {
-          if (selRange.compareBoundaryPoints(range.START_TO_START, range) === 1) {
-            range.setStart(selRange.startContainer, selRange.startOffset);
-          }
-          if (selRange.compareBoundaryPoints(range.END_TO_END, range) === -1) {
-            range.setEnd(selRange.endContainer, selRange.endOffset);
-          }
-          selectedText += range.toString();
-        }
-      }
-    }
+  if (zts.state.status === "loading") {
+    return (
+      <div className="grid grid-cols-[auto_1fr] items-center gap-2 p-4">
+        Loading Terminal:
+        <Progress value={Math.floor(zts.state.progress * 100)} />
+      </div>
+    );
   }
-  return selectedText;
+
+  if (zts.state.status === "loaderror" || zts.state.status === "unsupported") {
+    return (
+      <Alert variant="destructive">
+        <CircleX />
+        <AlertTitle>
+          {zts.state.status === "unsupported"
+            ? "Your browser does not support WebAssembly"
+            : "Could not start the Terminal"}
+        </AlertTitle>
+      </Alert>
+    );
+  }
+
+  if (zts.state.status !== "ready") return <div>Initializing Terminal</div>;
+
+  return (
+    <HtmlTerminalRenderer
+      outputSections={zts.outputSections}
+      commandHistory={zts.commandHistory}
+      onSubmitCommand={handleSubmit}
+      onClear={() => zts.clear()}
+    />
+  );
 }

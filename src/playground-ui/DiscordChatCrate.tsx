@@ -1,4 +1,3 @@
-import { useTheme } from "@material-ui/core/styles";
 import { useEffect, useRef } from "react";
 
 export interface DiscordChatCrateProps {
@@ -63,18 +62,30 @@ const loadFromCDN = () =>
   });
 
 /**
+ * Reads the resolved primary color from the application's CSS theme tokens.
+ * Falls back to a sensible default if the variable is unavailable.
+ */
+const resolvePrimaryColor = (): string => {
+  if (typeof window === "undefined") {
+    return "#7c3aed";
+  }
+  const value = getComputedStyle(document.documentElement)
+    .getPropertyValue("--primary")
+    .trim();
+  return value || "#7c3aed";
+};
+
+/**
  * DiscordChatCrate creates a WidgetBot.io crate for a Discord channel.
  */
 export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps) => {
   const crate = useRef<Crate | undefined>(undefined);
   const injected = useRef(false);
 
-  const theme = useTheme();
   const glyph = {
     uri: "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAeCAYAAAA7MK6iAAAACXBIWXMAAAsTAAALEwEAmpwYAAABo0lEQVRIicWXMU8UURRGzwKBhi1MlkYTCixtiIWdhVjZaiT0NPwELGn4B5Za0RgTtNoOoqHUTgsb2GYJIUNCARQkhEMxb3V3mFn3ze7sfslrJvO+M/fOvHvv1FQmoamJUCcJnhnwvmngBbACPAOWgAZQBy6AM+AI+AHsAd+Am76Oar/VULfUU+N0GvY1irz7QdfV80hgVufBZyDwrLozJDCrneBbCK6puyOGdrSrThWBNyuCdvSuw6r5r4A8Ag6BuZhjEalr4DFw3H2ONyqGEvw3oLeAvKoY2sPpTvUFMD8G8CVQ74646jR3NAu9qW6PCXySBX8fE3g/C/4wJvBH4F4B+VJxAfmaV0AAFoCfwGIFkbaBp0AC9weBBHgJtEYMbZH28+TvFXNalrqgNkeU3mbwG7gfo75Wf5cE/gr7c72z7zhPNeA58Cak6wnFs9of0uPyCTgAis3/E3HeOuiK6kpdVZfVeoxPLPShehOgt+rbEg+OGj3erpNOnLek7e1z5P5SqX6gJuqlulY20piPC9L5+32Idpt0hh5Kg4JHron9wtwBvs6360AoQqwAAAAASUVORK5CYII=",
     size: "30px",
   };
-  const color = theme.palette.primary.main;
 
   useEffect(() => {
     if (crate.current !== undefined || injected.current || !serverId || !channelId) {
@@ -89,7 +100,7 @@ export const DiscordChatCrate = ({ serverId, channelId }: DiscordChatCrateProps)
         channel: channelId,
         glyph: [glyph.uri, glyph.size],
         defer: true,
-        color: color,
+        color: resolvePrimaryColor(),
         shard: "https://emerald.widgetbot.io",
       });
       created.node.setAttribute("title", "Chat with us");

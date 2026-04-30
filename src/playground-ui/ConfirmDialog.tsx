@@ -1,12 +1,14 @@
-import { createStyles, makeStyles, Theme } from "@material-ui/core";
-import Button from "@material-ui/core/Button";
-import Dialog from "@material-ui/core/Dialog";
-import DialogActions from "@material-ui/core/DialogActions";
-import DialogContent from "@material-ui/core/DialogContent";
-import DialogContentText from "@material-ui/core/DialogContentText";
-import DialogTitle from "@material-ui/core/DialogTitle";
-import TextField from "@material-ui/core/TextField";
 import React, { useState } from "react";
+
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
 
 export type ConfirmValue = "undefined" | "load" | "replace" | "nevermind";
 
@@ -80,14 +82,26 @@ export interface ConfirmDialogProps {
   withPrompt?: string;
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    prompt: {
-      marginTop: theme.spacing(1),
-      width: "100%",
-    },
-  }),
-);
+/**
+ * Map the legacy Material UI button (color, variant) combination to a shadcn
+ * Button variant, preserving the visual intent of the existing API.
+ */
+function mapButtonVariant(
+  color: ConfirmDialogButton["color"],
+  variant: ConfirmDialogButton["variant"],
+): React.ComponentProps<typeof Button>["variant"] {
+  if (variant === "outlined") {
+    return "outline";
+  }
+  if (variant === "contained") {
+    if (color === "secondary") return "secondary";
+    if (color === "primary" || color === undefined || color === "default") return "default";
+  }
+  // Default Material variant is "text"
+  if (color === "primary") return "default";
+  if (color === "secondary") return "secondary";
+  return "ghost";
+}
 
 /**
  * ConfigDialog provides a simple confirm-style dialog.
@@ -99,7 +113,6 @@ const useStyles = makeStyles((theme: Theme) =>
  */
 export function ConfirmDialog(props: ConfirmDialogProps) {
   const [promptValue, setPromptValue] = useState("");
-  const classes = useStyles();
 
   const handleComplete = (value: ConfirmValue | undefined) => {
     if (value) {
@@ -109,44 +122,51 @@ export function ConfirmDialog(props: ConfirmDialogProps) {
   };
 
   return (
-    <Dialog open={props.isOpen} onClose={() => handleComplete(undefined)}>
-      <DialogTitle>{props.title}</DialogTitle>
+    <Dialog
+      open={props.isOpen}
+      onOpenChange={(open) => {
+        if (!open) {
+          handleComplete(undefined);
+        }
+      }}
+    >
       <DialogContent>
-        <DialogContentText>
+        <DialogHeader>
+          <DialogTitle>{props.title}</DialogTitle>
+        </DialogHeader>
+        <div className="text-sm text-muted-foreground">
           {props.content}
           {props.withPrompt !== undefined && (
-            <TextField
+            <Input
               placeholder={props.withPrompt}
-              className={classes.prompt}
-              variant="outlined"
+              className="mt-2 w-full"
               value={promptValue}
               onChange={(event: React.ChangeEvent<HTMLInputElement>) =>
                 setPromptValue(event.target.value)
               }
             />
           )}
-        </DialogContentText>
+        </div>
+        <DialogFooter>
+          {props.buttons.map((button: ConfirmDialogButton, index: number) => {
+            const disabled =
+              !!props.withPrompt &&
+              (!promptValue.length || (button.isEnabled && !button.isEnabled(promptValue))) &&
+              !!button.value;
+            return (
+              <Button
+                key={index}
+                variant={mapButtonVariant(button.color, button.variant)}
+                onClick={() => handleComplete(button.value)}
+                disabled={disabled}
+                autoFocus={button.color === "primary"}
+              >
+                {button.title}
+              </Button>
+            );
+          })}
+        </DialogFooter>
       </DialogContent>
-      <DialogActions>
-        {props.buttons.map((button: ConfirmDialogButton, index: number) => {
-          return (
-            <Button
-              key={index}
-              variant={button.variant}
-              onClick={() => handleComplete(button.value)}
-              color={button.color}
-              disabled={
-                !!props.withPrompt &&
-                (!promptValue.length || (button.isEnabled && !button.isEnabled(promptValue))) &&
-                !!button.value
-              }
-              autoFocus={button.color === "primary"}
-            >
-              {button.title}
-            </Button>
-          );
-        })}
-      </DialogActions>
     </Dialog>
   );
 }
