@@ -1,20 +1,19 @@
 import { parseSchema } from "@authzed/spicedb-parser-js";
-import AppBar from "@material-ui/core/AppBar";
-import { createStyles, darken, makeStyles, Theme } from "@material-ui/core/styles";
-import Tab from "@material-ui/core/Tab";
-import Tabs from "@material-ui/core/Tabs";
-import BubbleChartIcon from "@material-ui/icons/BubbleChart";
-import clsx from "clsx";
 import { SquareArrowOutUpRight } from "lucide-react";
-import React, { useState } from "react";
+import { useState } from "react";
 
+import { ConnectedTabsList, ConnectedTabsTrigger, Tabs } from "@/components/ui/tabs";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-// TODO: rename
 import TenantGraph from "@/components/visualizer/TenantGraph";
+import { cn } from "@/lib/utils";
 
-import TabLabel from "../playground-ui/TabLabel";
 import { useLiveCheckService } from "../services/check";
-import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
+import {
+  DataStore,
+  DataStoreItemKind,
+  useReadonlyDatastore,
+} from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { useValidationService } from "../services/validation";
@@ -23,7 +22,6 @@ import { useDeveloperService } from "../spicedb-common/services/developerservice
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
-import { AT, ET, NS, VL } from "./KindIcons";
 import { ShareLoader } from "./ShareLoader";
 
 export function InlinePlayground() {
@@ -35,55 +33,38 @@ export function InlinePlayground() {
   );
 }
 
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    tabBar: {
-      display: "grid",
-      gridTemplateColumns: "1fr auto auto",
-      columnGap: theme.spacing(0.25),
-    },
-    buttonContainer: {
-      padding: theme.spacing(1),
-    },
-    root: {
-      display: "grid",
-      gridTemplateRows: "auto 1fr",
-      height: "100vh",
-    },
-    tabPanel: {
-      height: "100%",
-      "& > div": {
-        height: "100%",
-      },
-      "& > div > div": {
-        height: "100%",
-      },
-    },
-    tabRoot: {
-      minWidth: "0px",
-    },
-    graphTab: {},
-    tenantGraphContainer: {
-      width: "100%",
-      height: "98vh",
-      backgroundColor: theme.palette.background.default,
-      backgroundSize: "20px 20px",
-      backgroundImage: `
-              linear-gradient(to right, ${darken(
-                theme.palette.background.default,
-                0.1,
-              )} 1px, transparent 1px),
-              linear-gradient(to bottom, ${darken(
-                theme.palette.background.default,
-                0.1,
-              )} 1px, transparent 1px)
-            `,
-    },
-  }),
-);
+type InlineTab = "schema" | "relationships" | "graph";
+
+const INLINE_TAB_BADGES: Record<InlineTab, string> = {
+  schema: "bg-violet-500",
+  relationships: "bg-rose-500",
+  graph: "bg-cyan-500",
+};
+
+const INLINE_TAB_CODES: Record<InlineTab, string> = {
+  schema: "S",
+  relationships: "R",
+  graph: "V",
+};
+
+function InlineTabLabel({ tab, label }: { tab: InlineTab; label: string }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <span
+        aria-hidden
+        className={cn(
+          "inline-flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
+          INLINE_TAB_BADGES[tab],
+        )}
+      >
+        {INLINE_TAB_CODES[tab]}
+      </span>
+      <span>{label}</span>
+    </span>
+  );
+}
 
 function InlinePlaygroundUI(props: { datastore: DataStore }) {
-  const classes = useStyles();
   const datastore = props.datastore;
 
   const developerService = useDeveloperService();
@@ -91,7 +72,6 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
-  const zedTerminalService = undefined; // not used
 
   const services = {
     localParseService,
@@ -99,92 +79,68 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     validationService,
     problemService,
     developerService,
-    zedTerminalService,
+    zedTerminalService: undefined,
   };
 
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
-  const [currentTabName, setCurrentTabName] = useState(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
-  );
+  const [tab, setTab] = useState<InlineTab>("schema");
 
-  const handleChangeTab = (_event: React.ChangeEvent<object>, selectedTabName: string) => {
-    setCurrentTabName(selectedTabName);
-  };
-
-  const currentItem = datastore.getById(currentTabName);
-  const parsedSchema = parseSchema(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!,
-  );
+  const schemaItem = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA);
+  const parsedSchema = parseSchema(schemaItem.editableContents!);
   const relationships = parseRelationships(
     datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents!,
   );
-  const [resizeIndex, setResizeIndex] = useState(0);
-
-  React.useEffect(() => {
-    const handler = () => {
-      // Force a rerender
-      setResizeIndex(resizeIndex + 1);
-    };
-
-    window.addEventListener("resize", handler);
-    return () => {
-      window.removeEventListener("resize", handler);
-    };
-  }, [resizeIndex, setResizeIndex]);
 
   return (
-    <div onClick={() => setDisableMouseWheelScrolling(false)} className={clsx(classes.root)}>
-      <AppBar className={classes.tabBar} position="static" color="default">
-        <Tabs
-          value={currentTabName}
-          onChange={handleChangeTab}
-          indicatorColor="primary"
-          textColor="primary"
-          aria-label="Tabs"
-        >
-          <Tab
-            classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id}
-            label={<TabLabel icon={<NS small />} title="Schema" />}
-          />
-          <Tab
-            classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id}
-            label={<TabLabel icon={<VL small />} title="Test Data" />}
-          />
-          <Tab
-            classes={{ root: clsx(classes.tabRoot, classes.graphTab) }}
-            value={"$graph"}
-            label={<TabLabel icon={<BubbleChartIcon />} title="Graph" />}
-          />
-          <Tab
-            classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id}
-            label={<TabLabel icon={<AT small />} title="Assert" />}
-          />
-          <Tab
-            classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).id}
-            label={<TabLabel icon={<ET small />} title="Expected" />}
-          />
-        </Tabs>
-        <div className={classes.buttonContainer}>
-          <Button asChild variant="link">
-            <a href={window.location.toString().replace("/i/", "/s/")} target="_blank">
-              <SquareArrowOutUpRight />
-              Open
-            </a>
-          </Button>
-        </div>
-      </AppBar>
+    <div
+      onClick={() => setDisableMouseWheelScrolling(false)}
+      className="grid h-screen grid-rows-[auto_1fr] bg-background"
+    >
+      <Tabs value={tab} onValueChange={(value) => setTab(value as InlineTab)}>
+        <ConnectedTabsList className="border-b-0">
+          <ConnectedTabsTrigger value="schema">
+            <InlineTabLabel tab="schema" label="Schema" />
+          </ConnectedTabsTrigger>
+          <ConnectedTabsTrigger value="relationships">
+            <InlineTabLabel tab="relationships" label="Relationships" />
+          </ConnectedTabsTrigger>
+          <ConnectedTabsTrigger value="graph">
+            <InlineTabLabel tab="graph" label="Graph" />
+          </ConnectedTabsTrigger>
 
-      {currentTabName === "$graph" && (
-        <div className={classes.tenantGraphContainer}>
-          <TenantGraph schema={parsedSchema} relationships={relationships} />
-        </div>
+          <div className="ml-auto flex items-center pr-1.5">
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button asChild size="icon-sm" variant="ghost" title="Open in Playground">
+                  <a
+                    href={window.location.toString().replace("/i/", "/s/")}
+                    target="_blank"
+                    rel="noreferrer"
+                  >
+                    <SquareArrowOutUpRight />
+                  </a>
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Open in Playground</TooltipContent>
+            </Tooltip>
+          </div>
+        </ConnectedTabsList>
+      </Tabs>
+
+      {tab === "schema" && (
+        <EditorDisplay
+          services={services}
+          datastore={datastore}
+          isReadOnly
+          currentItem={schemaItem}
+          datastoreUpdated={() => null}
+          disableMouseWheelScrolling={disableMouseWheelScrolling}
+          defaultWidth="100vw"
+          defaultHeight="100%"
+        />
       )}
 
-      {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
+      {tab === "relationships" && (
         <DatastoreRelationshipEditor
           datastore={datastore}
           services={services}
@@ -197,17 +153,17 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         />
       )}
 
-      {currentItem !== undefined && currentItem.kind !== DataStoreItemKind.RELATIONSHIPS && (
-        <EditorDisplay
-          services={services}
-          datastore={datastore}
-          isReadOnly={true}
-          currentItem={currentItem}
-          datastoreUpdated={() => null}
-          disableMouseWheelScrolling={disableMouseWheelScrolling}
-          defaultWidth="100vw"
-          defaultHeight="100%"
-        />
+      {tab === "graph" && (
+        <div
+          className="h-[98vh] w-full bg-background"
+          style={{
+            backgroundImage:
+              "linear-gradient(to right, oklch(0.20 0 0) 1px, transparent 1px), linear-gradient(to bottom, oklch(0.20 0 0) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        >
+          <TenantGraph schema={parsedSchema} relationships={relationships} />
+        </div>
       )}
     </div>
   );

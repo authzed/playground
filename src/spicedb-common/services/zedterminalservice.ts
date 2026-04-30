@@ -40,6 +40,11 @@ export interface ZedTerminalService {
    * start starts the underlying zed service if necessary.
    */
   start(): void;
+
+  /**
+   * clear clears the terminal output.
+   */
+  clear: () => void;
 }
 
 /**
@@ -106,6 +111,9 @@ export function useZedTerminalService(): ZedTerminalService {
     state: zedService.state,
     start: () => {
       zedService.start();
+    },
+    clear: () => {
+      setTerminalSections([]);
     },
   };
 }
