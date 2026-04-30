@@ -80,10 +80,7 @@ const resolveTokens = () => {
     return v.length > 0 ? v : fallback;
   };
   const popoverBg = get("--color-popover", get("--popover", "#ffffff"));
-  const popoverFg = get(
-    "--color-popover-foreground",
-    get("--popover-foreground", "#000000"),
-  );
+  const popoverFg = get("--color-popover-foreground", get("--popover-foreground", "#000000"));
   const primary = get("--color-primary", get("--primary", "#7c3aed"));
   return {
     primaryColor: primary,

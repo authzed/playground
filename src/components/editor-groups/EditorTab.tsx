@@ -57,90 +57,89 @@ type EditorTabRootProps = Omit<
   "onClick" | "onDragStart" | "onDragOver" | "onDrop" | "onCopy"
 >;
 
-export const EditorTab = React.forwardRef<
-  HTMLDivElement,
-  EditorTabProps & EditorTabRootProps
->(function EditorTab(
-  {
-    document,
-    active,
-    canClose,
-    diagnostics,
-    onClick,
-    onClose,
-    onDragStart,
-    onDragOver,
-    onDrop,
-    className,
-    ...rest
-  },
-  ref,
-) {
-  return (
-    <div
-      ref={ref}
-      draggable
-      onClick={onClick}
-      onDragStart={onDragStart}
-      onDragOver={onDragOver}
-      onDrop={onDrop}
-      data-active={active}
-      className={cn(
-        "group inline-flex items-center gap-1.5 px-3 py-2 text-sm select-none cursor-pointer",
-        active
-          ? "bg-chrome-panel text-foreground"
-          : "text-muted-foreground hover:text-foreground",
-        className,
-      )}
-      role="tab"
-      aria-selected={active}
-      {...rest}
-    >
-      <span
-        aria-hidden
+export const EditorTab = React.forwardRef<HTMLDivElement, EditorTabProps & EditorTabRootProps>(
+  function EditorTab(
+    {
+      document,
+      active,
+      canClose,
+      diagnostics,
+      onClick,
+      onClose,
+      onDragStart,
+      onDragOver,
+      onDrop,
+      className,
+      ...rest
+    },
+    ref,
+  ) {
+    return (
+      <div
+        ref={ref}
+        draggable
+        onClick={onClick}
+        onDragStart={onDragStart}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
+        data-active={active}
         className={cn(
-          "inline-flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
-          DOCUMENT_BADGE_COLORS[document],
+          "group inline-flex items-center gap-1.5 px-3 py-2 text-sm select-none cursor-pointer",
+          active
+            ? "bg-chrome-panel text-foreground"
+            : "text-muted-foreground hover:text-foreground",
+          className,
         )}
+        role="tab"
+        aria-selected={active}
+        {...rest}
       >
-        {DOCUMENT_BADGE_CODES[document]}
-      </span>
-      <span>{DOCUMENT_LABELS[document]}</span>
-      {diagnostics && diagnostics.errors > 0 && (
         <span
-          className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-destructive px-1 text-xs text-destructive-foreground"
-          aria-label={`${diagnostics.errors} ${diagnostics.errors === 1 ? "error" : "errors"}`}
+          aria-hidden
+          className={cn(
+            "inline-flex size-4 shrink-0 items-center justify-center rounded text-[10px] font-bold uppercase text-white",
+            DOCUMENT_BADGE_COLORS[document],
+          )}
         >
-          {diagnostics.errors}
+          {DOCUMENT_BADGE_CODES[document]}
         </span>
-      )}
-      {diagnostics && diagnostics.warnings > 0 && (
-        <span
-          className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-yellow-700 px-1 text-xs text-yellow-50"
-          aria-label={`${diagnostics.warnings} ${diagnostics.warnings === 1 ? "warning" : "warnings"}`}
-        >
-          {diagnostics.warnings}
-        </span>
-      )}
-      {canClose && (
-        <Tooltip>
-          <TooltipTrigger asChild>
-            <Button
-              size="icon-xs"
-              variant="ghost"
-              aria-label={`Close ${DOCUMENT_LABELS[document]}`}
-              className="opacity-0 group-hover:opacity-100"
-              onClick={(e) => {
-                e.stopPropagation();
-                onClose();
-              }}
-            >
-              <X />
-            </Button>
-          </TooltipTrigger>
-          <TooltipContent>Close tab</TooltipContent>
-        </Tooltip>
-      )}
-    </div>
-  );
-});
+        <span>{DOCUMENT_LABELS[document]}</span>
+        {diagnostics && diagnostics.errors > 0 && (
+          <span
+            className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-destructive px-1 text-xs text-destructive-foreground"
+            aria-label={`${diagnostics.errors} ${diagnostics.errors === 1 ? "error" : "errors"}`}
+          >
+            {diagnostics.errors}
+          </span>
+        )}
+        {diagnostics && diagnostics.warnings > 0 && (
+          <span
+            className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-yellow-700 px-1 text-xs text-yellow-50"
+            aria-label={`${diagnostics.warnings} ${diagnostics.warnings === 1 ? "warning" : "warnings"}`}
+          >
+            {diagnostics.warnings}
+          </span>
+        )}
+        {canClose && (
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                size="icon-xs"
+                variant="ghost"
+                aria-label={`Close ${DOCUMENT_LABELS[document]}`}
+                className="opacity-0 group-hover:opacity-100"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  onClose();
+                }}
+              >
+                <X />
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent>Close tab</TooltipContent>
+          </Tooltip>
+        )}
+      </div>
+    );
+  },
+);

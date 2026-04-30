@@ -39,31 +39,34 @@ import { useDocumentIdentity } from "../hooks/use-document-identity";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
-import { useLiveCheckService, type LiveCheckService, liveCheckItemToWatch } from "../services/check";
+import {
+  useLiveCheckService,
+  type LiveCheckService,
+  liveCheckItemToWatch,
+} from "../services/check";
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
-import {
-  DataStore,
-  DataStoreItemKind,
-  usePlaygroundDatastore,
-} from "../services/datastore";
+import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
 import { createValidationYAML, normalizeValidationYAML } from "../services/validationfileformat";
 import { Example, LoadExamples } from "../spicedb-common/examples";
-import { useDeveloperService, type DeveloperService } from "../spicedb-common/services/developerservice";
+import {
+  useDeveloperService,
+  type DeveloperService,
+} from "../spicedb-common/services/developerservice";
 import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { Drawer } from "./drawer/Drawer";
 import { StatusStrip } from "./drawer/StatusStrip";
-import { EditorDisplay } from "./EditorDisplay";
-import { EditorGroups } from "./editor-groups/EditorGroups";
 import { VisualizerDocument } from "./editor-groups/documents/Visualizer";
+import { EditorGroups } from "./editor-groups/EditorGroups";
 import { useEditorStore } from "./editor-groups/state";
 import type { DocumentRef } from "./editor-groups/types";
+import { EditorDisplay } from "./EditorDisplay";
 import { GuidedTour, TourElementClass } from "./GuidedTour";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
@@ -89,10 +92,7 @@ function useElementSize() {
   return [ref, size] as const;
 }
 
-type GridContainerProps = Omit<
-  ComponentProps<typeof DatastoreRelationshipEditor>,
-  "dimensions"
->;
+type GridContainerProps = Omit<ComponentProps<typeof DatastoreRelationshipEditor>, "dimensions">;
 
 function GridContainer(props: GridContainerProps) {
   const [ref, size] = useElementSize();
@@ -452,8 +452,7 @@ export function ThemedAppView(props: {
     }
   };
 
-  const isReadOnly =
-    sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate();
+  const isReadOnly = sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate();
 
   const renderToolbar = (children: ReactNode) => (
     <div className="flex shrink-0 items-center gap-2 px-2 py-1 border-b border-chrome-divider">
@@ -741,9 +740,7 @@ export function ThemedAppView(props: {
           <img src="/favicon.svg" alt="SpiceDB" className="size-7" />
         </a>
         <span className="text-muted-foreground/50 hidden md:inline">/</span>
-        {!isOutOfDate && (
-          <BreadcrumbDropdown datastore={datastore} loadExample={loadExampleData} />
-        )}
+        {!isOutOfDate && <BreadcrumbDropdown datastore={datastore} loadExample={loadExampleData} />}
 
         <div className="flex-1" />
 

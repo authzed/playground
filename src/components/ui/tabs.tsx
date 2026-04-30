@@ -97,11 +97,4 @@ function ConnectedTabsTrigger({
   );
 }
 
-export {
-  Tabs,
-  TabsList,
-  TabsTrigger,
-  TabsContent,
-  ConnectedTabsList,
-  ConnectedTabsTrigger,
-};
+export { Tabs, TabsList, TabsTrigger, TabsContent, ConnectedTabsList, ConnectedTabsTrigger };

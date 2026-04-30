@@ -10,7 +10,11 @@ import { ChevronDown, Loader, File, User, ThumbsUp, Database } from "lucide-reac
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { useLiveCheckService, liveCheckItemToWatch, type LiveCheckService } from "../services/check";
+import {
+  useLiveCheckService,
+  liveCheckItemToWatch,
+  type LiveCheckService,
+} from "../services/check";
 import AppConfig from "../services/configservice";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
@@ -25,7 +29,10 @@ import {
   CheckOperationsResult_Membership,
   CheckOperationsResultSchema,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { useDeveloperService, type DeveloperService } from "../spicedb-common/services/developerservice";
+import {
+  useDeveloperService,
+  type DeveloperService,
+} from "../spicedb-common/services/developerservice";
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";

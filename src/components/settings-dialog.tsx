@@ -50,9 +50,7 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Settings</DialogTitle>
-          <DialogDescription>
-            Preferences are stored locally in your browser.
-          </DialogDescription>
+          <DialogDescription>Preferences are stored locally in your browser.</DialogDescription>
         </DialogHeader>
 
         <section className="flex flex-col gap-2">
@@ -98,8 +96,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
         <section className="flex flex-col gap-2">
           <Label>Reset</Label>
           <p className="text-sm text-muted-foreground">
-            Removes all locally stored playground data — schema, test relationships,
-            settings, and recent examples. This cannot be undone.
+            Removes all locally stored playground data — schema, test relationships, settings, and
+            recent examples. This cannot be undone.
           </p>
           <AlertDialog open={confirmClear} onOpenChange={setConfirmClear}>
             <AlertDialogTrigger asChild>
@@ -112,8 +110,8 @@ export function SettingsDialog({ open, onOpenChange }: SettingsDialogProps) {
               <AlertDialogHeader>
                 <AlertDialogTitle>Clear all playground data?</AlertDialogTitle>
                 <AlertDialogDescription>
-                  This removes all locally stored data including your schema, test
-                  relationships, settings, and recent examples. This cannot be undone.
+                  This removes all locally stored data including your schema, test relationships,
+                  settings, and recent examples. This cannot be undone.
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>

@@ -103,11 +103,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
   const { minimapEnabled } = useSettings();
   const minimapVisible =
-    props.hideMinimap === true
-      ? false
-      : props.hideMinimap === false
-        ? true
-        : minimapEnabled;
+    props.hideMinimap === true ? false : props.hideMinimap === false ? true : minimapEnabled;
 
   // A single unified theme is used for every editor instance regardless of
   // language. Monaco's `setTheme` is global — applying different themes per
@@ -468,9 +464,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   // on every change, on the next animation frame so layout has settled.
   const drawerOpen = useDrawerStore((s) => s.open);
   const drawerActivePanel = useDrawerStore((s) => s.activePanel);
-  const drawerHeight = useDrawerStore((s) =>
-    s.activePanel ? s.perPanelHeight[s.activePanel] : 0,
-  );
+  const drawerHeight = useDrawerStore((s) => (s.activePanel ? s.perPanelHeight[s.activePanel] : 0));
   useEffect(() => {
     const editors = editorRefs.current;
     if (Object.keys(editors).length === 0) return;

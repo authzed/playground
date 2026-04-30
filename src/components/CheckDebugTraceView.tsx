@@ -1,11 +1,5 @@
 import type { JsonObject, JsonValue } from "@bufbuild/protobuf";
-import {
-  CheckCircle2,
-  ChevronDown,
-  ChevronRight,
-  HelpCircle,
-  XCircle,
-} from "lucide-react";
+import { CheckCircle2, ChevronDown, ChevronRight, HelpCircle, XCircle } from "lucide-react";
 import { useState } from "react";
 
 import { cn } from "@/lib/utils";
@@ -45,11 +39,7 @@ interface TreeItemProps {
 
 function TreeItem({ nodeId, label, defaultExpanded, expandedSet, children }: TreeItemProps) {
   const initial =
-    defaultExpanded !== undefined
-      ? defaultExpanded
-      : expandedSet
-        ? expandedSet.has(nodeId)
-        : false;
+    defaultExpanded !== undefined ? defaultExpanded : expandedSet ? expandedSet.has(nodeId) : false;
   const [expanded, setExpanded] = useState(initial);
   const hasChildren = !!children && (Array.isArray(children) ? children.length > 0 : true);
 
@@ -63,11 +53,7 @@ function TreeItem({ nodeId, label, defaultExpanded, expandedSet, children }: Tre
             className="flex size-4 items-center justify-center text-muted-foreground hover:text-foreground"
             aria-label={expanded ? "Collapse" : "Expand"}
           >
-            {expanded ? (
-              <ChevronDown className="size-4" />
-            ) : (
-              <ChevronRight className="size-4" />
-            )}
+            {expanded ? <ChevronDown className="size-4" /> : <ChevronRight className="size-4" />}
           </button>
         ) : (
           <span className="size-4" />

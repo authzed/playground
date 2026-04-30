@@ -3,12 +3,7 @@
  * In Spec 2, documents are the four singletons plus Visualizer.
  * Multi-file later: DocumentRef becomes a sum type with a 'file' variant.
  */
-export type DocumentRef =
-  | "schema"
-  | "relationships"
-  | "assertions"
-  | "expected"
-  | "visualizer";
+export type DocumentRef = "schema" | "relationships" | "assertions" | "expected" | "visualizer";
 
 export const ALL_DOCUMENT_REFS: DocumentRef[] = [
   "schema",

@@ -66,8 +66,7 @@ export const useEditorStore = create<EditorStore>()(
             const newPrimary: EditorGroup = {
               ...sourceGroup,
               tabs: remainingTabs,
-              activeTab:
-                sourceGroup.activeTab === tab ? remainingTabs[0] : sourceGroup.activeTab,
+              activeTab: sourceGroup.activeTab === tab ? remainingTabs[0] : sourceGroup.activeTab,
             };
             const newSecondary: EditorGroup = {
               id: "g2",
@@ -127,11 +126,11 @@ export const useEditorStore = create<EditorStore>()(
             if (!s.closedPool.includes(tab)) return s;
             const withoutTab = s.closedPool.filter((t) => t !== tab);
             if (s.layout.kind === "split") {
-              return updateGroup(
-                { ...s, closedPool: withoutTab },
-                s.layout.secondary.id,
-                (g) => ({ ...g, tabs: [...g.tabs, tab], activeTab: tab }),
-              );
+              return updateGroup({ ...s, closedPool: withoutTab }, s.layout.secondary.id, (g) => ({
+                ...g,
+                tabs: [...g.tabs, tab],
+                activeTab: tab,
+              }));
             }
             return {
               ...s,
@@ -150,8 +149,7 @@ export const useEditorStore = create<EditorStore>()(
             if (s.layout.kind !== "split") return s;
             const surviving =
               s.layout.primary.id === groupId ? s.layout.secondary : s.layout.primary;
-            const closing =
-              s.layout.primary.id === groupId ? s.layout.primary : s.layout.secondary;
+            const closing = s.layout.primary.id === groupId ? s.layout.primary : s.layout.secondary;
             const newTabs = [
               ...surviving.tabs,
               ...closing.tabs.filter((t) => !surviving.tabs.includes(t)),

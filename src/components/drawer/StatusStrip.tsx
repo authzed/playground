@@ -21,12 +21,12 @@ export function StatusStrip({ services }: StatusStripProps) {
   const errorCount = services.problemService.errorCount;
   const warningCount = services.problemService.warnings.length;
   const watches = services.liveCheckService.items;
-  const watchSuccess  = watches.filter((i) => i.status === LiveCheckItemStatus.FOUND).length;
-  const watchFail     = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_FOUND).length;
-  const watchInvalid  = watches.filter((i) => i.status === LiveCheckItemStatus.INVALID).length;
-  const watchUnable   = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_VALID).length;
+  const watchSuccess = watches.filter((i) => i.status === LiveCheckItemStatus.FOUND).length;
+  const watchFail = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_FOUND).length;
+  const watchInvalid = watches.filter((i) => i.status === LiveCheckItemStatus.INVALID).length;
+  const watchUnable = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_VALID).length;
   const watchCaveated = watches.filter((i) => i.status === LiveCheckItemStatus.CAVEATED).length;
-  const watchPending  = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_CHECKED).length;
+  const watchPending = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_CHECKED).length;
 
   const isActive = (id: PanelId) => open && activePanel === id;
 
@@ -38,13 +38,19 @@ export function StatusStrip({ services }: StatusStripProps) {
             id="problems"
             active={isActive("problems")}
             onClick={() => togglePanel("problems")}
-            icon={<CircleAlert className={errorCount > 0 ? "text-destructive" : "text-muted-foreground"} />}
+            icon={
+              <CircleAlert
+                className={errorCount > 0 ? "text-destructive" : "text-muted-foreground"}
+              />
+            }
             label="Problems"
             compact={errorCount === 0 && warningCount === 0}
-            badges={[
-              errorCount > 0 && { value: errorCount, variant: "error" as const },
-              warningCount > 0 && { value: warningCount, variant: "warning" as const },
-            ].filter(Boolean) as Array<{ value: number; variant: "error" | "warning" }>}
+            badges={
+              [
+                errorCount > 0 && { value: errorCount, variant: "error" as const },
+                warningCount > 0 && { value: warningCount, variant: "warning" as const },
+              ].filter(Boolean) as Array<{ value: number; variant: "error" | "warning" }>
+            }
           />
         </TooltipTrigger>
         <TooltipContent side="top">Problems and validation errors</TooltipContent>
@@ -56,19 +62,23 @@ export function StatusStrip({ services }: StatusStripProps) {
             id="watches"
             active={isActive("watches")}
             onClick={() => togglePanel("watches")}
-            icon={<Eye className={watches.length === 0 ? "text-muted-foreground" : "text-foreground"} />}
+            icon={
+              <Eye className={watches.length === 0 ? "text-muted-foreground" : "text-foreground"} />
+            }
             label="Check Watches"
             compact={watches.length === 0}
-            badges={[
-              watchSuccess > 0  && { value: watchSuccess,  variant: "success" as const },
-              watchFail > 0     && { value: watchFail,     variant: "error" as const },
-              watchInvalid > 0  && { value: watchInvalid,  variant: "warning" as const },
-              watchUnable > 0   && { value: watchUnable,   variant: "unable" as const },
-              watchCaveated > 0 && { value: watchCaveated, variant: "missing" as const },
-            ].filter(Boolean) as Array<{
-              value: number;
-              variant: "success" | "error" | "warning" | "unable" | "missing";
-            }>}
+            badges={
+              [
+                watchSuccess > 0 && { value: watchSuccess, variant: "success" as const },
+                watchFail > 0 && { value: watchFail, variant: "error" as const },
+                watchInvalid > 0 && { value: watchInvalid, variant: "warning" as const },
+                watchUnable > 0 && { value: watchUnable, variant: "unable" as const },
+                watchCaveated > 0 && { value: watchCaveated, variant: "missing" as const },
+              ].filter(Boolean) as Array<{
+                value: number;
+                variant: "success" | "error" | "warning" | "unable" | "missing";
+              }>
+            }
           />
         </TooltipTrigger>
         <TooltipContent side="top">
@@ -78,11 +88,11 @@ export function StatusStrip({ services }: StatusStripProps) {
             `All ${watches.length} check ${watches.length === 1 ? "watch" : "watches"} passed`
           ) : (
             <div className="flex flex-col gap-0.5">
-              {watchFail > 0     && <div>{watchFail} failed</div>}
-              {watchInvalid > 0  && <div>{watchInvalid} invalid</div>}
-              {watchUnable > 0   && <div>{watchUnable} unable to run</div>}
+              {watchFail > 0 && <div>{watchFail} failed</div>}
+              {watchInvalid > 0 && <div>{watchInvalid} invalid</div>}
+              {watchUnable > 0 && <div>{watchUnable} unable to run</div>}
               {watchCaveated > 0 && <div>{watchCaveated} missing context</div>}
-              {watchPending > 0  && <div>{watchPending} pending</div>}
+              {watchPending > 0 && <div>{watchPending} pending</div>}
             </div>
           )}
         </TooltipContent>

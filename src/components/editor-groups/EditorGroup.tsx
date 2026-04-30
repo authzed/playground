@@ -8,8 +8,8 @@ import { cn } from "@/lib/utils";
 import { EditorTab, type TabDiagnostics } from "./EditorTab";
 import { OpenDocumentMenu } from "./OpenDocumentMenu";
 import { SplitMenu } from "./SplitMenu";
-import { TabContextMenu } from "./TabContextMenu";
 import { useEditorStore } from "./state";
+import { TabContextMenu } from "./TabContextMenu";
 import { DocumentRef, EditorGroup as EditorGroupType } from "./types";
 
 const DRAG_MIME = "application/x-playground-tab";
@@ -55,10 +55,7 @@ export function EditorGroup({
   const isPlaygroundTabDrag = (e: React.DragEvent<HTMLDivElement>) =>
     e.dataTransfer.types.includes(DRAG_MIME);
 
-  const handleTabDragOver = (
-    e: React.DragEvent<HTMLDivElement>,
-    overTab: DocumentRef,
-  ) => {
+  const handleTabDragOver = (e: React.DragEvent<HTMLDivElement>, overTab: DocumentRef) => {
     if (!isPlaygroundTabDrag(e)) return;
     e.preventDefault();
     e.dataTransfer.dropEffect = "move";
@@ -95,8 +92,7 @@ export function EditorGroup({
     moveTab(tab, group.id, beforeTab);
   };
 
-  const canCloseTabs =
-    layout.kind === "split" || group.tabs.length > 1; // can't close the last tab in the only group
+  const canCloseTabs = layout.kind === "split" || group.tabs.length > 1; // can't close the last tab in the only group
 
   return (
     <div className={cn("flex flex-col h-full", className)}>
@@ -150,7 +146,9 @@ export function EditorGroup({
       </div>
 
       {/* Active tab content */}
-      <div className="flex-1 min-h-0 relative bg-chrome-panel">{renderContent(group.activeTab)}</div>
+      <div className="flex-1 min-h-0 relative bg-chrome-panel">
+        {renderContent(group.activeTab)}
+      </div>
     </div>
   );
 }
@@ -160,10 +158,5 @@ export function EditorGroup({
  * Renders inline as a 2px-wide vertical bar in the tab strip.
  */
 function DropMarker() {
-  return (
-    <span
-      aria-hidden
-      className="my-1 w-0.5 self-stretch shrink-0 rounded-full bg-primary"
-    />
-  );
+  return <span aria-hidden className="my-1 w-0.5 self-stretch shrink-0 rounded-full bg-primary" />;
 }

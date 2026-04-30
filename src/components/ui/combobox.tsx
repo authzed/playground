@@ -64,9 +64,7 @@ export function Combobox({
   const filtered = React.useMemo(() => {
     if (!inputValue) return options;
     const lower = inputValue.toLowerCase();
-    return options.filter((o) =>
-      (o.label ?? o.value).toLowerCase().includes(lower),
-    );
+    return options.filter((o) => (o.label ?? o.value).toLowerCase().includes(lower));
   }, [inputValue, options]);
 
   // Keep activeIndex within bounds when options change.
@@ -100,10 +98,7 @@ export function Combobox({
     const onPointerDown = (e: PointerEvent) => {
       const target = e.target as Node | null;
       if (!target) return;
-      if (
-        containerRef.current?.contains(target) ||
-        popupRef.current?.contains(target)
-      ) {
+      if (containerRef.current?.contains(target) || popupRef.current?.contains(target)) {
         return;
       }
       setOpen(false);
@@ -160,9 +155,7 @@ export function Combobox({
             role="listbox"
           >
             {filtered.length === 0 ? (
-              <div className="px-3 py-2 text-sm text-muted-foreground">
-                {emptyMessage}
-              </div>
+              <div className="px-3 py-2 text-sm text-muted-foreground">{emptyMessage}</div>
             ) : (
               filtered.map((option, i) => (
                 <div
@@ -183,9 +176,7 @@ export function Combobox({
                   )}
                 >
                   <span className="flex-1">
-                    {renderOption
-                      ? renderOption(option)
-                      : (option.label ?? option.value)}
+                    {renderOption ? renderOption(option) : (option.label ?? option.value)}
                   </span>
                   <Check
                     className={cn(
