@@ -1,4 +1,3 @@
-import { Theme, useTheme } from "@material-ui/core/styles";
 import Joyride, { ACTIONS, EVENTS, type Step } from "react-joyride";
 
 export const TourElementClass = {
@@ -62,18 +61,35 @@ const steps: Step[] = [
   },
 ];
 
-const styles = (theme: Theme) => {
+// Joyride passes these values directly through to inline element styles, so CSS
+// custom properties (var(--color-...)) won't resolve. Read the actual computed
+// values from the document at render time so the tooltip matches the active
+// theme tokens.
+const resolveTokens = () => {
+  if (typeof window === "undefined" || typeof document === "undefined") {
+    return {
+      primaryColor: "#7c3aed",
+      backgroundColor: "#ffffff",
+      textColor: "#000000",
+      arrowColor: "#ffffff",
+    };
+  }
+  const cs = getComputedStyle(document.documentElement);
+  const get = (name: string, fallback: string) => {
+    const v = cs.getPropertyValue(name).trim();
+    return v.length > 0 ? v : fallback;
+  };
+  const popoverBg = get("--color-popover", get("--popover", "#ffffff"));
+  const popoverFg = get(
+    "--color-popover-foreground",
+    get("--popover-foreground", "#000000"),
+  );
+  const primary = get("--color-primary", get("--primary", "#7c3aed"));
   return {
-    options: {
-      // modal arrow and background color
-      arrowColor: theme.palette.background.paper,
-      backgroundColor: theme.palette.background.paper,
-      // button color
-      primaryColor: theme.palette.secondary.main,
-      // text color
-      textColor: theme.palette.text.primary,
-      zIndex: 999,
-    },
+    primaryColor: primary,
+    backgroundColor: popoverBg,
+    textColor: popoverFg,
+    arrowColor: popoverBg,
   };
 };
 
@@ -116,8 +132,8 @@ export function GuidedTour(props: {
   onTourEnd: () => void;
   onEnterStep: (className: string) => void;
 }) {
-  const theme = useTheme();
   const { show, onSkip, onTourEnd, onEnterStep } = props;
+  const tokens = resolveTokens();
 
   return (
     <>
@@ -128,7 +144,15 @@ export function GuidedTour(props: {
           showSkipButton
           showProgress
           callback={handleEvents(onSkip, onTourEnd, onEnterStep)}
-          styles={styles(theme)}
+          styles={{
+            options: {
+              arrowColor: tokens.arrowColor,
+              backgroundColor: tokens.backgroundColor,
+              primaryColor: tokens.primaryColor,
+              textColor: tokens.textColor,
+              zIndex: 999,
+            },
+          }}
           steps={steps}
         />
       )}

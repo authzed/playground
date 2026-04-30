@@ -1,37 +1,33 @@
 import type { ParsedPermission, ParsedRelation } from "@authzed/spicedb-parser-js";
-import CircularProgress from "@material-ui/core/CircularProgress";
-import IconButton from "@material-ui/core/IconButton";
-import Paper from "@material-ui/core/Paper";
-import { Theme, createStyles, makeStyles, useTheme } from "@material-ui/core/styles";
-import Table from "@material-ui/core/Table";
-import TableBody from "@material-ui/core/TableBody";
-import TableCell from "@material-ui/core/TableCell";
-import TableContainer from "@material-ui/core/TableContainer";
-import TableHead from "@material-ui/core/TableHead";
-import TableRow from "@material-ui/core/TableRow";
-import TextField from "@material-ui/core/TextField";
-import Tooltip from "@material-ui/core/Tooltip";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ChevronRightIcon from "@material-ui/icons/ChevronRight";
-import ControlPointIcon from "@material-ui/icons/ControlPoint";
-import DeleteForeverIcon from "@material-ui/icons/DeleteForever";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import ExpandMoreIcon from "@material-ui/icons/ExpandMore";
-import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
-import HighlightOffIcon from "@material-ui/icons/HighlightOff";
-import RadioButtonUncheckedIcon from "@material-ui/icons/RadioButtonUnchecked";
-import RemoveCircleOutlineIcon from "@material-ui/icons/RemoveCircleOutline";
-import VisibilityIcon from "@material-ui/icons/Visibility";
-import WarningIcon from "@material-ui/icons/Warning";
-import Autocomplete from "@material-ui/lab/Autocomplete";
-import clsx from "clsx";
 import { interpolateBlues, interpolateOranges, interpolatePurples } from "d3-scale-chromatic";
-import { CircleX, Info, MessageCircleWarning } from "lucide-react";
-import { type ReactNode } from "react";
-import { useMemo, useState, type ChangeEvent } from "react";
-import "react-reflex/styles.css";
+import {
+  CheckCircle,
+  ChevronDown,
+  ChevronRight,
+  CircleAlert,
+  CircleHelp,
+  CircleX,
+  Info,
+  Loader2,
+  MessageCircleWarning,
+  PlusCircle,
+  Trash2,
+  TriangleAlert,
+} from "lucide-react";
+import { type ChangeEvent, useMemo, useState } from "react";
 
-import TabLabel from "../../playground-ui/TabLabel";
+import { Button } from "@/components/ui/button";
+import { Combobox } from "@/components/ui/combobox";
+import { Input } from "@/components/ui/input";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 import {
   LiveCheckItem,
   LiveCheckItemStatus,
@@ -40,183 +36,42 @@ import {
 } from "../../services/check";
 import { DataStore, DataStoreItemKind } from "../../services/datastore";
 import { LocalParseService } from "../../services/localparse";
+import { Services } from "../../services/services";
 import { parseRelationships } from "../../spicedb-common/parsing";
 import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import { CheckDebugTraceView } from "../CheckDebugTraceView";
-import { TourElementClass } from "../GuidedTour";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 
-import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
-import { ReflexedPanelLocation } from "./types";
-
-const useStyles = makeStyles((theme: Theme) =>
-  createStyles({
-    validationError: {
-      border: 0,
-    },
-    foundVia: {
-      marginTop: theme.spacing(1),
-    },
-    foundViaList: {
-      margin: 0,
-      fontFamily: "Roboto Mono, monospace",
-      listStyleType: "none",
-      "& li::after": {
-        content: '" →"',
-      },
-      "& li:last-child::after": {
-        content: '""',
-      },
-    },
-    editorContainer: {
-      display: "grid",
-      alignItems: "center",
-      gridTemplateColumns: "auto 1fr",
-    },
-    dot: {
-      display: "inline-block",
-      marginRight: theme.spacing(1),
-      borderRadius: "50%",
-      width: "8px",
-      height: "8px",
-    },
-    progress: {
-      color: theme.palette.text.primary,
-    },
-    success: {
-      color: theme.palette.success.main,
-    },
-    caveated: {
-      color: "#8787ff",
-    },
-    gray: {
-      color: theme.palette.grey[500],
-    },
-    warning: {
-      color: theme.palette.warning.main,
-    },
-    verticalCell: {
-      padding: theme.spacing(1),
-      border: 0,
-    },
-  }),
-);
-
-/**
- * WatchesSummary displays the a summary of the check watches.
- */
-export function WatchesSummary(props: PanelSummaryProps) {
-  const classes = useSummaryStyles();
-
-  const liveCheckService = props.services.liveCheckService;
-
-  const hasItems = liveCheckService.items.length > 0;
-  const foundItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.FOUND,
-  );
-  const caveatedItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.CAVEATED,
-  );
-  const notFoundItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.NOT_FOUND,
-  );
-  const invalidItems = liveCheckService.items.filter(
-    (item: LiveCheckItem) => item.status === LiveCheckItemStatus.INVALID,
-  );
-  const hasServerErr = !!liveCheckService.state.serverErr;
-
-  return (
-    <div
-      className={clsx(classes.checkTab, TourElementClass.checkwatch, {
-        [classes.checkTabWithItems]: hasItems,
-      })}
-    >
-      <TabLabel
-        icon={<VisibilityIcon htmlColor={liveCheckService.items.length === 0 ? "grey" : ""} />}
-        title="Check Watches"
-      />
-      {!hasServerErr && hasItems && (
-        <Tooltip title="Successful Checks">
-          <span
-            className={clsx(classes.badge, {
-              [classes.successBadge]: foundItems.length > 0,
-            })}
-          >
-            {foundItems.length}
-          </span>
-        </Tooltip>
-      )}
-      {!hasServerErr && hasItems && (
-        <Tooltip title="Caveated Checks">
-          <span
-            className={clsx(classes.badge, {
-              [classes.caveatedBadge]: caveatedItems.length > 0,
-            })}
-          >
-            {caveatedItems.length}
-          </span>
-        </Tooltip>
-      )}
-      {!hasServerErr && hasItems && (
-        <Tooltip title="Invalid Checks">
-          <span
-            className={clsx(classes.badge, {
-              [classes.invalidBadge]: invalidItems.length > 0,
-            })}
-          >
-            {invalidItems.length}
-          </span>
-        </Tooltip>
-      )}
-      {!hasServerErr && hasItems && (
-        <Tooltip title="Failed Checks">
-          <span
-            className={clsx(classes.badge, {
-              [classes.failBadge]: notFoundItems.length > 0,
-            })}
-          >
-            {notFoundItems.length}
-          </span>
-        </Tooltip>
-      )}
-      {hasServerErr && <ErrorOutlineIcon color="error" />}
-    </div>
-  );
+interface WatchesPanelProps {
+  services: Services;
+  datastore: DataStore;
 }
 
-export function WatchesPanel(props: PanelProps) {
-  const liveCheckService = props.services.liveCheckService;
-  const localParseService = props.services.localParseService;
-  const datastore = props.datastore;
+export function WatchesPanel({ services, datastore }: WatchesPanelProps) {
+  const liveCheckService = services.liveCheckService;
+  const localParseService = services.localParseService;
   const editorUpdateIndex = -1; // FIXME
 
   return (
-    <TableContainer component={Paper}>
-      <Table stickyHeader size="small">
-        <TableHead>
+    <div className="overflow-auto bg-card">
+      <Table>
+        <TableHeader>
           <TableRow>
-            <TableCell />
-            <TableCell />
-            {props.location === "horizontal" && (
-              <>
-                <TableCell>Resource</TableCell>
-                <TableCell>Permission</TableCell>
-                <TableCell>Subject</TableCell>
-                <TableCell>Context (optional)</TableCell>
-              </>
-            )}
-            {props.location === "vertical" && (
-              <TableCell>Resource, Permission, Subject, Context</TableCell>
-            )}
-            <TableCell>
-              <IconButton size="small" edge="end" onClick={liveCheckService.addItem}>
-                <ControlPointIcon />
-              </IconButton>
-            </TableCell>
+            <TableHead className="w-8" />
+            <TableHead className="w-8" />
+            <TableHead>Resource</TableHead>
+            <TableHead>Permission</TableHead>
+            <TableHead>Subject</TableHead>
+            <TableHead>Context (optional)</TableHead>
+            <TableHead className="w-8">
+              <Button size="icon-sm" variant="ghost" onClick={liveCheckService.addItem}>
+                <PlusCircle />
+              </Button>
+            </TableHead>
           </TableRow>
-        </TableHead>
+        </TableHeader>
         {liveCheckService.state.status === LiveCheckStatus.PARSE_ERROR && (
-          <TableHead>
+          <TableBody>
             <TableRow>
               <TableCell colSpan={7}>
                 <Alert>
@@ -228,10 +83,10 @@ export function WatchesPanel(props: PanelProps) {
                 </Alert>
               </TableCell>
             </TableRow>
-          </TableHead>
+          </TableBody>
         )}
         {liveCheckService.state.status === LiveCheckStatus.NEVER_RUN && (
-          <TableHead>
+          <TableBody>
             <TableRow>
               <TableCell colSpan={7}>
                 <Alert>
@@ -240,10 +95,10 @@ export function WatchesPanel(props: PanelProps) {
                 </Alert>
               </TableCell>
             </TableRow>
-          </TableHead>
+          </TableBody>
         )}
         {liveCheckService.state.status === LiveCheckStatus.SERVICE_ERROR && (
-          <TableHead>
+          <TableBody>
             <TableRow>
               <TableCell colSpan={7}>
                 <Alert variant="destructive">
@@ -252,26 +107,22 @@ export function WatchesPanel(props: PanelProps) {
                 </Alert>
               </TableCell>
             </TableRow>
-          </TableHead>
+          </TableBody>
         )}
         <TableBody>
-          {liveCheckService.items.length > 0 &&
-            liveCheckService.items.map((item: LiveCheckItem) => {
-              return (
-                <LiveCheckRow
-                  key={item.id}
-                  location={props.location}
-                  service={liveCheckService}
-                  localParseService={localParseService}
-                  editorUpdateIndex={editorUpdateIndex}
-                  datastore={datastore}
-                  item={item}
-                />
-              );
-            })}
+          {liveCheckService.items.map((item: LiveCheckItem) => (
+            <LiveCheckRow
+              key={item.id}
+              service={liveCheckService}
+              localParseService={localParseService}
+              editorUpdateIndex={editorUpdateIndex}
+              datastore={datastore}
+              item={item}
+            />
+          ))}
         </TableBody>
       </Table>
-    </TableContainer>
+    </div>
   );
 }
 
@@ -281,362 +132,197 @@ function notNull(value: string | null): value is string {
 
 const filter = (values: (string | null)[]): string[] => {
   const filtered = values.filter(notNull);
-  const set = new Set(filtered);
-  return Array.from(set);
+  return Array.from(new Set(filtered));
 };
 
-function LiveCheckRow(props: {
-  location: ReflexedPanelLocation;
+interface LiveCheckRowProps {
   service: LiveCheckService;
   item: LiveCheckItem;
   editorUpdateIndex?: number;
   datastore: DataStore;
   localParseService: LocalParseService;
-}) {
-  const classes = useStyles();
+}
+
+function LiveCheckRow(props: LiveCheckRowProps) {
   const item = props.item;
   const datastore = props.datastore;
   const liveCheckService = props.service;
 
-  const handleDeleteRow = () => {
-    liveCheckService.removeItem(item);
-  };
-
   const [object, setObject] = useState(item.object);
   const [action, setAction] = useState(item.action);
   const [subject, setSubject] = useState(item.subject);
-  const [context, setContext] = useState(() => {
-    // Remove the `default:` prefix we add below.
-    if (item.context) {
-      return item.context.substring("default:".length);
-    }
-
-    return "";
-  });
+  const [context, setContext] = useState(() =>
+    item.context ? item.context.substring("default:".length) : "",
+  );
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const [objectInputValue, setObjectInputValue] = useState(item.object);
-  const [actionInputValue, setActionInputValue] = useState(item.action);
-  const [subjectInputValue, setSubjectInputValue] = useState(item.subject);
-
-  const handleChangeObjectInput = (_event: object, newValue: string) => {
-    setObjectInputValue(newValue);
-    item.object = newValue;
+  const handleObjectChange = (next: string) => {
+    setObject(next);
+    item.object = next;
     liveCheckService.itemUpdated(item);
   };
-
-  const handleChangeObject = (_event: object, newValue: string | null) => {
-    setObject(newValue ?? "");
-    item.object = newValue ?? "";
-  };
-
-  const handleChangeActionInput = (_event: object, newValue: string) => {
-    setActionInputValue(newValue);
-    item.action = newValue;
+  const handleActionChange = (next: string) => {
+    setAction(next);
+    item.action = next;
     liveCheckService.itemUpdated(item);
   };
-
-  const handleChangeAction = (_event: object, newValue: string | null) => {
-    setAction(newValue ?? "");
-    item.action = newValue ?? "";
-  };
-
-  const handleChangeSubjectInput = (_event: object, newValue: string) => {
-    setSubjectInputValue(newValue);
-    item.subject = newValue;
+  const handleSubjectChange = (next: string) => {
+    setSubject(next);
+    item.subject = next;
     liveCheckService.itemUpdated(item);
   };
-
-  const handleChangeSubject = (_event: object, newValue: string | null) => {
-    setSubject(newValue ?? "");
-    item.subject = newValue ?? "";
-  };
-
-  const handleChangeContextInput = (event: ChangeEvent<HTMLInputElement>) => {
-    const newValue = event.target.value;
-    setContext(newValue ?? "");
-    // NOTE: adding a dummy caveat name to support only specifying the context with checks
-    // while preserving the simple approach of parsing all checks as relationships
-    item.context = newValue ? `default:${newValue}` : "";
+  const handleContextChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const next = e.target.value;
+    setContext(next);
+    item.context = next ? `default:${next}` : "";
     liveCheckService.itemUpdated(item);
   };
 
   const relationshipContents =
     props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "";
-  const relationships = useMemo(() => {
-    return parseRelationships(relationshipContents);
-  }, [relationshipContents]);
+  const relationships = useMemo(
+    () => parseRelationships(relationshipContents),
+    [relationshipContents],
+  );
 
-  const objects = useMemo(() => {
-    return filter(
-      relationships.map((r: Relationship) => {
-        const onr = r.resourceAndRelation;
-        if (onr === undefined) {
-          return null;
-        }
-
-        return `${onr.namespace}:${onr.objectId}`;
-      }),
-    );
-  }, [relationships]);
+  const objects = useMemo(
+    () =>
+      filter(
+        relationships.map((r: Relationship) => {
+          const onr = r.resourceAndRelation;
+          return onr ? `${onr.namespace}:${onr.objectId}` : null;
+        }),
+      ),
+    [relationships],
+  );
 
   const actions = useMemo(() => {
-    const [definitionPath] = objectInputValue.split(":", 2);
+    const [definitionPath] = object.split(":", 2);
     const definition = props.localParseService.lookupDefinition(definitionPath);
-    if (definition !== undefined) {
+    if (definition) {
       return definition
         .listRelationsAndPermissions()
         .map((r: ParsedRelation | ParsedPermission) => r.name);
     }
-
     return filter(
-      relationships.map((r: Relationship) => {
-        const onr = r.resourceAndRelation;
-        if (onr === undefined) {
-          return null;
-        }
-
-        return onr.relation;
-      }),
+      relationships.map((r: Relationship) => r.resourceAndRelation?.relation ?? null),
     );
-
     // NOTE: we include editorUpdateIndex to ensure this is recomputed on
     // editor changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datastore, relationships, objectInputValue, props.editorUpdateIndex]);
+  }, [datastore, relationships, object, props.editorUpdateIndex, props.localParseService]);
 
-  const subjects = useMemo(() => {
-    return filter(
-      relationships.map((r: Relationship) => {
-        const subject = r.subject;
-        if (subject === undefined) {
-          return null;
-        }
-
-        if (subject.objectId === "*") {
-          return null;
-        }
-
-        if (subject.relation === "...") {
-          return `${subject.namespace}:${subject.objectId}`;
-        }
-        return `${subject.namespace}:${subject.objectId}#${subject.relation}`;
-      }),
-    );
-  }, [relationships]);
-
-  const renderOption = (
-    option: string | undefined,
-    optionSet: (string | undefined)[],
-    colorSet: (n: number) => string,
-  ) => {
-    return (
-      <div className={classes.editorContainer}>
-        <DotDisplay colorSet={colorSet} valueSet={optionSet} value={option ?? ""} />
-        {option}
-      </div>
-    );
-  };
+  const subjects = useMemo(
+    () =>
+      filter(
+        relationships.map((r: Relationship) => {
+          const s = r.subject;
+          if (!s || s.objectId === "*") return null;
+          if (s.relation === "...") return `${s.namespace}:${s.objectId}`;
+          return `${s.namespace}:${s.objectId}#${s.relation}`;
+        }),
+      ),
+    [relationships],
+  );
 
   const status = liveCheckService.state.status;
-  const theme = useTheme();
-  const wrap = (content: ReactNode, width: string) => {
-    if (props.location === "vertical") {
-      return (
-        <Table>
-          <TableRow>
-            <TableCell className={classes.verticalCell}>{content}</TableCell>
-          </TableRow>
-        </Table>
-      );
+  const statusIcon = (() => {
+    if (status === LiveCheckStatus.CHECKING) return <Loader2 className="size-4 animate-spin" />;
+    if (status === LiveCheckStatus.PARSE_ERROR)
+      return <TriangleAlert className="size-4 text-muted-foreground" />;
+    if (status === LiveCheckStatus.SERVICE_ERROR)
+      return <CircleAlert className="size-4 text-destructive" />;
+    if (status === LiveCheckStatus.NEVER_RUN)
+      return <span className="size-4 rounded-full border border-current" />;
+    if (status === LiveCheckStatus.NOT_CHECKING) {
+      switch (item.status) {
+        case LiveCheckItemStatus.FOUND:
+          return <CheckCircle className="size-4 text-emerald-500" />;
+        case LiveCheckItemStatus.NOT_FOUND:
+          return <CircleX className="size-4 text-destructive" />;
+        case LiveCheckItemStatus.NOT_CHECKED:
+          return <span className="size-4 rounded-full border border-current" />;
+        case LiveCheckItemStatus.NOT_VALID:
+          return <Trash2 className="size-4 text-muted-foreground" />;
+        case LiveCheckItemStatus.INVALID:
+          return <TriangleAlert className="size-4 text-yellow-700" />;
+        case LiveCheckItemStatus.CAVEATED:
+          return <CircleHelp className="size-4 text-indigo-400" />;
+      }
     }
-
-    return <TableCell style={{ width: width }}>{content}</TableCell>;
-  };
+    return null;
+  })();
 
   return (
     <>
       {item.status === LiveCheckItemStatus.INVALID && (
         <TableRow>
-          <TableCell
-            colSpan={7}
-            style={{
-              color: theme.palette.getContrastText(theme.palette.warning.dark),
-              backgroundColor: theme.palette.warning.dark,
-            }}
-          >
+          <TableCell colSpan={7} className="bg-yellow-700/30 text-foreground">
             {item.errorMessage}:
           </TableCell>
         </TableRow>
       )}
       <TableRow>
-        <TableCell
-          style={{
-            verticalAlign: "center",
-            width: "1em",
-            paddingLeft: "0.5em",
-            paddingRight: "0.5em",
-          }}
-        >
+        <TableCell className="w-8 px-1 align-middle">
           {item.debugInformation !== undefined && (
-            <IconButton size="small" onClick={() => setIsExpanded(!isExpanded)}>
-              {isExpanded ? <ExpandMoreIcon /> : <ChevronRightIcon />}
-            </IconButton>
+            <Button size="icon-xs" variant="ghost" onClick={() => setIsExpanded(!isExpanded)}>
+              {isExpanded ? <ChevronDown /> : <ChevronRight />}
+            </Button>
           )}
         </TableCell>
-
-        <TableCell
-          style={{
-            verticalAlign: "center",
-            width: "1em",
-            paddingLeft: "0.5em",
-            paddingRight: "0.5em",
-          }}
-        >
-          <div style={{ display: "flex" }}>
-            {status === LiveCheckStatus.CHECKING && (
-              <CircularProgress className={classes.progress} size="1.5em" />
-            )}
-            {status === LiveCheckStatus.PARSE_ERROR && <WarningIcon className={classes.gray} />}
-            {status === LiveCheckStatus.SERVICE_ERROR && <ErrorOutlineIcon color="error" />}
-            {status === LiveCheckStatus.NEVER_RUN && <RadioButtonUncheckedIcon />}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.FOUND && (
-                <CheckCircleIcon className={classes.success} />
-              )}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.NOT_FOUND && <HighlightOffIcon color="error" />}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.NOT_CHECKED && <RadioButtonUncheckedIcon />}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.NOT_VALID && (
-                <RemoveCircleOutlineIcon className={classes.gray} />
-              )}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.INVALID && (
-                <ErrorOutlineIcon className={classes.warning} />
-              )}
-            {status === LiveCheckStatus.NOT_CHECKING &&
-              item.status === LiveCheckItemStatus.CAVEATED && (
-                <HelpOutlineIcon className={classes.caveated} />
-              )}
+        <TableCell className="w-8 px-1 align-middle">{statusIcon}</TableCell>
+        <TableCell className="w-[28%]">
+          <div className="flex items-center gap-2">
+            <DotDisplay colorSet={interpolatePurples} valueSet={objects} value={object} />
+            <Combobox
+              options={objects.map((o) => ({ value: o }))}
+              value={object}
+              onValueChange={handleObjectChange}
+              placeholder="tenant/namespace:objectid"
+              inputClassName="font-mono"
+            />
           </div>
         </TableCell>
-        {wrap(
-          <div className={classes.editorContainer}>
-            <DotDisplay colorSet={interpolatePurples} valueSet={objects} value={objectInputValue} />
-            <Autocomplete
-              freeSolo
-              options={objects}
-              getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, objects, interpolatePurples)}
-              value={object}
-              inputValue={objectInputValue}
-              onInputChange={handleChangeObjectInput}
-              onChange={handleChangeObject}
-              fullWidth
-              disableClearable
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  fullWidth
-                  inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
-                  }}
-                  placeholder="tenant/namespace:objectid"
-                />
-              )}
-            />
-          </div>,
-          "28%",
-        )}
-        {wrap(
-          <div className={classes.editorContainer}>
-            <DotDisplay colorSet={interpolateBlues} valueSet={actions} value={actionInputValue} />
-            <Autocomplete
-              freeSolo
-              options={actions}
-              getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, actions, interpolateBlues)}
+        <TableCell className="w-[18%]">
+          <div className="flex items-center gap-2">
+            <DotDisplay colorSet={interpolateBlues} valueSet={actions} value={action} />
+            <Combobox
+              options={actions.map((a) => ({ value: a }))}
               value={action}
-              inputValue={actionInputValue}
-              onInputChange={handleChangeActionInput}
-              onChange={handleChangeAction}
-              fullWidth
-              disableClearable
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  fullWidth
-                  inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
-                  }}
-                  placeholder="view"
-                />
-              )}
+              onValueChange={handleActionChange}
+              placeholder="view"
+              inputClassName="font-mono"
             />
-          </div>,
-          "18%",
-        )}
-        {wrap(
-          <div className={classes.editorContainer}>
-            <DotDisplay
-              colorSet={interpolateOranges}
-              valueSet={subjects}
-              value={subjectInputValue}
-            />
-            <Autocomplete
-              freeSolo
-              options={subjects}
-              getOptionLabel={(option: string) => option}
-              renderOption={(option) => renderOption(option, subjects, interpolateOranges)}
+          </div>
+        </TableCell>
+        <TableCell className="w-[28%]">
+          <div className="flex items-center gap-2">
+            <DotDisplay colorSet={interpolateOranges} valueSet={subjects} value={subject} />
+            <Combobox
+              options={subjects.map((s) => ({ value: s }))}
               value={subject}
-              inputValue={subjectInputValue}
-              onInputChange={handleChangeSubjectInput}
-              onChange={handleChangeSubject}
-              fullWidth
-              disableClearable
-              renderInput={(params) => (
-                <TextField
-                  {...params}
-                  size="small"
-                  fullWidth
-                  inputProps={{
-                    ...params["inputProps"],
-                    style: { fontFamily: "monospace" },
-                  }}
-                  placeholder="tenant/user:someuser"
-                />
-              )}
+              onValueChange={handleSubjectChange}
+              placeholder="tenant/user:someuser"
+              inputClassName="font-mono"
             />
-          </div>,
-          "28%",
-        )}
-        {wrap(
-          <div className={classes.editorContainer}>
-            <TextField
-              size="small"
-              multiline={true}
-              fullWidth
-              inputProps={{
-                style: { fontFamily: "monospace" },
-              }}
-              onChange={handleChangeContextInput}
-              placeholder='{"field": value}'
-              type="text"
-              value={context}
-            />
-          </div>,
-          "26%",
-        )}
-        <TableCell style={{ width: "1em" }}>
-          <IconButton size="small" edge="end" onClick={handleDeleteRow}>
-            <DeleteForeverIcon />
-          </IconButton>
+          </div>
+        </TableCell>
+        <TableCell className="w-[26%]">
+          <Input
+            value={context}
+            onChange={handleContextChange}
+            placeholder='{"field": value}'
+            className="font-mono"
+          />
+        </TableCell>
+        <TableCell className="w-8">
+          <Button
+            size="icon-sm"
+            variant="ghost"
+            onClick={() => liveCheckService.removeItem(item)}
+          >
+            <Trash2 />
+          </Button>
         </TableCell>
       </TableRow>
       {item.debugInformation !== undefined && isExpanded && (
@@ -658,14 +344,12 @@ function DotDisplay(props: {
   valueSet: (string | undefined)[];
   value: string;
 }) {
-  const classes = useStyles();
-  const color = props.colorSet(1 - props.valueSet.indexOf(props.value) / 9);
+  const found = props.valueSet.indexOf(props.value);
+  const color = found >= 0 ? props.colorSet(1 - found / 9) : "transparent";
   return (
-    <div
-      className={classes.dot}
-      style={{
-        backgroundColor: props.valueSet.indexOf(props.value) >= 0 ? color : "transparent",
-      }}
+    <span
+      className="inline-block size-2 shrink-0 rounded-full"
+      style={{ backgroundColor: color }}
     />
   );
 }

@@ -1,6 +1,4 @@
-import { useTheme } from "@material-ui/core/styles";
 import { useState } from "react";
-import "react-reflex/styles.css";
 import { toast } from "sonner";
 
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
@@ -132,23 +130,23 @@ export interface ValidationService {
   conductValidation: (callback: ValidationCallback) => void;
 }
 
+const VALIDATION_STATUS_COLORS: Record<ValidationStatus, string> = {
+  [ValidationStatus.NOT_RUN]: "grey",
+  [ValidationStatus.CALL_ERROR]: "grey",
+  [ValidationStatus.RUNNING]: "white",
+  [ValidationStatus.VALIDATED]: "rgb(16 185 129)", // emerald-500
+  [ValidationStatus.VALIDATION_ERROR]: "var(--color-destructive)",
+};
+
 export function useValidationService(
   developerService: DeveloperService,
   datastore: DataStore,
 ): ValidationService {
-  const theme = useTheme();
-
   const [validationState, setValidationState] = useState<ValidationState>({
     status: ValidationStatus.NOT_RUN,
   });
 
-  const validationStatusColor = {
-    [ValidationStatus.NOT_RUN]: "grey",
-    [ValidationStatus.CALL_ERROR]: "grey",
-    [ValidationStatus.RUNNING]: "white",
-    [ValidationStatus.VALIDATED]: theme.palette.success.main,
-    [ValidationStatus.VALIDATION_ERROR]: theme.palette.error.main,
-  }[validationState.status];
+  const validationStatusColor = VALIDATION_STATUS_COLORS[validationState.status];
 
   const { pushEvent } = useGoogleAnalytics();
 

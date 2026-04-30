@@ -1,6 +1,7 @@
 import { CustomCell, CustomRenderer, GridCellKind } from "@glideapps/glide-data-grid";
-import TextField from "@material-ui/core/TextField";
-import React, { RefObject, useEffect, useRef } from "react";
+import React, { RefObject, useEffect, useRef, useState } from "react";
+
+import { Input } from "@/components/ui/input";
 
 import { Column, CommentCellPrefix } from "./columns";
 import { FieldCellRendererProps } from "./fieldcell";
@@ -37,7 +38,7 @@ type CommentCellEditorProps = {
 const CommentCellEditor = (props: CommentCellEditorProps) => {
   // From: https://github.com/mui/material-ui/issues/12779
   // Ensures that the autofocus jumps to the end of the input's value.
-  const handleFocus = (event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
     const lengthOfInput = event.target.value.length;
     return event.target.setSelectionRange(lengthOfInput, lengthOfInput);
   };
@@ -52,38 +53,40 @@ const CommentCellEditor = (props: CommentCellEditorProps) => {
     ?.slice(props.value.data.col)
     .map((col: Column) => col.width)
     .reduce((n, m) => n + m);
-  const fieldRef = useRef<HTMLDivElement | null>(null);
+  const containerRef = useRef<HTMLDivElement | null>(null);
+  const [internalValue, setInternalValue] = useState<string>(defaultValue);
 
   // NOTE: This is necessary to ensure that the container for the comment editor can span
   // the entire width of the comment cell span. The data grid by default sets a max width
   // of ~400px on the parent element, which was cutting off the editor.
   useEffect(() => {
-    if (fieldRef.current) {
-      if (fieldRef.current.parentElement?.parentElement) {
-        fieldRef.current.parentElement.parentElement.style.maxWidth = "none";
+    if (containerRef.current) {
+      if (containerRef.current.parentElement?.parentElement) {
+        containerRef.current.parentElement.parentElement.style.maxWidth = "none";
       }
     }
   }, []);
 
   return (
-    <TextField
-      ref={fieldRef}
-      autoFocus={true}
-      defaultValue={defaultValue}
-      onFocus={handleFocus}
-      fullWidth
-      style={{ width: width }}
-      onChange={(e) => {
-        props.onChange({
-          ...props.value,
-          copyData: copyDataForCommentCell(e.target.value),
-          data: {
-            ...props.value.data,
-            dataValue: e.target.value,
-          },
-        });
-      }}
-    />
+    <div ref={containerRef} style={{ width: width }}>
+      <Input
+        autoFocus={true}
+        value={internalValue}
+        onFocus={handleFocus}
+        className="w-full"
+        onChange={(e) => {
+          setInternalValue(e.target.value);
+          props.onChange({
+            ...props.value,
+            copyData: copyDataForCommentCell(e.target.value),
+            data: {
+              ...props.value.data,
+              dataValue: e.target.value,
+            },
+          });
+        }}
+      />
+    </div>
   );
 };
 

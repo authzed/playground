@@ -29,6 +29,7 @@ import { useDeveloperService } from "../spicedb-common/services/developerservice
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
+import { EmbeddedThemeWrapper } from "./EmbeddedThemeWrapper";
 import "./fonts.css";
 import { ShareLoader } from "./ShareLoader";
 
@@ -190,11 +191,13 @@ export function EmbeddedPlayground() {
   const classes = useStyles();
   const datastore = useReadonlyDatastore();
   return (
-    <div className={classes.root}>
-      <ShareLoader datastore={datastore} shareUrlRoot="e" sharedRequired={true}>
-        <EmbeddedPlaygroundUI datastore={datastore} />
-      </ShareLoader>
-    </div>
+    <EmbeddedThemeWrapper>
+      <div className={classes.root}>
+        <ShareLoader datastore={datastore} shareUrlRoot="e" sharedRequired={true}>
+          <EmbeddedPlaygroundUI datastore={datastore} />
+        </ShareLoader>
+      </div>
+    </EmbeddedThemeWrapper>
   );
 }
 
