@@ -49,4 +49,59 @@ function TabsContent({ className, ...props }: React.ComponentProps<typeof TabsPr
   );
 }
 
-export { Tabs, TabsList, TabsTrigger, TabsContent };
+/**
+ * Connected-tab variants. The active tab shares its background with the content area
+ * so they appear visually merged (no separator between them). Inactive tabs sit on a
+ * brighter tab-bar background.
+ *
+ * Use these for chrome-like tab strips (Full Playground, Inline). Use the regular
+ * Tabs/TabsList/TabsTrigger above for inline pill tabs (e.g., inside dialogs).
+ */
+function ConnectedTabsList({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.List>) {
+  return (
+    <TabsPrimitive.List
+      data-slot="connected-tabs-list"
+      className={cn(
+        "bg-chrome-tabbar text-muted-foreground flex h-10 items-end p-0 rounded-none",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+function ConnectedTabsTrigger({
+  className,
+  ...props
+}: React.ComponentProps<typeof TabsPrimitive.Trigger>) {
+  return (
+    <TabsPrimitive.Trigger
+      data-slot="connected-tabs-trigger"
+      className={cn(
+        // base
+        "inline-flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium whitespace-nowrap select-none",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+        // inactive
+        "text-muted-foreground hover:text-foreground",
+        // active: matches content area background, no border, no underline
+        "data-[state=active]:bg-background data-[state=active]:text-foreground",
+        // svg sizing
+        "[&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        className,
+      )}
+      {...props}
+    />
+  );
+}
+
+export {
+  Tabs,
+  TabsList,
+  TabsTrigger,
+  TabsContent,
+  ConnectedTabsList,
+  ConnectedTabsTrigger,
+};

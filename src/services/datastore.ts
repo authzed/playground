@@ -1,4 +1,5 @@
 import { useRef } from "react";
+import sjcl from "sjcl";
 import { v4 as uuidv4 } from "uuid";
 import yaml from "yaml";
 
@@ -33,13 +34,21 @@ export interface DataStoreItem {
   editableContents: string;
 }
 
+export type Baseline = {
+  kind: "example" | "shared";
+  identifier: string;
+  hash: string;
+};
+
 interface DataStorageData {
   items: Record<ID, DataStoreItem>;
   editIndex: string;
+  baseline: Baseline | null;
 }
 
-const EMPTY_STORE = {
+const EMPTY_STORE: DataStorageData = {
   editIndex: "",
+  baseline: null,
   items: {
     [DataStorePaths.Schema()]: {
       id: "(schema)",
@@ -102,7 +111,7 @@ export abstract class DataStore {
 
   private listeners: Record<string, ListenerCallback> = {};
 
-  private setStoredAndReport(data: DataStorageData): void {
+  protected setStoredAndReport(data: DataStorageData): void {
     this.setStored(data);
     const editIndex = this.getStored().editIndex;
 
@@ -238,6 +247,58 @@ export abstract class DataStore {
       verificationYaml: yaml.stringify(p.validation, { lineWidth: 0 }),
     });
   }
+
+  /**
+   * computeContentHash returns a stable hash over the editable contents of all items.
+   */
+  public computeContentHash(): string {
+    const data = this.getStored();
+    const ordered = Object.values(data.items)
+      .sort((a, b) => a.id.localeCompare(b.id))
+      .map((item) => `${item.id}\n${item.editableContents}`)
+      .join("\n---\n");
+    return sjcl.codec.hex.fromBits(sjcl.hash.sha256.hash(ordered));
+  }
+
+  /**
+   * setBaseline marks the current contents as the "baseline" — modified detection
+   * compares future contents against this baseline.
+   */
+  public setBaseline(kind: "example" | "shared", identifier: string): void {
+    const data = this.getStored();
+    data.baseline = {
+      kind,
+      identifier,
+      hash: this.computeContentHash(),
+    };
+    this.setStoredAndReport(data);
+  }
+
+  /**
+   * getBaseline returns the current baseline or null if none is set.
+   */
+  public getBaseline(): Baseline | null {
+    return this.getStored().baseline;
+  }
+
+  /**
+   * isModified returns true if the current contents diverge from the baseline.
+   * Returns false if no baseline exists (e.g., the default seed schema).
+   */
+  public isModified(): boolean {
+    const baseline = this.getBaseline();
+    if (!baseline) return false;
+    return this.computeContentHash() !== baseline.hash;
+  }
+
+  /**
+   * clearBaseline removes the baseline (e.g., when resetting to the default schema).
+   */
+  public clearBaseline(): void {
+    const data = this.getStored();
+    data.baseline = null;
+    this.setStoredAndReport(data);
+  }
 }
 
 const LOCAL_STORAGE_DATASTORE_KEY_PREFIX = "playgrounddata";
@@ -276,7 +337,7 @@ class LocalStorageDataStore extends DataStore {
   }
 }
 
-class EphemeralDataStore extends DataStore {
+export class EphemeralDataStore extends DataStore {
   private data: DataStorageData = EMPTY_STORE;
   private wasEdited: boolean = false;
 

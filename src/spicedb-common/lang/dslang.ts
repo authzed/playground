@@ -7,6 +7,13 @@ export const DS_THEME_NAME = "dsl-theme";
 export const DS_DARK_THEME_NAME = "dsl-theme-dark";
 export const DS_EMBED_DARK_THEME_NAME = "dsl-theme-embed-dark";
 
+// Unified themes used across all editor instances in the Full playground.
+// Monaco's setTheme is global; multiple <Editor> instances with different `theme`
+// props fight each other. Using a single theme that includes token rules for
+// every language we render avoids that contention.
+export const PLAYGROUND_DARK_THEME_NAME = "playground-dark";
+export const PLAYGROUND_LIGHT_THEME_NAME = "playground-light";
+
 export default function registerDSLanguage(monaco: typeof monacoEditor) {
   // Based on: https://github.com/microsoft/monaco-languages/blob/main/src/typescript/typescript.ts
   const richEditConfiguration = {
@@ -651,7 +658,7 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     inherit: true,
     rules: DARK_RULES,
     colors: {
-      "editor.background": "#0e0d11",
+      "editor.background": "#0a0a0a",
     },
   });
   monaco.editor.defineTheme(DS_EMBED_DARK_THEME_NAME, {
@@ -660,6 +667,122 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
     rules: DARK_RULES,
     colors: {
       "editor.background": "#0e0d11",
+    },
+  });
+
+  // Token rules for the tuple language (kept in sync with tuplelang.ts).
+  // Replicated here so we can register a single unified theme that spans
+  // both languages and avoid global setTheme contention between editors.
+  const TUPLE_LIGHT_RULES = [
+    { token: "namespace", foreground: "4242ff" },
+    { token: "relation", foreground: "883425" },
+    { token: "dotdotdotrel", foreground: "0a5ed7" },
+    { token: "object", foreground: "000000" },
+
+    { token: "relation.start", foreground: "aaaaaa" },
+    { token: "object.start", foreground: "aaaaaa" },
+
+    { token: "userset-namespace", foreground: "4242ff", fontStyle: "italic" },
+    { token: "userset-relation", foreground: "44778a", fontStyle: "italic" },
+    { token: "userset-dotdotdotrel", foreground: "aaaaaa", fontStyle: "italic" },
+    { token: "userset-object", foreground: "000000", fontStyle: "italic" },
+    { token: "userset-caveat", foreground: "ff87a6", fontStyle: "italic" },
+    { token: "userset-wildcard-object", foreground: "00ffe5", fontStyle: "italic" },
+
+    { token: "userset.start", foreground: "000000", fontStyle: "bold" },
+  ];
+
+  const TUPLE_DARK_RULES = [
+    { token: "namespace", foreground: "8787ff" },
+    { token: "relation", foreground: "ff8887" },
+    { token: "dotdotdotrel", foreground: "0a5ed7" },
+    { token: "object", foreground: "ffffff" },
+
+    { token: "relation.start", foreground: "cccccc" },
+    { token: "object.start", foreground: "cccccc" },
+
+    { token: "userset-namespace", foreground: "8787ff", fontStyle: "italic" },
+    { token: "userset-relation", foreground: "87deff", fontStyle: "italic" },
+    { token: "userset-dotdotdotrel", foreground: "cccccc", fontStyle: "italic" },
+    { token: "userset-object", foreground: "ffffff", fontStyle: "italic" },
+    { token: "userset-caveat", foreground: "ff87a6", fontStyle: "italic" },
+    { token: "userset-wildcard-object", foreground: "00ffe5", fontStyle: "italic" },
+
+    { token: "userset.start", foreground: "ffffff", fontStyle: "bold" },
+  ];
+
+  // Unified themes spanning DSL + tuple tokens. YAML/plain fall back to the
+  // base (vs / vs-dark) tokenization since `inherit: true`.
+  monaco.editor.defineTheme(PLAYGROUND_DARK_THEME_NAME, {
+    base: "vs-dark",
+    inherit: true,
+    rules: [...DARK_RULES, ...TUPLE_DARK_RULES],
+    colors: {
+      "editor.background": "#0a0a0a",
+      // Diagnostic squiggly colors. Monaco's `inherit: true` only inherits
+      // token rules, not color overrides, so these must be set explicitly
+      // or error/warning underlines will not render.
+      "editorError.foreground": "#f87171",
+      "editorWarning.foreground": "#facc15",
+      "editorInfo.foreground": "#60a5fa",
+      "editorHint.foreground": "#94a3b8",
+    },
+  });
+  monaco.editor.defineTheme(PLAYGROUND_LIGHT_THEME_NAME, {
+    base: "vs",
+    inherit: true,
+    rules: [
+      { token: "comment", foreground: "608b4e" },
+      { token: "comment.doc", foreground: "64bf3b" },
+      { token: "keyword", foreground: "8787ff" },
+
+      { token: "type", foreground: "4242ff" },
+      { token: "type.unknown", foreground: "ff0000" },
+
+      { token: "type.relation", foreground: "883425" },
+      { token: "type.identifier", foreground: "4242ff" },
+      { token: "type.relsymbol", foreground: "000000" },
+
+      { token: "type.wildcard", foreground: "00cfba", fontStyle: "bold" },
+      { token: "type.wildcardsymbol", foreground: "000000" },
+
+      { token: "member", foreground: "883425" },
+      { token: "member.unknown", foreground: "ff0000" },
+
+      { token: "property", foreground: "158a64" },
+      { token: "property.unknown", foreground: "ff0000" },
+
+      { token: "identifier.relorperm", foreground: "666666" },
+
+      { token: "keyword.expiration", foreground: "ddaaaa" },
+      { token: "keyword.permission", foreground: "158a64" },
+      { token: "keyword.relation", foreground: "883425" },
+      { token: "keyword.definition", foreground: "4242ff" },
+      { token: "keyword.caveat", foreground: "ff4271" },
+      { token: "keyword.nil", foreground: "999999" },
+      { token: "keyword.self", foreground: "999999" },
+      { token: "keyword.any", foreground: "23974d" },
+      { token: "keyword.all", foreground: "972323" },
+
+      { token: "identifier.type-prefix", foreground: "aaaaaa" },
+      { token: "identifier.definition-prefix", foreground: "aaaaaa" },
+
+      { token: "identifier.caveat", foreground: "000000" },
+      { token: "identifier.caveat-param-name", foreground: "9eb4df" },
+      { token: "identifier.caveat-usage", foreground: "000000" },
+
+      { token: "identifier.definition", foreground: "000000" },
+      { token: "identifier.permission", foreground: "000000" },
+      { token: "identifier.relation", foreground: "000000" },
+
+      ...TUPLE_LIGHT_RULES,
+    ],
+    colors: {
+      // Diagnostic squiggly colors. See note in PLAYGROUND_DARK_THEME_NAME.
+      "editorError.foreground": "#dc2626",
+      "editorWarning.foreground": "#ca8a04",
+      "editorInfo.foreground": "#2563eb",
+      "editorHint.foreground": "#475569",
     },
   });
 }
