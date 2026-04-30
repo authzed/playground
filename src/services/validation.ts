@@ -126,17 +126,8 @@ function runValidation(
 export interface ValidationService {
   state: ValidationState;
   isRunning: boolean;
-  validationStatusColor: string;
   conductValidation: (callback: ValidationCallback) => void;
 }
-
-const VALIDATION_STATUS_COLORS: Record<ValidationStatus, string> = {
-  [ValidationStatus.NOT_RUN]: "grey",
-  [ValidationStatus.CALL_ERROR]: "grey",
-  [ValidationStatus.RUNNING]: "white",
-  [ValidationStatus.VALIDATED]: "rgb(16 185 129)", // emerald-500
-  [ValidationStatus.VALIDATION_ERROR]: "var(--color-destructive)",
-};
 
 export function useValidationService(
   developerService: DeveloperService,
@@ -145,8 +136,6 @@ export function useValidationService(
   const [validationState, setValidationState] = useState<ValidationState>({
     status: ValidationStatus.NOT_RUN,
   });
-
-  const validationStatusColor = VALIDATION_STATUS_COLORS[validationState.status];
 
   const { pushEvent } = useGoogleAnalytics();
 
@@ -174,7 +163,6 @@ export function useValidationService(
   return {
     state: validationState,
     isRunning: validationState.status === ValidationStatus.RUNNING,
-    validationStatusColor: validationStatusColor,
     conductValidation: conductValidation,
   };
 }
