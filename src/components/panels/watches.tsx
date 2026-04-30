@@ -243,7 +243,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
         case LiveCheckItemStatus.NOT_CHECKED:
           return <span className="size-4 rounded-full border border-current" />;
         case LiveCheckItemStatus.NOT_VALID:
-          return <span className="size-4 rounded-full border border-current text-muted-foreground" />;
+          return <span className="size-4 rounded-full border border-current text-orange-500" />;
         case LiveCheckItemStatus.INVALID:
           return <TriangleAlert className="size-4 text-yellow-700" />;
         case LiveCheckItemStatus.CAVEATED:

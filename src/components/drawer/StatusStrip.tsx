@@ -21,8 +21,12 @@ export function StatusStrip({ services }: StatusStripProps) {
   const errorCount = services.problemService.errorCount;
   const warningCount = services.problemService.warnings.length;
   const watches = services.liveCheckService.items;
-  const watchSuccess = watches.filter((i) => i.status === LiveCheckItemStatus.FOUND).length;
-  const watchFail = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_FOUND).length;
+  const watchSuccess  = watches.filter((i) => i.status === LiveCheckItemStatus.FOUND).length;
+  const watchFail     = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_FOUND).length;
+  const watchInvalid  = watches.filter((i) => i.status === LiveCheckItemStatus.INVALID).length;
+  const watchUnable   = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_VALID).length;
+  const watchCaveated = watches.filter((i) => i.status === LiveCheckItemStatus.CAVEATED).length;
+  const watchPending  = watches.filter((i) => i.status === LiveCheckItemStatus.NOT_CHECKED).length;
 
   const isActive = (id: PanelId) => open && activePanel === id;
 
@@ -56,12 +60,32 @@ export function StatusStrip({ services }: StatusStripProps) {
             label="Check Watches"
             compact={watches.length === 0}
             badges={[
-              watchSuccess > 0 && { value: watchSuccess, variant: "success" as const },
-              watchFail > 0 && { value: watchFail, variant: "error" as const },
-            ].filter(Boolean) as Array<{ value: number; variant: "success" | "error" }>}
+              watchSuccess > 0  && { value: watchSuccess,  variant: "success" as const },
+              watchFail > 0     && { value: watchFail,     variant: "error" as const },
+              watchInvalid > 0  && { value: watchInvalid,  variant: "warning" as const },
+              watchUnable > 0   && { value: watchUnable,   variant: "unable" as const },
+              watchCaveated > 0 && { value: watchCaveated, variant: "missing" as const },
+            ].filter(Boolean) as Array<{
+              value: number;
+              variant: "success" | "error" | "warning" | "unable" | "missing";
+            }>}
           />
         </TooltipTrigger>
-        <TooltipContent side="top">Live permission check watches</TooltipContent>
+        <TooltipContent side="top">
+          {watches.length === 0 ? (
+            "Live permission check watches"
+          ) : watchSuccess === watches.length ? (
+            `All ${watches.length} check ${watches.length === 1 ? "watch" : "watches"} passed`
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              {watchFail > 0     && <div>{watchFail} failed</div>}
+              {watchInvalid > 0  && <div>{watchInvalid} invalid</div>}
+              {watchUnable > 0   && <div>{watchUnable} unable to run</div>}
+              {watchCaveated > 0 && <div>{watchCaveated} missing context</div>}
+              {watchPending > 0  && <div>{watchPending} pending</div>}
+            </div>
+          )}
+        </TooltipContent>
       </Tooltip>
 
       <div className="ml-auto border-t border-chrome-divider" />
@@ -95,7 +119,7 @@ interface PanelButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>
   icon: React.ReactNode;
   label: React.ReactNode;
   compact: boolean;
-  badges: Array<{ value: number; variant: "success" | "error" | "warning" }>;
+  badges: Array<{ value: number; variant: "success" | "error" | "warning" | "unable" | "missing" }>;
 }
 
 const PanelButton = React.forwardRef<HTMLButtonElement, PanelButtonProps>(function PanelButton(
@@ -131,6 +155,8 @@ const PanelButton = React.forwardRef<HTMLButtonElement, PanelButtonProps>(functi
             b.variant === "success" && "bg-emerald-700 text-emerald-50",
             b.variant === "error" && "bg-destructive text-destructive-foreground",
             b.variant === "warning" && "bg-yellow-700 text-yellow-50",
+            b.variant === "unable" && "bg-orange-700 text-orange-50",
+            b.variant === "missing" && "bg-indigo-700 text-indigo-50",
           )}
         >
           {b.value}

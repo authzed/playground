@@ -11,6 +11,8 @@ interface EditorTabProps {
   document: DocumentRef;
   active: boolean;
   canClose: boolean;
+  /** Per-tab diagnostic counts, or undefined if none for this tab. */
+  diagnostics?: TabDiagnostics;
   /** Called when the tab is clicked (excluding the close button). */
   onClick: () => void;
   /** Called when the close × is clicked. */
@@ -19,6 +21,11 @@ interface EditorTabProps {
   onDragStart: (e: React.DragEvent<HTMLDivElement>) => void;
   onDragOver: (e: React.DragEvent<HTMLDivElement>) => void;
   onDrop: (e: React.DragEvent<HTMLDivElement>) => void;
+}
+
+export interface TabDiagnostics {
+  errors: number;
+  warnings: number;
 }
 
 export const DOCUMENT_LABELS: Record<DocumentRef, string> = {
@@ -45,18 +52,33 @@ export const DOCUMENT_BADGE_CODES: Record<DocumentRef, string> = {
   visualizer: "V",
 };
 
-export function EditorTab({
-  document,
-  active,
-  canClose,
-  onClick,
-  onClose,
-  onDragStart,
-  onDragOver,
-  onDrop,
-}: EditorTabProps) {
+type EditorTabRootProps = Omit<
+  React.HTMLAttributes<HTMLDivElement>,
+  "onClick" | "onDragStart" | "onDragOver" | "onDrop" | "onCopy"
+>;
+
+export const EditorTab = React.forwardRef<
+  HTMLDivElement,
+  EditorTabProps & EditorTabRootProps
+>(function EditorTab(
+  {
+    document,
+    active,
+    canClose,
+    diagnostics,
+    onClick,
+    onClose,
+    onDragStart,
+    onDragOver,
+    onDrop,
+    className,
+    ...rest
+  },
+  ref,
+) {
   return (
     <div
+      ref={ref}
       draggable
       onClick={onClick}
       onDragStart={onDragStart}
@@ -68,9 +90,11 @@ export function EditorTab({
         active
           ? "bg-background text-foreground"
           : "text-muted-foreground hover:text-foreground",
+        className,
       )}
       role="tab"
       aria-selected={active}
+      {...rest}
     >
       <span
         aria-hidden
@@ -82,6 +106,22 @@ export function EditorTab({
         {DOCUMENT_BADGE_CODES[document]}
       </span>
       <span>{DOCUMENT_LABELS[document]}</span>
+      {diagnostics && diagnostics.errors > 0 && (
+        <span
+          className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-destructive px-1 text-xs text-destructive-foreground"
+          aria-label={`${diagnostics.errors} ${diagnostics.errors === 1 ? "error" : "errors"}`}
+        >
+          {diagnostics.errors}
+        </span>
+      )}
+      {diagnostics && diagnostics.warnings > 0 && (
+        <span
+          className="inline-flex h-4 min-w-4 items-center justify-center rounded bg-yellow-700 px-1 text-xs text-yellow-50"
+          aria-label={`${diagnostics.warnings} ${diagnostics.warnings === 1 ? "warning" : "warnings"}`}
+        >
+          {diagnostics.warnings}
+        </span>
+      )}
       {canClose && (
         <Tooltip>
           <TooltipTrigger asChild>
@@ -103,4 +143,4 @@ export function EditorTab({
       )}
     </div>
   );
-}
+});
