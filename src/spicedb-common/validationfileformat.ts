@@ -6,11 +6,19 @@ export type AssertionData = {
   assertFalse?: string[];
 };
 
+export type CheckWatch = {
+  object: string;
+  action: string;
+  subject: string;
+  context?: string;
+};
+
 export interface ParsedValidation {
   schema: string;
   relationships: string;
   assertions?: AssertionData;
   validation?: ValidationData;
+  checkWatches?: CheckWatch[];
 }
 
 export type ValidationData = Record<string, string[]>;
@@ -41,6 +49,20 @@ const schema = {
     validation: {
       type: ["object", "null"],
       additionalProperties: true,
+    },
+    checkWatches: {
+      type: "array",
+      items: {
+        type: "object",
+        properties: {
+          object: { type: "string" },
+          action: { type: "string" },
+          subject: { type: "string" },
+          context: { type: "string" },
+        },
+        required: ["object", "action", "subject"],
+        additionalProperties: false,
+      },
     },
   },
   required: ["schema", "relationships"],

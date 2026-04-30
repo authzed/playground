@@ -38,7 +38,7 @@ import { useDocumentIdentity } from "../hooks/use-document-identity";
 import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
-import { useLiveCheckService } from "../services/check";
+import { useLiveCheckService, type LiveCheckService, liveCheckItemToWatch } from "../services/check";
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import {
@@ -51,7 +51,7 @@ import { useProblemService } from "../services/problem";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
 import { createValidationYAML, normalizeValidationYAML } from "../services/validationfileformat";
 import { Example, LoadExamples } from "../spicedb-common/examples";
-import { useDeveloperService } from "../spicedb-common/services/developerservice";
+import { useDeveloperService, type DeveloperService } from "../spicedb-common/services/developerservice";
 import { useZedTerminalService } from "../spicedb-common/services/zedterminalservice";
 import { parseValidationYAML } from "../spicedb-common/validationfileformat";
 
@@ -129,14 +129,30 @@ export function FullPlayground() {
 
 function ApolloedPlayground() {
   const datastore = usePlaygroundDatastore();
+  const developerService = useDeveloperService();
+  const liveCheckService = useLiveCheckService(developerService, datastore, { persist: true });
   return (
-    <ShareLoader datastore={datastore} shareUrlRoot="s" sharedRequired={false}>
-      <ThemedAppView key="app" datastore={datastore} />
+    <ShareLoader
+      datastore={datastore}
+      liveCheckService={liveCheckService}
+      shareUrlRoot="s"
+      sharedRequired={false}
+    >
+      <ThemedAppView
+        key="app"
+        datastore={datastore}
+        developerService={developerService}
+        liveCheckService={liveCheckService}
+      />
     </ShareLoader>
   );
 }
 
-export function ThemedAppView(props: { datastore: DataStore }) {
+export function ThemedAppView(props: {
+  datastore: DataStore;
+  developerService: DeveloperService;
+  liveCheckService: LiveCheckService;
+}) {
   const { pushEvent } = useGoogleAnalytics();
   const { showConfirm } = useConfirmDialog();
 
@@ -169,9 +185,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const datastore = props.datastore;
 
-  const developerService = useDeveloperService();
+  const developerService = props.developerService;
+  const liveCheckService = props.liveCheckService;
   const localParseService = useLocalParseService(datastore);
-  const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = useZedTerminalService();
@@ -189,7 +205,10 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const [showTour, setShowTour] = useState(!cookies["dismiss-tour"]);
 
   const conductDownload = () => {
-    const yamlContents = createValidationYAML(datastore);
+    const yamlContents = createValidationYAML(
+      datastore,
+      liveCheckService.items.map(liveCheckItemToWatch),
+    );
     const bitArray = sjcl.hash.sha256.hash(yamlContents);
     const hash = sjcl.codec.hex.fromBits(bitArray).substring(0, 6);
     const blob = new Blob([yamlContents], { type: "text/yaml;charset=utf-8" });
@@ -217,9 +236,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
         return;
       }
 
-      services.liveCheckService.clear();
-
       datastore.loadFromParsed(uploaded);
+      services.liveCheckService.loadWatches(uploaded.checkWatches ?? []);
       datastoreUpdated();
     }
   };
@@ -257,6 +275,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       DataStoreItemKind.EXPECTED_RELATIONS,
     ).editableContents!;
 
+    const checkWatches = liveCheckService.items.map(liveCheckItemToWatch);
+
     // Invoke sharing.
     try {
       const response = await fetch(`${shareApiEndpoint}/api/share`, {
@@ -270,6 +290,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           relationships_yaml: relationshipsYaml,
           assertions_yaml: assertionsYaml,
           validation_yaml: validationYaml,
+          ...(checkWatches.length > 0 ? { check_watches: checkWatches } : {}),
         }),
       });
 
@@ -323,7 +344,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     datastore.setBaseline("example", ex.id);
     datastoreUpdated();
 
-    services.liveCheckService.clear();
+    services.liveCheckService.loadWatches(ex.data.checkWatches ?? []);
   };
 
   const [previousValidationForDiff, setPreviousValidationForDiff] = useState<string | undefined>(

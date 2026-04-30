@@ -243,7 +243,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
         case LiveCheckItemStatus.NOT_CHECKED:
           return <span className="size-4 rounded-full border border-current" />;
         case LiveCheckItemStatus.NOT_VALID:
-          return <Trash2 className="size-4 text-muted-foreground" />;
+          return <span className="size-4 rounded-full border border-current text-muted-foreground" />;
         case LiveCheckItemStatus.INVALID:
           return <TriangleAlert className="size-4 text-yellow-700" />;
         case LiveCheckItemStatus.CAVEATED:
@@ -279,7 +279,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
               value={object}
               onValueChange={handleObjectChange}
               placeholder="tenant/namespace:objectid"
-              inputClassName="font-mono"
+              inputClassName="font-mono placeholder:text-muted-foreground/50"
             />
           </div>
         </TableCell>
@@ -291,7 +291,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
               value={action}
               onValueChange={handleActionChange}
               placeholder="view"
-              inputClassName="font-mono"
+              inputClassName="font-mono placeholder:text-muted-foreground/50"
             />
           </div>
         </TableCell>
@@ -303,7 +303,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
               value={subject}
               onValueChange={handleSubjectChange}
               placeholder="tenant/user:someuser"
-              inputClassName="font-mono"
+              inputClassName="font-mono placeholder:text-muted-foreground/50"
             />
           </div>
         </TableCell>
@@ -312,7 +312,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
             value={context}
             onChange={handleContextChange}
             placeholder='{"field": value}'
-            className="font-mono"
+            className="font-mono placeholder:text-muted-foreground/50"
           />
         </TableCell>
         <TableCell className="w-8">

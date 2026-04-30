@@ -10,7 +10,7 @@ import { ChevronDown, Loader, File, User, ThumbsUp, Database } from "lucide-reac
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
-import { useLiveCheckService } from "../services/check";
+import { useLiveCheckService, liveCheckItemToWatch, type LiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
@@ -25,7 +25,7 @@ import {
   CheckOperationsResult_Membership,
   CheckOperationsResultSchema,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
-import { useDeveloperService } from "../spicedb-common/services/developerservice";
+import { useDeveloperService, type DeveloperService } from "../spicedb-common/services/developerservice";
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
@@ -190,24 +190,39 @@ const useStyles = makeStyles(() =>
 export function EmbeddedPlayground() {
   const classes = useStyles();
   const datastore = useReadonlyDatastore();
+  const developerService = useDeveloperService();
+  const liveCheckService = useLiveCheckService(developerService, datastore);
   return (
     <EmbeddedThemeWrapper>
       <div className={classes.root}>
-        <ShareLoader datastore={datastore} shareUrlRoot="e" sharedRequired={true}>
-          <EmbeddedPlaygroundUI datastore={datastore} />
+        <ShareLoader
+          datastore={datastore}
+          liveCheckService={liveCheckService}
+          shareUrlRoot="e"
+          sharedRequired={true}
+        >
+          <EmbeddedPlaygroundUI
+            datastore={datastore}
+            developerService={developerService}
+            liveCheckService={liveCheckService}
+          />
         </ShareLoader>
       </div>
     </EmbeddedThemeWrapper>
   );
 }
 
-function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
+function EmbeddedPlaygroundUI(props: {
+  datastore: DataStore;
+  developerService: DeveloperService;
+  liveCheckService: LiveCheckService;
+}) {
   const classes = useStyles();
   const datastore = props.datastore;
 
-  const developerService = useDeveloperService();
+  const developerService = props.developerService;
+  const liveCheckService = props.liveCheckService;
   const localParseService = useLocalParseService(datastore);
-  const liveCheckService = useLiveCheckService(developerService, datastore);
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = undefined; // not used
@@ -271,6 +286,8 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
       DataStoreItemKind.EXPECTED_RELATIONS,
     ).editableContents!;
 
+    const checkWatches = liveCheckService.items.map(liveCheckItemToWatch);
+
     // Invoke sharing.
     try {
       const response = await fetch(`${shareApiEndpoint}/api/share`, {
@@ -284,6 +301,7 @@ function EmbeddedPlaygroundUI(props: { datastore: DataStore }) {
           relationships_yaml: relationshipsYaml,
           assertions_yaml: assertionsYaml,
           validation_yaml: validationYaml,
+          ...(checkWatches.length > 0 ? { check_watches: checkWatches } : {}),
         }),
       });
 
