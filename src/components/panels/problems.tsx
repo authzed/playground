@@ -12,10 +12,7 @@ import {
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
 import { DocumentLink } from "../document-link";
 
-import {
-  DeveloperSourceDisplay,
-  DeveloperWarningSourceDisplay,
-} from "./errordisplays";
+import { DeveloperSourceDisplay, DeveloperWarningSourceDisplay } from "./errordisplays";
 
 interface ProblemsPanelProps {
   services: Services;
@@ -27,15 +24,11 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
   const invalidRels = services.problemService.invalidRelationships;
   const validationErrors = services.problemService.validationErrors;
 
-  const schemaErrors = requestErrors.filter(
-    (e) => e.source === DeveloperError_Source.SCHEMA,
-  );
+  const schemaErrors = requestErrors.filter((e) => e.source === DeveloperError_Source.SCHEMA);
   const relationshipRequestErrors = requestErrors.filter(
     (e) => e.source === DeveloperError_Source.RELATIONSHIP,
   );
-  const assertionErrors = requestErrors.filter(
-    (e) => e.source === DeveloperError_Source.ASSERTION,
-  );
+  const assertionErrors = requestErrors.filter((e) => e.source === DeveloperError_Source.ASSERTION);
 
   return (
     <div className="p-2 space-y-1">
@@ -129,18 +122,10 @@ function Group({
           onClick={() => setExpanded((e) => !e)}
           className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-foreground"
         >
-          {expanded ? (
-            <ChevronDown className="size-3" />
-          ) : (
-            <ChevronRight className="size-3" />
-          )}
+          {expanded ? <ChevronDown className="size-3" /> : <ChevronRight className="size-3" />}
           <span className="uppercase tracking-wide">{title}</span>
-          {errorCount > 0 && (
-            <CountBadge value={errorCount} variant="error" />
-          )}
-          {warningCount > 0 && (
-            <CountBadge value={warningCount} variant="warning" />
-          )}
+          {errorCount > 0 && <CountBadge value={errorCount} variant="error" />}
+          {warningCount > 0 && <CountBadge value={warningCount} variant="warning" />}
           {total === 0 && <CountBadge value={0} variant="empty" />}
         </button>
         <div className="ml-auto">{action}</div>
@@ -150,13 +135,7 @@ function Group({
   );
 }
 
-function CountBadge({
-  value,
-  variant,
-}: {
-  value: number;
-  variant: "error" | "warning" | "empty";
-}) {
+function CountBadge({ value, variant }: { value: number; variant: "error" | "warning" | "empty" }) {
   return (
     <span
       className={cn(

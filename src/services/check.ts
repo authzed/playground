@@ -18,8 +18,8 @@ import {
 } from "../spicedb-common/services/developerservice";
 import { CheckWatch } from "../spicedb-common/validationfileformat";
 
-import { DataStore, DataStoreItemKind } from "./datastore";
 import { loadStoredWatches, saveStoredWatches } from "./checkwatchstorage";
+import { DataStore, DataStoreItemKind } from "./datastore";
 
 export type { CheckWatch } from "../spicedb-common/validationfileformat";
 

@@ -18,13 +18,9 @@ export interface TabLabelProps {
  */
 export default function TabLabel({ icon, title, className }: TabLabelProps) {
   return (
-    <span
-      className={cn("inline-flex w-full items-center justify-center gap-1.5", className)}
-    >
+    <span className={cn("inline-flex w-full items-center justify-center gap-1.5", className)}>
       <span className="inline-flex">{icon}</span>
-      <span className="inline-block overflow-hidden text-ellipsis whitespace-nowrap">
-        {title}
-      </span>
+      <span className="inline-block overflow-hidden text-ellipsis whitespace-nowrap">{title}</span>
     </span>
   );
 }

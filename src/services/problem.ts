@@ -85,8 +85,7 @@ export function useProblemService(
   // Include validation errors in the rollup so that StatusStrip's compact
   // Problems indicator expands when validation produces errors (not just when
   // a request errors out).
-  const errorCount =
-    requestErrors.length + invalidRelationships.length + validationErrors.length;
+  const errorCount = requestErrors.length + invalidRelationships.length + validationErrors.length;
 
   const getErrorCount = (kind: DataStoreItemKind) => {
     const allProblems = Array.from(requestErrors);

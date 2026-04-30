@@ -2,18 +2,14 @@ import { parseSchema } from "@authzed/spicedb-parser-js";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useState } from "react";
 
+import { Button } from "@/components/ui/button";
 import { ConnectedTabsList, ConnectedTabsTrigger, Tabs } from "@/components/ui/tabs";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
 import TenantGraph from "@/components/visualizer/TenantGraph";
 import { cn } from "@/lib/utils";
 
 import { useLiveCheckService } from "../services/check";
-import {
-  DataStore,
-  DataStoreItemKind,
-  useReadonlyDatastore,
-} from "../services/datastore";
+import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { useValidationService } from "../services/validation";

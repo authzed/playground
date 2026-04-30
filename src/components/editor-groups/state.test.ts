@@ -112,8 +112,7 @@ describe("editor groups store", () => {
 
     useEditorStore.getState().moveTab("relationships", "g2");
     const s = useEditorStore.getState();
-    const inGroup =
-      s.layout.kind === "single" && s.layout.group.tabs.includes("relationships");
+    const inGroup = s.layout.kind === "single" && s.layout.group.tabs.includes("relationships");
     const inClosedPool = s.closedPool.includes("relationships");
     expect(inGroup || inClosedPool).toBe(true);
   });

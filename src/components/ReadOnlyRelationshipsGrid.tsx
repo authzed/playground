@@ -40,9 +40,7 @@ export function ReadOnlyRelationshipsGrid(props: {
                 <TableCell className="text-[#ffa887]">
                   {relationship.resourceAndRelation?.relation}
                 </TableCell>
-                <TableCell className="text-[#8787ff]">
-                  {relationship.subject?.namespace}
-                </TableCell>
+                <TableCell className="text-[#8787ff]">{relationship.subject?.namespace}</TableCell>
                 <TableCell>{relationship.subject?.objectId}</TableCell>
                 {props.hideSubjectRelation !== true && (
                   <TableCell>{relationship.subject?.relation}</TableCell>

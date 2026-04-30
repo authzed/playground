@@ -26,10 +26,7 @@ export const buildAssertionsYaml = (datastore: DataStore): string => {
  * createValidationYAML creates the full validation YAML file format contents from
  * the datastore.
  */
-export const createValidationYAML = (
-  datastore: DataStore,
-  watches: CheckWatch[] = [],
-): string => {
+export const createValidationYAML = (datastore: DataStore, watches: CheckWatch[] = []): string => {
   const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
   const relationships = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,

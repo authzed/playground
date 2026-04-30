@@ -118,10 +118,7 @@ export function EditorGroups({ renderContent, tabDiagnostics, className }: Edito
 
   return (
     <div ref={containerRef} className={cn("h-full flex", flexDirection, className)}>
-      <div
-        className="min-w-0 min-h-0"
-        style={{ flex: `${primaryRatio} 1 0%` }}
-      >
+      <div className="min-w-0 min-h-0" style={{ flex: `${primaryRatio} 1 0%` }}>
         <EditorGroup
           group={layout.primary}
           closable
@@ -138,10 +135,7 @@ export function EditorGroups({ renderContent, tabDiagnostics, className }: Edito
         role="separator"
         aria-orientation={direction === "horizontal" ? "vertical" : "horizontal"}
       />
-      <div
-        className="min-w-0 min-h-0"
-        style={{ flex: `${1 - primaryRatio} 1 0%` }}
-      >
+      <div className="min-w-0 min-h-0" style={{ flex: `${1 - primaryRatio} 1 0%` }}>
         <EditorGroup
           group={layout.secondary}
           closable

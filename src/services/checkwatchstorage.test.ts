@@ -1,11 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, describe, expect, it } from "vitest";
 
-import {
-  CHECK_WATCH_STORAGE_KEY,
-  loadStoredWatches,
-  saveStoredWatches,
-} from "./checkwatchstorage";
+import { CHECK_WATCH_STORAGE_KEY, loadStoredWatches, saveStoredWatches } from "./checkwatchstorage";
 
 describe("checkwatchstorage", () => {
   afterEach(() => {

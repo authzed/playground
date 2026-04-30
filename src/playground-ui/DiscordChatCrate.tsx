@@ -69,9 +69,7 @@ const resolvePrimaryColor = (): string => {
   if (typeof window === "undefined") {
     return "#7c3aed";
   }
-  const value = getComputedStyle(document.documentElement)
-    .getPropertyValue("--primary")
-    .trim();
+  const value = getComputedStyle(document.documentElement).getPropertyValue("--primary").trim();
   return value || "#7c3aed";
 };
 

@@ -399,11 +399,7 @@ const FieldCellEditor = <T extends CustomCell<Q>, Q extends FieldCellProps>(
               <CommandEmpty>No matches</CommandEmpty>
               <CommandGroup>
                 {autocompleteOptions.map((option) => (
-                  <CommandItem
-                    key={option}
-                    value={option}
-                    onSelect={() => handleSelect(option)}
-                  >
+                  <CommandItem key={option} value={option} onSelect={() => handleSelect(option)}>
                     {option}
                   </CommandItem>
                 ))}

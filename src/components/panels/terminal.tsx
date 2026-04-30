@@ -23,8 +23,9 @@ export function TerminalPanel({ services, datastore }: TerminalPanelProps) {
 
   const handleSubmit = (cmd: string) => {
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
-    const relString = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS)
-      .editableContents!;
+    const relString = datastore.getSingletonByKind(
+      DataStoreItemKind.RELATIONSHIPS,
+    ).editableContents!;
     const [result] = zts.runCommand(cmd, schema, relString);
     if (result?.updatedRelationships) {
       const relItem = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);

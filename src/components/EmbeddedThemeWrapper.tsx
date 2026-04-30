@@ -1,5 +1,5 @@
-import { ThemeProvider as MuiThemeProvider, createTheme } from "@material-ui/core/styles";
 import { CssBaseline } from "@material-ui/core";
+import { ThemeProvider as MuiThemeProvider, createTheme } from "@material-ui/core/styles";
 import { type ReactNode } from "react";
 
 const embeddedTheme = createTheme({

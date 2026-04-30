@@ -204,9 +204,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
         .listRelationsAndPermissions()
         .map((r: ParsedRelation | ParsedPermission) => r.name);
     }
-    return filter(
-      relationships.map((r: Relationship) => r.resourceAndRelation?.relation ?? null),
-    );
+    return filter(relationships.map((r: Relationship) => r.resourceAndRelation?.relation ?? null));
     // NOTE: we include editorUpdateIndex to ensure this is recomputed on
     // editor changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -316,11 +314,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
           />
         </TableCell>
         <TableCell className="w-8">
-          <Button
-            size="icon-sm"
-            variant="ghost"
-            onClick={() => liveCheckService.removeItem(item)}
-          >
+          <Button size="icon-sm" variant="ghost" onClick={() => liveCheckService.removeItem(item)}>
             <Trash2 />
           </Button>
         </TableCell>
