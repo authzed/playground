@@ -16,8 +16,12 @@ import {
   DeveloperService,
   DeveloperServiceError,
 } from "../spicedb-common/services/developerservice";
+import { CheckWatch } from "../spicedb-common/validationfileformat";
 
 import { DataStore, DataStoreItemKind } from "./datastore";
+import { loadStoredWatches, saveStoredWatches } from "./checkwatchstorage";
+
+export type { CheckWatch } from "../spicedb-common/validationfileformat";
 
 export enum LiveCheckStatus {
   PARSE_ERROR = -2,
@@ -63,7 +67,21 @@ export interface LiveCheckService {
   addItem: () => void;
   itemUpdated: (item: LiveCheckItem) => void;
   removeItem: (item: LiveCheckItem) => void;
+  loadWatches: (watches: CheckWatch[]) => void;
   clear: () => void;
+}
+
+/**
+ * liveCheckItemToWatch maps the runtime LiveCheckItem (which carries id/status/etc.)
+ * to the persistable CheckWatch shape used at every persistence boundary.
+ */
+export function liveCheckItemToWatch(item: LiveCheckItem): CheckWatch {
+  return {
+    object: item.object,
+    action: item.action,
+    subject: item.subject,
+    context: item.context,
+  };
 }
 
 function liveCheckItemToString(item: LiveCheckItem): string {
@@ -150,8 +168,22 @@ function runEditCheckWasm(
 export function useLiveCheckService(
   developerService: DeveloperService,
   datastore: DataStore,
+  options?: { persist?: boolean },
 ): LiveCheckService {
-  const [items, setItems] = useState<LiveCheckItem[]>([]);
+  const persist = options?.persist === true;
+
+  const [items, setItems] = useState<LiveCheckItem[]>(() => {
+    if (!persist) return [];
+    return loadStoredWatches().map((w) => ({
+      id: uuidv4(),
+      object: w.object,
+      action: w.action,
+      subject: w.subject,
+      context: w.context ?? "",
+      status: LiveCheckItemStatus.NOT_CHECKED,
+      errorMessage: undefined,
+    }));
+  });
   const [state, setState] = useState<LiveCheckRunState>({
     status: LiveCheckStatus.NEVER_RUN,
   });
@@ -215,6 +247,12 @@ export function useLiveCheckService(
     }
   }, [state, items, check, devServiceStatus]);
 
+  // Persist items to localStorage whenever they change.
+  useEffect(() => {
+    if (!persist) return;
+    saveStoredWatches(items.map(liveCheckItemToWatch));
+  }, [items, persist]);
+
   return {
     items: items,
     state: state,
@@ -235,6 +273,7 @@ export function useLiveCheckService(
       setItems(newItems);
     },
     itemUpdated: () => {
+      setItems([...items]);
       check(items);
     },
     removeItem: (item: LiveCheckItem) => {
@@ -245,6 +284,18 @@ export function useLiveCheckService(
 
       const newItems = [...items];
       newItems.splice(index, 1);
+      setItems(newItems);
+    },
+    loadWatches: (watches: CheckWatch[]) => {
+      const newItems: LiveCheckItem[] = watches.map((w) => ({
+        id: uuidv4(),
+        object: w.object,
+        action: w.action,
+        subject: w.subject,
+        context: w.context ?? "",
+        status: LiveCheckItemStatus.NOT_CHECKED,
+        errorMessage: undefined,
+      }));
       setItems(newItems);
     },
     clear: () => {

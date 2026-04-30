@@ -7,6 +7,7 @@ import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import LoadingView from "../playground-ui/LoadingView";
 import AppConfig from "../services/configservice";
 import { DataStore } from "../services/datastore";
+import { LiveCheckService } from "../services/check";
 
 import { Alert, AlertTitle } from "./ui/alert";
 
@@ -28,6 +29,7 @@ export function ShareLoader(props: {
   datastore: DataStore;
   children: React.ReactNode;
   sharedRequired: boolean;
+  liveCheckService?: LiveCheckService;
 }) {
   const { showConfirm } = useConfirmDialog();
   const navigate = useNavigate();
@@ -139,6 +141,9 @@ export function ShareLoader(props: {
             verificationYaml: shareData.validation_yaml || "",
           });
           datastore.setBaseline("shared", shareReference);
+          if (props.liveCheckService) {
+            props.liveCheckService.loadWatches(shareData.check_watches ?? []);
+          }
         }
 
         if (!props.sharedRequired) {
@@ -174,6 +179,7 @@ export function ShareLoader(props: {
     showConfirm,
     urlPrefix,
     props.sharedRequired,
+    props.liveCheckService,
   ]);
 
   if (location.pathname.startsWith(urlPrefix) && loadingStatus !== SharedLoadingStatus.LOADED) {

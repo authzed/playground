@@ -76,6 +76,27 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       }
     }
 
+    if ("check_watches" in shareData) {
+      if (!Array.isArray(shareData.check_watches)) {
+        return res.status(400).json({ error: "Share data is not supported" });
+      }
+      for (const w of shareData.check_watches) {
+        if (typeof w !== "object" || w === null) {
+          return res.status(400).json({ error: "Share data is not supported" });
+        }
+        if (
+          typeof w.object !== "string" ||
+          typeof w.action !== "string" ||
+          typeof w.subject !== "string"
+        ) {
+          return res.status(400).json({ error: "Share data is not supported" });
+        }
+        if ("context" in w && typeof w.context !== "string") {
+          return res.status(400).json({ error: "Share data is not supported" });
+        }
+      }
+    }
+
     return res.status(200).send(bodyContents);
   } catch (error) {
     if (error instanceof Error && error.name === "NoSuchKey") {

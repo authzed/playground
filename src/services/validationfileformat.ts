@@ -1,6 +1,6 @@
 import yaml from "yaml";
 
-import { AssertionData, ValidationData } from "../spicedb-common/validationfileformat";
+import { AssertionData, CheckWatch, ValidationData } from "../spicedb-common/validationfileformat";
 
 import { DataStore, DataStoreItemKind } from "./datastore";
 
@@ -26,7 +26,10 @@ export const buildAssertionsYaml = (datastore: DataStore): string => {
  * createValidationYAML creates the full validation YAML file format contents from
  * the datastore.
  */
-export const createValidationYAML = (datastore: DataStore): string => {
+export const createValidationYAML = (
+  datastore: DataStore,
+  watches: CheckWatch[] = [],
+): string => {
   const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
   const relationships = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,
@@ -36,12 +39,16 @@ export const createValidationYAML = (datastore: DataStore): string => {
     DataStoreItemKind.EXPECTED_RELATIONS,
   ).editableContents!;
 
-  const parsed = {
+  const parsed: Record<string, unknown> = {
     schema: schema,
     relationships: relationships,
     assertions: yaml.parse(assertions) as AssertionData,
     validation: yaml.parse(expectedRelations) as ValidationData,
   };
+
+  if (watches.length > 0) {
+    parsed.checkWatches = watches;
+  }
 
   return yaml.stringify(parsed, { lineWidth: 0 });
 };

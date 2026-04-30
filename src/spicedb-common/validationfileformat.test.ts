@@ -102,4 +102,67 @@ validation: {}
     `);
     expect(parsed).toHaveProperty("schema");
   });
+
+  it("returns properly with checkWatches populated", () => {
+    const parsed = parseValidationYAML(`schema: hi
+relationships: hello
+checkWatches:
+  - object: document:firstdoc
+    action: view
+    subject: user:tom
+    context: ""
+`);
+    expect(parsed).toEqual({
+      schema: "hi",
+      relationships: "hello",
+      checkWatches: [
+        {
+          object: "document:firstdoc",
+          action: "view",
+          subject: "user:tom",
+          context: "",
+        },
+      ],
+    });
+  });
+
+  it("returns properly without checkWatches (undefined)", () => {
+    const parsed = parseValidationYAML(`schema: hi
+relationships: hello
+`);
+    expect(parsed).toHaveProperty("schema");
+    expect((parsed as { checkWatches?: unknown }).checkWatches).toBeUndefined();
+  });
+
+  it("rejects checkWatches with a non-string field", () => {
+    expect(
+      parseValidationYAML(`schema: hi
+relationships: hello
+checkWatches:
+  - object: document:firstdoc
+    action: 5
+    subject: user:tom
+`),
+    ).toEqual({ message: "data/checkWatches/0/action must be string" });
+  });
+
+  it("rejects checkWatches missing a required field", () => {
+    expect(
+      parseValidationYAML(`schema: hi
+relationships: hello
+checkWatches:
+  - object: document:firstdoc
+    subject: user:tom
+`),
+    ).toEqual({ message: "data/checkWatches/0 must have required property 'action'" });
+  });
+
+  it("rejects checkWatches that is not an array", () => {
+    expect(
+      parseValidationYAML(`schema: hi
+relationships: hello
+checkWatches: notalist
+`),
+    ).toEqual({ message: "data/checkWatches must be array" });
+  });
 });

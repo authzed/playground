@@ -11,6 +11,12 @@ export type SharedDataV2 = {
   relationships_yaml?: string;
   validation_yaml?: string;
   assertions_yaml?: string;
+  check_watches?: Array<{
+    object: string;
+    action: string;
+    subject: string;
+    context?: string;
+  }>;
 };
 
 const hashPrefixSize = 12;
@@ -48,6 +54,20 @@ function validateSharedDataV2(data: VercelRequestBody): data is SharedDataV2 {
   for (const field of optionalStringFields) {
     if (field in data && typeof data[field] !== "string") {
       return false;
+    }
+  }
+
+  if ("check_watches" in data) {
+    const watches = data.check_watches;
+    if (!Array.isArray(watches)) {
+      return false;
+    }
+    for (const w of watches) {
+      if (typeof w !== "object" || w === null) return false;
+      if (typeof w.object !== "string") return false;
+      if (typeof w.action !== "string") return false;
+      if (typeof w.subject !== "string") return false;
+      if ("context" in w && typeof w.context !== "string") return false;
     }
   }
 
