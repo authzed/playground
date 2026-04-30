@@ -53,7 +53,7 @@ export function WatchesPanel({ services, datastore }: WatchesPanelProps) {
   const editorUpdateIndex = -1; // FIXME
 
   return (
-    <div className="overflow-auto bg-card">
+    <div className="overflow-auto bg-chrome-panel">
       <Table>
         <TableHeader>
           <TableRow>

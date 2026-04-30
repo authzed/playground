@@ -150,7 +150,7 @@ export function EditorGroup({
       </div>
 
       {/* Active tab content */}
-      <div className="flex-1 min-h-0 relative bg-background">{renderContent(group.activeTab)}</div>
+      <div className="flex-1 min-h-0 relative bg-chrome-panel">{renderContent(group.activeTab)}</div>
     </div>
   );
 }

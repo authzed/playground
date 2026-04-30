@@ -25,7 +25,7 @@ export function ValidateButton({
 
   return (
     <div className="flex flex-row justify-between">
-      <div className="flex flex-row px-3 mr-2 w-48 items-center bg-muted rounded-xs">
+      <div className="flex flex-row h-8 px-3 mr-2 w-48 items-center bg-muted rounded-xs text-sm">
         <ValidationIcon datastore={datastore} validationState={validationState} className="pr-2" />
         {valid && "Validated!"}
         {invalid && "Failed to Validate"}
@@ -39,6 +39,7 @@ export function ValidateButton({
         }
         onClick={conductValidation}
         variant="outline"
+        size="sm"
       >
         <CirclePlay />
         Run

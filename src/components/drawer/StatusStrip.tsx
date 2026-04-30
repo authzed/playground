@@ -139,8 +139,8 @@ const PanelButton = React.forwardRef<HTMLButtonElement, PanelButtonProps>(functi
         // Inactive buttons get a top border to separate the strip from the
         // content above.
         active
-          ? "bg-card text-foreground"
-          : "border-t border-chrome-divider text-muted-foreground hover:bg-card/50 hover:text-foreground",
+          ? "bg-chrome-panel text-foreground"
+          : "border-t border-chrome-divider text-muted-foreground hover:bg-chrome-panel/50 hover:text-foreground",
         className,
       )}
       {...rest}

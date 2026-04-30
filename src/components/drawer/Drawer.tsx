@@ -77,7 +77,7 @@ export function Drawer({ panels, className }: DrawerProps) {
   return (
     <div
       className={cn(
-        "flex shrink-0 flex-col border-t border-chrome-divider bg-card",
+        "flex shrink-0 flex-col border-t border-chrome-divider bg-chrome-panel",
         className,
       )}
       style={{ height: `${height}px`, maxHeight: `${maxH}px` }}
