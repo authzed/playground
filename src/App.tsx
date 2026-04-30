@@ -11,6 +11,7 @@ import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
+import { SettingsProvider } from "@/components/SettingsProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
@@ -49,6 +50,12 @@ const routeTree = rootRoute.addChildren([indexRoute, inlineRoute, embeddedRoute]
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
+
+if (config.shareApiEndpoint) {
+  console.log(`[playground] sharing: enabled (${config.shareApiEndpoint})`);
+} else {
+  console.log("[playground] sharing: disabled (VITE_SHARE_API_ENDPOINT is not set)");
+}
 
 function PHProvider({ children }: PropsWithChildren) {
   useEffect(() => {
@@ -90,11 +97,13 @@ function App() {
       <CookiesProvider>
         <PHProvider>
           <ThemeProvider>
-            <ConfirmDialogProvider>
-              <TooltipProvider delayDuration={400}>
-                <RouterProvider router={router} />
-              </TooltipProvider>
-            </ConfirmDialogProvider>
+            <SettingsProvider>
+              <ConfirmDialogProvider>
+                <TooltipProvider delayDuration={400}>
+                  <RouterProvider router={router} />
+                </TooltipProvider>
+              </ConfirmDialogProvider>
+            </SettingsProvider>
           </ThemeProvider>
         </PHProvider>
       </CookiesProvider>

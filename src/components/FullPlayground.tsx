@@ -837,7 +837,6 @@ export function ThemedAppView(props: {
           <TooltipContent>Load workspace from a YAML file</TooltipContent>
         </Tooltip>
 
-        <div className="w-2" />
         <AuthSlot />
       </header>
 
