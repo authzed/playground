@@ -7,6 +7,7 @@ import * as monaco from "monaco-editor";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { flushSync } from "react-dom";
 
+import { useSettings } from "@/components/SettingsProvider";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
@@ -99,6 +100,14 @@ export function EditorDisplay(props: EditorDisplayProps) {
   // Select the theme and language.
   const resolvedTheme = useResolvedTheme();
   const prefersDarkMode = resolvedTheme === "dark";
+
+  const { minimapEnabled } = useSettings();
+  const minimapVisible =
+    props.hideMinimap === true
+      ? false
+      : props.hideMinimap === false
+        ? true
+        : minimapEnabled;
 
   // A single unified theme is used for every editor instance regardless of
   // language. Monaco's `setTheme` is global — applying different themes per
@@ -581,7 +590,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
                 },
                 fixedOverflowWidgets: true,
                 minimap: {
-                  enabled: props.hideMinimap !== true,
+                  enabled: minimapVisible,
                 },
                 fontSize: props.fontSize,
                 scrollBeyondLastLine:
@@ -618,7 +627,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
                 "semanticHighlighting.enabled": true,
                 fixedOverflowWidgets: true,
                 minimap: {
-                  enabled: props.hideMinimap !== true,
+                  enabled: minimapVisible,
                 },
                 fontSize: props.fontSize,
                 scrollBeyondLastLine:
