@@ -39,6 +39,7 @@ import { EditorDisplay } from "./EditorDisplay";
 import { EmbeddedThemeWrapper } from "./EmbeddedThemeWrapper";
 import "./fonts.css";
 import { ShareLoader } from "./ShareLoader";
+import { getRouteApi } from "@tanstack/react-router";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -202,18 +203,11 @@ export function EmbeddedPlayground() {
   return (
     <EmbeddedThemeWrapper>
       <div className={classes.root}>
-        <ShareLoader
-          datastore={datastore}
-          liveCheckService={liveCheckService}
-          shareUrlRoot="e"
-          sharedRequired={true}
-        >
-          <EmbeddedPlaygroundUI
-            datastore={datastore}
-            developerService={developerService}
-            liveCheckService={liveCheckService}
-          />
-        </ShareLoader>
+      <EmbeddedPlaygroundUI
+      datastore={datastore}
+      developerService={developerService}
+      liveCheckService={liveCheckService}
+      />
       </div>
     </EmbeddedThemeWrapper>
   );
@@ -233,6 +227,24 @@ function EmbeddedPlaygroundUI(props: {
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = undefined; // not used
+
+  const routeApi = getRouteApi("/e/$shareId")
+  const shareData = routeApi.useLoaderData()
+  const { shareId } = routeApi.useParams()
+
+  // Load the datastore from what's loaded by the route loader
+  useEffect(() => {
+    datastore.load({
+      schema: shareData.schema || "",
+      relationshipsYaml: shareData.relationships_yaml || "",
+      assertionsYaml: shareData.assertions_yaml || "",
+      verificationYaml: shareData.validation_yaml || "",
+    });
+    datastore.setBaseline("shared", shareId);
+    if (liveCheckService) {
+      liveCheckService.loadWatches(shareData.check_watches ?? []);
+    }
+  }, [shareData, datastore, shareId, liveCheckService])
 
   const services = {
     localParseService,

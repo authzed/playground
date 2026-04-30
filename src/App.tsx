@@ -11,46 +11,68 @@ import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
+import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
+
 import { SettingsProvider } from "@/components/SettingsProvider";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 
 import "./App.css";
-import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
-import { FullPlayground } from "./components/FullPlayground";
-import { InlinePlayground } from "./components/InlinePlayground";
-import { Toaster } from "./components/ui/sonner";
-import { ConfirmDialogProvider } from "./playground-ui/ConfirmDialogProvider";
-import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
-import AppConfig from "./services/configservice";
+import { EmbeddedPlayground } from "@/components/EmbeddedPlayground";
+import { FullPlayground } from "@/components/FullPlayground";
+import { InlinePlayground } from "@/components/InlinePlayground";
+import { Toaster } from "@/components/ui/sonner";
+import { useGoogleAnalytics } from "@/playground-ui/GoogleAnalyticsHook";
+import AppConfig from "@/services/configservice";
+import { ShareLoader } from "@/components/ShareLoader";
+import { ErrorComponent as ShareErrorComponent, shareLoader } from "@/loaders/share";
+import LoadingView from "@/playground-ui/LoadingView";
 
 const rootRoute = createRootRoute({
   component: Outlet,
 });
 
-// TODO: extend the routing; the $s are catchalls.
 const indexRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "$",
+  path: "/",
   component: FullPlayground,
 });
+
+const shareRoute = createRoute({
+  getParentRoute: () => indexRoute,
+    component: ShareLoader,
+  path: "s/$shareId",
+  loader: ({ params: { shareId } }) => shareLoader(shareId),
+    pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent
+})
+
 const inlineRoute = createRoute({
   getParentRoute: () => rootRoute,
-  path: "/i/$",
+  path: "/i/$shareId",
   component: InlinePlayground,
-});
-const embeddedRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/e/$",
-  component: EmbeddedPlayground,
+  loader: ({ params: { shareId } }) => shareLoader(shareId),
+    pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent
 });
 
-const routeTree = rootRoute.addChildren([indexRoute, inlineRoute, embeddedRoute]);
+const embeddedRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/e/$shareId",
+  component: EmbeddedPlayground,
+  loader: ({ params: { shareId } }) => shareLoader(shareId),
+    pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent
+});
+
+// TODO: check all this routing behavior 
+const routeTree = rootRoute.addChildren([indexRoute.addChildren([shareRoute]), inlineRoute, embeddedRoute]);
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
 
+// TODO: set up a baby API that does "share" logic locally in the dev env
 if (config.shareApiEndpoint) {
   console.log(`[playground] sharing: enabled (${config.shareApiEndpoint})`);
 } else {
@@ -93,16 +115,14 @@ function App() {
   return (
     <>
       <Toaster />
-      {/* @ts-ignore-error react-cookie's types are screwy; CI and (local and vercel) disagree about whether there's an error or not. */}
+      <TanStackRouterDevtools />
       <CookiesProvider>
         <PHProvider>
           <ThemeProvider>
             <SettingsProvider>
-              <ConfirmDialogProvider>
-                <TooltipProvider delayDuration={400}>
-                  <RouterProvider router={router} />
-                </TooltipProvider>
-              </ConfirmDialogProvider>
+              <TooltipProvider delayDuration={400}>
+                <RouterProvider router={router} />
+              </TooltipProvider>
             </SettingsProvider>
           </ThemeProvider>
         </PHProvider>

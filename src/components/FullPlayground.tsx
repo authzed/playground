@@ -26,6 +26,16 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import { ButtonGroup } from "@/components/ui/button-group";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
@@ -36,7 +46,6 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 
 import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
-import { useConfirmDialog } from "../playground-ui/ConfirmDialogProvider";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
 import {
@@ -71,7 +80,6 @@ import { GuidedTour, TourElementClass } from "./GuidedTour";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";
-import { ShareLoader } from "./ShareLoader";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -132,19 +140,11 @@ function ApolloedPlayground() {
   const developerService = useDeveloperService();
   const liveCheckService = useLiveCheckService(developerService, datastore, { persist: true });
   return (
-    <ShareLoader
-      datastore={datastore}
-      liveCheckService={liveCheckService}
-      shareUrlRoot="s"
-      sharedRequired={false}
-    >
-      <ThemedAppView
-        key="app"
-        datastore={datastore}
-        developerService={developerService}
-        liveCheckService={liveCheckService}
-      />
-    </ShareLoader>
+    <ThemedAppView
+    datastore={datastore}
+    developerService={developerService}
+    liveCheckService={liveCheckService}
+    />
   );
 }
 
@@ -154,33 +154,20 @@ export function ThemedAppView(props: {
   liveCheckService: LiveCheckService;
 }) {
   const { pushEvent } = useGoogleAnalytics();
-  const { showConfirm } = useConfirmDialog();
 
   const [sharingState, setSharingState] = useState<SharingState>({
     status: SharingStatus.NOT_RUN,
   });
 
-  const confirmDiscardIfModified = async (): Promise<boolean> => {
-    if (!props.datastore.isModified()) return true;
-    const [result] = await showConfirm({
-      title: "Discard unsaved changes?",
-      content: (
-        <p>
-          You have unsaved edits. Loading will replace your current schema, relationships, and
-          assertions. Consider <b>Share</b> or <b>Download</b> first to keep a copy.
-        </p>
-      ),
-      buttons: [
-        { value: "nevermind", title: "Cancel", color: "default" },
-        {
-          value: "replace",
-          title: "Discard and Load",
-          color: "primary",
-          variant: "contained",
-        },
-      ],
+  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
+  const discardResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
+
+  const confirmDiscardIfModified = (): Promise<boolean> => {
+    if (!props.datastore.isModified()) return Promise.resolve(true);
+    return new Promise((resolve) => {
+      discardResolveRef.current = resolve;
+      setDiscardDialogOpen(true);
     });
-    return result === "replace";
   };
 
   const datastore = props.datastore;
@@ -454,19 +441,13 @@ export function ThemedAppView(props: {
 
   const isReadOnly = sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate();
 
-  const renderToolbar = (children: ReactNode) => (
-    <div className="flex shrink-0 items-center gap-2 px-2 py-1 border-b border-chrome-divider">
-      {children}
-    </div>
-  );
-
+  // TODO: this is a component.
   const renderDocument = (active: DocumentRef): ReactNode => {
     if (active === "schema") {
       const item = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.schema}`}>
-          {renderToolbar(
-            <>
+        <Toolbar>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button onClick={formatSchema} variant="outline" size="sm">
@@ -494,8 +475,7 @@ export function ThemedAppView(props: {
                 title="Schema Development Guide"
                 href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
               />
-            </>,
-          )}
+              </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -517,8 +497,7 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.testrel}`}>
-          {renderToolbar(
-            <>
+        <Toolbar>
               <ToggleGroup
                 value={relationshipsEditor}
                 variant="outline"
@@ -544,8 +523,7 @@ export function ThemedAppView(props: {
                 title="Test Relationships Guide"
                 href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
               />
-            </>,
-          )}
+              </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               {relationshipsEditor === "grid" ? (
@@ -576,8 +554,7 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.assert}`}>
-          {renderToolbar(
-            <>
+        <Toolbar>
               <ValidateButton
                 datastore={datastore}
                 validationState={validationState}
@@ -589,8 +566,7 @@ export function ThemedAppView(props: {
                 title="Assertions Guide"
                 href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
               />
-            </>,
-          )}
+              </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -612,8 +588,7 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
       return (
         <div className="flex flex-col h-full">
-          {renderToolbar(
-            <>
+        <Toolbar>
               <ValidateButton
                 datastore={datastore}
                 validationState={validationState}
@@ -665,8 +640,7 @@ export function ThemedAppView(props: {
                 title="Expected Relations Guide"
                 href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
               />
-            </>,
-          )}
+              </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -703,6 +677,26 @@ export function ThemedAppView(props: {
 
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
+      <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+            <AlertDialogDescription>
+              You have unsaved edits. Loading will replace your current schema, relationships, and
+              assertions. Consider <b>Share</b> or <b>Download</b> first to keep a copy.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+          {/* TODO: this is also wrong */}
+            <AlertDialogCancel onClick={() => { discardResolveRef.current?.(false); }}>
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction onClick={() => { discardResolveRef.current?.(true); }}>
+              Discard and Load
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
       {!WebAssembly && (
         <Alert variant="destructive">
           <CircleX />
@@ -916,6 +910,13 @@ function BreadcrumbDropdown({
     </DropdownMenu>
   );
 }
+
+const Toolbar = ({ children }: { children: ReactNode }) => (
+  <div className="flex shrink-0 items-center gap-2 px-2 py-1 border-b border-chrome-divider">
+  {children}
+  </div>
+);
+
 
 const DocLink = ({ title, href }: { title: string; href: string }) => (
   <Button asChild variant="ghost" size="sm" title={title}>
