@@ -11,6 +11,7 @@ import {
   GitCompare,
   Grid3x3,
   MessageCircleWarning,
+  Network,
   RefreshCw,
   Share2,
 } from "lucide-react";
@@ -476,6 +477,19 @@ export function ThemedAppView(props: {
                   </Button>
                 </TooltipTrigger>
                 <TooltipContent>Format the schema</TooltipContent>
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Button
+                    onClick={() => useEditorStore.getState().showDocument("visualizer")}
+                    variant="outline"
+                    size="sm"
+                  >
+                    <Network />
+                    Visualize
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent>Open the schema visualizer</TooltipContent>
               </Tooltip>
               <div className="ml-auto" />
               <DocLink

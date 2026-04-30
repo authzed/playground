@@ -23,6 +23,11 @@ type EditorActions = {
   closeTab: (tab: DocumentRef) => void;
   /** Open a closed-pool document into a group. */
   openInGroup: (tab: DocumentRef, groupId: string) => void;
+  /**
+   * Reveal a document. If it's already in a group, activate it there. Otherwise
+   * open it into the secondary group, creating one (horizontal split) if needed.
+   */
+  showDocument: (tab: DocumentRef) => void;
   /** Close an entire group — merges its tabs into the surviving group. */
   closeGroup: (groupId: string) => void;
   /** Reset to default. */
@@ -113,6 +118,33 @@ export const useEditorStore = create<EditorStore>()(
             }));
           }),
 
+        showDocument: (tab) =>
+          setReconciled((s) => {
+            const hostingGroupId = findGroupContaining(s, tab);
+            if (hostingGroupId) {
+              return updateGroup(s, hostingGroupId, (g) => ({ ...g, activeTab: tab }));
+            }
+            if (!s.closedPool.includes(tab)) return s;
+            const withoutTab = s.closedPool.filter((t) => t !== tab);
+            if (s.layout.kind === "split") {
+              return updateGroup(
+                { ...s, closedPool: withoutTab },
+                s.layout.secondary.id,
+                (g) => ({ ...g, tabs: [...g.tabs, tab], activeTab: tab }),
+              );
+            }
+            return {
+              ...s,
+              closedPool: withoutTab,
+              layout: {
+                kind: "split",
+                direction: "horizontal",
+                primary: s.layout.group,
+                secondary: { id: "g2", tabs: [tab], activeTab: tab },
+              },
+            };
+          }),
+
         closeGroup: (groupId) =>
           setReconciled((s) => {
             if (s.layout.kind !== "split") return s;
@@ -143,6 +175,15 @@ export const useEditorStore = create<EditorStore>()(
     },
   ),
 );
+
+function findGroupContaining(state: EditorState, tab: DocumentRef): string | undefined {
+  if (state.layout.kind === "single") {
+    return state.layout.group.tabs.includes(tab) ? state.layout.group.id : undefined;
+  }
+  if (state.layout.primary.tabs.includes(tab)) return state.layout.primary.id;
+  if (state.layout.secondary.tabs.includes(tab)) return state.layout.secondary.id;
+  return undefined;
+}
 
 function updateGroup(
   state: EditorState,
