@@ -118,6 +118,42 @@ describe("editor groups store", () => {
     expect(inGroup || inClosedPool).toBe(true);
   });
 
+  it("showDocument opens a closed-pool doc into a new horizontal secondary group", () => {
+    useEditorStore.getState().showDocument("visualizer");
+    const s = useEditorStore.getState();
+    expect(s.closedPool).not.toContain("visualizer");
+    expect(s.layout.kind).toBe("split");
+    if (s.layout.kind === "split") {
+      expect(s.layout.direction).toBe("horizontal");
+      expect(s.layout.primary.tabs).toEqual(["schema", "relationships", "assertions", "expected"]);
+      expect(s.layout.secondary.tabs).toEqual(["visualizer"]);
+      expect(s.layout.secondary.activeTab).toBe("visualizer");
+    }
+  });
+
+  it("showDocument opens a closed-pool doc into the existing secondary group", () => {
+    useEditorStore.getState().splitTab("relationships", "horizontal");
+    useEditorStore.getState().showDocument("visualizer");
+    const s = useEditorStore.getState();
+    expect(s.closedPool).not.toContain("visualizer");
+    if (s.layout.kind === "split") {
+      expect(s.layout.secondary.tabs).toContain("visualizer");
+      expect(s.layout.secondary.activeTab).toBe("visualizer");
+      expect(s.layout.primary.tabs).not.toContain("visualizer");
+    }
+  });
+
+  it("showDocument activates the doc in place when it's already in a group", () => {
+    useEditorStore.getState().openInGroup("visualizer", "g1");
+    useEditorStore.getState().setActiveTab("g1", "schema");
+    useEditorStore.getState().showDocument("visualizer");
+    const s = useEditorStore.getState();
+    expect(s.layout.kind).toBe("single");
+    if (s.layout.kind === "single") {
+      expect(s.layout.group.activeTab).toBe("visualizer");
+    }
+  });
+
   it("reconcileTabs recovers orphaned tabs that are missing from groups and closedPool", () => {
     // Construct a corrupt state directly: a tab that is in neither a group
     // nor the closedPool. The next mutation must reconcile it back.
