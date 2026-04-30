@@ -65,7 +65,6 @@ import { VisualizerDocument } from "./editor-groups/documents/Visualizer";
 import { useEditorStore } from "./editor-groups/state";
 import type { DocumentRef } from "./editor-groups/types";
 import { GuidedTour, TourElementClass } from "./GuidedTour";
-import { NormalLogo, SmallLogo } from "./Logos";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";

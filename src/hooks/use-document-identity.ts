@@ -25,6 +25,7 @@ export function useDocumentIdentity(
   const editIndex = useSyncExternalStore(subscribe, getSnapshot);
 
   return useMemo(() => {
+    void editIndex;
     const baseline = datastore.getBaseline();
     if (!baseline) {
       return { kind: "untitled" };
@@ -38,6 +39,5 @@ export function useDocumentIdentity(
       };
     }
     return { kind: "shared", reference: baseline.identifier, modified };
-    // editIndex is the dependency that captures all datastore content changes.
   }, [editIndex, datastore, exampleNameLookup]);
 }
