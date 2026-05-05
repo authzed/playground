@@ -44,11 +44,9 @@ export default function TenantGraph({ schema, relationships }: TenantGraphProps)
         </ToggleGroup>
       </div>
 
-      {viewMode === "relationships" ? (
-        <RelationshipGraph relationships={relationships ?? []} />
-      ) : (
-        schema && <SchemaGraph schema={schema} relationships={relationships} />
-      )}
+      {viewMode === "relationships"
+        ? schema && <RelationshipGraph schema={schema} relationships={relationships ?? []} />
+        : schema && <SchemaGraph schema={schema} relationships={relationships} />}
     </div>
   );
 }
