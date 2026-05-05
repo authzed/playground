@@ -2,7 +2,8 @@ import { Link } from "@tanstack/react-router";
 import { CircleX, MessageCircleWarning } from "lucide-react";
 import "react-reflex/styles.css";
 
-import { DataStoreItemKind, DataStorePaths } from "../../services/datastore";
+import { PATHS } from "@/constants";
+
 import {
   DeveloperError,
   DeveloperError_Source,
@@ -11,10 +12,10 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "../ui/alert";
 
 export const ERROR_SOURCE_TO_ITEM = {
-  [DeveloperError_Source.SCHEMA]: DataStoreItemKind.SCHEMA,
-  [DeveloperError_Source.RELATIONSHIP]: DataStoreItemKind.RELATIONSHIPS,
-  [DeveloperError_Source.ASSERTION]: DataStoreItemKind.ASSERTIONS,
-  [DeveloperError_Source.VALIDATION_YAML]: DataStoreItemKind.EXPECTED_RELATIONS,
+  [DeveloperError_Source.SCHEMA]: PATHS.SCHEMA,
+  [DeveloperError_Source.RELATIONSHIP]: PATHS.RELATIONSHIPS,
+  [DeveloperError_Source.ASSERTION]: PATHS.ASSERTIONS,
+  [DeveloperError_Source.VALIDATION_YAML]: PATHS.EXPECTED_RELATIONS,
   [DeveloperError_Source.CHECK_WATCH]: undefined,
   [DeveloperError_Source.UNKNOWN_SOURCE]: undefined,
 };
@@ -57,7 +58,7 @@ export function DeveloperWarningSourceDisplay({ warning }: { warning: DeveloperW
   return (
     <div className="m-2">
       In
-      <Link to={DataStorePaths.Schema()}>Schema</Link>
+      <Link to={PATHS.SCHEMA}>Schema</Link>
       {/* NOTE: this is a guess; I think this was an unintentional omission. */}: {warning.message}
     </div>
   );
@@ -70,25 +71,25 @@ export function DeveloperSourceDisplay({ error }: { error: DeveloperError }) {
       {error.source === DeveloperError_Source.SCHEMA && (
         <div className="m-2">
           In
-          <Link to={DataStorePaths.Schema()}>Schema</Link>:
+          <Link to={PATHS.SCHEMA}>Schema</Link>:
         </div>
       )}
       {error.source === DeveloperError_Source.ASSERTION && (
         <div className="m-2">
           In
-          <Link to={DataStorePaths.Assertions()}>Assertions</Link>:
+          <Link to={PATHS.ASSERTIONS}>Assertions</Link>:
         </div>
       )}
       {error.source === DeveloperError_Source.RELATIONSHIP && (
         <div className="m-2">
           In
-          <Link to={DataStorePaths.Relationships()}>Test Data</Link>:
+          <Link to={PATHS.RELATIONSHIPS}>Test Data</Link>:
         </div>
       )}
       {error.source === DeveloperError_Source.VALIDATION_YAML && (
         <div className="m-2">
           In
-          <Link to={DataStorePaths.ExpectedRelations()}>Expected Relations</Link>:
+          <Link to={PATHS.EXPECTED_RELATIONS}>Expected Relations</Link>:
         </div>
       )}
     </div>

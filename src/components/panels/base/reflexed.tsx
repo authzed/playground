@@ -4,7 +4,6 @@ import { useEffect, useState, Children, isValidElement, cloneElement, type React
 import { HandlerProps, ReflexContainer, ReflexElement, ReflexSplitter } from "react-reflex";
 import "react-reflex/styles.css";
 
-import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
 
 import { Panel } from "./common";
@@ -35,7 +34,6 @@ interface PanelDefProps {
   panels: Panel[];
   disabled?: boolean | undefined;
   overrideSummaryDisplay?: ReactNode;
-  datastore: DataStore;
   services: Services;
   children: ReactNode;
 }
@@ -123,7 +121,6 @@ export function ReflexedPanelDisplay(props: PanelDefProps) {
               location="horizontal"
               coordinator={coordinator}
               services={props.services}
-              datastore={props.datastore}
             />
           ) : (
             <span />
@@ -139,7 +136,6 @@ function MainDisplayWithSummaryBar(props: {
   disabled?: boolean | undefined;
   children: ReactNode;
   dimensions?: Dimensions;
-  datastore: DataStore;
   services: Services;
 }) {
   const coordinator = props.coordinator;
@@ -174,7 +170,6 @@ function MainDisplayAndVertical(props: {
   coordinator: PanelsCoordinator;
   dimensions?: Dimensions;
   children: ReactNode;
-  datastore: DataStore;
   services: Services;
 }) {
   const classes = useStyles();
@@ -253,7 +248,6 @@ function MainDisplayAndVertical(props: {
             location="vertical"
             coordinator={coordinator}
             services={props.services}
-            datastore={props.datastore}
           />
         </ReflexElement>
       </ReflexContainer>

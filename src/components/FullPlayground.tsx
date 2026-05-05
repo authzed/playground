@@ -39,13 +39,6 @@ import TabLabel from "../playground-ui/TabLabel";
 import { useLiveCheckService } from "../services/check";
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
-import {
-  DataStore,
-  DataStoreItem,
-  DataStoreItemKind,
-  DataStorePaths,
-  usePlaygroundDatastore,
-} from "../services/datastore";
 import { useLocalParseService } from "../services/localparse";
 import { ProblemService, useProblemService } from "../services/problem";
 import { Services } from "../services/services";
@@ -72,6 +65,9 @@ import { WatchesPanel, WatchesSummary } from "./panels/watches";
 import { ShareLoader } from "./ShareLoader";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
+import { PATHS } from "@/constants";
+import { setExpectedRelations, setSchema } from "@/store/editorSlice";
+import { useAppDispatch } from "@/hooks";
 
 const TOOLBAR_BREAKPOINT = 1550; // pixels
 
@@ -312,15 +308,14 @@ export function FullPlayground() {
 }
 
 function ApolloedPlayground() {
-  const datastore = usePlaygroundDatastore();
   return (
-    <ShareLoader datastore={datastore} shareUrlRoot="s" sharedRequired={false}>
-      <ThemedAppView key="app" datastore={datastore} />
+    <ShareLoader shareUrlRoot="s" sharedRequired={false}>
+      <ThemedAppView key="app" />
     </ShareLoader>
   );
 }
 
-export function ThemedAppView(props: { datastore: DataStore }) {
+export function ThemedAppView() {
   const { pushEvent } = useGoogleAnalytics();
 
   const [sharingState, setSharingState] = useState<SharingState>({
@@ -333,25 +328,23 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const datastore = props.datastore;
-
   const developerService = useDeveloperService();
-  const localParseService = useLocalParseService(datastore);
-  const liveCheckService = useLiveCheckService(developerService, datastore);
-  const validationService = useValidationService(developerService, datastore);
-  const problemService = useProblemService(localParseService, liveCheckService, validationService);
+  const localParseService = useLocalParseService();
+  const validationService = useValidationService(developerService);
+  const problemService = useProblemService(localParseService, validationService);
   const zedTerminalService = useZedTerminalService();
 
   const services = {
     localParseService,
-    liveCheckService,
     validationService,
     problemService,
     developerService,
     zedTerminalService,
   };
 
-  const currentItem = datastore.get(location.pathname);
+  const dispatch = useAppDispatch();
+
+  const currentItem = PATHS[location.pathname];
 
   const [cookies, setCookie] = useCookies(["dismiss-tour"]);
   const [showTour, setShowTour] = useState(!cookies["dismiss-tour"]);
@@ -360,9 +353,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
   // TODO: this should probably be a redirect at the routing layer.
   useEffect(() => {
     if (currentItem === undefined) {
-      void navigate({ to: DataStorePaths.Schema(), replace: true });
+      void navigate({ to: PATHS.SCHEMA, replace: true });
     }
-  }, [datastore, currentItem, navigate]);
+  }, [currentItem, navigate]);
 
   const conductDownload = () => {
     const yamlContents = createValidationYAML(datastore);
@@ -397,18 +390,16 @@ export function ThemedAppView(props: { datastore: DataStore }) {
       datastore.loadFromParsed(uploaded);
       datastoreUpdated();
 
-      void navigate({ to: DataStorePaths.Schema(), replace: true });
+      void navigate({ to: PATHS.SCHEMA, replace: true });
     }
   };
 
+  // Probably don't need this to rerender every time.
   const formatSchema = () => {
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents;
     const request = developerService.newRequest(schema, "");
     request?.formatSchema((result) => {
-      datastore.update(
-        datastore.getSingletonByKind(DataStoreItemKind.SCHEMA),
-        result.formattedSchema,
-      );
+      dispatch(setSchema(result.formattedSchema))
     });
     request?.execute();
   };
@@ -496,10 +487,9 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     });
 
     datastore.loadFromParsed(ex.data);
-    datastoreUpdated();
 
     services.liveCheckService.clear();
-    void navigate({ to: DataStorePaths.Schema(), replace: true });
+    void navigate({ to: PATHS.SCHEMA, replace: true });
   };
 
   const [previousValidationForDiff, setPreviousValidationForDiff] = useState<string | undefined>(
@@ -520,6 +510,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
     setPreviousValidationForDiff(undefined);
     validationService.conductValidation((_validated: boolean, result: ValidationResult) => {
+      // This is the only thing the callback is used for.
       if (result.updatedValidationYaml) {
         const updatedYaml = normalizeValidationYAML(result.updatedValidationYaml);
         const expectedRelations = datastore.getSingletonByKind(
@@ -555,10 +546,8 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
   const handleRevertDiff = () => {
     if (previousValidationForDiff !== undefined) {
-      const expectedRelations = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
-      datastore.update(expectedRelations, previousValidationForDiff);
+      dispatch(setExpectedRelations(previousValidationForDiff))
 
-      datastoreUpdated();
       setPreviousValidationForDiff(undefined);
 
       // Rerun validation to remove any errors.
@@ -573,14 +562,13 @@ export function ThemedAppView(props: { datastore: DataStore }) {
     _event: ChangeEvent<object>,
     selectedTabValue: string,
   ) => {
-    const item = datastore.getById(selectedTabValue)!;
-    void navigate({ to: item.pathname });
+    void navigate({ to: selectedTabValue });
   };
 
   const setDismissTour = () => {
     setShowTour(false);
     setCookie("dismiss-tour", "true");
-    void navigate({ to: DataStorePaths.Schema() });
+    void navigate({ to: PATHS.SCHEMA });
   };
 
   const handleTourBeforeStep = (selector: string) => {
@@ -739,7 +727,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
           >
             <Tab
               className={TourElementClass.schema}
-              value={datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id}
+              value={PATHS.SCHEMA}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -751,7 +739,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             />
             <Tab
               className={TourElementClass.testrel}
-              value={datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id}
+              value={PATHS.RELATIONSHIPS}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -763,7 +751,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
             />
             <Tab
               className={TourElementClass.assert}
-              value={datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id}
+              value={PATHS.ASSERTIONS}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -774,7 +762,7 @@ export function ThemedAppView(props: { datastore: DataStore }) {
               }
             />
             <Tab
-              value={datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).id}
+              value={PATHS.EXPECTED_RELATIONS}
               label={
                 <TabLabelWithCount
                   problemService={problemService}
@@ -911,8 +899,6 @@ export function ThemedAppView(props: { datastore: DataStore }) {
 
       <div className={classes.reflexContainerContainer}>
         <MainPanel
-          datastore={datastore}
-          currentItem={currentItem}
           services={services}
           sharingState={sharingState}
           previousValidationForDiff={previousValidationForDiff}
@@ -935,7 +921,6 @@ const DocLink = ({ title, href }: { title: string; href: string }) => (
 
 const TabLabelWithCount = (props: {
   problemService: ProblemService;
-  kind: DataStoreItemKind;
   icon: ReactNode;
   title: string;
 }) => {
@@ -997,9 +982,7 @@ const panels: Panel[] = [
 
 function MainPanel(
   props: {
-    datastore: DataStore;
     services: Services;
-    currentItem: DataStoreItem | undefined;
     sharingState: SharingState;
     previousValidationForDiff: string | undefined;
     relationshipsEditor: RelationshipsEditorType;
@@ -1009,8 +992,6 @@ function MainPanel(
   const prefersDarkMode = useMediaQuery("(prefers-color-scheme: dark)");
   const classes = useStyles({ prefersDarkMode: prefersDarkMode });
 
-  const datastore = props.datastore;
-  const currentItem = props.currentItem;
   const sharingState = props.sharingState;
   const devServerState = props.services.developerService.state;
 
@@ -1060,7 +1041,6 @@ function MainPanel(
       )}
 
       <ReflexedPanelDisplay
-        datastore={datastore}
         services={props.services}
         panels={panels}
         disabled={!WebAssembly}
@@ -1069,45 +1049,27 @@ function MainPanel(
         {props.currentItem?.kind === DataStoreItemKind.RELATIONSHIPS &&
           props.relationshipsEditor === "grid" && (
             <DatastoreRelationshipEditor
-              datastore={datastore}
               services={props.services}
               isReadOnly={
-                sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate()
+                sharingState.status === SharingStatus.SHARING
               }
-              datastoreUpdated={props.datastoreUpdated}
             />
           )}
         {(props.currentItem?.kind !== DataStoreItemKind.RELATIONSHIPS ||
           props.relationshipsEditor === "code") && (
-          <IsolatedEditorDisplay
-            datastore={datastore}
+          <EditorDisplay
             services={props.services}
-            currentItem={props.currentItem}
             isReadOnly={
-              sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate()
+              sharingState.status === SharingStatus.SHARING
             }
             diff={
               currentItem?.kind === DataStoreItemKind.EXPECTED_RELATIONS
                 ? props.previousValidationForDiff
                 : undefined
             }
-            datastoreUpdated={props.datastoreUpdated}
           />
         )}
       </ReflexedPanelDisplay>
     </div>
   );
-}
-
-// NOTE: This is isolated into its own component so that calling setLocalUpdateIndex only calls
-// React rerendering on the editor itself, rather than the displays around it as well.
-function IsolatedEditorDisplay(props: EditorDisplayProps) {
-  const [localUpdateIndex, setLocalUpdateIndex] = useState(0);
-
-  const datastoreUpdated = () => {
-    props.datastoreUpdated();
-    setLocalUpdateIndex(localUpdateIndex + 1);
-  };
-
-  return <EditorDisplay {...props} datastoreUpdated={datastoreUpdated} />;
 }

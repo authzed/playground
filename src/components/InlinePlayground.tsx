@@ -25,12 +25,13 @@ import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
 import { AT, ET, NS, VL } from "./KindIcons";
 import { ShareLoader } from "./ShareLoader";
+import { useAppSelector } from "@/hooks";
+import { PATHS } from "@/constants";
 
 export function InlinePlayground() {
-  const datastore = useReadonlyDatastore();
   return (
-    <ShareLoader datastore={datastore} shareUrlRoot="i" sharedRequired={true}>
-      <InlinePlaygroundUI datastore={datastore} />
+    <ShareLoader shareUrlRoot="i" sharedRequired={true}>
+      <InlinePlaygroundUI />
     </ShareLoader>
   );
 }
@@ -82,16 +83,18 @@ const useStyles = makeStyles((theme: Theme) =>
   }),
 );
 
-function InlinePlaygroundUI(props: { datastore: DataStore }) {
+// TODO: figure out how readonly would fit - need to make store unmodifiable somehow
+function InlinePlaygroundUI() {
   const classes = useStyles();
-  const datastore = props.datastore;
 
   const developerService = useDeveloperService();
-  const localParseService = useLocalParseService(datastore);
-  const liveCheckService = useLiveCheckService(developerService, datastore);
-  const validationService = useValidationService(developerService, datastore);
+  const localParseService = useLocalParseService();
+  const liveCheckService = useLiveCheckService(developerService);
+  const validationService = useValidationService(developerService);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
-  const zedTerminalService = undefined; // not used
+
+  const schema = useAppSelector(state => state.editor.schema)
+  const relationships = useAppSelector(state => state.editor.relationships)
 
   const services = {
     localParseService,
@@ -99,25 +102,17 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     validationService,
     problemService,
     developerService,
-    zedTerminalService,
   };
 
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
-  const [currentTabName, setCurrentTabName] = useState(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id,
-  );
+  const [currentTabName, setCurrentTabName] = useState(PATHS.SCHEMA);
 
   const handleChangeTab = (_event: React.ChangeEvent<object>, selectedTabName: string) => {
     setCurrentTabName(selectedTabName);
   };
 
-  const currentItem = datastore.getById(currentTabName);
-  const parsedSchema = parseSchema(
-    datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!,
-  );
-  const relationships = parseRelationships(
-    datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents!,
-  );
+  const parsedSchema = parseSchema(schema);
+  const parsedRelationships = parseRelationships(relationships);
   const [resizeIndex, setResizeIndex] = useState(0);
 
   React.useEffect(() => {
@@ -144,12 +139,12 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         >
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id}
+            value={PATHS.SCHEMA}
             label={<TabLabel icon={<NS small />} title="Schema" />}
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).id}
+            value={PATHS.RELATIONSHIPS}
             label={<TabLabel icon={<VL small />} title="Test Data" />}
           />
           <Tab
@@ -159,12 +154,12 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).id}
+            value={PATHS.ASSERTIONS}
             label={<TabLabel icon={<AT small />} title="Assert" />}
           />
           <Tab
             classes={{ root: classes.tabRoot }}
-            value={datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).id}
+            value={PATHS.EXPECTED_RELATIONS}
             label={<TabLabel icon={<ET small />} title="Expected" />}
           />
         </Tabs>
@@ -180,16 +175,14 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
 
       {currentTabName === "$graph" && (
         <div className={classes.tenantGraphContainer}>
-          <TenantGraph schema={parsedSchema} relationships={relationships} />
+          <TenantGraph schema={parsedSchema} relationships={parsedRelationships} />
         </div>
       )}
 
-      {currentItem?.kind === DataStoreItemKind.RELATIONSHIPS && (
+      {currentTabName === PATHS.RELATIONSHIPS && (
         <DatastoreRelationshipEditor
-          datastore={datastore}
           services={services}
           isReadOnly
-          datastoreUpdated={() => null}
           dimensions={{
             width: document.body.clientWidth,
             height: document.body.clientHeight,
@@ -197,12 +190,11 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
         />
       )}
 
-      {currentItem !== undefined && currentItem.kind !== DataStoreItemKind.RELATIONSHIPS && (
+      {/* TODO: simplify this logic with the above. Switch? */}
+      {currentTabName !== "$graph" && currentTabName !== PATHS.RELATIONSHIPS && (
         <EditorDisplay
           services={services}
-          datastore={datastore}
           isReadOnly={true}
-          currentItem={currentItem}
           datastoreUpdated={() => null}
           disableMouseWheelScrolling={disableMouseWheelScrolling}
           defaultWidth="100vw"

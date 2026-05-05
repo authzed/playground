@@ -38,7 +38,6 @@ import {
   LiveCheckService,
   LiveCheckStatus,
 } from "../../services/check";
-import { DataStore, DataStoreItemKind } from "../../services/datastore";
 import { LocalParseService } from "../../services/localparse";
 import { parseRelationships } from "../../spicedb-common/parsing";
 import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
@@ -48,7 +47,9 @@ import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
 
 import { PanelProps, PanelSummaryProps, useSummaryStyles } from "./base/common";
 import { ReflexedPanelLocation } from "./types";
+import { useAppSelector } from "@/hooks";
 
+// TODO: update this to use check slice
 const useStyles = makeStyles((theme: Theme) =>
   createStyles({
     validationError: {
@@ -187,8 +188,6 @@ export function WatchesSummary(props: PanelSummaryProps) {
 export function WatchesPanel(props: PanelProps) {
   const liveCheckService = props.services.liveCheckService;
   const localParseService = props.services.localParseService;
-  const datastore = props.datastore;
-  const editorUpdateIndex = -1; // FIXME
 
   return (
     <TableContainer component={Paper}>
@@ -263,8 +262,6 @@ export function WatchesPanel(props: PanelProps) {
                   location={props.location}
                   service={liveCheckService}
                   localParseService={localParseService}
-                  editorUpdateIndex={editorUpdateIndex}
-                  datastore={datastore}
                   item={item}
                 />
               );
@@ -289,13 +286,10 @@ function LiveCheckRow(props: {
   location: ReflexedPanelLocation;
   service: LiveCheckService;
   item: LiveCheckItem;
-  editorUpdateIndex?: number;
-  datastore: DataStore;
   localParseService: LocalParseService;
 }) {
   const classes = useStyles();
   const item = props.item;
-  const datastore = props.datastore;
   const liveCheckService = props.service;
 
   const handleDeleteRow = () => {
@@ -361,8 +355,8 @@ function LiveCheckRow(props: {
     liveCheckService.itemUpdated(item);
   };
 
-  const relationshipContents =
-    props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "";
+  const relationshipContents = useAppSelector(state => state.editor.relationships)
+
   const relationships = useMemo(() => {
     return parseRelationships(relationshipContents);
   }, [relationshipContents]);
@@ -400,10 +394,7 @@ function LiveCheckRow(props: {
       }),
     );
 
-    // NOTE: we include editorUpdateIndex to ensure this is recomputed on
-    // editor changes.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [datastore, relationships, objectInputValue, props.editorUpdateIndex]);
+  }, [relationships, objectInputValue, props.localParseService]);
 
   const subjects = useMemo(() => {
     return filter(

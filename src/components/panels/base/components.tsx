@@ -10,7 +10,6 @@ import CloseIcon from "@material-ui/icons/Close";
 import { useCallback, type ReactNode } from "react";
 
 import TabPanel from "../../../playground-ui/TabPanel";
-import { DataStore } from "../../../services/datastore";
 import { Services } from "../../../services/services";
 import { ReflexedPanelLocation } from "../types";
 
@@ -117,7 +116,6 @@ const TOOLBAR_HEIGHT = 48; // Pixels
 export function PanelDisplay(props: {
   location: ReflexedPanelLocation;
   coordinator: PanelsCoordinator;
-  datastore: DataStore;
   services: Services;
   dimensions?: { width: number; height: number };
 }) {

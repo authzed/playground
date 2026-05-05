@@ -6,16 +6,12 @@ import {
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 
 import { LiveCheckService, LiveCheckStatus } from "./check";
-import { DataStoreItemKind } from "./datastore";
 import { LocalParseService } from "./localparse";
 import { ValidationService } from "./validation";
 
-export interface ProblemService {
-  /**
-   * stateKey is a shorthand key for watching for changes in the problem service.
-   */
-  stateKey: string;
+// TODO: it does seem like this should go in a listener middleware.
 
+export interface ProblemService {
   /**
    * isUpdating is true if any of the underlying services are currently processing.
    */
@@ -62,6 +58,8 @@ interface ProblemsResult {
   warnings?: DeveloperWarning[];
 }
 
+// TODO: basically all of these are just selectors once we have the slices set up.
+
 /**
  * useProblemService is a hook which exposes any problems (namespace parse errors,
  * validation errors, etc) raised by live check or validation.
@@ -98,10 +96,8 @@ export function useProblemService(
   const isUpdating =
     liveCheckService.state.status === LiveCheckStatus.CHECKING || validationService.isRunning;
   const validationErrors = validationService.state.validationErrors ?? [];
-  const stateKey = `${isUpdating}:${errorCount}-${validationErrors.length}-${invalidRelationships.length}`;
 
   return {
-    stateKey: stateKey,
     isUpdating: isUpdating,
     errorCount: errorCount,
     requestErrors: requestErrors,

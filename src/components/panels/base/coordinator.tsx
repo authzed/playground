@@ -158,7 +158,7 @@ const COORDINATOR_STATE_KEY = "panel-coordinator-state";
         location={ReflexedPanelLocation.FIRST}
         coordinator={coordinator}
         services={props.services}
-        datastore={props.datastore} />
+         />
   ```
  */
 export function usePanelsCoordinator(props: PanelCoordinatorProps): PanelsCoordinator {

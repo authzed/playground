@@ -6,7 +6,6 @@ import "react-reflex/styles.css";
 import TenantGraph from "@/components/visualizer/TenantGraph";
 
 import TabLabel from "../../playground-ui/TabLabel";
-import { DataStoreItem } from "../../services/datastore";
 import { ParseRelationshipError } from "../../spicedb-common/parsing";
 import { RelationTuple } from "../../spicedb-common/protodefs/core/v1/core_pb";
 
@@ -28,7 +27,6 @@ export function VisualizerPanel({
 }: PanelProps & {
   dimensions?: { width: number; height: number };
   editorPosition?: Position;
-  currentItem?: DataStoreItem;
 }) {
   const relationships = services.localParseService.state.relationships
     .map((relFound) => relFound.parsed)

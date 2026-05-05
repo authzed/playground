@@ -6,7 +6,7 @@ import clsx from "clsx";
 import "react-reflex/styles.css";
 
 import TabLabel from "../../playground-ui/TabLabel";
-import { DataStorePaths } from "../../services/datastore";
+import { PATHS } from "@/constants";
 import {
   DeveloperError,
   DeveloperWarning,
@@ -104,7 +104,7 @@ export function ProblemsPanel({ services }: PanelProps) {
               <div>
                 <div className={classes.validationErrorContext}>
                   In
-                  <Link className={classes.link} to={DataStorePaths.Relationships()}>
+                  <Link className={classes.link} to={PATHS.RELATIONSHIPS}>
                     Test Relationships
                   </Link>
                   :

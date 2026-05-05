@@ -42,24 +42,6 @@ export interface ZedTerminalService {
   start(): void;
 }
 
-/**
- * TerminalCommand is a command that was executed.
- */
-export interface TerminalCommand {
-  command: string;
-}
-
-/**
- * TerminalOutput is output written to the terminal.
- */
-export interface TerminalOutput {
-  output: string;
-}
-
-/**
- * TerminalSection represents a section of terminal output.
- */
-export type TerminalSection = TerminalCommand | TerminalOutput;
 
 /**
  * useZedTerminalService creates a new zed terminal service.
@@ -109,3 +91,5 @@ export function useZedTerminalService(): ZedTerminalService {
     },
   };
 }
+
+

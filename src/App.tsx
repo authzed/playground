@@ -26,6 +26,8 @@ import { useGoogleAnalytics } from "./playground-ui/GoogleAnalyticsHook";
 import PlaygroundUIThemed from "./playground-ui/PlaygroundUIThemed";
 import AppConfig from "./services/configservice";
 import { PLAYGROUND_UI_COLORS } from "./theme";
+import { store } from './store'
+import { Provider as ReduxProvider } from 'react-redux'
 
 const rootRoute = createRootRoute({
   component: () => (
@@ -97,6 +99,7 @@ function App() {
       <Toaster />
       {/* @ts-ignore-error react-cookie's types are screwy; CI and (local and vercel) disagree about whether there's an error or not. */}
       <CookiesProvider>
+      <ReduxProvider store={store}>
         <PHProvider>
           <ThemeProvider>
             <PlaygroundUIThemed {...PLAYGROUND_UI_COLORS} forceDarkMode={isEmbeddedPlayground}>
@@ -106,6 +109,7 @@ function App() {
             </PlaygroundUIThemed>
           </ThemeProvider>
         </PHProvider>
+        </ReduxProvider>
       </CookiesProvider>
     </>
   );

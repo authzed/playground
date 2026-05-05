@@ -1,6 +1,6 @@
 import { Theme } from "@glideapps/glide-data-grid";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import {
@@ -8,7 +8,6 @@ import {
   DeveloperError_Source,
 } from "@/spicedb-common/protodefs/developer/v1/developer_pb";
 
-import { DataStore, DataStoreItemKind } from "../services/datastore";
 import { Services } from "../services/services";
 import { RelationshipOrComment, parseRelationshipsAndComments } from "../spicedb-common/parsing";
 
@@ -22,6 +21,8 @@ import {
   RelationTupleHighlight,
   RelationshipEditor,
 } from "./relationshipeditor/RelationshipEditor";
+import { useAppDispatch, useAppSelector } from "@/hooks";
+import { setRelationships } from "@/store/editorSlice";
 
 const partialRelationshipCommentPrefix = "partial relationship: ";
 
@@ -62,28 +63,20 @@ function toRelationshipsString(data: RelationshipDatum[]): string {
 }
 
 export type DatastoreRelationshipEditorProps = {
-  datastore: DataStore;
   services: Services;
   isReadOnly: boolean;
-  datastoreUpdated: () => void;
   themeOverrides?: Partial<Theme> | undefined;
 } & { dimensions?: { width: number; height: number } };
 
 export function DatastoreRelationshipEditor(props: DatastoreRelationshipEditorProps) {
+  const relationshipsString = useAppSelector(state => state.editor.relationships)
+  const dispatch = useAppDispatch();
   const debouncedUpdateDatastore = useDebouncedCallback(
     (data: RelationshipDatum[]) => {
       const editableContents = toRelationshipsString(data);
-      props.datastore.update(relationshipsItem, editableContents);
-      props.datastoreUpdated();
+      dispatch(setRelationships(editableContents))
     },
     { wait: 50 },
-  );
-
-  const handleDataUpdated = useCallback(
-    (data: RelationshipDatum[]) => {
-      debouncedUpdateDatastore(data);
-    },
-    [debouncedUpdateDatastore],
   );
 
   const relErrors = useMemo(() => {
@@ -105,8 +98,6 @@ export function DatastoreRelationshipEditor(props: DatastoreRelationshipEditorPr
     );
   }, [relErrors]);
 
-  const relationshipsItem = props.datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
-  const relationshipsString = relationshipsItem.editableContents;
   const relationshipData: RelationshipDatum[] = useMemo(() => {
     return fromRelationshipsString(relationshipsString);
   }, [relationshipsString]);
@@ -117,7 +108,7 @@ export function DatastoreRelationshipEditor(props: DatastoreRelationshipEditorPr
       relationshipData={relationshipData}
       resolver={props.services.localParseService.state.resolver}
       highlights={highlights}
-      dataUpdated={handleDataUpdated}
+      dataUpdated={debouncedUpdateDatastore}
       isReadOnly={props.isReadOnly}
     />
   );

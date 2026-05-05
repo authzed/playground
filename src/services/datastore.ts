@@ -10,86 +10,16 @@ import { ParsedValidation } from "../spicedb-common/validationfileformat";
  * DataStorePaths defines functions for mapping from names to the associated
  * URL path for a specific section stored in the datastore.
  */
-export const DataStorePaths = {
-  Schema: () => "/schema",
-  Relationships: () => "/relationships",
-  Assertions: () => "/assertions",
-  ExpectedRelations: () => "/expected",
-};
-
-export enum DataStoreItemKind {
-  SCHEMA = 0,
-  RELATIONSHIPS = 1,
-  EXPECTED_RELATIONS = 2,
-  ASSERTIONS = 3,
-}
-
-type ID = string;
 
 export interface DataStoreItem {
-  id: ID;
-  kind: DataStoreItemKind;
   pathname: string;
   editableContents: string;
 }
 
 interface DataStorageData {
-  items: Record<ID, DataStoreItem>;
+  items: Record<string, DataStoreItem>;
   editIndex: string;
 }
-
-const EMPTY_STORE = {
-  editIndex: "",
-  items: {
-    [DataStorePaths.Schema()]: {
-      id: "(schema)",
-      kind: DataStoreItemKind.SCHEMA,
-      pathname: DataStorePaths.Schema(),
-      editableContents: `definition user {}
-
-/**
- * resource is an example resource.
- */
-definition resource {
-    relation writer: user
-    relation viewer: user
-
-    permission write = writer
-    permission view = viewer + writer
-}
-`,
-    },
-    [DataStorePaths.ExpectedRelations()]: {
-      id: "(expected)",
-      kind: DataStoreItemKind.EXPECTED_RELATIONS,
-      pathname: DataStorePaths.ExpectedRelations(),
-      editableContents: ``,
-    },
-    [DataStorePaths.Relationships()]: {
-      id: "(relationships)",
-      kind: DataStoreItemKind.RELATIONSHIPS,
-      pathname: DataStorePaths.Relationships(),
-      editableContents: `// Some example relationships
-resource:someresource#viewer@user:somegal
-resource:someresource#writer@user:anotherguy
-resource:anotherresource#writer@user:somegal`,
-    },
-    [DataStorePaths.Assertions()]: {
-      id: "(asserts)",
-      kind: DataStoreItemKind.ASSERTIONS,
-      pathname: DataStorePaths.Assertions(),
-      editableContents: `assertTrue:
-  - resource:someresource#view@user:somegal
-  - resource:someresource#view@user:anotherguy
-  - resource:someresource#write@user:anotherguy
-assertFalse:
-  - resource:someresource#write@user:somegal`,
-    },
-  },
-};
-
-export type ListenerCallback = (index: string) => void;
-export type RemovalCallback = () => void;
 
 /**
  * DataStore defines the storage layer for data in the playground.
@@ -97,51 +27,7 @@ export type RemovalCallback = () => void;
 export abstract class DataStore {
   abstract getStored(): DataStorageData;
   abstract setStored(data: DataStorageData): void;
-  abstract isOutOfDate(): boolean;
   abstract isPopulated(): boolean;
-
-  private listeners: Record<string, ListenerCallback> = {};
-
-  private setStoredAndReport(data: DataStorageData): void {
-    this.setStored(data);
-    const editIndex = this.getStored().editIndex;
-
-    Object.values(this.listeners).forEach((callback: ListenerCallback) => {
-      callback(editIndex);
-    });
-  }
-
-  /**
-   * registerListener registers a listener callback to be invoked whenever the
-   * datastore's contents have changed.
-   * @param callback The callback to be invoked on change.
-   * @returns A callback to invoke to remove the listener.
-   */
-  public registerListener(callback: ListenerCallback): RemovalCallback {
-    const key = uuidv4();
-    this.listeners[key] = callback;
-    return () => {
-      delete this.listeners[key];
-    };
-  }
-
-  /**
-   * currentIndex returns the current edit index for the datastore, which will
-   * change whenever the datastore's data changes.
-   */
-  public currentIndex(): string {
-    const deserialized = this.getStored();
-    return deserialized.editIndex;
-  }
-
-  /**
-   * getById returns the datastore item with the given ID or undefined if none.
-   */
-  public getById(id: string): DataStoreItem | undefined {
-    const deserialized = this.getStored();
-    const items = Object.values(deserialized.items);
-    return items.find((item: DataStoreItem) => item.id === id);
-  }
 
   /**
    * get returns the datastore item with the given path or undefined if none.
@@ -150,20 +36,6 @@ export abstract class DataStore {
     const deserialized = this.getStored();
     const items = Object.values(deserialized.items);
     return items.find((item: DataStoreItem) => item.pathname === pathname);
-  }
-
-  /**
-   * getSingletonByKind returns the single datastore item with the given kind.
-   * Throws an error if not found or more than one is found.
-   */
-  public getSingletonByKind(kind: DataStoreItemKind): DataStoreItem {
-    const deserialized = this.getStored();
-    const items = Object.values(deserialized.items);
-    const found = items.filter((item: DataStoreItem) => item.kind === kind);
-    if (found.length !== 1) {
-      throw Error("Found non-singleton");
-    }
-    return found[0];
   }
 
   /**
