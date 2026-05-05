@@ -1,3 +1,4 @@
+import { ParsedSchema } from "@authzed/spicedb-parser-js";
 import {
   interpolateBlues,
   interpolateGreens,
@@ -23,11 +24,6 @@ export interface RelationshipsService {
   relationships: Relationship[];
 
   /**
-   * resourceTypes is the set of object types used for resources.
-   */
-  resourceTypes: string[];
-
-  /**
    * resources is the set of resources defined, without relations, in the form
    * `namespacename:objectid`.
    */
@@ -39,11 +35,6 @@ export interface RelationshipsService {
    * `namespacename:objectid#relation`.
    */
   subjects: string[];
-
-  /**
-   * subjectTypes is the set of object types used for subjects.
-   */
-  subjectTypes: string[];
 
   /**
    * getObjectIds returns the set of IDs for objects used as resources or subjects
@@ -89,7 +80,10 @@ const colorSchemes = [
  * based on entered test relationships.
  * @param relationshipsString The encoded string of test relationships.
  */
-export function useRelationshipsService(relationships: Relationship[]): RelationshipsService {
+export function useRelationshipsService(
+  relationships: Relationship[],
+  parsedSchema?: ParsedSchema,
+): RelationshipsService {
   return useMemo(() => {
     const buildingObjectsByType: Map<string, Set<string>> = new Map<string, Set<string>>();
 
@@ -113,17 +107,6 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
       }),
     );
 
-    const resourceTypes = filter(
-      relationships.map((rt) => {
-        const onr = rt.resourceAndRelation;
-        if (onr === undefined) {
-          return null;
-        }
-
-        return onr.namespace;
-      }),
-    );
-
     const subjects = filter(
       relationships.map((rt) => {
         const subject = rt.subject;
@@ -139,27 +122,17 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
       }),
     );
 
-    const subjectTypes = filter(
-      relationships.map((rt) => {
-        const subject = rt.subject;
-        if (subject === undefined) {
-          return null;
-        }
-
-        return subject.namespace;
-      }),
-    );
-
     const calculateColor = (colorSet: (n: number) => string, valueSet: string[], value: string) => {
       if (valueSet.indexOf(value) < 0) {
         return undefined;
       }
-      return colorSet(1 - valueSet.indexOf(value) / 9);
+      const offset = 1 - valueSet.indexOf(value) / 9;
+      return colorSet(offset);
     };
 
-    const possibleObjectTypes = [...resourceTypes, ...subjectTypes];
-
-    const objectTypes = Array.from(new Set(possibleObjectTypes));
+    const objectTypes =
+      parsedSchema?.definitions.filter((tld) => tld.kind === "objectDef").map((def) => def.name) ??
+      [];
 
     const objectsByType: Record<string, string[]> = {};
     buildingObjectsByType.forEach((idSet: Set<string>, objectType: string) => {
@@ -171,8 +144,6 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
     return {
       relationships: relationships,
       resources: resources,
-      resourceTypes: resourceTypes,
-      subjectTypes: subjectTypes,
       subjects: subjects,
       getObjectIds: (objectType: string) => {
         const resourceIDs = relationships
@@ -202,5 +173,5 @@ export function useRelationshipsService(relationships: Relationship[]): Relation
         return scheme(0.65);
       },
     };
-  }, [relationships]);
+  }, [relationships, parsedSchema]);
 }

@@ -119,6 +119,7 @@ export function DatastoreRelationshipEditor(props: DatastoreRelationshipEditorPr
       highlights={highlights}
       dataUpdated={handleDataUpdated}
       isReadOnly={props.isReadOnly}
+      schema={props.services.localParseService.state.parsed}
     />
   );
 }

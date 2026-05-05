@@ -1,4 +1,4 @@
-import { Resolver } from "@authzed/spicedb-parser-js";
+import { ParsedSchema, Resolver } from "@authzed/spicedb-parser-js";
 import DataEditor, {
   CompactSelection,
   EditableGridCell,
@@ -121,6 +121,7 @@ export type RelationshipEditorProps = {
   resolver?: Resolver;
   themeOverrides?: Partial<Theme>;
   dimensions?: { width: number; height: number };
+  schema?: ParsedSchema;
 };
 
 interface TooltipData {
@@ -144,6 +145,7 @@ export function RelationshipEditor({
   resolver,
   themeOverrides,
   dimensions,
+  schema,
 }: RelationshipEditorProps) {
   // data holds the grid data+metadata array for the grid, indexed by row.
   const [data, setDataDirectly] = useState<AnnotatedData>(() => {
@@ -214,7 +216,7 @@ export function RelationshipEditor({
 
   // relationshipsService is a service for quickly accessing the types, ids and relations defined
   // for all *valid* relationships.
-  const relationshipsService = useRelationshipsService(relationships);
+  const relationshipsService = useRelationshipsService(relationships, schema);
 
   const adjustData = (dataRowIndex: number, newColumnData: string[]) => {
     if (isReadOnly) {

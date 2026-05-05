@@ -1,3 +1,4 @@
+import { ParsedSchema } from "@authzed/spicedb-parser-js";
 import dagre from "@dagrejs/dagre";
 import {
   ReactFlow,
@@ -25,6 +26,10 @@ export interface RelationshipGraphProps {
    * relationships are the test relationships for the schema.
    */
   relationships: Relationship[];
+  /**
+   * schema is the parsed schema reference.
+   */
+  schema: ParsedSchema;
 }
 
 // Helper to create a unique node ID from namespace and object ID
@@ -93,8 +98,8 @@ type RelationshipGraphEdgeType = Omit<CustomEdgeType, "data"> & {
 /**
  * RelationshipGraph renders a graphical view of relationship instances.
  */
-export default function RelationshipGraph({ relationships }: RelationshipGraphProps) {
-  const relationshipsService = useRelationshipsService(relationships);
+export default function RelationshipGraph({ relationships, schema }: RelationshipGraphProps) {
+  const relationshipsService = useRelationshipsService(relationships, schema);
   const [hoveredNodeId, setHoveredNodeId] = useState<string | null>(null);
   const [hoveredEdgeId, setHoveredEdgeId] = useState<string | null>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -190,7 +195,6 @@ export default function RelationshipGraph({ relationships }: RelationshipGraphPr
 
       edges.push({
         id: `${resourceId}:${relationLabel}:${subjectId}`,
-        type: "custom",
         source: resourceId,
         target: subjectId,
         label: relationLabel,

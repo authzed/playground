@@ -193,7 +193,7 @@ function generateSchemaEdges(definitions: ParsedObjectDefinition[]): Edge[] {
  * SchemaGraph renders a graphical view of the schema structure.
  */
 export default function SchemaGraph({ schema, relationships }: SchemaGraphProps) {
-  const relationshipsService = useRelationshipsService(relationships ?? []);
+  const relationshipsService = useRelationshipsService(relationships ?? [], schema);
 
   const definitions = useMemo(
     () =>
@@ -206,6 +206,8 @@ export default function SchemaGraph({ schema, relationships }: SchemaGraphProps)
     useMemo(() => {
       // Create node for each definition
       const nodes: RelationshipNodeType[] = definitions.map((def) => {
+        // This is using the names in the relationship service to color the schema
+        // elements, which only makes sense if you have edges defined in your schema.
         const color = relationshipsService.getTypeColor(def.name) || "#e0e0e0";
 
         return {
