@@ -275,6 +275,7 @@ export default function RelationshipGraph({ relationships }: RelationshipGraphPr
         edges={edges}
         onEdgeMouseEnter={handleEdgeMouseEnter}
         onEdgeMouseLeave={handleEdgeMouseLeave}
+        nodesConnectable={false}
         colorMode="system"
         fitView
         attributionPosition="bottom-left"

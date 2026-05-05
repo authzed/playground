@@ -256,6 +256,7 @@ export default function SchemaGraph({ schema, relationships }: SchemaGraphProps)
         onNodesChange={onNodesChange}
         edges={edges}
         edgeTypes={edgeTypes}
+        nodesConnectable={false}
         colorMode="system"
         fitView
         attributionPosition="bottom-left"
