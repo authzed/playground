@@ -17,7 +17,6 @@ import { ThemeProvider } from "@/components/ThemeProvider";
 import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 
 import "./App.css";
-import { EmbeddedPlayground } from "./components/EmbeddedPlayground";
 import { FullPlayground } from "./components/FullPlayground";
 import { InlinePlayground } from "./components/InlinePlayground";
 import { Toaster } from "./components/ui/sonner";
@@ -47,13 +46,8 @@ const inlineRoute = createRoute({
   path: "/i/$",
   component: InlinePlayground,
 });
-const embeddedRoute = createRoute({
-  getParentRoute: () => rootRoute,
-  path: "/e/$",
-  component: EmbeddedPlayground,
-});
 
-const routeTree = rootRoute.addChildren([indexRoute, inlineRoute, embeddedRoute]);
+const routeTree = rootRoute.addChildren([indexRoute, inlineRoute]);
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
