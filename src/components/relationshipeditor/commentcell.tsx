@@ -36,13 +36,6 @@ type CommentCellEditorProps = {
 };
 
 const CommentCellEditor = (props: CommentCellEditorProps) => {
-  // From: https://github.com/mui/material-ui/issues/12779
-  // Ensures that the autofocus jumps to the end of the input's value.
-  const handleFocus = (event: React.FocusEvent<HTMLInputElement>) => {
-    const lengthOfInput = event.target.value.length;
-    return event.target.setSelectionRange(lengthOfInput, lengthOfInput);
-  };
-
   let adjustedInitialValue = props.initialValue;
   if (adjustedInitialValue && !adjustedInitialValue.startsWith(CommentCellPrefix)) {
     adjustedInitialValue = `${CommentCellPrefix} ${adjustedInitialValue}`;
@@ -72,7 +65,6 @@ const CommentCellEditor = (props: CommentCellEditorProps) => {
       <Input
         autoFocus={true}
         value={internalValue}
-        onFocus={handleFocus}
         className="w-full"
         onChange={(e) => {
           setInternalValue(e.target.value);
