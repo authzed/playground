@@ -1,4 +1,4 @@
-import Joyride, { ACTIONS, EVENTS, type Step } from "react-joyride";
+import { Joyride, ACTIONS, EVENTS, type Step } from "react-joyride";
 
 export const TourElementClass = {
   schema: "tec-schema",
@@ -16,7 +16,6 @@ const steps: Step[] = [
     target: `.${TourElementClass.schema}`,
     title: "Welcome!",
     content: "Begin by editing permission system's schema here...",
-    disableBeacon: true,
   },
   {
     target: `.${TourElementClass.browse}`,
@@ -138,18 +137,16 @@ export function GuidedTour(props: {
         <Joyride
           run={show}
           continuous
-          showSkipButton
-          showProgress
-          callback={handleEvents(onSkip, onTourEnd, onEnterStep)}
-          styles={{
-            options: {
+          onEvent={handleEvents(onSkip, onTourEnd, onEnterStep)}
+            options={{
+              showProgress: true,
+              buttons: ['back', 'close', 'primary', 'skip'],
               arrowColor: tokens.arrowColor,
               backgroundColor: tokens.backgroundColor,
               primaryColor: tokens.primaryColor,
               textColor: tokens.textColor,
               zIndex: 999,
-            },
-          }}
+            }}
           steps={steps}
         />
       )}

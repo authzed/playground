@@ -1,20 +1,25 @@
 import type { ParsedObjectDefinition } from "@authzed/spicedb-parser-js";
 import { create } from "@bufbuild/protobuf";
-import { Button, Menu, MenuItem } from "@material-ui/core";
-import { createStyles, makeStyles } from "@material-ui/core/styles";
-import CheckCircleIcon from "@material-ui/icons/CheckCircle";
-import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
-import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
 import { getRouteApi } from "@tanstack/react-router";
 import clsx from "clsx";
-import { ChevronDown, Loader, File, User, ThumbsUp, Database } from "lucide-react";
+import {
+  AlertCircle,
+  CheckCircle2,
+  ChevronDown,
+  Database,
+  File,
+  HelpCircle,
+  Loader,
+  ThumbsUp,
+  User,
+} from "lucide-react";
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
-  useLiveCheckService,
   liveCheckItemToWatch,
   type LiveCheckService,
+  useLiveCheckService,
 } from "../services/check";
 import AppConfig from "../services/configservice";
 import { DataStore, DataStoreItemKind, useReadonlyDatastore } from "../services/datastore";
@@ -31,185 +36,39 @@ import {
   CheckOperationsResultSchema,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 import {
-  useDeveloperService,
   type DeveloperService,
+  useDeveloperService,
 } from "../spicedb-common/services/developerservice";
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
-import { EmbeddedThemeWrapper } from "./EmbeddedThemeWrapper";
 import "./fonts.css";
-import { ShareLoader } from "./ShareLoader";
+import { Button } from "./ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "./ui/dropdown-menu";
 
-const useStyles = makeStyles(() =>
-  createStyles({
-    root: {
-      backgroundColor: "rgb(14,13,17)",
-      height: "100vh",
-      width: "100vw",
-      display: "flex",
-      alignItems: "center",
-      justifyContent: "center",
-      position: "relative",
-      "&:hover": {
-        "& $openButton": {
-          opacity: 1,
-        },
-      },
-      fontFamily:
-        'Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"',
-    },
-    openButton: {
-      position: "absolute",
-      bottom: "10px",
-      right: "10px",
-      opacity: 0,
-      transition: "opacity ease-in-out 200ms",
-    },
-    loadedroot: {
-      border: "1px outset #6d49ac",
-      borderRadius: "16px",
-      height: "100vh",
-      width: "100vw",
-      display: "grid",
-      gridTemplateColumns: "1fr 1px 1fr",
-      columnGap: "10px",
-      padding: "24px",
-    },
-    column: {
-      display: "grid",
-      gridTemplateRows: "auto 1fr",
-    },
-    header: {
-      fontSize: "85%",
-      display: "inline-grid",
-      gridTemplateColumns: "auto auto auto",
-      columnGap: "6px",
-      alignItems: "center",
-      marginBottom: "16px",
-      border: `1px solid rgba(232, 232, 232, 0.21)`,
-      borderRadius: "8px",
-      textTransform: "uppercase",
-      padding: "8px",
-      background: "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
-    },
-    queryBox: {
-      border: "1px outset #6d49ac",
-      borderRadius: "16px",
-      marginBottom: "16px",
-      padding: "8px",
-      display: "grid",
-      gridTemplateColumns: "6px 1fr",
-      columnGap: "10px",
-    },
-    queryBoxColor: {
-      borderRadius: "16px",
-      backgroundColor: "#444",
-    },
-    queryEditor: {
-      padding: "6px",
-    },
-    resultBoxColor: {
-      borderRadius: "16px",
-      backgroundColor: "#ccc",
-    },
-    selector: {
-      fontSize: "85%",
-      display: "inline-grid",
-      gridTemplateColumns: "auto auto auto",
-      columnGap: "6px",
-      alignItems: "center",
-      marginLeft: "0.5em",
-      marginRight: "0.5em",
-      border: `1px solid rgba(232, 232, 232, 0.21)`,
-      borderRadius: "8px",
-      padding: "8px",
-      background: "linear-gradient(90deg, rgba(243,241,255,0.1) 0%, rgba(243,241,255,0) 100%)",
-      verticalAlign: "middle",
-      cursor: "pointer",
-      "&:hover": {
-        borderColor: `rgba(232, 232, 232, 0.21) !important`,
-      },
-    },
-    resource: {
-      borderColor: "#E9786E",
-    },
-    permission: {
-      borderColor: "#1acc92",
-    },
-    subject: {
-      borderColor: "#cec2f3",
-    },
-    indeterminate: {
-      backgroundColor: "#aaa",
-    },
-    noPermission: {
-      backgroundColor: "#f44336",
-    },
-    hasPermission: {
-      backgroundColor: "#4caf50",
-    },
-    hasPermissionIcon: {
-      color: "#4caf50",
-    },
-    maybePermission: {
-      backgroundColor: "#8787ff",
-    },
-    maybePermissionIcon: {
-      color: "#8787ff",
-    },
-    noPermissionIcon: {
-      color: "#f44336",
-    },
-    queryResult: {
-      display: "grid",
-      gridTemplateColumns: "auto 1fr",
-      alignItems: "center",
-      columnGap: "6px",
-    },
-    caret: {
-      opacity: 0.5,
-    },
-    buttonHeader: {
-      cursor: "pointer",
-    },
-    menuItem: {
-      display: "grid",
-      gridTemplateColumns: "auto 1fr",
-      alignItems: "center",
-      columnGap: "6px",
-    },
-    display: {},
-    resourceDisplay: {
-      color: "#E9786E",
-    },
-    permissionDisplay: {
-      color: "#1acc92",
-    },
-    subjectDisplay: {
-      color: "#cec2f3",
-    },
-    caveatFieldDisplay: {
-      color: "#8787ff",
-    },
-  }),
-);
+const FONT_FAMILY =
+  'Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,"Noto Sans",sans-serif,"Apple Color Emoji","Segoe UI Emoji","Segoe UI Symbol","Noto Color Emoji"';
 
 export function EmbeddedPlayground() {
-  const classes = useStyles();
   const datastore = useReadonlyDatastore();
   const developerService = useDeveloperService();
   const liveCheckService = useLiveCheckService(developerService, datastore);
   return (
-    <EmbeddedThemeWrapper>
-      <div className={classes.root}>
-        <EmbeddedPlaygroundUI
-          datastore={datastore}
-          developerService={developerService}
-          liveCheckService={liveCheckService}
-        />
-      </div>
-    </EmbeddedThemeWrapper>
+    <div
+      className="group bg-[rgb(14,13,17)] h-screen w-screen flex items-center justify-center relative text-white"
+      style={{ fontFamily: FONT_FAMILY }}
+    >
+      <EmbeddedPlaygroundUI
+        datastore={datastore}
+        developerService={developerService}
+        liveCheckService={liveCheckService}
+      />
+    </div>
   );
 }
 
@@ -218,9 +77,7 @@ function EmbeddedPlaygroundUI(props: {
   developerService: DeveloperService;
   liveCheckService: LiveCheckService;
 }) {
-  const classes = useStyles();
   const datastore = props.datastore;
-
   const developerService = props.developerService;
   const liveCheckService = props.liveCheckService;
   const localParseService = useLocalParseService(datastore);
@@ -272,21 +129,7 @@ function EmbeddedPlaygroundUI(props: {
     };
   }, [resizeIndex, setResizeIndex]);
 
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-
-  const handleCloseMenu = () => {
-    setAnchorEl(null);
-  };
-
-  const handleOpenMenu = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
-
   const [mode, setMode] = useState<"schema" | "relationships">("schema");
-  const setCurrentMode = (mode: "schema" | "relationships") => {
-    setMode(mode);
-    setAnchorEl(null);
-  };
 
   const shareAndOpen = async () => {
     const shareApiEndpoint = AppConfig().shareApiEndpoint;
@@ -345,56 +188,56 @@ function EmbeddedPlaygroundUI(props: {
 
   return (
     <>
-      <Button className={classes.openButton} onClick={shareAndOpen}>
+      <Button
+        variant="secondary"
+        className="absolute bottom-2.5 right-2.5 opacity-0 group-hover:opacity-100 transition-opacity ease-in-out duration-200"
+        onClick={shareAndOpen}
+      >
         Open In Playground
       </Button>
-      <Menu
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleCloseMenu}
-        getContentAnchorEl={null}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{
-          style: {
-            maxHeight: "300px",
-            maxWidth: "500px",
-          },
-        }}
-      >
-        <MenuItem className={classes.menuItem} onClick={() => setCurrentMode("schema")}>
-          <SchemaIcon />
-          Definitions
-        </MenuItem>
-        <MenuItem className={classes.menuItem} onClick={() => setCurrentMode("relationships")}>
-          <Database />
-          Relationships
-        </MenuItem>
-      </Menu>
       <div
         onClick={() => setDisableMouseWheelScrolling(false)}
-        className={clsx(classes.loadedroot)}
+        className="[border-style:outset] border border-[#6d49ac] rounded-2xl h-screen w-screen grid grid-cols-[1fr_1px_1fr] gap-x-2.5 p-6"
       >
-        <div className={classes.column}>
+        <div className="grid grid-rows-[auto_1fr]">
           <div>
-            <div className={clsx(classes.header, classes.buttonHeader)} onClick={handleOpenMenu}>
-              {mode === "schema" && (
-                <>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <div className="text-[85%] inline-grid grid-cols-[auto_auto_auto] gap-x-1.5 items-center mb-4 border border-[rgba(232,232,232,0.21)] rounded-lg uppercase p-2 bg-[linear-gradient(90deg,rgba(243,241,255,0.1)_0%,rgba(243,241,255,0)_100%)] cursor-pointer outline-none">
+                  {mode === "schema" && (
+                    <>
+                      <SchemaIcon />
+                      Example Definitions
+                    </>
+                  )}
+                  {mode === "relationships" && (
+                    <>
+                      <Database className="size-4" />
+                      Example Relationships
+                    </>
+                  )}
+                  <span className="opacity-50">
+                    <ChevronDown className="size-4" />
+                  </span>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-[rgb(20,18,24)] border border-[rgba(232,232,232,0.21)] text-white max-h-[300px] max-w-[500px]">
+                <DropdownMenuItem
+                  className="grid grid-cols-[auto_1fr] gap-x-1.5 items-center text-white focus:bg-white/10 focus:text-white cursor-pointer"
+                  onClick={() => setMode("schema")}
+                >
                   <SchemaIcon />
-                  Example Definitions
-                </>
-              )}
-              {mode === "relationships" && (
-                <>
-                  <Database />
-                  Example Relationships
-                </>
-              )}
-              <span className={classes.caret}>
-                <ChevronDown />
-              </span>
-            </div>
+                  Definitions
+                </DropdownMenuItem>
+                <DropdownMenuItem
+                  className="grid grid-cols-[auto_1fr] gap-x-1.5 items-center text-white focus:bg-white/10 focus:text-white cursor-pointer"
+                  onClick={() => setMode("relationships")}
+                >
+                  <Database className="size-4" />
+                  Relationships
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
           <>
             {mode === "schema" && (
@@ -432,20 +275,13 @@ function EmbeddedPlaygroundUI(props: {
             )}
           </>
         </div>
-        <div style={{ backgroundColor: "#444" }} />
-        <div className={classes.column}>
+        <div className="bg-[#444]" />
+        <div className="grid grid-rows-[auto_1fr]">
           <div>
-            <div className={classes.header}>
-              <div
-                style={{
-                  position: "relative",
-                  width: "16px",
-                  height: "16px",
-                  overflow: "hidden",
-                }}
-              >
+            <div className="text-[85%] inline-grid grid-cols-[auto_auto_auto] gap-x-1.5 items-center mb-4 border border-[rgba(232,232,232,0.21)] rounded-lg uppercase p-2 bg-[linear-gradient(90deg,rgba(243,241,255,0.1)_0%,rgba(243,241,255,0)_100%)]">
+              <div className="relative w-4 h-4 overflow-hidden">
                 <svg
-                  style={{ position: "absolute", top: "-10px", left: "-6px" }}
+                  className="absolute top-[-10px] left-[-6px]"
                   width="30"
                   height="30"
                   viewBox="0 0 30 30"
@@ -471,7 +307,6 @@ function EmbeddedPlaygroundUI(props: {
 }
 
 function EmbeddedQuery(props: { services: Services }) {
-  const classes = useStyles();
   const [subject, setSubject] = useState("");
   const [permission, setPermission] = useState("");
   const [resource, setResource] = useState("");
@@ -513,11 +348,22 @@ function EmbeddedQuery(props: { services: Services }) {
     return checkResult;
   }, [subject, permission, resource, devService, schemaText, relsText]);
 
+  const resultBgClass =
+    queryResult === undefined
+      ? "bg-[#aaa]"
+      : queryResult.membership === CheckOperationsResult_Membership.NOT_MEMBER
+        ? "bg-[#f44336]"
+        : queryResult.membership === CheckOperationsResult_Membership.MEMBER
+          ? "bg-[#4caf50]"
+          : queryResult.membership === CheckOperationsResult_Membership.CAVEATED_MEMBER
+            ? "bg-[#8787ff]"
+            : "bg-[#ccc]";
+
   return (
     <div>
-      <div className={classes.queryBox}>
-        <span className={classes.queryBoxColor} />
-        <div className={classes.queryEditor}>
+      <div className="[border-style:outset] border border-[#6d49ac] rounded-2xl mb-4 p-2 grid grid-cols-[6px_1fr] gap-x-2.5">
+        <span className="rounded-2xl bg-[#444]" />
+        <div className="p-1.5">
           Can{" "}
           <Selector
             type="subject"
@@ -541,22 +387,12 @@ function EmbeddedQuery(props: { services: Services }) {
           ?
         </div>
       </div>
-      <div className={classes.queryBox}>
-        <span
-          className={clsx(classes.resultBoxColor, {
-            [classes.indeterminate]: queryResult === undefined,
-            [classes.noPermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.NOT_MEMBER,
-            [classes.hasPermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.MEMBER,
-            [classes.maybePermission]:
-              queryResult?.membership === CheckOperationsResult_Membership.CAVEATED_MEMBER,
-          })}
-        />
-        <div className={classes.queryResult}>
+      <div className="[border-style:outset] border border-[#6d49ac] rounded-2xl mb-4 p-2 grid grid-cols-[6px_1fr] gap-x-2.5">
+        <span className={clsx("rounded-2xl", resultBgClass)} />
+        <div className="grid grid-cols-[auto_1fr] items-center gap-x-1.5">
           {devService.state.status === "loading" && (
             <>
-              <Loader size="sm" />
+              <Loader className="size-4 animate-spin" />
               Loading developer system
             </>
           )}
@@ -568,7 +404,7 @@ function EmbeddedQuery(props: { services: Services }) {
                 href="https://play.authzed.com"
                 target="_blank"
                 rel="noopener nofollow noreferrer"
-                style={{ color: "white" }}
+                className="text-white"
               >
                 standalone Playground
               </a>
@@ -579,13 +415,13 @@ function EmbeddedQuery(props: { services: Services }) {
           )}
           {queryResult?.checkError !== undefined && (
             <>
-              <ErrorOutlineIcon />
+              <AlertCircle className="size-4" />
               <div>{queryResult.checkError.message}</div>
             </>
           )}
           {queryResult?.membership === CheckOperationsResult_Membership.NOT_MEMBER && (
             <>
-              <ErrorOutlineIcon className={classes.noPermissionIcon} />
+              <AlertCircle className="size-4 text-[#f44336]" />
               <div>
                 <Display kind="subject">{subject}</Display> does not have permission{" "}
                 <Display kind="permission">{permission}</Display> on{" "}
@@ -595,7 +431,7 @@ function EmbeddedQuery(props: { services: Services }) {
           )}
           {queryResult?.membership === CheckOperationsResult_Membership.MEMBER && (
             <>
-              <CheckCircleIcon className={classes.hasPermissionIcon} />
+              <CheckCircle2 className="size-4 text-[#4caf50]" />
               <div>
                 <Display kind="subject">{subject}</Display> has permission{" "}
                 <Display kind="permission">{permission}</Display> on{" "}
@@ -605,7 +441,7 @@ function EmbeddedQuery(props: { services: Services }) {
           )}
           {queryResult?.membership === CheckOperationsResult_Membership.CAVEATED_MEMBER && (
             <>
-              <HelpOutlineIcon className={classes.maybePermissionIcon} />
+              <HelpCircle className="size-4 text-[#8787ff]" />
               <div>
                 <Display kind="subject">{subject}</Display> might have permission{" "}
                 <Display kind="permission">{permission}</Display> on{" "}
@@ -627,17 +463,14 @@ function Display(
     kind: "subject" | "permission" | "resource" | "caveatfields";
   }>,
 ) {
-  const classes = useStyles();
-  const kindClass = useMemo(() => {
-    return {
-      resource: classes.resourceDisplay,
-      subject: classes.subjectDisplay,
-      permission: classes.permissionDisplay,
-      caveatfields: classes.caveatFieldDisplay,
-    }[props.kind];
-  }, [props.kind, classes]);
+  const colorClass = {
+    resource: "text-[#E9786E]",
+    subject: "text-[#cec2f3]",
+    permission: "text-[#1acc92]",
+    caveatfields: "text-[#8787ff]",
+  }[props.kind];
 
-  return <code className={clsx(classes.display, kindClass)}>{props.children}</code>;
+  return <code className={colorClass}>{props.children}</code>;
 }
 
 function Selector(props: {
@@ -647,7 +480,6 @@ function Selector(props: {
   currentResource?: string;
   onChange: (value: string) => void;
 }) {
-  const classes = useStyles();
   const relationships = props.services.localParseService.state.relationships;
 
   const filter = (values: (string | null)[]): string[] => {
@@ -738,67 +570,46 @@ function Selector(props: {
 
   const icon = useMemo(() => {
     return {
-      resource: <File />,
-      subject: <User />,
-      permission: <ThumbsUp />,
+      resource: <File className="size-4" />,
+      subject: <User className="size-4" />,
+      permission: <ThumbsUp className="size-4" />,
     }[props.type];
   }, [props.type]);
 
-  const typeClass = useMemo(() => {
-    return {
-      resource: classes.resource,
-      subject: classes.subject,
-      permission: classes.permission,
-    }[props.type];
-  }, [props.type, classes]);
-
-  const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
-  const handleSelect = (value: string) => {
-    setAnchorEl(null);
-    props.onChange(value);
-  };
-
-  const handleClose = () => {
-    setAnchorEl(null);
-  };
-
-  const handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
-    setAnchorEl(event.currentTarget);
-  };
+  const borderColorClass = {
+    resource: "border-[#E9786E]",
+    subject: "border-[#cec2f3]",
+    permission: "border-[#1acc92]",
+  }[props.type];
 
   return (
-    <>
-      <div className={clsx(classes.selector, typeClass)} onClick={handleClick}>
-        {icon}
-        {current}
-        <span className={classes.caret}>
-          <ChevronDown />
-        </span>
-      </div>
-      <Menu
-        anchorEl={anchorEl}
-        keepMounted
-        open={Boolean(anchorEl)}
-        onClose={handleClose}
-        getContentAnchorEl={null}
-        anchorOrigin={{ vertical: "bottom", horizontal: "left" }}
-        transformOrigin={{ vertical: "top", horizontal: "left" }}
-        PaperProps={{
-          style: {
-            maxHeight: "300px",
-            maxWidth: "500px",
-          },
-        }}
-      >
-        {values.map((v) => {
-          return (
-            <MenuItem key={v} onClick={() => handleSelect(v)}>
-              {v}
-            </MenuItem>
-          );
-        })}
-      </Menu>
-    </>
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <div
+          className={clsx(
+            "text-[85%] inline-grid grid-cols-[auto_auto_auto] gap-x-1.5 items-center mx-2 border border-[rgba(232,232,232,0.21)] rounded-lg p-2 bg-[linear-gradient(90deg,rgba(243,241,255,0.1)_0%,rgba(243,241,255,0)_100%)] align-middle cursor-pointer outline-none",
+            borderColorClass,
+          )}
+        >
+          {icon}
+          {current}
+          <span className="opacity-50">
+            <ChevronDown className="size-4" />
+          </span>
+        </div>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent className="bg-[rgb(20,18,24)] border border-[rgba(232,232,232,0.21)] text-white max-h-[300px] max-w-[500px] overflow-y-auto">
+        {values.map((v) => (
+          <DropdownMenuItem
+            key={v}
+            className="text-white focus:bg-white/10 focus:text-white cursor-pointer"
+            onClick={() => props.onChange(v)}
+          >
+            {v}
+          </DropdownMenuItem>
+        ))}
+      </DropdownMenuContent>
+    </DropdownMenu>
   );
 }
 
