@@ -150,8 +150,6 @@ export function ThemedAppView(props: {
   developerService: DeveloperService;
   liveCheckService: LiveCheckService;
 }) {
-  
-  console.log("we are rendering")
   const { pushEvent } = useGoogleAnalytics();
 
   const [sharingStatus, setSharingStatus] = useState<SharingStatus>(SharingStatus.NOT_RUN);
@@ -306,7 +304,11 @@ export function ThemedAppView(props: {
       return;
     }
     setChosenExample(ex);
-    setConfirmLoadExample(true);
+    // Defer opening the dialog until the DropdownMenu close animation completes.
+    // Opening a Radix AlertDialog synchronously inside a DropdownMenuItem click
+    // causes both portals' layer/pointer-events management to run concurrently,
+    // leaving a transparent, click-blocking overlay on the page after the dialog closes.
+    setTimeout(() => setConfirmLoadExample(true));
   };
 
   const loadExampleData = async (ex: Example) => {

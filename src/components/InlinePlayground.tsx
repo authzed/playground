@@ -1,5 +1,5 @@
 import { parseSchema } from "@authzed/spicedb-parser-js";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
+import { getRouteApi } from "@tanstack/react-router";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
