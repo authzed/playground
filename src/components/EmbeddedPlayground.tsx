@@ -5,6 +5,7 @@ import { createStyles, makeStyles } from "@material-ui/core/styles";
 import CheckCircleIcon from "@material-ui/icons/CheckCircle";
 import ErrorOutlineIcon from "@material-ui/icons/ErrorOutline";
 import HelpOutlineIcon from "@material-ui/icons/HelpOutline";
+import { getRouteApi } from "@tanstack/react-router";
 import clsx from "clsx";
 import { ChevronDown, Loader, File, User, ThumbsUp, Database } from "lucide-react";
 import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
@@ -39,7 +40,6 @@ import { EditorDisplay } from "./EditorDisplay";
 import { EmbeddedThemeWrapper } from "./EmbeddedThemeWrapper";
 import "./fonts.css";
 import { ShareLoader } from "./ShareLoader";
-import { getRouteApi } from "@tanstack/react-router";
 
 const useStyles = makeStyles(() =>
   createStyles({
@@ -203,11 +203,11 @@ export function EmbeddedPlayground() {
   return (
     <EmbeddedThemeWrapper>
       <div className={classes.root}>
-      <EmbeddedPlaygroundUI
-      datastore={datastore}
-      developerService={developerService}
-      liveCheckService={liveCheckService}
-      />
+        <EmbeddedPlaygroundUI
+          datastore={datastore}
+          developerService={developerService}
+          liveCheckService={liveCheckService}
+        />
       </div>
     </EmbeddedThemeWrapper>
   );
@@ -228,9 +228,9 @@ function EmbeddedPlaygroundUI(props: {
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = undefined; // not used
 
-  const routeApi = getRouteApi("/e/$shareId")
-  const shareData = routeApi.useLoaderData()
-  const { shareId } = routeApi.useParams()
+  const routeApi = getRouteApi("/e/$shareId");
+  const shareData = routeApi.useLoaderData();
+  const { shareId } = routeApi.useParams();
 
   // Load the datastore from what's loaded by the route loader
   useEffect(() => {
@@ -244,7 +244,7 @@ function EmbeddedPlaygroundUI(props: {
     if (liveCheckService) {
       liveCheckService.loadWatches(shareData.check_watches ?? []);
     }
-  }, [shareData, datastore, shareId, liveCheckService])
+  }, [shareData, datastore, shareId, liveCheckService]);
 
   const services = {
     localParseService,

@@ -1,4 +1,5 @@
 import { parseSchema } from "@authzed/spicedb-parser-js";
+import { getRouteApi, useNavigate } from "@tanstack/react-router";
 import { SquareArrowOutUpRight } from "lucide-react";
 import { useState, useEffect } from "react";
 
@@ -18,13 +19,10 @@ import { useDeveloperService } from "../spicedb-common/services/developerservice
 
 import { DatastoreRelationshipEditor } from "./DatastoreRelationshipEditor";
 import { EditorDisplay } from "./EditorDisplay";
-import { getRouteApi, useNavigate } from "@tanstack/react-router";
 
 export function InlinePlayground() {
   const datastore = useReadonlyDatastore();
-  return (
-    <InlinePlaygroundUI datastore={datastore} />
-  );
+  return <InlinePlaygroundUI datastore={datastore} />;
 }
 
 type InlineTab = "schema" | "relationships" | "graph";
@@ -67,9 +65,9 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
 
-  const routeApi = getRouteApi("/i/$shareId")
-  const shareData = routeApi.useLoaderData()
-  const { shareId } = routeApi.useParams()
+  const routeApi = getRouteApi("/i/$shareId");
+  const shareData = routeApi.useLoaderData();
+  const { shareId } = routeApi.useParams();
 
   const services = {
     localParseService,
@@ -92,7 +90,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
     if (liveCheckService) {
       liveCheckService.loadWatches(shareData.check_watches ?? []);
     }
-  }, [shareData, datastore, shareId, liveCheckService])
+  }, [shareData, datastore, shareId, liveCheckService]);
 
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
   const [tab, setTab] = useState<InlineTab>("schema");

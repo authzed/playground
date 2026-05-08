@@ -24,8 +24,6 @@ import { toast } from "sonner";
 import { AuthSlot } from "@/components/auth-slot";
 import { BreadcrumbPill } from "@/components/breadcrumb-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
-import { Button } from "@/components/ui/button";
-import { ButtonGroup } from "@/components/ui/button-group";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,6 +34,8 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import { ButtonGroup } from "@/components/ui/button-group";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -44,6 +44,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import useCopyToClipboard from "@/hooks/use-copy-to-clipboard";
 
 import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
@@ -137,9 +138,9 @@ function ApolloedPlayground() {
   const liveCheckService = useLiveCheckService(developerService, datastore, { persist: true });
   return (
     <ThemedAppView
-    datastore={datastore}
-    developerService={developerService}
-    liveCheckService={liveCheckService}
+      datastore={datastore}
+      developerService={developerService}
+      liveCheckService={liveCheckService}
     />
   );
 }
@@ -172,6 +173,7 @@ export function ThemedAppView(props: {
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
   const zedTerminalService = useZedTerminalService();
+  const copy = useCopyToClipboard({ successMessage: "Share link copied to clipboard!" });
 
   const services = {
     localParseService,
@@ -238,7 +240,7 @@ export function ThemedAppView(props: {
   const conductSharing = async () => {
     const shareApiEndpoint = AppConfig().shareApiEndpoint;
 
-    setSharingStatus(SharingStatus.SHARING,);
+    setSharingStatus(SharingStatus.SHARING);
 
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
@@ -275,29 +277,32 @@ export function ThemedAppView(props: {
         toast.error("Error sharing", {
           description: errorData.error || "Failed to share playground",
         });
-        setSharingStatus(SharingStatus.SHARE_ERROR,);
+        setSharingStatus(SharingStatus.SHARE_ERROR);
         return;
       }
 
       const result = await response.json();
       const reference = result.hash;
       pushEvent("shared", {
-        reference: reference,
+        reference,
       });
+
+      const newUrl = new URL(`/s/${reference}`, window.location.href)
+      await copy(newUrl.href);
 
       setSharingStatus(SharingStatus.SHARED);
     } catch (error: unknown) {
       toast.error("Error sharing", {
         description: error instanceof Error ? error.message : "Failed to share playground",
       });
-      setSharingStatus(SharingStatus.SHARE_ERROR,);
+      setSharingStatus(SharingStatus.SHARE_ERROR);
       return;
     }
   };
 
   const datastoreUpdated = () => {
     if (sharingStatus !== SharingStatus.NOT_RUN) {
-      setSharingStatus( SharingStatus.NOT_RUN,);
+      setSharingStatus(SharingStatus.NOT_RUN);
     }
   };
 
@@ -427,35 +432,35 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.schema}`}>
-        <Toolbar>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button onClick={formatSchema} variant="outline" size="sm">
-                    <Form />
-                    Format
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Format the schema</TooltipContent>
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    onClick={() => useEditorStore.getState().showDocument("visualizer")}
-                    variant="outline"
-                    size="sm"
-                  >
-                    <Network />
-                    Visualize
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent>Open the schema visualizer</TooltipContent>
-              </Tooltip>
-              <div className="ml-auto" />
-              <DocLink
-                title="Schema Development Guide"
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
-              />
-              </Toolbar>
+          <Toolbar>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button onClick={formatSchema} variant="outline" size="sm">
+                  <Form />
+                  Format
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Format the schema</TooltipContent>
+            </Tooltip>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Button
+                  onClick={() => useEditorStore.getState().showDocument("visualizer")}
+                  variant="outline"
+                  size="sm"
+                >
+                  <Network />
+                  Visualize
+                </Button>
+              </TooltipTrigger>
+              <TooltipContent>Open the schema visualizer</TooltipContent>
+            </Tooltip>
+            <div className="ml-auto" />
+            <DocLink
+              title="Schema Development Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema"
+            />
+          </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -477,33 +482,33 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.testrel}`}>
-        <Toolbar>
-              <ToggleGroup
-                value={relationshipsEditor}
-                variant="outline"
-                type="single"
-                onValueChange={handleChangeRelationshipEditor}
-                aria-label="relationship editor view"
-                size="sm"
+          <Toolbar>
+            <ToggleGroup
+              value={relationshipsEditor}
+              variant="outline"
+              type="single"
+              onValueChange={handleChangeRelationshipEditor}
+              aria-label="relationship editor view"
+              size="sm"
+            >
+              <ToggleGroupItem
+                value="grid"
+                aria-label="grid editor"
+                title="Grid Editor"
+                disabled={services.problemService.invalidRelationships.length > 0}
               >
-                <ToggleGroupItem
-                  value="grid"
-                  aria-label="grid editor"
-                  title="Grid Editor"
-                  disabled={services.problemService.invalidRelationships.length > 0}
-                >
-                  <Grid3x3 />
-                </ToggleGroupItem>
-                <ToggleGroupItem value="code" title="Text Editor" aria-label="code editor">
-                  <Code />
-                </ToggleGroupItem>
-              </ToggleGroup>
-              <div className="ml-auto" />
-              <DocLink
-                title="Test Relationships Guide"
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
-              />
-              </Toolbar>
+                <Grid3x3 />
+              </ToggleGroupItem>
+              <ToggleGroupItem value="code" title="Text Editor" aria-label="code editor">
+                <Code />
+              </ToggleGroupItem>
+            </ToggleGroup>
+            <div className="ml-auto" />
+            <DocLink
+              title="Test Relationships Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#creating-test-relationships"
+            />
+          </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               {relationshipsEditor === "grid" ? (
@@ -534,19 +539,19 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS);
       return (
         <div className={`flex flex-col h-full ${TourElementClass.assert}`}>
-        <Toolbar>
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-              <div className="ml-auto" />
-              <DocLink
-                title="Assertions Guide"
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
-              />
-              </Toolbar>
+          <Toolbar>
+            <ValidateButton
+              datastore={datastore}
+              validationState={validationState}
+              conductValidation={conductValidation}
+              developerService={developerService}
+            />
+            <div className="ml-auto" />
+            <DocLink
+              title="Assertions Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#assertions"
+            />
+          </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -568,59 +573,59 @@ export function ThemedAppView(props: {
       const item = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
       return (
         <div className="flex flex-col h-full">
-        <Toolbar>
-              <ValidateButton
-                datastore={datastore}
-                validationState={validationState}
-                conductValidation={conductValidation}
-                developerService={developerService}
-              />
-              {previousValidationForDiff === undefined && (
-                <ButtonGroup>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={
-                      developerService.state.status !== "ready" ||
-                      validationState.status === ValidationStatus.RUNNING
-                    }
-                    onClick={() => handleGenerateAndUpdate(false)}
-                  >
-                    <RefreshCw />
-                    Re-Generate
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    disabled={
-                      developerService.state.status !== "ready" ||
-                      validationState.status === ValidationStatus.RUNNING
-                    }
-                    onClick={() => handleGenerateAndUpdate(true)}
-                  >
-                    <GitCompare />
-                    Compute and Diff
-                  </Button>
-                </ButtonGroup>
-              )}
-              {previousValidationForDiff !== undefined && (
-                <ButtonGroup>
-                  <Button onClick={handleAcceptDiff} size="sm">
-                    <CircleCheck />
-                    Accept Update
-                  </Button>
-                  <Button variant="destructive" size="sm" onClick={handleRevertDiff}>
-                    <CircleX />
-                    Revert Update
-                  </Button>
-                </ButtonGroup>
-              )}
-              <div className="ml-auto" />
-              <DocLink
-                title="Expected Relations Guide"
-                href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
-              />
-              </Toolbar>
+          <Toolbar>
+            <ValidateButton
+              datastore={datastore}
+              validationState={validationState}
+              conductValidation={conductValidation}
+              developerService={developerService}
+            />
+            {previousValidationForDiff === undefined && (
+              <ButtonGroup>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={
+                    developerService.state.status !== "ready" ||
+                    validationState.status === ValidationStatus.RUNNING
+                  }
+                  onClick={() => handleGenerateAndUpdate(false)}
+                >
+                  <RefreshCw />
+                  Re-Generate
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  disabled={
+                    developerService.state.status !== "ready" ||
+                    validationState.status === ValidationStatus.RUNNING
+                  }
+                  onClick={() => handleGenerateAndUpdate(true)}
+                >
+                  <GitCompare />
+                  Compute and Diff
+                </Button>
+              </ButtonGroup>
+            )}
+            {previousValidationForDiff !== undefined && (
+              <ButtonGroup>
+                <Button onClick={handleAcceptDiff} size="sm">
+                  <CircleCheck />
+                  Accept Update
+                </Button>
+                <Button variant="destructive" size="sm" onClick={handleRevertDiff}>
+                  <CircleX />
+                  Revert Update
+                </Button>
+              </ButtonGroup>
+            )}
+            <div className="ml-auto" />
+            <DocLink
+              title="Expected Relations Guide"
+              href="https://authzed.com/docs/spicedb/modeling/developing-a-schema#expected-relations"
+            />
+          </Toolbar>
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
@@ -665,11 +670,19 @@ export function ThemedAppView(props: {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-          {/* TODO: this is also wrong */}
-            <AlertDialogCancel onClick={() => { discardResolveRef.current?.(false); }}>
+            {/* TODO: this is also wrong */}
+            <AlertDialogCancel
+              onClick={() => {
+                discardResolveRef.current?.(false);
+              }}
+            >
               Cancel
             </AlertDialogCancel>
-            <AlertDialogAction onClick={() => { discardResolveRef.current?.(true); }}>
+            <AlertDialogAction
+              onClick={() => {
+                discardResolveRef.current?.(true);
+              }}
+            >
               Discard and Load
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -744,28 +757,24 @@ export function ThemedAppView(props: {
           <TooltipContent>Docs</TooltipContent>
         </Tooltip>
 
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <Button
-                size="sm"
-                variant={sharingStatus === SharingStatus.SHARE_ERROR ? "destructive" : "default"}
-                onClick={conductSharing}
-                disabled={
-                  sharingStatus === SharingStatus.SHARING ||
-                  validationState.status === ValidationStatus.RUNNING
-                }
-                className="bg-chrome-soft-button hover:bg-chrome-soft-button/80 text-foreground"
-              >
-              {sharingStatus === SharingStatus.SHARE_ERROR ? (
-                <X />
-              ) : (
-                <Share2 />
-              )}
-                Share
-              </Button>
-            </TooltipTrigger>
-            <TooltipContent>Share</TooltipContent>
-          </Tooltip>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              size="sm"
+              variant={sharingStatus === SharingStatus.SHARE_ERROR ? "destructive" : "default"}
+              onClick={conductSharing}
+              disabled={
+                sharingStatus === SharingStatus.SHARING ||
+                validationState.status === ValidationStatus.RUNNING
+              }
+              className="bg-chrome-soft-button hover:bg-chrome-soft-button/80 text-foreground"
+            >
+              {sharingStatus === SharingStatus.SHARE_ERROR ? <X /> : <Share2 />}
+              Share
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>Share</TooltipContent>
+        </Tooltip>
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -893,10 +902,9 @@ function BreadcrumbDropdown({
 
 const Toolbar = ({ children }: { children: ReactNode }) => (
   <div className="flex shrink-0 items-center gap-2 px-2 py-1 border-b border-chrome-divider">
-  {children}
+    {children}
   </div>
 );
-
 
 const DocLink = ({ title, href }: { title: string; href: string }) => (
   <Button asChild variant="ghost" size="sm" title={title}>
