@@ -1,7 +1,6 @@
 import { createHash } from "crypto";
-import { serve } from "@hono/node-server";
-import { Hono } from "hono";
-import { cors } from "hono/cors";
+import type { IncomingMessage, ServerResponse } from "http";
+import type { ViteDevServer } from "vite";
 
 type SharedDataV2 = {
   version: "2";
@@ -22,10 +21,11 @@ const encodeURL =
 const hashPrefixSize = 12;
 
 const shares = new Map<string, string>();
+const salt = process.env.SHARE_SALT ?? "dev";
 
-function computeShareHash(salt: string, data: string): string {
+function computeShareHash(s: string, data: string): string {
   const hash = createHash("sha256");
-  hash.update(salt + ":", "utf8");
+  hash.update(s + ":", "utf8");
   hash.update(data, "utf8");
   const b64 = hash.digest().toString("base64url");
   let hashLen = hashPrefixSize;
@@ -41,7 +41,11 @@ function validateSharedDataV2(data: unknown): data is SharedDataV2 {
   const d = data as Record<string, unknown>;
   if (d.version !== "2") return false;
   if (typeof d.schema !== "string") return false;
-  for (const field of ["relationships_yaml", "validation_yaml", "assertions_yaml"]) {
+  for (const field of [
+    "relationships_yaml",
+    "validation_yaml",
+    "assertions_yaml",
+  ]) {
     if (field in d && typeof d[field] !== "string") return false;
   }
   if ("check_watches" in d) {
@@ -58,53 +62,72 @@ function validateSharedDataV2(data: unknown): data is SharedDataV2 {
   return true;
 }
 
-const app = new Hono();
-const salt = process.env.SHARE_SALT ?? "dev";
-const port = parseInt(process.env.PORT ?? "3000", 10);
+function readBody(req: IncomingMessage): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const chunks: Buffer[] = [];
+    req.on("data", (chunk: Buffer) => chunks.push(chunk));
+    req.on("end", () => resolve(Buffer.concat(chunks).toString("utf8")));
+    req.on("error", reject);
+  });
+}
 
-app.use(cors());
+function json(
+  res: ServerResponse,
+  status: number,
+  body: unknown,
+  contentType = "application/json"
+) {
+  const payload = JSON.stringify(body);
+  res.writeHead(status, { "Content-Type": contentType });
+  res.end(payload);
+}
 
-app.post("/api/share", async (c) => {
-  let body: unknown;
-  try {
-    body = await c.req.json();
-  } catch {
-    return c.json({ error: "Invalid JSON" }, 400);
-  }
+export function configureServer(server: ViteDevServer) {
+  server.middlewares.use(
+    async (req: IncomingMessage, res: ServerResponse, next: () => void) => {
+      const url = new URL(req.url!, `http://${req.headers.host}`);
 
-  if (!validateSharedDataV2(body)) {
-    return c.json({ error: "Invalid share data format" }, 400);
-  }
+      if (req.method === "POST" && url.pathname === "/api/share") {
+        let body: unknown;
+        try {
+          body = JSON.parse(await readBody(req));
+        } catch {
+          return json(res, 400, { error: "Invalid JSON" });
+        }
 
-  const dataString = JSON.stringify(body);
-  const hash = computeShareHash(salt, dataString);
-  shares.set(hash, dataString);
-  return c.json({ hash });
-});
+        if (!validateSharedDataV2(body)) {
+          return json(res, 400, { error: "Invalid share data format" });
+        }
 
-app.get("/api/lookupshare", (c) => {
-  const shareid = c.req.query("shareid");
-  if (!shareid) {
-    return c.json({ error: "Share ID is required" }, 400);
-  }
+        const dataString = JSON.stringify(body);
+        const hash = computeShareHash(salt, dataString);
+        shares.set(hash, dataString);
+        console.log("current shares: ", shares.keys())
+        return json(res, 200, { hash });
+      }
 
-  for (const char of shareid) {
-    if (!encodeURL.includes(char)) {
-      return c.json({ error: "Invalid characters in share ID" }, 400);
+      if (req.method === "GET" && url.pathname === "/api/lookupshare") {
+        const shareid = url.searchParams.get("shareid");
+        if (!shareid) {
+          return json(res, 400, { error: "Share ID is required" });
+        }
+
+        for (const char of shareid) {
+          if (!encodeURL.includes(char)) {
+            return json(res, 400, { error: "Invalid characters in share ID" });
+          }
+        }
+
+        const data = shares.get(shareid);
+        if (!data) {
+          console.log("yeah this wasn't found")
+          return json(res, 404, { error: "Share not found" });
+        }
+
+        return json(res, 200, JSON.parse(data));
+      }
+
+      next();
     }
-  }
-
-  const data = shares.get(shareid);
-  if (!data) {
-    return c.json({ error: "Share not found" }, 404);
-  }
-
-  return c.text(data, 200, { "Content-Type": "application/json" });
-});
-
-serve({ fetch: app.fetch, port }, (info) => {
-  console.log(`[dev-api] listening on http://localhost:${info.port}`);
-  console.log(
-    `[dev-api] set VITE_SHARE_API_ENDPOINT=http://localhost:${info.port} to use`
   );
-});
+}
