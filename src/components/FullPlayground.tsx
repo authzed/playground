@@ -150,20 +150,14 @@ export function ThemedAppView(props: {
   developerService: DeveloperService;
   liveCheckService: LiveCheckService;
 }) {
+  
+  console.log("we are rendering")
   const { pushEvent } = useGoogleAnalytics();
 
   const [sharingStatus, setSharingStatus] = useState<SharingStatus>(SharingStatus.NOT_RUN);
-
-  const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
-  const discardResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
-
-  const confirmDiscardIfModified = (): Promise<boolean> => {
-    if (!props.datastore.isModified()) return Promise.resolve(true);
-    return new Promise((resolve) => {
-      discardResolveRef.current = resolve;
-      setDiscardDialogOpen(true);
-    });
-  };
+  const [confirmUpload, setConfirmUpload] = useState(false);
+  const [confirmLoadExample, setConfirmLoadExample] = useState(false);
+  const [chosenExample, setChosenExample] = useState<Example | null>(null);
 
   const datastore = props.datastore;
 
@@ -199,7 +193,7 @@ export function ThemedAppView(props: {
   };
 
   const conductUpload = async () => {
-    if (!(await confirmDiscardIfModified())) return;
+    // TODO: pause here
     const file = await fileDialog({
       multiple: false,
       strict: true,
@@ -287,7 +281,7 @@ export function ThemedAppView(props: {
         reference,
       });
 
-      const newUrl = new URL(`/s/${reference}`, window.location.href)
+      const newUrl = new URL(`/s/${reference}`, window.location.href);
       await copy(newUrl.href);
 
       setSharingStatus(SharingStatus.SHARED);
@@ -306,8 +300,16 @@ export function ThemedAppView(props: {
     }
   };
 
+  const onExampleChange = (ex: Example) => {
+    if (!props.datastore.isModified()) {
+      void loadExampleData(ex);
+      return;
+    }
+    setChosenExample(ex);
+    setConfirmLoadExample(true);
+  };
+
   const loadExampleData = async (ex: Example) => {
-    if (!(await confirmDiscardIfModified())) return;
     pushEvent("load-example", {
       id: ex.id,
     });
@@ -659,35 +661,20 @@ export function ThemedAppView(props: {
 
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
-      {/* TODO */}
-      <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
-            <AlertDialogDescription>
-              You have unsaved edits. Loading will replace your current schema, relationships, and
-              assertions. Consider <b>Share</b> or <b>Download</b> first to keep a copy.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            {/* TODO: this is also wrong */}
-            <AlertDialogCancel
-              onClick={() => {
-                discardResolveRef.current?.(false);
-              }}
-            >
-              Cancel
-            </AlertDialogCancel>
-            <AlertDialogAction
-              onClick={() => {
-                discardResolveRef.current?.(true);
-              }}
-            >
-              Discard and Load
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <DiscardConfirmationDialog
+        open={confirmLoadExample}
+        setOpen={setConfirmLoadExample}
+        onConfirm={() => {
+          if (chosenExample) {
+            void loadExampleData(chosenExample);
+          }
+        }}
+      />
+      <DiscardConfirmationDialog
+        open={confirmUpload}
+        setOpen={setConfirmUpload}
+        onConfirm={conductUpload}
+      />
       {!WebAssembly && (
         <Alert variant="destructive">
           <CircleX />
@@ -725,7 +712,9 @@ export function ThemedAppView(props: {
           <img src="/favicon.svg" alt="SpiceDB" className="size-7" />
         </a>
         <span className="text-muted-foreground/50 hidden md:inline">/</span>
-        {!isOutOfDate && <BreadcrumbDropdown datastore={datastore} loadExample={loadExampleData} />}
+        {!isOutOfDate && (
+          <BreadcrumbDropdown datastore={datastore} onExampleChange={onExampleChange} />
+        )}
 
         <div className="flex-1" />
 
@@ -855,10 +844,10 @@ export function ThemedAppView(props: {
 
 function BreadcrumbDropdown({
   datastore,
-  loadExample,
+  onExampleChange,
 }: {
   datastore: DataStore;
-  loadExample: (ex: Example) => Promise<void> | void;
+  onExampleChange: (example: Example) => void;
 }) {
   const examples = useMemo(() => LoadExamples(), []);
   const identity = useDocumentIdentity(datastore, (id) => {
@@ -867,38 +856,66 @@ function BreadcrumbDropdown({
   });
 
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <BreadcrumbPill identity={identity} />
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="start" className="min-w-72">
-        {examples.map((example) => (
+    <>
+      <DropdownMenu>
+        <DropdownMenuTrigger asChild>
+          <BreadcrumbPill identity={identity} />
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="start" className="min-w-72">
+          {examples.map((example) => (
+            <DropdownMenuItem
+              key={example.id}
+              onClick={() => {
+                onExampleChange(example);
+              }}
+            >
+              {example.title}
+            </DropdownMenuItem>
+          ))}
           <DropdownMenuItem
-            key={example.id}
             onClick={() => {
-              void loadExample(example);
+              datastore.load({
+                schema: "definition user {}\n",
+                relationshipsYaml: "",
+                assertionsYaml: "",
+                verificationYaml: "",
+              });
+              datastore.clearBaseline();
             }}
           >
-            {example.title}
+            Reset to blank
           </DropdownMenuItem>
-        ))}
-        <DropdownMenuItem
-          onClick={() => {
-            datastore.load({
-              schema: "definition user {}\n",
-              relationshipsYaml: "",
-              assertionsYaml: "",
-              verificationYaml: "",
-            });
-            datastore.clearBaseline();
-          }}
-        >
-          Reset to blank
-        </DropdownMenuItem>
-      </DropdownMenuContent>
-    </DropdownMenu>
+        </DropdownMenuContent>
+      </DropdownMenu>
+    </>
   );
 }
+
+const DiscardConfirmationDialog = ({
+  open,
+  setOpen,
+  onConfirm,
+}: {
+  open: boolean;
+  setOpen: (open: boolean) => void;
+  onConfirm: () => void;
+}) => (
+  <AlertDialog open={open} onOpenChange={setOpen}>
+    <AlertDialogContent>
+      <AlertDialogHeader>
+        <AlertDialogTitle>Discard unsaved changes?</AlertDialogTitle>
+        <AlertDialogDescription>
+          You have unsaved edits. Loading will replace your current schema, relationships, and
+          assertions. Consider <b>Share</b> or <b>Download</b> first to keep a copy.
+        </AlertDialogDescription>
+      </AlertDialogHeader>
+      <AlertDialogFooter>
+        <AlertDialogCancel>Cancel</AlertDialogCancel>
+        <AlertDialogAction onClick={onConfirm}>Discard and Load</AlertDialogAction>
+      </AlertDialogFooter>
+    </AlertDialogContent>
+  </AlertDialog>
+);
 
 const Toolbar = ({ children }: { children: ReactNode }) => (
   <div className="flex shrink-0 items-center gap-2 px-2 py-1 border-b border-chrome-divider">
