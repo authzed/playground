@@ -130,7 +130,6 @@ export function RelationshipEditor({
   const inFlightData = useRef<AnnotatedData>(data);
 
   useEffect(() => {
-    console.log("firing this effect")
     inFlightData.current = data;
     dataUpdated(toExternalData(data));
   }, [data, dataUpdated]);
