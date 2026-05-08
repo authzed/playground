@@ -6,34 +6,33 @@ import {
   createRoute,
   createRootRoute,
 } from "@tanstack/react-router";
+import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
 import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
 import "typeface-roboto-mono/index.css"; // Import the Roboto Mono font.
 
-import { TanStackRouterDevtools } from '@tanstack/react-router-devtools'
-
-import { SettingsProvider } from "@/components/SettingsProvider";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { TooltipProvider } from "@/components/ui/tooltip";
-import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
-
-import "./App.css";
 import { EmbeddedPlayground } from "@/components/EmbeddedPlayground";
 import { FullPlayground } from "@/components/FullPlayground";
 import { InlinePlayground } from "@/components/InlinePlayground";
-import { Toaster } from "@/components/ui/sonner";
-import { useGoogleAnalytics } from "@/playground-ui/GoogleAnalyticsHook";
-import AppConfig from "@/services/configservice";
+import { SettingsProvider } from "@/components/SettingsProvider";
 import { ShareLoader } from "@/components/ShareLoader";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { Toaster } from "@/components/ui/sonner";
+import { TooltipProvider } from "@/components/ui/tooltip";
+import { isEUVisitor, shouldOptOutCapturing } from "@/lib/consent";
 import { ErrorComponent as ShareErrorComponent, shareLoader } from "@/loaders/share";
+import { useGoogleAnalytics } from "@/playground-ui/GoogleAnalyticsHook";
 import LoadingView from "@/playground-ui/LoadingView";
+import AppConfig from "@/services/configservice";
+
+import "./App.css";
 
 const rootRoute = createRootRoute({
   component: () => (
     <>
-    <Outlet />
-    <TanStackRouterDevtools />
+      <Outlet />
+      <TanStackRouterDevtools />
     </>
   ),
 });
@@ -46,20 +45,20 @@ const indexRoute = createRoute({
 
 const shareRoute = createRoute({
   getParentRoute: () => rootRoute,
-    component: ShareLoader,
+  component: ShareLoader,
   path: "/s/$shareId",
   loader: ({ params: { shareId } }) => shareLoader(shareId),
-    pendingComponent: LoadingView,
-  errorComponent: ShareErrorComponent
-})
+  pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent,
+});
 
 const inlineRoute = createRoute({
   getParentRoute: () => rootRoute,
   path: "/i/$shareId",
   component: InlinePlayground,
   loader: ({ params: { shareId } }) => shareLoader(shareId),
-    pendingComponent: LoadingView,
-  errorComponent: ShareErrorComponent
+  pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent,
 });
 
 const embeddedRoute = createRoute({
@@ -67,11 +66,11 @@ const embeddedRoute = createRoute({
   path: "/e/$shareId",
   component: EmbeddedPlayground,
   loader: ({ params: { shareId } }) => shareLoader(shareId),
-    pendingComponent: LoadingView,
-  errorComponent: ShareErrorComponent
+  pendingComponent: LoadingView,
+  errorComponent: ShareErrorComponent,
 });
 
-// TODO: check all this routing behavior 
+// TODO: check all this routing behavior
 const routeTree = rootRoute.addChildren([shareRoute, inlineRoute, embeddedRoute, indexRoute]);
 const router = createRouter({ routeTree });
 
