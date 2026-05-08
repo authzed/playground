@@ -130,14 +130,10 @@ export function RelationshipEditor({
   const inFlightData = useRef<AnnotatedData>(data);
 
   useEffect(() => {
+    console.log("firing this effect")
     inFlightData.current = data;
     dataUpdated(toExternalData(data));
-
-    // NOTE: we do not want to rerun this if the dataUpdated callback has changed (which it should
-    // not, ideally).
-    // TODO: dataUpdated is currently changing on every render because the debouncer isn't memoized.
-    // oxlint-disable-next-line eslint-plugin-react-hooks(exhaustive-deps)
-  }, [data]);
+  }, [data, dataUpdated]);
 
   // relationships holds a filtered form of the grid, containing only valid relationships.
   const relationships = useDeepCompareMemo(() => {

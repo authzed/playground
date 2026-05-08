@@ -138,15 +138,15 @@ export function GuidedTour(props: {
           run={show}
           continuous
           onEvent={handleEvents(onSkip, onTourEnd, onEnterStep)}
-            options={{
-              showProgress: true,
-              buttons: ['back', 'close', 'primary', 'skip'],
-              arrowColor: tokens.arrowColor,
-              backgroundColor: tokens.backgroundColor,
-              primaryColor: tokens.primaryColor,
-              textColor: tokens.textColor,
-              zIndex: 999,
-            }}
+          options={{
+            showProgress: true,
+            buttons: ["back", "close", "primary", "skip"],
+            arrowColor: tokens.arrowColor,
+            backgroundColor: tokens.backgroundColor,
+            primaryColor: tokens.primaryColor,
+            textColor: tokens.textColor,
+            zIndex: 999,
+          }}
           steps={steps}
         />
       )}

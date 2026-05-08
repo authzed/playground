@@ -1,6 +1,6 @@
 import { Theme } from "@glideapps/glide-data-grid";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import useDeepCompareEffect from "use-deep-compare-effect";
 
 import {
@@ -70,20 +70,13 @@ export type DatastoreRelationshipEditorProps = {
 } & { dimensions?: { width: number; height: number } };
 
 export function DatastoreRelationshipEditor(props: DatastoreRelationshipEditorProps) {
-  const debouncedUpdateDatastore = useDebouncedCallback(
+  const handleDataUpdated = useDebouncedCallback(
     (data: RelationshipDatum[]) => {
       const editableContents = toRelationshipsString(data);
       props.datastore.update(relationshipsItem, editableContents);
       props.datastoreUpdated();
     },
     { wait: 50 },
-  );
-
-  const handleDataUpdated = useCallback(
-    (data: RelationshipDatum[]) => {
-      debouncedUpdateDatastore(data);
-    },
-    [debouncedUpdateDatastore],
   );
 
   const relErrors = useMemo(() => {
