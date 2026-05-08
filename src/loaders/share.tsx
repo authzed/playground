@@ -7,10 +7,6 @@ import { redirect } from "@tanstack/react-router";
 
 export const shareLoader = async (shareReference: string) => {
   const apiEndpoint = AppConfig().shareApiEndpoint;
-  if (!apiEndpoint) {
-    return;
-  }
-
   const response = await fetch(
     `${apiEndpoint}/api/lookupshare?shareid=${encodeURIComponent(shareReference)}`,
   );

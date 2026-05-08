@@ -14,8 +14,9 @@ import {
   Network,
   RefreshCw,
   Share2,
+  X,
 } from "lucide-react";
-import { useEffect, useRef, useState, type ComponentProps, type ReactNode } from "react";
+import { useEffect, useRef, useState, useMemo, type ComponentProps, type ReactNode } from "react";
 import { useCookies } from "react-cookie";
 import sjcl from "sjcl";
 import { toast } from "sonner";
@@ -118,11 +119,6 @@ enum SharingStatus {
   SHARE_ERROR = 3,
 }
 
-interface SharingState {
-  status: SharingStatus;
-  shareReference?: string;
-}
-
 export function FullPlayground() {
   return (
     <>
@@ -155,9 +151,7 @@ export function ThemedAppView(props: {
 }) {
   const { pushEvent } = useGoogleAnalytics();
 
-  const [sharingState, setSharingState] = useState<SharingState>({
-    status: SharingStatus.NOT_RUN,
-  });
+  const [sharingStatus, setSharingStatus] = useState<SharingStatus>(SharingStatus.NOT_RUN);
 
   const [discardDialogOpen, setDiscardDialogOpen] = useState(false);
   const discardResolveRef = useRef<((confirmed: boolean) => void) | null>(null);
@@ -243,13 +237,8 @@ export function ThemedAppView(props: {
 
   const conductSharing = async () => {
     const shareApiEndpoint = AppConfig().shareApiEndpoint;
-    if (!shareApiEndpoint) {
-      return;
-    }
 
-    setSharingState({
-      status: SharingStatus.SHARING,
-    });
+    setSharingStatus(SharingStatus.SHARING,);
 
     const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
     const relationshipsYaml = datastore.getSingletonByKind(
@@ -286,9 +275,7 @@ export function ThemedAppView(props: {
         toast.error("Error sharing", {
           description: errorData.error || "Failed to share playground",
         });
-        setSharingState({
-          status: SharingStatus.SHARE_ERROR,
-        });
+        setSharingStatus(SharingStatus.SHARE_ERROR,);
         return;
       }
 
@@ -298,26 +285,19 @@ export function ThemedAppView(props: {
         reference: reference,
       });
 
-      setSharingState({
-        status: SharingStatus.SHARED,
-        shareReference: reference,
-      });
+      setSharingStatus(SharingStatus.SHARED);
     } catch (error: unknown) {
       toast.error("Error sharing", {
         description: error instanceof Error ? error.message : "Failed to share playground",
       });
-      setSharingState({
-        status: SharingStatus.SHARE_ERROR,
-      });
+      setSharingStatus(SharingStatus.SHARE_ERROR,);
       return;
     }
   };
 
   const datastoreUpdated = () => {
-    if (sharingState.status !== SharingStatus.NOT_RUN) {
-      setSharingState({
-        status: SharingStatus.NOT_RUN,
-      });
+    if (sharingStatus !== SharingStatus.NOT_RUN) {
+      setSharingStatus( SharingStatus.NOT_RUN,);
     }
   };
 
@@ -439,7 +419,7 @@ export function ThemedAppView(props: {
     }
   };
 
-  const isReadOnly = sharingState.status === SharingStatus.SHARING || props.datastore.isOutOfDate();
+  const isReadOnly = sharingStatus === SharingStatus.SHARING || props.datastore.isOutOfDate();
 
   // TODO: this is a component.
   const renderDocument = (active: DocumentRef): ReactNode => {
@@ -672,11 +652,9 @@ export function ThemedAppView(props: {
     terminal: <TerminalPanel services={services} datastore={datastore} />,
   };
 
-  const appConfig = AppConfig();
-  const isSharingEnabled = !!appConfig.shareApiEndpoint;
-
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
+      {/* TODO */}
       <AlertDialog open={discardDialogOpen} onOpenChange={setDiscardDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
@@ -766,26 +744,28 @@ export function ThemedAppView(props: {
           <TooltipContent>Docs</TooltipContent>
         </Tooltip>
 
-        {isSharingEnabled && (
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
                 size="sm"
-                variant="default"
+                variant={sharingStatus === SharingStatus.SHARE_ERROR ? "destructive" : "default"}
                 onClick={conductSharing}
                 disabled={
-                  sharingState.status === SharingStatus.SHARING ||
+                  sharingStatus === SharingStatus.SHARING ||
                   validationState.status === ValidationStatus.RUNNING
                 }
                 className="bg-chrome-soft-button hover:bg-chrome-soft-button/80 text-foreground"
               >
+              {sharingStatus === SharingStatus.SHARE_ERROR ? (
+                <X />
+              ) : (
                 <Share2 />
+              )}
                 Share
               </Button>
             </TooltipTrigger>
             <TooltipContent>Share</TooltipContent>
           </Tooltip>
-        )}
 
         <Tooltip>
           <TooltipTrigger asChild>
@@ -795,7 +775,7 @@ export function ThemedAppView(props: {
               title="Download"
               onClick={conductDownload}
               disabled={
-                sharingState.status === SharingStatus.SHARING ||
+                sharingStatus === SharingStatus.SHARING ||
                 validationState.status === ValidationStatus.RUNNING
               }
               className="bg-chrome-soft-button hover:bg-chrome-soft-button/80"
@@ -815,7 +795,7 @@ export function ThemedAppView(props: {
               variant="ghost"
               title="Load from File"
               disabled={
-                sharingState.status === SharingStatus.SHARING ||
+                sharingStatus === SharingStatus.SHARING ||
                 validationState.status === ValidationStatus.RUNNING
               }
               className="bg-chrome-soft-button hover:bg-chrome-soft-button/80"
@@ -871,7 +851,7 @@ function BreadcrumbDropdown({
   datastore: DataStore;
   loadExample: (ex: Example) => Promise<void> | void;
 }) {
-  const [examples] = useState<Example[]>(() => LoadExamples());
+  const examples = useMemo(() => LoadExamples(), []);
   const identity = useDocumentIdentity(datastore, (id) => {
     const example = examples.find((e) => e.id === id);
     return example?.title;

@@ -30,7 +30,12 @@ import { ErrorComponent as ShareErrorComponent, shareLoader } from "@/loaders/sh
 import LoadingView from "@/playground-ui/LoadingView";
 
 const rootRoute = createRootRoute({
-  component: Outlet,
+  component: () => (
+    <>
+    <Outlet />
+    <TanStackRouterDevtools />
+    </>
+  ),
 });
 
 const indexRoute = createRoute({
@@ -40,9 +45,9 @@ const indexRoute = createRoute({
 });
 
 const shareRoute = createRoute({
-  getParentRoute: () => indexRoute,
+  getParentRoute: () => rootRoute,
     component: ShareLoader,
-  path: "s/$shareId",
+  path: "/s/$shareId",
   loader: ({ params: { shareId } }) => shareLoader(shareId),
     pendingComponent: LoadingView,
   errorComponent: ShareErrorComponent
@@ -67,7 +72,7 @@ const embeddedRoute = createRoute({
 });
 
 // TODO: check all this routing behavior 
-const routeTree = rootRoute.addChildren([indexRoute.addChildren([shareRoute]), inlineRoute, embeddedRoute]);
+const routeTree = rootRoute.addChildren([shareRoute, inlineRoute, embeddedRoute, indexRoute]);
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
@@ -115,7 +120,6 @@ function App() {
   return (
     <>
       <Toaster />
-      <TanStackRouterDevtools />
       <CookiesProvider>
         <PHProvider>
           <ThemeProvider>
