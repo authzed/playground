@@ -6,7 +6,6 @@ import {
   createRoute,
   createRootRoute,
 } from "@tanstack/react-router";
-import { TanStackRouterDevtools } from "@tanstack/react-router-devtools";
 import posthog from "posthog-js";
 import { PropsWithChildren, useEffect } from "react";
 import { CookiesProvider } from "react-cookie";
@@ -29,12 +28,7 @@ import AppConfig from "@/services/configservice";
 import "./App.css";
 
 const rootRoute = createRootRoute({
-  component: () => (
-    <>
-      <Outlet />
-      <TanStackRouterDevtools />
-    </>
-  ),
+  component: Outlet,
 });
 
 const indexRoute = createRoute({

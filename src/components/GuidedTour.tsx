@@ -91,7 +91,6 @@ const resolveTokens = () => {
 
 const handleEvents = (
   onSkip: () => void,
-  onTourEnd: () => void,
   onEnterStep: (className: string) => void,
 ) => {
   return (data: { action: string; index: number; size: number; type: string; step: Step }) => {
@@ -101,19 +100,11 @@ const handleEvents = (
     if (ACTIONS.START === action && EVENTS.TOUR_START === type) {
       // No-op
     }
-    // Tour finish
-    if (ACTIONS.NEXT === action && EVENTS.TOUR_END === type) {
-      onTourEnd();
-    }
     // Tour before step
     if (ACTIONS.NEXT === action && EVENTS.STEP_BEFORE === type) {
       if (typeof step.target === "string") {
         onEnterStep(step.target);
       }
-    }
-    // Tour step
-    if (ACTIONS.UPDATE === action && EVENTS.TOOLTIP === type) {
-      // No-op
     }
     // Tour skip
     if ((ACTIONS.SKIP === action && EVENTS.TOUR_END === type) || ACTIONS.CLOSE === action) {
@@ -123,19 +114,16 @@ const handleEvents = (
 };
 
 export function GuidedTour(props: {
-  show: boolean;
   onSkip: () => void;
   onTourEnd: () => void;
   onEnterStep: (className: string) => void;
 }) {
-  const { show, onSkip, onTourEnd, onEnterStep } = props;
+  const { onSkip, onTourEnd, onEnterStep } = props;
   const tokens = resolveTokens();
 
   return (
-    <>
-      {show && (
         <Joyride
-          run={show}
+          run={true}
           continuous
           onEvent={handleEvents(onSkip, onTourEnd, onEnterStep)}
           options={{
@@ -149,7 +137,5 @@ export function GuidedTour(props: {
           }}
           steps={steps}
         />
-      )}
-    </>
   );
 }
