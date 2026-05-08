@@ -8,10 +8,10 @@ export const DEBUG_GPC_COOKIE = "__consent_debug_gpc";
  */
 export function getDebugCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
-  if (typeof process !== "undefined") {
+  if (typeof import.meta.env !== "undefined") {
     const env =
-      (process.env as Record<string, string | undefined>).VERCEL_ENV ??
-      (process.env as Record<string, string | undefined>).NEXT_PUBLIC_VERCEL_ENV;
+      (import.meta.env as Record<string, string | undefined>).VERCEL_ENV ??
+      (import.meta.env as Record<string, string | undefined>).NEXT_PUBLIC_VERCEL_ENV;
     if (env === "production") return null;
   }
   const match = document.cookie.split("; ").find((row) => row.startsWith(`${name}=`));
