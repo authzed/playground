@@ -62,6 +62,7 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
   const developerService = useDeveloperService();
   const localParseService = useLocalParseService(datastore);
   const liveCheckService = useLiveCheckService(developerService, datastore);
+  const { loadWatches } = liveCheckService;
   const validationService = useValidationService(developerService, datastore);
   const problemService = useProblemService(localParseService, liveCheckService, validationService);
 
@@ -87,10 +88,8 @@ function InlinePlaygroundUI(props: { datastore: DataStore }) {
       verificationYaml: shareData.validation_yaml || "",
     });
     datastore.setBaseline("shared", shareId);
-    if (liveCheckService) {
-      liveCheckService.loadWatches(shareData.check_watches ?? []);
-    }
-  }, [shareData, datastore, shareId, liveCheckService]);
+    loadWatches(shareData.check_watches ?? []);
+  }, [shareData, datastore, shareId, loadWatches]);
 
   const [disableMouseWheelScrolling, setDisableMouseWheelScrolling] = useState(true);
   const [tab, setTab] = useState<InlineTab>("schema");
