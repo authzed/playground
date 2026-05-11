@@ -1,5 +1,5 @@
 import { TextRange } from "@authzed/spicedb-parser-js";
-import { Editor, DiffEditor, useMonaco } from "@monaco-editor/react";
+import { Editor, DiffEditor } from "@monaco-editor/react";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useLocation } from "@tanstack/react-router";
 import lineColumn from "line-column";
@@ -64,26 +64,12 @@ interface LocationState {
  * EditorDisplays display the editor in the playground.
  */
 export function EditorDisplay(props: EditorDisplayProps) {
-  const monacoRef = useMonaco();
-  const [monacoReady, setMonacoReady] = useState(false);
+  const monacoInstanceRef = useRef<typeof monaco | null>(null);
   const [localIndex, setLocalIndex] = useState(0);
 
   // Keep the module-level ref in sync so the (one-shot) tuple completion
   // provider always reads the latest parse state.
   latestLocalParseStateRef.current = props.services.localParseService.state;
-
-  // Effect: Register the languages in monaco. Runs ONCE per page load — Monaco
-  // language providers are global state and re-registering stacks providers.
-  useEffect(() => {
-    if (monacoRef) {
-      if (!languagesRegistered) {
-        registerDSLanguage(monacoRef);
-        registerTupleLanguage(monacoRef, () => latestLocalParseStateRef.current!);
-        languagesRegistered = true;
-      }
-      setMonacoReady(true);
-    }
-  }, [monacoRef]);
 
   useEffect(() => {
     latestLocalParseStateRef.current = props.services.localParseService.state;
@@ -192,14 +178,14 @@ export function EditorDisplay(props: EditorDisplayProps) {
           return;
         }
 
-        if (monacoRef) {
+        if (monacoInstanceRef.current) {
           markers.push({
             startLineNumber: invalid.lineNumber + 1,
             startColumn: 0,
             endLineNumber: invalid.lineNumber + 1,
             endColumn: invalid.text.length + 1,
             message: `Malformed or invalid test data relationship: ${invalid.parsed.errorMessage}`,
-            severity: monacoRef.MarkerSeverity.Error,
+            severity: monacoInstanceRef.current.MarkerSeverity.Error,
           });
         }
       });
@@ -213,7 +199,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
     if (currentItem.kind === DataStoreItemKind.SCHEMA) {
       props.services.problemService.warnings.forEach((warning: DeveloperWarning) => {
         const lineText = lines[warning.line - 1];
-        if (lineText === undefined || !monacoRef) {
+        if (lineText === undefined || !monacoInstanceRef.current) {
           return;
         }
         // Locate the source code on the line, starting near the reported column.
@@ -232,7 +218,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
           endLineNumber: warning.line,
           endColumn: index + warning.sourceCode.length + 1,
           message: warning.message,
-          severity: monacoRef.MarkerSeverity.Warning,
+          severity: monacoInstanceRef.current.MarkerSeverity.Warning,
         });
       });
     }
@@ -316,20 +302,24 @@ export function EditorDisplay(props: EditorDisplayProps) {
         endColumn = Math.max(column + 1, Math.min(endColumn, maxEndColumn));
       }
 
-      if (monacoRef) {
+      if (monacoInstanceRef.current) {
         markers.push({
           startLineNumber: line,
           startColumn: column,
           endLineNumber: line,
           endColumn: endColumn,
           message: de.message,
-          severity: monacoRef.MarkerSeverity.Error,
+          severity: monacoInstanceRef.current.MarkerSeverity.Error,
           code: de.context,
         });
       }
     });
 
-    monacoRef?.editor.setModelMarkers(editors[currentItem.id].getModel()!, "someowner", markers);
+    monacoInstanceRef.current?.editor.setModelMarkers(
+      editors[currentItem.id].getModel()!,
+      "someowner",
+      markers,
+    );
   };
 
   const locationState = location.state as LocationState | undefined | null;
@@ -399,7 +389,20 @@ export function EditorDisplay(props: EditorDisplayProps) {
     editor.layout();
   };
 
-  const handleEditorMounted = (editor: monaco.editor.IStandaloneCodeEditor) => {
+  const handleEditorMounted = (
+    editor: monaco.editor.IStandaloneCodeEditor,
+    monacoInstance: typeof monaco,
+  ) => {
+    monacoInstanceRef.current = monacoInstance;
+    if (!languagesRegistered) {
+      registerDSLanguage(monacoInstance);
+      registerTupleLanguage(monacoInstance, () => latestLocalParseStateRef.current!);
+      languagesRegistered = true;
+      // Themes are defined inside registerDSLanguage. The Editor already rendered
+      // with the theme prop before defineTheme ran, so Monaco fell back to its
+      // built-in default. Re-apply now that the theme is defined.
+      monacoInstance.editor.setTheme(themeName);
+    }
     if (currentItem !== undefined && props.diff === undefined) {
       const itemId = currentItem.id;
       editorRefs.current = {
@@ -564,7 +567,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
   return (
     <div ref={containerRef} className="h-full w-full">
-      {monacoReady && currentItem && (
+      {currentItem && (
         <div className="w-full h-full">
           {props.diff ? (
             <DiffEditor
