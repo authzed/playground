@@ -13,7 +13,7 @@ import {
   ThumbsUp,
   User,
 } from "lucide-react";
-import React, { PropsWithChildren, useEffect, useMemo, useState } from "react";
+import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
 import {
@@ -79,10 +79,14 @@ function EmbeddedPlaygroundUI(props: {
 }) {
   const datastore = props.datastore;
   const developerService = props.developerService;
-  const liveCheckService = props.liveCheckService;
+  const { loadWatches } = props.liveCheckService;
   const localParseService = useLocalParseService(datastore);
   const validationService = useValidationService(developerService, datastore);
-  const problemService = useProblemService(localParseService, liveCheckService, validationService);
+  const problemService = useProblemService(
+    localParseService,
+    props.liveCheckService,
+    validationService,
+  );
   const zedTerminalService = undefined; // not used
 
   const routeApi = getRouteApi("/e/$shareId");
@@ -98,14 +102,14 @@ function EmbeddedPlaygroundUI(props: {
       verificationYaml: shareData.validation_yaml || "",
     });
     datastore.setBaseline("shared", shareId);
-    if (liveCheckService) {
-      liveCheckService.loadWatches(shareData.check_watches ?? []);
+    if (loadWatches) {
+      loadWatches(shareData.check_watches ?? []);
     }
-  }, [shareData, datastore, shareId, liveCheckService]);
+  }, [shareData, datastore, shareId, loadWatches]);
 
   const services = {
     localParseService,
-    liveCheckService,
+    liveCheckService: props.liveCheckService,
     validationService,
     problemService,
     developerService,
@@ -117,7 +121,7 @@ function EmbeddedPlaygroundUI(props: {
   const schema = datastore.getById(datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).id);
   const [resizeIndex, setResizeIndex] = useState(0);
 
-  React.useEffect(() => {
+  useEffect(() => {
     const handler = () => {
       // Force a rerender
       setResizeIndex(resizeIndex + 1);
@@ -148,7 +152,7 @@ function EmbeddedPlaygroundUI(props: {
       DataStoreItemKind.EXPECTED_RELATIONS,
     ).editableContents!;
 
-    const checkWatches = liveCheckService.items.map(liveCheckItemToWatch);
+    const checkWatches = props.liveCheckService.items.map(liveCheckItemToWatch);
 
     // Invoke sharing.
     try {

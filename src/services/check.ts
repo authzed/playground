@@ -1,6 +1,6 @@
 import { create } from "@bufbuild/protobuf";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 
 import { parseRelationship } from "../spicedb-common/parsing";
@@ -189,47 +189,50 @@ export function useLiveCheckService(
   });
 
   const devServiceStatus = developerService.state.status;
-  const runCheck = (itemsToCheck: LiveCheckItem[]) => {
-    if (devServiceStatus !== "ready") {
-      return;
-    }
-
-    setState({ status: LiveCheckStatus.CHECKING });
-    const r = runEditCheckWasm(developerService, datastore, itemsToCheck);
-    if (r === undefined) {
-      setState({ status: LiveCheckStatus.NOT_CHECKING });
-
-      if (itemsToCheck.length > 0) {
-        setState({
-          status: LiveCheckStatus.SERVICE_ERROR,
-          lastRun: new Date(),
-          requestErrors: [],
-          serverErr:
-            "Cannot instantiate developer service. Please make sure you have WebAssembly enabled.",
-        });
+  const runCheck = useCallback(
+    (itemsToCheck: LiveCheckItem[]) => {
+      if (devServiceStatus !== "ready") {
+        return;
       }
-      return;
-    }
 
-    const [response, warnings] = r;
-    const serverErr: string | undefined = response.internalError || undefined;
-    const devErrs: DeveloperError[] = response.developerErrors
-      ? response.developerErrors.inputErrors
-      : [];
-    const status = serverErr
-      ? LiveCheckStatus.SERVICE_ERROR
-      : devErrs.length > 0
-        ? LiveCheckStatus.PARSE_ERROR
-        : LiveCheckStatus.NOT_CHECKING;
+      setState({ status: LiveCheckStatus.CHECKING });
+      const r = runEditCheckWasm(developerService, datastore, itemsToCheck);
+      if (r === undefined) {
+        setState({ status: LiveCheckStatus.NOT_CHECKING });
 
-    setState({
-      status: status,
-      lastRun: new Date(),
-      requestErrors: devErrs,
-      serverErr: serverErr,
-      warnings: warnings,
-    });
-  };
+        if (itemsToCheck.length > 0) {
+          setState({
+            status: LiveCheckStatus.SERVICE_ERROR,
+            lastRun: new Date(),
+            requestErrors: [],
+            serverErr:
+              "Cannot instantiate developer service. Please make sure you have WebAssembly enabled.",
+          });
+        }
+        return;
+      }
+
+      const [response, warnings] = r;
+      const serverErr: string | undefined = response.internalError || undefined;
+      const devErrs: DeveloperError[] = response.developerErrors
+        ? response.developerErrors.inputErrors
+        : [];
+      const status = serverErr
+        ? LiveCheckStatus.SERVICE_ERROR
+        : devErrs.length > 0
+          ? LiveCheckStatus.PARSE_ERROR
+          : LiveCheckStatus.NOT_CHECKING;
+
+      setState({
+        status: status,
+        lastRun: new Date(),
+        requestErrors: devErrs,
+        serverErr: serverErr,
+        warnings: warnings,
+      });
+    },
+    [datastore, devServiceStatus, developerService],
+  );
 
   const check = useDebouncedCallback(runCheck, { wait: 500 });
 
@@ -253,13 +256,10 @@ export function useLiveCheckService(
     saveStoredWatches(items.map(liveCheckItemToWatch));
   }, [items, persist]);
 
-  return {
-    items: items,
-    state: state,
-
-    addItem: () => {
-      const newItems = [
-        ...items,
+  const addItem = useCallback(() => {
+    setItems((oldItems) => {
+      return [
+        ...oldItems,
         {
           id: uuidv4(),
           object: "",
@@ -270,36 +270,56 @@ export function useLiveCheckService(
           errorMessage: undefined,
         },
       ];
-      setItems(newItems);
-    },
-    itemUpdated: () => {
-      setItems([...items]);
-      check(items);
-    },
-    removeItem: (item: LiveCheckItem) => {
-      const index = items.indexOf(item);
+    });
+  }, []);
+
+  const itemUpdated = useCallback(() => {
+    // NOTE: this copies here because the code that
+    // interacts with the items is mutating them directly.
+    // TODO: make it not do that.
+    setItems([...items]);
+    check(items);
+  }, [items, check]);
+
+  const removeItem = useCallback((item: LiveCheckItem) => {
+    setItems((oldItems) => {
+      const index = oldItems.indexOf(item);
       if (index < 0) {
-        return;
+        return [];
       }
 
-      const newItems = [...items];
+      const newItems = [...oldItems];
       newItems.splice(index, 1);
-      setItems(newItems);
-    },
-    loadWatches: (watches: CheckWatch[]) => {
-      const newItems: LiveCheckItem[] = watches.map((w) => ({
-        id: uuidv4(),
-        object: w.object,
-        action: w.action,
-        subject: w.subject,
-        context: w.context ?? "",
-        status: LiveCheckItemStatus.NOT_CHECKED,
-        errorMessage: undefined,
-      }));
-      setItems(newItems);
-    },
-    clear: () => {
-      setItems([]);
-    },
-  };
+      return newItems;
+    });
+  }, []);
+
+  const loadWatches = useCallback((watches: CheckWatch[]) => {
+    const newItems: LiveCheckItem[] = watches.map((w) => ({
+      id: uuidv4(),
+      object: w.object,
+      action: w.action,
+      subject: w.subject,
+      context: w.context ?? "",
+      status: LiveCheckItemStatus.NOT_CHECKED,
+      errorMessage: undefined,
+    }));
+    setItems(newItems);
+  }, []);
+
+  return useMemo(
+    () => ({
+      items: items,
+      state: state,
+
+      addItem,
+      itemUpdated,
+      removeItem,
+      loadWatches,
+      clear: () => {
+        setItems([]);
+      },
+    }),
+    [items, state, loadWatches, itemUpdated, addItem, removeItem],
+  );
 }
