@@ -17,7 +17,6 @@ import {
   X,
 } from "lucide-react";
 import { useEffect, useRef, useState, useMemo, type ComponentProps, type ReactNode } from "react";
-import { useCookies } from "react-cookie";
 import sjcl from "sjcl";
 import { toast } from "sonner";
 
@@ -78,7 +77,6 @@ import { EditorGroups } from "./editor-groups/EditorGroups";
 import { useEditorStore } from "./editor-groups/state";
 import type { DocumentRef } from "./editor-groups/types";
 import { EditorDisplay } from "./EditorDisplay";
-import { GuidedTour, TourElementClass } from "./GuidedTour";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";
@@ -175,9 +173,6 @@ export function ThemedAppView(props: {
     developerService,
     zedTerminalService,
   };
-
-  const [cookies, setCookie] = useCookies(["dismiss-tour"]);
-  const [showTour, setShowTour] = useState(!cookies["dismiss-tour"]);
 
   const conductDownload = () => {
     const yamlContents = createValidationYAML(
@@ -389,24 +384,6 @@ export function ThemedAppView(props: {
 
   const validationState = validationService.state;
 
-  const setDismissTour = () => {
-    setShowTour(false);
-    setCookie("dismiss-tour", "true");
-  };
-
-  const handleTourBeforeStep = (selector: string) => {
-    // Activate the Assertions tab before the assertions dialogs
-    if (selector.includes(TourElementClass.assert)) {
-      const s = useEditorStore.getState();
-      const groupId = s.layout.kind === "single" ? s.layout.group.id : s.layout.primary.id;
-      if (s.closedPool.includes("assertions")) {
-        s.openInGroup("assertions", groupId);
-      } else {
-        s.setActiveTab(groupId, "assertions");
-      }
-    }
-  };
-
   const isOutOfDate = props.datastore.isOutOfDate();
   const cookieService = useCookieService();
 
@@ -435,7 +412,7 @@ export function ThemedAppView(props: {
     if (active === "schema") {
       const item = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA);
       return (
-        <div className={`flex flex-col h-full ${TourElementClass.schema}`}>
+        <div className="flex flex-col h-full">
           <Toolbar>
             <Tooltip>
               <TooltipTrigger asChild>
@@ -485,7 +462,7 @@ export function ThemedAppView(props: {
     if (active === "relationships") {
       const item = datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS);
       return (
-        <div className={`flex flex-col h-full ${TourElementClass.testrel}`}>
+        <div className="flex flex-col h-full">
           <Toolbar>
             <ToggleGroup
               value={relationshipsEditor}
@@ -542,7 +519,7 @@ export function ThemedAppView(props: {
     if (active === "assertions") {
       const item = datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS);
       return (
-        <div className={`flex flex-col h-full ${TourElementClass.assert}`}>
+        <div className="flex flex-col h-full">
           <Toolbar>
             <ValidateButton
               datastore={datastore}
@@ -695,12 +672,6 @@ export function ThemedAppView(props: {
           </AlertTitle>
         </Alert>
       )}
-      <GuidedTour
-        show={showTour}
-        onSkip={setDismissTour}
-        onTourEnd={setDismissTour}
-        onEnterStep={handleTourBeforeStep}
-      />
       {/* === Top bar === */}
       <header className="flex h-12 shrink-0 items-center gap-3 border-b border-chrome-divider bg-chrome-topbar px-3 text-sm">
         <a
