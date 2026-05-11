@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { renderHook } from "vitest-browser-react";
 
-import { DataStoreItemKind, EphemeralDataStore } from "@/services/datastore";
 import { useDocumentIdentity } from "@/hooks/use-document-identity";
+import { DataStoreItemKind, EphemeralDataStore } from "@/services/datastore";
 
 describe("useDocumentIdentity", () => {
   it("returns 'untitled' when no baseline is set", async () => {

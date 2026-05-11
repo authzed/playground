@@ -6,11 +6,12 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "test": "vitest --project unit",
+    "test": "vitest",
+    "test:unit": "vitest --project unit",
     "test:browser": "vitest --project browser",
+    "test:install-chromium-headless": "playwright install chromium --only-shell",
     "lint": "oxlint --type-aware --type-check",
     "lint-fix": "oxlint --type-aware --type-check --fix",
-    "typecheck": "tsc --noEmit",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
     "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"

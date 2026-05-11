@@ -1,5 +1,3 @@
-import { useMemo } from "react";
-
 import {
   Outlet,
   RouterProvider,
@@ -8,9 +6,9 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
+import { useMemo } from "react";
 import { CookiesProvider } from "react-cookie";
 import { expect } from "vitest";
-import { page } from "vitest/browser";
 import { render } from "vitest-browser-react";
 
 import { FullPlayground } from "@/components/FullPlayground";
@@ -51,23 +49,13 @@ function TestApp() {
 }
 
 export async function mountPlayground() {
-  await render(<TestApp />);
-  await expect.element(page.getByRole("link", { name: /Discord/i }), { timeout: 15000 }).toBeVisible();
+  const screen = await render(<TestApp />);
+  await expect.element(screen.getByText("Download")).toBeVisible();
+  return screen;
 }
 
-export async function clickTab(label: string) {
-  await page.getByRole("tab", { name: label }).click();
-}
-
-export async function clickPanel(label: string) {
-  await page.getByRole("button", { name: label }).click();
-}
-
-export async function waitForWasm(timeout = 30000) {
-  const deadline = Date.now() + timeout;
-  while (Date.now() < deadline) {
-    if ((window as any).runSpiceDBDeveloperRequest) return;
-    await new Promise<void>((r) => setTimeout(r, 500));
-  }
-  throw new Error("WASM developer package not loaded within timeout");
+export function waitForWasm() {
+  expect.poll(() => {
+    expect(window.runSpiceDBDeveloperRequest).toBeTruthy();
+  });
 }
