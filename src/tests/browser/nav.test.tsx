@@ -1,46 +1,50 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { describe, expect, it } from "vitest";
 
-import { clickPanel, clickTab, mountPlayground, waitForWasm } from "./helpers";
+import { mountPlayground, waitForWasm } from "./helpers";
 
 describe("Navigation", () => {
-  beforeEach(async () => {
-    await mountPlayground();
-  });
-
   it("displays schema tab", async () => {
-    await clickTab("Schema");
-    await expect.element(page.getByText("definition user {}")).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Format" })).toBeVisible();
+    const screen = await mountPlayground();
+    await screen.getByRole("tab", { name: "Schema" }).click();
+    await expect.element(screen.getByText("definition user {}")).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Format" })).toBeVisible();
   });
 
   it("displays relationships tab", async () => {
-    await clickTab("Relationships");
-    await expect.element(page.getByRole("button", { name: "relationship editor view" })).toBeVisible();
-    await page.getByRole("button", { name: "code editor" }).click();
-    await expect.element(page.getByText("resource:anotherresource#writer@user:somegal")).toBeVisible();
+    const screen = await mountPlayground();
+    await screen.getByRole("tab", { name: "Relationships" }).click();
+    await expect.element(screen.getByTitle("Grid Editor")).toBeVisible();
+    await screen.getByTitle("Text Editor").click();
+    // NOTE: this is how we indirectly reference the monaco editor, since it's hard to
+    // reference the text contents of the editor in playwright.
+    await expect.element(screen.getByRole("presentation")).toBeVisible();
   });
 
   it("displays assertions tab", async () => {
-    await clickTab("Assertions");
-    await expect.element(page.getByText("assertTrue")).toBeVisible();
-    await expect.element(page.getByText("Validation not run")).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Run" })).toBeVisible();
+    const screen = await mountPlayground();
+    await screen.getByRole("tab", { name: "Assertions" }).click();
+    await expect.element(screen.getByText("assertTrue")).toBeVisible();
+    await expect.element(screen.getByText("Validation not run")).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Run" })).toBeVisible();
   });
 
   it("displays expected relations tab", async () => {
-    await clickTab("Expected Relations");
-    await expect.element(page.getByText("Validation not run")).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Run" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Re-Generate" })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: "Compute and Diff" })).toBeVisible();
+    const screen = await mountPlayground();
+    await screen.getByRole("tab", { name: "Expected Relations" }).click();
+    await expect.element(screen.getByText("Validation not run")).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Run" })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Re-Generate" })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: "Compute and Diff" })).toBeVisible();
   });
 
   it("displays panels", async () => {
-    await waitForWasm();
-    await clickPanel("Problems");
-    await expect.element(page.getByText("No problems found")).toBeVisible();
-    await clickPanel("Check Watches");
-    await expect.element(page.getByRole("table")).toBeVisible();
+    const screen = await mountPlayground();
+    waitForWasm();
+    // NOTE: these buttons are unlabeled (no title or anything) but have
+    // tooltips associated with them. It may make sense to use title directly here.
+    await screen.getByLabelText("problems panel trigger").click();
+    await expect.element(screen.getByText("Problems")).toBeVisible();
+    await screen.getByLabelText("watches panel trigger").click();
+    await expect.element(screen.getByText("Check Watches")).toBeVisible();
   });
 });

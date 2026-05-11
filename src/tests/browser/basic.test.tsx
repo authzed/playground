@@ -1,24 +1,21 @@
-import { beforeEach, describe, expect, it } from "vitest";
-import { page } from "vitest/browser";
+import { describe, expect, it } from "vitest";
 
-import { clickTab, mountPlayground, waitForWasm } from "./helpers";
+import { mountPlayground, waitForWasm } from "./helpers";
 
 describe("Playground", () => {
-  beforeEach(async () => {
-    await mountPlayground();
-  });
-
   it("displays header buttons", async () => {
-    await expect.element(page.getByRole("link", { name: /Discord/i })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: /Share/i })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: /Download/i })).toBeVisible();
-    await expect.element(page.getByRole("button", { name: /Load From File/i })).toBeVisible();
+    const screen = await mountPlayground();
+    // NOTE: we only assert on the buttons that are going to be present in all configurations -
+    // discord and share won't necessarily.
+    await expect.element(screen.getByRole("button", { name: /Download/i })).toBeVisible();
+    await expect.element(screen.getByRole("button", { name: /Load From File/i })).toBeVisible();
   });
 
   it("default validation succeeds", async () => {
-    await waitForWasm();
-    await clickTab("Assertions");
-    await page.getByRole("button", { name: "Run" }).click();
-    await expect.element(page.getByText("Validated!"), { timeout: 15000 }).toBeVisible();
+    const screen = await mountPlayground();
+    waitForWasm();
+    await screen.getByRole("tab", { name: "Assertions" }).click();
+    await screen.getByRole("button", { name: "Run" }).click();
+    await expect.element(screen.getByText("Validated!"), { timeout: 15000 }).toBeVisible();
   });
 });

@@ -36,6 +36,7 @@ export function StatusStrip({ services }: StatusStripProps) {
         <TooltipTrigger asChild>
           <PanelButton
             id="problems"
+            aria-label="problems panel trigger"
             active={isActive("problems")}
             onClick={() => togglePanel("problems")}
             icon={
@@ -60,6 +61,7 @@ export function StatusStrip({ services }: StatusStripProps) {
         <TooltipTrigger asChild>
           <PanelButton
             id="watches"
+            aria-label="watches panel trigger"
             active={isActive("watches")}
             onClick={() => togglePanel("watches")}
             icon={

@@ -10,19 +10,25 @@ on:
 jobs:
   test:
     name: "Run Tests"
-    runs-on: "depot-ubuntu-24.04-small"
+    runs-on: "depot-ubuntu-24.04-4"
     steps:
       - uses: "actions/checkout@v6"
         with:
+          lfs: true
           submodules: true
-      - uses: "authzed/action-spicedb@v1"
-        with:
-          version: "latest"
       - uses: "actions/setup-node@v6"
         with:
           node-version: 24
           cache-dependency-path: "yarn.lock"
           cache: "yarn"
       - uses: "bahmutov/npm-install@v1"
+      - name: "Install chromium for playwright"
+        run: "yarn test:install-chromium-headless"
       - name: "Run tests"
         run: "yarn test"
+      - name: "Upload test artifacts"
+        if: "failure()"
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "test-screenshots"
+          path: "src/tests/browser/__screenshots__"
