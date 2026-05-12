@@ -44,6 +44,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useCopyToClipboard from "@/hooks/use-copy-to-clipboard";
+import { SharedDataV2 } from "@/schemas/share-data";
 
 import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
@@ -256,7 +257,7 @@ export function ThemedAppView(props: {
           assertions_yaml: assertionsYaml,
           validation_yaml: validationYaml,
           ...(checkWatches.length > 0 ? { check_watches: checkWatches } : {}),
-        }),
+        } satisfies SharedDataV2),
       });
 
       if (!response.ok) {

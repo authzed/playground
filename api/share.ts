@@ -1,23 +1,12 @@
 import { createHash } from "crypto";
 
 import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
-import type { VercelRequest, VercelRequestBody, VercelResponse } from "@vercel/node";
+import type { VercelRequest, VercelResponse } from "@vercel/node";
+import z from "zod";
+
+import { zSharedDataV2 } from "../src/schemas/share-data";
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
-
-export type SharedDataV2 = {
-  version: "2";
-  schema: string;
-  relationships_yaml?: string;
-  validation_yaml?: string;
-  assertions_yaml?: string;
-  check_watches?: Array<{
-    object: string;
-    action: string;
-    subject: string;
-    context?: string;
-  }>;
-};
 
 const hashPrefixSize = 12;
 
@@ -35,43 +24,6 @@ function computeShareHash(salt: string, data: string): string {
   }
 
   return b64.substring(0, hashLen);
-}
-
-function validateSharedDataV2(data: VercelRequestBody): data is SharedDataV2 {
-  if (typeof data !== "object" || data === null) {
-    return false;
-  }
-
-  if (data.version !== "2") {
-    return false;
-  }
-
-  if (typeof data.schema !== "string") {
-    return false;
-  }
-
-  const optionalStringFields = ["relationships_yaml", "validation_yaml", "assertions_yaml"];
-  for (const field of optionalStringFields) {
-    if (field in data && typeof data[field] !== "string") {
-      return false;
-    }
-  }
-
-  if ("check_watches" in data) {
-    const watches = data.check_watches;
-    if (!Array.isArray(watches)) {
-      return false;
-    }
-    for (const w of watches) {
-      if (typeof w !== "object" || w === null) return false;
-      if (typeof w.object !== "string") return false;
-      if (typeof w.action !== "string") return false;
-      if (typeof w.subject !== "string") return false;
-      if ("context" in w && typeof w.context !== "string") return false;
-    }
-  }
-
-  return true;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -101,16 +53,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(400).json({ error: "Invalid request body" });
   }
 
-  try {
-    if (!validateSharedDataV2(body)) {
-      return res.status(400).json({ error: "Invalid share data format" });
-    }
-  } catch {
-    return res.status(400).json({ error: "Invalid JSON" });
+  const { data, error } = z.safeParse(zSharedDataV2, body);
+  if (error) {
+    return res.status(400).json({ error: "Invalid share data format" });
   }
 
   // Compute the share hash
-  const dataString = JSON.stringify(body);
+  const dataString = JSON.stringify(data);
   const shareHash = computeShareHash(shareSalt, dataString);
 
   // Validate that the computed hash only contains allowed characters

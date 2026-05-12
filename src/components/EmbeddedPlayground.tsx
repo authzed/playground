@@ -16,6 +16,8 @@ import {
 import { type PropsWithChildren, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 
+import { SharedDataV2 } from "@/schemas/share-data";
+
 import {
   liveCheckItemToWatch,
   type LiveCheckService,
@@ -168,7 +170,7 @@ function EmbeddedPlaygroundUI(props: {
           assertions_yaml: assertionsYaml,
           validation_yaml: validationYaml,
           ...(checkWatches.length > 0 ? { check_watches: checkWatches } : {}),
-        }),
+        } satisfies SharedDataV2),
       });
 
       if (!response.ok) {

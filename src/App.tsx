@@ -64,13 +64,11 @@ const embeddedRoute = createRoute({
   errorComponent: ShareErrorComponent,
 });
 
-// TODO: check all this routing behavior
 const routeTree = rootRoute.addChildren([shareRoute, inlineRoute, embeddedRoute, indexRoute]);
 const router = createRouter({ routeTree });
 
 const config = AppConfig();
 
-// TODO: set up a baby API that does "share" logic locally in the dev env
 if (config.shareApiEndpoint) {
   console.log(`[playground] sharing: enabled (${config.shareApiEndpoint})`);
 } else {
