@@ -1,73 +1,34 @@
-import Ajv from "ajv";
 import yaml from "yaml";
+import z from "zod";
 
-export type AssertionData = {
-  assertTrue?: string[];
-  assertFalse?: string[];
-};
+export const zAssertionData = z.object({
+  assertTrue: z.array(z.string()).optional(),
+  assertFalse: z.array(z.string()).optional(),
+});
+export type AssertionData = z.infer<typeof zAssertionData>;
 
-export type CheckWatch = {
-  object: string;
-  action: string;
-  subject: string;
-  context?: string;
-};
+export const zCheckWatch = z.object({
+  object: z.string(),
+  action: z.string(),
+  subject: z.string(),
+  context: z.string().optional(),
+});
+export type CheckWatch = z.infer<typeof zCheckWatch>;
 
-export interface ParsedValidation {
-  schema: string;
-  relationships: string;
-  assertions?: AssertionData;
-  validation?: ValidationData;
-  checkWatches?: CheckWatch[];
-}
+export const zCheckWatches = z.array(zCheckWatch);
+export type CheckWatches = z.infer<typeof zCheckWatches>;
 
-export type ValidationData = Record<string, string[]>;
+export const zValidationData = z.record(z.string(), z.array(z.string()));
+export type ValidationData = z.infer<typeof zValidationData>;
 
-const schema = {
-  type: "object",
-  properties: {
-    schema: { type: "string" },
-    relationships: { type: "string" },
-    assertions: {
-      type: ["object", "null"],
-      properties: {
-        assertTrue: {
-          type: "array",
-          items: {
-            type: "string",
-          },
-        },
-        assertFalse: {
-          type: "array",
-          items: {
-            type: "string",
-          },
-        },
-        additionalProperties: false,
-      },
-    },
-    validation: {
-      type: ["object", "null"],
-      additionalProperties: true,
-    },
-    checkWatches: {
-      type: "array",
-      items: {
-        type: "object",
-        properties: {
-          object: { type: "string" },
-          action: { type: "string" },
-          subject: { type: "string" },
-          context: { type: "string" },
-        },
-        required: ["object", "action", "subject"],
-        additionalProperties: false,
-      },
-    },
-  },
-  required: ["schema", "relationships"],
-  additionalProperties: false,
-};
+export const zParsedValidation = z.object({
+  schema: z.string(),
+  relationships: z.string(),
+  assertions: zAssertionData.optional(),
+  validation: zValidationData.optional(),
+  checkWatches: zCheckWatches.optional(),
+});
+export type ParsedValidation = z.infer<typeof zParsedValidation>;
 
 export interface ParseValidationError {
   message: string;
@@ -86,16 +47,15 @@ export const parseValidationYAML = (contents: string): ParsedValidation | ParseV
     return { message: `parse error: ${errorText}` };
   }
 
-  const ajv = new Ajv();
-  const valid = ajv.validate(schema, parsed);
-  if (!valid) {
+  const { data, error } = z.safeParse(zParsedValidation, parsed);
+
+  if (error) {
     return {
-      message: ajv.errorsText(ajv.errors),
+      message: z.prettifyError(error),
     };
   }
 
-  // TODO: type this better
-  return parsed as unknown as ParsedValidation;
+  return data;
 };
 
 /**

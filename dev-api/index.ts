@@ -2,20 +2,9 @@ import { createHash } from "crypto";
 import type { IncomingMessage, ServerResponse } from "http";
 
 import type { ViteDevServer } from "vite";
+import z from "zod";
 
-type SharedDataV2 = {
-  version: "2";
-  schema: string;
-  relationships_yaml?: string;
-  validation_yaml?: string;
-  assertions_yaml?: string;
-  check_watches?: Array<{
-    object: string;
-    action: string;
-    subject: string;
-    context?: string;
-  }>;
-};
+import { zSharedDataV2 } from "../src/schemas/share-data";
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 const hashPrefixSize = 12;
@@ -33,29 +22,6 @@ function computeShareHash(s: string, data: string): string {
     hashLen++;
   }
   return b64.substring(0, hashLen);
-}
-
-// TODO: zod this
-function validateSharedDataV2(data: unknown): data is SharedDataV2 {
-  if (typeof data !== "object" || data === null) return false;
-  const d = data as Record<string, unknown>;
-  if (d.version !== "2") return false;
-  if (typeof d.schema !== "string") return false;
-  for (const field of ["relationships_yaml", "validation_yaml", "assertions_yaml"]) {
-    if (field in d && typeof d[field] !== "string") return false;
-  }
-  if ("check_watches" in d) {
-    if (!Array.isArray(d.check_watches)) return false;
-    for (const w of d.check_watches) {
-      if (typeof w !== "object" || w === null) return false;
-      const ww = w as Record<string, unknown>;
-      if (typeof ww.object !== "string") return false;
-      if (typeof ww.action !== "string") return false;
-      if (typeof ww.subject !== "string") return false;
-      if ("context" in ww && typeof ww.context !== "string") return false;
-    }
-  }
-  return true;
 }
 
 function readBody(req: IncomingMessage): Promise<string> {
@@ -90,11 +56,12 @@ export function configureServer(server: ViteDevServer) {
         return json(res, 400, { error: "Invalid JSON" });
       }
 
-      if (!validateSharedDataV2(body)) {
+      const { data, error } = z.safeParse(zSharedDataV2, body);
+      if (error) {
         return json(res, 400, { error: "Invalid share data format" });
       }
 
-      const dataString = JSON.stringify(body);
+      const dataString = JSON.stringify(data);
       const hash = computeShareHash(salt, dataString);
       shares.set(hash, dataString);
       console.log("current shares: ", shares.keys());
