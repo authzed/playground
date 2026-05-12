@@ -710,7 +710,7 @@ export function ThemedAppView(props: {
         <Tooltip>
           <TooltipTrigger asChild>
             <Button asChild size="sm" variant="ghost">
-              <a href="https://authzed.com/docs/spicedb" target="_blank" rel="noreferrer">
+              <a href="https://authzed.com/docs/" target="_blank" rel="noreferrer">
                 <BookOpenText />
                 <span className="hidden xl:inline">Docs</span>
               </a>
