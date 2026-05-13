@@ -4,7 +4,28 @@ import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import z from "zod";
 
-import { zSharedDataV2 } from "../src/schemas/share-data";
+// NOTE: this is a duplicate of the schema in src/schemas/share-data.ts
+// vercel doesn't let you import from outside of the folder, so we can't
+// reference the primary definition directly. keep this in sync with that
+// primary definition.
+export const zSharedDataV2 = z.object({
+  version: z.literal("2"),
+  schema: z.string(),
+  relationships_yaml: z.string().optional(),
+  validation_yaml: z.string().optional(),
+  assertions_yaml: z.string().optional(),
+  check_watches: z
+    .array(
+      z.object({
+        object: z.string(),
+        action: z.string(),
+        subject: z.string(),
+        context: z.string().optional(),
+      }),
+    )
+    .optional(),
+});
+export type SharedDataV2 = z.infer<typeof zSharedDataV2>;
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
 
