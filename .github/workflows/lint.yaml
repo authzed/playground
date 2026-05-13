@@ -13,13 +13,12 @@ jobs:
     runs-on: "depot-ubuntu-24.04-small"
     steps:
       - uses: "actions/checkout@v6"
-      - uses: "actions/setup-node@v6"
+      - uses: "pnpm/action-setup@v6"
         with:
-          node-version: 24
-          cache-dependency-path: "yarn.lock"
-          cache: "yarn"
-      - uses: "bahmutov/npm-install@v1"
+          cache: true
+      - name: "Install dependencies"
+        run: "pnpm install"
       - name: "Run Eslint"
-        run: "yarn run lint"
+        run: "pnpm run lint"
       - name: "Run formatting check"
-        run: "yarn run format:check"
+        run: "pnpm run format:check"

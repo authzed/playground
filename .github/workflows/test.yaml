@@ -16,16 +16,15 @@ jobs:
         with:
           lfs: true
           submodules: true
-      - uses: "actions/setup-node@v6"
+      - uses: "pnpm/action-setup@v6"
         with:
-          node-version: 24
-          cache-dependency-path: "yarn.lock"
-          cache: "yarn"
-      - uses: "bahmutov/npm-install@v1"
+          cache: true
+      - name: "Install dependencies"
+        run: "pnpm install"
       - name: "Install chromium for playwright"
-        run: "yarn test:install-chromium-headless"
+        run: "pnpm test:install-chromium-headless"
       - name: "Run tests"
-        run: "yarn test"
+        run: "pnpm test"
       - name: "Upload test artifacts"
         if: "failure()"
         uses: "actions/upload-artifact@v4"
