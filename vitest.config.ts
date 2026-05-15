@@ -14,6 +14,11 @@ export default mergeConfig(
             name: "unit",
             include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
             exclude: ["src/tests/browser/**"],
+            server: {
+              deps: {
+                inline: ["@authzed/spicedb-parser-js", "parsimmon"],
+              },
+            },
           },
         },
         {
