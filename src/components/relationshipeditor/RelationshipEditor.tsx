@@ -8,6 +8,8 @@ import DataEditor, {
   GridMouseEventArgs,
   GridSelection,
   Rectangle,
+  type CellClickedEventArgs,
+  type Item,
   type Theme,
   type Highlight,
 } from "@glideapps/glide-data-grid";
@@ -19,11 +21,13 @@ import { useCookies } from "react-cookie";
 import { toast } from "sonner";
 import { useDeepCompareEffect, useDeepCompareMemo } from "use-deep-compare";
 
+import { useSchemaJumpStore } from "@/components/editor-groups/schema-jump";
 import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
+import { useModifierKeyHeld } from "@/hooks/use-modifier-key-held";
 import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
@@ -41,6 +45,7 @@ import {
   MIN_COLUMN_WIDTH,
   validate,
 } from "./columns";
+import { resolveGridCellTarget } from "./jump-targets";
 import { COMMENT_CELL_KIND, copyDataForCommentCell } from "./commentcell";
 import { RelEditorCustomCell, useCustomCells } from "./customcells";
 import {
@@ -333,6 +338,7 @@ export function RelationshipEditor({
   };
 
   const resolvedTheme = useResolvedTheme();
+  const modifierHeld = useModifierKeyHeld();
 
   const dataEditorTheme: Partial<Theme> = useMemo(() => {
     const isDark = resolvedTheme === "dark";
@@ -440,6 +446,17 @@ export function RelationshipEditor({
         };
       }
 
+      // While a modifier key is held, jumpable cells that resolve to a schema
+      // location get a pointer cursor. glide applies a cell's `cursor` only
+      // while the pointer is over it, so this is naturally hovered-cell-only.
+      const jumpCursor =
+        modifierHeld &&
+        resolver !== undefined &&
+        resolveGridCellTarget(resolver, COLUMNS[col].dataKind, data[row].columnData, col) !==
+          undefined
+          ? "pointer"
+          : undefined;
+
       switch (COLUMNS[col].dataKind) {
         case DataKind.RESOURCE_TYPE:
         case DataKind.SUBJECT_TYPE:
@@ -453,6 +470,7 @@ export function RelationshipEditor({
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
+            cursor: jumpCursor,
           };
 
         case DataKind.RESOURCE_ID:
@@ -481,6 +499,7 @@ export function RelationshipEditor({
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
+            cursor: jumpCursor,
           };
 
         case DataKind.CAVEAT_NAME:
@@ -494,6 +513,7 @@ export function RelationshipEditor({
             },
             allowOverlay: true,
             copyData: data[row].columnData[col],
+            cursor: jumpCursor,
           };
 
         case DataKind.CAVEAT_CONTEXT:
@@ -531,7 +551,7 @@ export function RelationshipEditor({
           };
       }
     },
-    [data],
+    [data, resolver, modifierHeld],
   );
 
   const getCellsForSelection = useCallback(
@@ -857,6 +877,39 @@ export function RelationshipEditor({
     resolver,
     similarHighlighting,
     columnsWithWidths,
+    modifierHeld,
+  );
+
+  // Cmd/Ctrl+click a type / relation / caveat-name cell jumps to the schema.
+  // Plain clicks fall through to glide's normal selection/edit behavior.
+  const handleCellClicked = useCallback(
+    (cell: Item, event: CellClickedEventArgs) => {
+      if (!event.ctrlKey && !event.metaKey) {
+        return;
+      }
+      if (!resolver) {
+        return;
+      }
+      const [col, row] = cell;
+      if (row >= data.length || col >= COLUMNS.length) {
+        return;
+      }
+      const rowData = data[row];
+      if ("comment" in rowData.datum) {
+        return;
+      }
+      const target = resolveGridCellTarget(
+        resolver,
+        COLUMNS[col].dataKind,
+        rowData.columnData,
+        col,
+      );
+      if (!target) {
+        return;
+      }
+      useSchemaJumpStore.getState().jumpToSchema(target.line, target.column);
+    },
+    [resolver, data],
   );
 
   return (
@@ -931,6 +984,7 @@ export function RelationshipEditor({
         onDelete={isReadOnly ? undefined : handleDelete}
         onRowMoved={isReadOnly ? undefined : handleRowMoved}
         onItemHovered={handleItemHovered}
+        onCellClicked={handleCellClicked}
         isDraggable={false}
         trailingRowOptions={{ tint: !isReadOnly }}
         rowMarkers={isReadOnly ? "number" : "both"}

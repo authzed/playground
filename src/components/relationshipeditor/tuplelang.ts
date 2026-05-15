@@ -1,6 +1,7 @@
-import { editor, Position } from "monaco-editor";
+import { editor, languages, Position } from "monaco-editor";
 import * as monacoEditor from "monaco-editor";
 
+import { SchemaRevealLocation, useSchemaJumpStore } from "@/components/editor-groups/schema-jump";
 import { LocalParseState } from "@/services/localparse";
 import {
   getCaveatDefinitions,
@@ -10,6 +11,8 @@ import {
   StorableRelation,
   SubjectDefinition,
 } from "@/services/semantics";
+
+import { caveatTarget, relationTarget, tokenAtPosition, typeTarget } from "./jump-targets";
 
 export const TUPLE_LANGUAGE_NAME = "tuple";
 export const TUPLE_THEME_NAME = "tuple-theme";
@@ -193,6 +196,93 @@ export default function registerTupleLanguage(
       return {
         suggestions: [],
       };
+    },
+  });
+
+  // Cmd/Ctrl+hover/click in the tuple editor uses Monaco's native "go to
+  // definition" affordance (underline + pointer cursor). The definition
+  // provider resolves the token to a position in the schema and returns it at
+  // a sentinel URI; the editor-opener below intercepts that URI and performs
+  // the cross-model jump via the schema-jump store. (A definition provider
+  // cannot itself navigate across Monaco models, hence the separate opener.)
+  const schemaJumpUri = monaco.Uri.parse("playground://schema-jump");
+
+  // Monaco only renders the hover affordance for a single definition result
+  // once it can resolve that result's URI to a real text model (see
+  // GotoDefinitionAtPositionEditorContribution.startFindDefinition — it bails
+  // before adding the underline decoration if createModelReference fails). So
+  // the sentinel URI must back a real model; its content is kept mirrored to
+  // the schema text in provideDefinition so the line count covers the target
+  // position and the hover preview is accurate.
+  const schemaJumpModel =
+    monaco.editor.getModel(schemaJumpUri) ??
+    monaco.editor.createModel("", undefined, schemaJumpUri);
+
+  monaco.languages.registerDefinitionProvider(TUPLE_LANGUAGE_NAME, {
+    provideDefinition: (
+      model: editor.ITextModel,
+      position: Position,
+    ): languages.ProviderResult<languages.Definition> => {
+      const token = tokenAtPosition(
+        model.getLineContent(position.lineNumber),
+        position.column,
+      );
+      if (!token) {
+        return undefined;
+      }
+      const resolver = localParseState().resolver;
+      if (!resolver) {
+        return undefined;
+      }
+      let target: SchemaRevealLocation | undefined;
+      if (token.kind === "type") {
+        target = typeTarget(resolver, token.name);
+      } else if (token.kind === "relation") {
+        target = relationTarget(resolver, token.resourceType, token.name);
+      } else {
+        target = caveatTarget(resolver, token.name);
+      }
+      if (!target) {
+        return undefined;
+      }
+      // Mirror the current schema text into the sentinel model so Monaco can
+      // resolve it (which is what makes the hover affordance render) and show
+      // an accurate preview.
+      const schemaText = localParseState().schemaText;
+      if (schemaJumpModel.getValue() !== schemaText) {
+        schemaJumpModel.setValue(schemaText);
+      }
+      return {
+        uri: schemaJumpUri,
+        range: {
+          startLineNumber: target.line,
+          startColumn: target.column,
+          endLineNumber: target.line,
+          endColumn: target.column,
+        },
+      };
+    },
+  });
+
+  monaco.editor.registerEditorOpener({
+    openCodeEditor: (_source, resource, selectionOrPosition) => {
+      if (resource.toString() !== schemaJumpUri.toString()) {
+        return false;
+      }
+      let line: number | undefined;
+      let column: number | undefined;
+      if (selectionOrPosition && "startLineNumber" in selectionOrPosition) {
+        line = selectionOrPosition.startLineNumber;
+        column = selectionOrPosition.startColumn;
+      } else if (selectionOrPosition && "lineNumber" in selectionOrPosition) {
+        line = selectionOrPosition.lineNumber;
+        column = selectionOrPosition.column;
+      }
+      if (line === undefined || column === undefined) {
+        return false;
+      }
+      useSchemaJumpStore.getState().jumpToSchema(line, column);
+      return true;
     },
   });
 

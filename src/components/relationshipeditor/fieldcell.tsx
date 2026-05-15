@@ -20,6 +20,7 @@ import { RelationshipsService } from "@/spicedb-common/services/relationshipsser
 
 import { COLUMNS, Column, DataKind, DataTitle, RelationshipSection } from "./columns";
 import { AnnotatedData } from "./data";
+import { resolveGridCellTarget } from "./jump-targets";
 
 export const TYPE_CELL_KIND = "type-field-cell";
 export const OBJECTID_CELL_KIND = "objectid-field-cell";
@@ -104,6 +105,7 @@ export interface FieldCellRendererProps {
   };
   similarHighlighting: boolean;
   columnsWithWidths: Column[];
+  modifierHeld: boolean;
 }
 
 type GetAutocompleteOptions<Q extends FieldCellProps> = (
@@ -149,6 +151,22 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         }
 
         const props = propsRefs.current;
+
+        // While a modifier key is held, the cell under the cursor that resolves
+        // to a schema location gets an underline. `args.hoverX` is defined only
+        // for the cell currently under the pointer — glide re-invokes draw for
+        // a cell whenever its hover state changes, so no separate hover state
+        // is needed.
+        const shouldUnderlineJump =
+          args.hoverX !== undefined &&
+          props?.modifierHeld === true &&
+          props.resolver !== undefined &&
+          resolveGridCellTarget(
+            props.resolver,
+            dataKind,
+            props.annotatedData[row].columnData,
+            zeroIndexedCol,
+          ) !== undefined;
 
         const selectedType: SelectedType | undefined =
           props?.selected.selectedType ||
@@ -249,6 +267,17 @@ function fieldCellRenderer<T extends CustomCell<Q>, Q extends FieldCellProps>(
         ctx.fillStyle = theme.textDark;
         ctx.font = "12px Roboto Mono, Monospace";
         ctx.fillText(dataValue, rect.x + 10, rect.y + rect.height / 2 + 1, rect.width - 20);
+
+        if (shouldUnderlineJump) {
+          const underlineWidth = Math.min(ctx.measureText(dataValue).width, rect.width - 20);
+          const underlineY = rect.y + rect.height / 2 + 7;
+          ctx.strokeStyle = theme.textDark;
+          ctx.lineWidth = 1;
+          ctx.beginPath();
+          ctx.moveTo(rect.x + 10, underlineY);
+          ctx.lineTo(rect.x + 10 + underlineWidth, underlineY);
+          ctx.stroke();
+        }
 
         ctx.restore();
         return true;
