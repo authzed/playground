@@ -21,8 +21,9 @@ RUN yarn build
 
 FROM $BASE_IMAGE AS playground-verifier
 
-FROM nginx:1.25.2
+FROM nginx:1.27
 LABEL maintainer="AuthZed <support@authzed.com>"
+RUN apt-get update && apt-get upgrade -y && rm -rf /var/lib/apt/lists/*
 EXPOSE 3000
 ENV PORT=3000
 
