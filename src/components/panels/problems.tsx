@@ -1,9 +1,11 @@
-import { ChevronDown, ChevronRight, CircleX, Play, TriangleAlert } from "lucide-react";
+import { ChevronDown, ChevronRight, CircleX, Eye, Play, TriangleAlert } from "lucide-react";
 import * as React from "react";
 
 import { Button } from "@/components/ui/button";
+import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 
+import { assertionStringToCheckWatch, LiveCheckService } from "../../services/check";
 import { Services } from "../../services/services";
 import {
   DeveloperError,
@@ -11,6 +13,7 @@ import {
   DeveloperWarning,
 } from "../../spicedb-common/protodefs/developer/v1/developer_pb";
 import { DocumentLink } from "../document-link";
+import { useDrawerStore } from "../drawer/state";
 
 import { DeveloperSourceDisplay, DeveloperWarningSourceDisplay } from "./errordisplays";
 
@@ -22,13 +25,22 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
   const requestErrors = services.problemService.requestErrors;
   const warnings = services.problemService.warnings;
   const invalidRels = services.problemService.invalidRelationships;
-  const validationErrors = services.problemService.validationErrors;
+  const allValidationErrors = services.problemService.validationErrors;
 
   const schemaErrors = requestErrors.filter((e) => e.source === DeveloperError_Source.SCHEMA);
   const relationshipRequestErrors = requestErrors.filter(
     (e) => e.source === DeveloperError_Source.RELATIONSHIP,
   );
-  const assertionErrors = requestErrors.filter((e) => e.source === DeveloperError_Source.ASSERTION);
+  // Assertion-source errors land in `validationErrors` (the validation runner
+  // is what executes the assertions block), not `requestErrors`. Pull them out
+  // so they show up under "Assertions" instead of "Validation".
+  const assertionErrors = [
+    ...requestErrors.filter((e) => e.source === DeveloperError_Source.ASSERTION),
+    ...allValidationErrors.filter((e) => e.source === DeveloperError_Source.ASSERTION),
+  ];
+  const validationErrors = allValidationErrors.filter(
+    (e) => e.source !== DeveloperError_Source.ASSERTION,
+  );
 
   return (
     <div className="p-2 space-y-1">
@@ -63,7 +75,11 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
 
       <Group title="Assertions" errorCount={assertionErrors.length}>
         {assertionErrors.map((de, i) => (
-          <ErrorRow key={`a${i}`} error={de} />
+          <ErrorRow
+            key={`a${i}`}
+            error={de}
+            action={<AddCheckWatchAction error={de} liveCheckService={services.liveCheckService} />}
+          />
         ))}
       </Group>
 
@@ -170,7 +186,7 @@ function splitMessage(message: string): { summary: string; rest: string } {
   return { summary: trimmed, rest: "" };
 }
 
-function ErrorRow({ error }: { error: DeveloperError }) {
+function ErrorRow({ error, action }: { error: DeveloperError; action?: React.ReactNode }) {
   const { summary, rest } = splitMessage(error.message);
   return (
     <div className="flex items-start gap-3 border-l-2 border-l-destructive bg-card px-3 py-2">
@@ -194,7 +210,34 @@ function ErrorRow({ error }: { error: DeveloperError }) {
           )}
         </div>
       </div>
+      {action && <div className="shrink-0">{action}</div>}
     </div>
+  );
+}
+
+function AddCheckWatchAction({
+  error,
+  liveCheckService,
+}: {
+  error: DeveloperError;
+  liveCheckService: LiveCheckService;
+}) {
+  const watch = React.useMemo(() => assertionStringToCheckWatch(error.context), [error.context]);
+  if (!watch) return null;
+  const onClick = () => {
+    useDrawerStore.getState().openPanel("watches");
+    liveCheckService.addWatch(watch);
+  };
+  return (
+    <Tooltip>
+      <TooltipTrigger asChild>
+        <Button size="xs" variant="ghost" onClick={onClick}>
+          <Eye />
+          Add check watch
+        </Button>
+      </TooltipTrigger>
+      <TooltipContent>Add check watch for this assertion</TooltipContent>
+    </Tooltip>
   );
 }
 

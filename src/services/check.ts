@@ -64,7 +64,20 @@ export interface LiveCheckService {
 
   items: LiveCheckItem[];
 
+  /**
+   * recentlyAddedItemId is the id of the most recently added watch via
+   * addWatch. The UI uses it to drive a one-shot highlight animation; it
+   * auto-clears shortly after being set.
+   */
+  recentlyAddedItemId: string | null;
+
   addItem: () => void;
+  /**
+   * addWatch appends a CheckWatch as a new item and returns its id. The new
+   * id is also exposed via recentlyAddedItemId so consumers can flash a
+   * highlight on the row.
+   */
+  addWatch: (watch: CheckWatch) => string;
   itemUpdated: (item: LiveCheckItem) => void;
   removeItem: (item: LiveCheckItem) => void;
   loadWatches: (watches: CheckWatch[]) => void;
@@ -82,6 +95,45 @@ export function liveCheckItemToWatch(item: LiveCheckItem): CheckWatch {
     subject: item.subject,
     context: item.context,
   };
+}
+
+/**
+ * assertionStringToCheckWatch parses a relationship-style assertion string
+ * (`object#action@subject[caveat:context]`) into a CheckWatch. Returns
+ * undefined if the string does not split into the expected pieces.
+ *
+ * The split is structural (not semantic): we don't validate identifiers here,
+ * we just match the shape the assertions YAML actually uses. The Live Check
+ * service will surface any deeper invalidity once the watch is run.
+ */
+export function assertionStringToCheckWatch(value: string): CheckWatch | undefined {
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+
+  const hashIndex = trimmed.indexOf("#");
+  const atIndex = trimmed.indexOf("@", hashIndex + 1);
+  if (hashIndex < 0 || atIndex < 0) return undefined;
+
+  const object = trimmed.slice(0, hashIndex).trim();
+  const action = trimmed.slice(hashIndex + 1, atIndex).trim();
+  let subjectAndCaveat = trimmed.slice(atIndex + 1).trim();
+  if (!object || !action || !subjectAndCaveat) return undefined;
+
+  let context = "";
+  const caveatStart = subjectAndCaveat.indexOf("[");
+  if (caveatStart >= 0 && subjectAndCaveat.endsWith("]")) {
+    context = subjectAndCaveat.slice(caveatStart + 1, -1).trim();
+    subjectAndCaveat = subjectAndCaveat.slice(0, caveatStart).trim();
+  }
+
+  // The Live Check UI represents an unqualified subject without the trailing
+  // `#...`. Strip it here so the watch round-trips cleanly.
+  const subject = subjectAndCaveat.endsWith("#...")
+    ? subjectAndCaveat.slice(0, -"#...".length)
+    : subjectAndCaveat;
+  if (!subject) return undefined;
+
+  return { object, action, subject, context };
 }
 
 function liveCheckItemToString(item: LiveCheckItem): string {
@@ -187,6 +239,7 @@ export function useLiveCheckService(
   const [state, setState] = useState<LiveCheckRunState>({
     status: LiveCheckStatus.NEVER_RUN,
   });
+  const [recentlyAddedItemId, setRecentlyAddedItemId] = useState<string | null>(null);
 
   const devServiceStatus = developerService.state.status;
   const runCheck = useCallback(
@@ -273,6 +326,37 @@ export function useLiveCheckService(
     });
   }, []);
 
+  const addWatch = useCallback(
+    (watch: CheckWatch): string => {
+      const id = uuidv4();
+      const newItem: LiveCheckItem = {
+        id,
+        object: watch.object,
+        action: watch.action,
+        subject: watch.subject,
+        context: watch.context ?? "",
+        status: LiveCheckItemStatus.NOT_CHECKED,
+        errorMessage: undefined,
+      };
+      setItems((oldItems) => {
+        const next = [...oldItems, newItem];
+        // The datastore-listener effect only fires the check on datastore
+        // changes; an explicit kick is required so the new watch resolves
+        // without waiting for the next edit.
+        check(next);
+        return next;
+      });
+      setRecentlyAddedItemId(id);
+      // Clear the highlight id after the CSS animation completes (~1s plus a
+      // small buffer) so a subsequent add re-triggers the animation.
+      setTimeout(() => {
+        setRecentlyAddedItemId((current) => (current === id ? null : current));
+      }, 1200);
+      return id;
+    },
+    [check],
+  );
+
   const itemUpdated = useCallback(() => {
     // NOTE: this copies here because the code that
     // interacts with the items is mutating them directly.
@@ -311,8 +395,10 @@ export function useLiveCheckService(
     () => ({
       items: items,
       state: state,
+      recentlyAddedItemId: recentlyAddedItemId,
 
       addItem,
+      addWatch,
       itemUpdated,
       removeItem,
       loadWatches,
@@ -320,6 +406,6 @@ export function useLiveCheckService(
         setItems([]);
       },
     }),
-    [items, state, loadWatches, itemUpdated, addItem, removeItem],
+    [items, state, recentlyAddedItemId, loadWatches, itemUpdated, addItem, addWatch, removeItem],
   );
 }
