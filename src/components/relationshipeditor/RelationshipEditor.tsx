@@ -26,8 +26,8 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
-import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import { useModifierKeyHeld } from "@/hooks/use-modifier-key-held";
+import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 import {
   ParseRelationshipError,
   parseRelationshipsWithComments,
@@ -45,7 +45,6 @@ import {
   MIN_COLUMN_WIDTH,
   validate,
 } from "./columns";
-import { resolveGridCellTarget } from "./jump-targets";
 import { COMMENT_CELL_KIND, copyDataForCommentCell } from "./commentcell";
 import { RelEditorCustomCell, useCustomCells } from "./customcells";
 import {
@@ -72,6 +71,7 @@ import {
   RELATION_CELL_KIND,
   TYPE_CELL_KIND,
 } from "./fieldcell";
+import { resolveGridCellTarget } from "./jump-targets";
 
 export type RelationTupleHighlight = {
   tupleString: string;

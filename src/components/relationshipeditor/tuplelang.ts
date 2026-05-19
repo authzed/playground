@@ -223,10 +223,7 @@ export default function registerTupleLanguage(
       model: editor.ITextModel,
       position: Position,
     ): languages.ProviderResult<languages.Definition> => {
-      const token = tokenAtPosition(
-        model.getLineContent(position.lineNumber),
-        position.column,
-      );
+      const token = tokenAtPosition(model.getLineContent(position.lineNumber), position.column);
       if (!token) {
         return undefined;
       }
