@@ -8,10 +8,7 @@ import { DataKind } from "./columns";
  * typeTarget resolves an object/definition name to the start of its definition
  * in the schema, or undefined if the schema does not define it.
  */
-export function typeTarget(
-  resolver: Resolver,
-  typeName: string,
-): SchemaRevealLocation | undefined {
+export function typeTarget(resolver: Resolver, typeName: string): SchemaRevealLocation | undefined {
   const def = resolver.lookupDefinition(typeName);
   if (!def) {
     return undefined;
