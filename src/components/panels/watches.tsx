@@ -118,6 +118,7 @@ export function WatchesPanel({ services, datastore }: WatchesPanelProps) {
               editorUpdateIndex={editorUpdateIndex}
               datastore={datastore}
               item={item}
+              flashHighlight={liveCheckService.recentlyAddedItemId === item.id}
             />
           ))}
         </TableBody>
@@ -141,6 +142,7 @@ interface LiveCheckRowProps {
   editorUpdateIndex?: number;
   datastore: DataStore;
   localParseService: LocalParseService;
+  flashHighlight?: boolean;
 }
 
 function LiveCheckRow(props: LiveCheckRowProps) {
@@ -260,7 +262,7 @@ function LiveCheckRow(props: LiveCheckRowProps) {
           </TableCell>
         </TableRow>
       )}
-      <TableRow>
+      <TableRow data-flash-highlight={props.flashHighlight ? "true" : undefined}>
         <TableCell className="w-8 px-1 align-middle">
           {item.debugInformation !== undefined && (
             <Button size="icon-xs" variant="ghost" onClick={() => setIsExpanded(!isExpanded)}>

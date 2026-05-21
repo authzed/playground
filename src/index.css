@@ -157,3 +157,18 @@ code {
     @apply bg-background text-foreground;
   }
 }
+
+/* Brief flash applied to a newly-added Check Watch row so the user can locate
+ * it after the drawer auto-switches to the Check Watches panel. */
+@keyframes flash-highlight {
+  from {
+    background-color: color-mix(in oklch, var(--primary) 35%, transparent);
+  }
+  to {
+    background-color: transparent;
+  }
+}
+
+[data-flash-highlight="true"] > td {
+  animation: flash-highlight 1s ease-out;
+}

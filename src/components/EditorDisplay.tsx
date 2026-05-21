@@ -10,6 +10,7 @@ import { flushSync } from "react-dom";
 import { useSettings } from "@/components/SettingsProvider";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 
+import { assertionStringToCheckWatch, CheckWatch, LiveCheckService } from "../services/check";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
@@ -22,6 +23,7 @@ import registerDSLanguage, {
 import { RelationshipFound } from "../spicedb-common/parsing";
 import {
   DeveloperError,
+  DeveloperError_Source,
   DeveloperWarning,
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 
@@ -37,6 +39,13 @@ import registerTupleLanguage, { TUPLE_LANGUAGE_NAME } from "./relationshipeditor
 // state without re-registering.
 let languagesRegistered = false;
 const latestLocalParseStateRef: { current: LocalParseState | null } = { current: null };
+
+// Holds the current LiveCheckService for the assertions-quickfix command,
+// which is registered once at module scope and therefore can't close over a
+// React-owned reference.
+const latestLiveCheckServiceRef: { current: LiveCheckService | null } = { current: null };
+
+const ADD_CHECK_WATCH_COMMAND_ID = "playground.addCheckWatchFromAssertion";
 
 export type EditorDisplayProps = {
   datastore: DataStore;
@@ -74,6 +83,12 @@ export function EditorDisplay(props: EditorDisplayProps) {
   useEffect(() => {
     latestLocalParseStateRef.current = props.services.localParseService.state;
   }, [props.services.localParseService.state]);
+
+  // Same trick for the assertions quick-fix command.
+  latestLiveCheckServiceRef.current = props.services.liveCheckService;
+  useEffect(() => {
+    latestLiveCheckServiceRef.current = props.services.liveCheckService;
+  }, [props.services.liveCheckService]);
 
   const location = useLocation();
 
@@ -248,10 +263,13 @@ export function EditorDisplay(props: EditorDisplayProps) {
       const trimmedContext = rawContext.trim();
       const isSingleWordToken = !!trimmedContext && !/\s/.test(trimmedContext);
 
+      // The assertions runner emits line numbers that don't reliably point at
+      // the failing assertion in the YAML source. Ignore the reported line for
+      // assertion errors and locate the assertion text in the document.
+      const ignoreReportedLine = isSingleWordToken && de.source === DeveloperError_Source.ASSERTION;
+
       if (isSingleWordToken) {
-        // If there is no line information, search the entire document for the
-        // first occurrence of the trimmed context.
-        if (!line) {
+        if (!line || ignoreReportedLine) {
           const index = contents.indexOf(trimmedContext);
           if (index >= 0) {
             const found = finder.fromIndex(index);
@@ -262,9 +280,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
             }
           }
         } else {
-          // Anchor to the actual occurrence of the trimmed context on (or near)
-          // the reported line. This is robust against off-by-one / 0-vs-1
-          // indexed columns coming from different error producers.
+          // Anchor to the actual occurrence of the trimmed context on the
+          // reported line. Robust against off-by-one / 0-vs-1 column indexing
+          // from different error producers.
           const lineText = lines[line - 1] ?? "";
           const searchFrom = Math.max(0, (column ?? 1) - 1);
           let onLineIndex = lineText.indexOf(trimmedContext, searchFrom);
@@ -397,6 +415,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
     if (!languagesRegistered) {
       registerDSLanguage(monacoInstance);
       registerTupleLanguage(monacoInstance, () => latestLocalParseStateRef.current!);
+      registerAssertionFixes(monacoInstance);
       languagesRegistered = true;
       // Themes are defined inside registerDSLanguage. The Editor already rendered
       // with the theme prop before defineTheme ran, so Monaco fell back to its
@@ -638,4 +657,67 @@ export function EditorDisplay(props: EditorDisplayProps) {
       )}
     </div>
   );
+}
+
+/**
+ * registerAssertionFixes wires a CodeLens above each failing-assertion marker
+ * that materializes the assertion as a Check Watch row. Registered once at
+ * module scope; reads the latest LiveCheckService via a module-level ref
+ * since the command handler can't close over a React-owned reference.
+ *
+ * A lightbulb CodeAction would be the natural fit here, but Monaco's
+ * lightbulb widget shifts its icon to an adjacent line when the marker's
+ * line indent is narrower than the icon (~22px). For 2-space YAML indents
+ * this puts the bulb on the wrong line, so we use a CodeLens — which renders
+ * directly above the failing assertion regardless of indent.
+ */
+function registerAssertionFixes(monacoInstance: typeof monaco) {
+  monacoInstance.editor.registerCommand(
+    ADD_CHECK_WATCH_COMMAND_ID,
+    (_accessor: unknown, watch: CheckWatch) => {
+      const service = latestLiveCheckServiceRef.current;
+      if (!service) return;
+      useDrawerStore.getState().openPanel("watches");
+      service.addWatch(watch);
+    },
+  );
+
+  // Refreshed whenever the owning model's markers change so the lens follows
+  // the marker as the user edits the YAML.
+  const codeLensProviderRef: { current: monaco.languages.CodeLensProvider | null } = {
+    current: null,
+  };
+  const codeLensEmitter = new monacoInstance.Emitter<monaco.languages.CodeLensProvider>();
+  monacoInstance.editor.onDidChangeMarkers(() => {
+    if (codeLensProviderRef.current) codeLensEmitter.fire(codeLensProviderRef.current);
+  });
+  const codeLensProvider: monaco.languages.CodeLensProvider = {
+    onDidChange: codeLensEmitter.event,
+    provideCodeLenses: (model) => {
+      const markers = monacoInstance.editor.getModelMarkers({ resource: model.uri });
+      const lenses: monaco.languages.CodeLens[] = [];
+      for (const marker of markers) {
+        if (marker.severity !== monacoInstance.MarkerSeverity.Error) continue;
+        const code = typeof marker.code === "string" ? marker.code : (marker.code?.value ?? "");
+        const watch = assertionStringToCheckWatch(code);
+        if (!watch) continue;
+        lenses.push({
+          range: {
+            startLineNumber: marker.startLineNumber,
+            startColumn: 1,
+            endLineNumber: marker.startLineNumber,
+            endColumn: 1,
+          },
+          command: {
+            id: ADD_CHECK_WATCH_COMMAND_ID,
+            title: "$(lightbulb) Add check watch for this assertion",
+            arguments: [watch],
+          },
+        });
+      }
+      return { lenses, dispose: () => undefined };
+    },
+  };
+  codeLensProviderRef.current = codeLensProvider;
+  monacoInstance.languages.registerCodeLensProvider("yaml", codeLensProvider);
 }
