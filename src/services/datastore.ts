@@ -372,8 +372,11 @@ export function useReadonlyDatastore(): DataStore {
 /**
  * usePlaygroundDatastore returns a hook for interacting with the backing datastore
  * for the playground. Data is retrieved and stored in local storage.
+ * When fresh is true, an ephemeral datastore is used instead, avoiding any
+ * persisted state (useful for screen sharing).
  */
-export function usePlaygroundDatastore(): DataStore {
-  const datastoreRef = useRef(new LocalStorageDataStore());
-  return datastoreRef.current;
+export function usePlaygroundDatastore(fresh?: boolean): DataStore {
+  const ephemeralRef = useRef(new EphemeralDataStore());
+  const localRef = useRef(new LocalStorageDataStore());
+  return fresh ? ephemeralRef.current : localRef.current;
 }
