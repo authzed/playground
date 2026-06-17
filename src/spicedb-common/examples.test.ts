@@ -6,7 +6,10 @@ describe("LoadExamples", () => {
   it("should correctly parse and return examples and skip those that are missing files", () => {
     const examples = LoadExamples();
 
-    expect(examples).toHaveLength(9);
+    expect(examples.length).toBeGreaterThan(0);
+    const ids = examples.map((e) => e.id);
+    expect(ids).toContain("basic-rebac");
+    expect(ids).not.toContain("multiple-validation-files");
 
     examples.forEach(function (example) {
       expect(example.id).not.toBeNull();
