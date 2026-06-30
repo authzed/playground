@@ -20,6 +20,7 @@ import { useEffect, useRef, useState, useMemo, type ComponentProps, type ReactNo
 import sjcl from "sjcl";
 import { toast } from "sonner";
 
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { AuthSlot } from "@/components/auth-slot";
 import { BreadcrumbPill } from "@/components/breadcrumb-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -641,6 +642,17 @@ export function ThemedAppView(props: {
 
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
+      <AnnouncementBar contentId="ai-search-launch">
+        New: AI-powered search is now live.{" "}
+        <a
+          href="https://authzed.com/blog"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium underline underline-offset-4"
+        >
+          Learn more →
+        </a>
+      </AnnouncementBar>
       <DiscardConfirmationDialog
         open={confirmLoadExample}
         setOpen={setConfirmLoadExample}
