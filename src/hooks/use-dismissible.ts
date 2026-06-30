@@ -37,7 +37,8 @@ export function useDismissible(
 ): UseDismissibleResult {
   const [ids, setIds] = useState<string[]>(() => readDismissed(storageKey));
 
-  // Keep multiple tabs consistent.
+  // Sync dismissal across other tabs (the `storage` event fires only in
+  // documents other than the one that wrote the value, not same-tab).
   useEffect(() => {
     function onStorage(event: StorageEvent) {
       if (event.key === storageKey) {

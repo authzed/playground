@@ -94,7 +94,12 @@ export function AnnouncementBar({
         )}
       </div>
       {reserveSpace && (
-        <div data-slot="announcement-bar-spacer" aria-hidden="true" style={{ height }} />
+        <div
+          data-slot="announcement-bar-spacer"
+          aria-hidden="true"
+          className="shrink-0"
+          style={{ height }}
+        />
       )}
     </>
   );
