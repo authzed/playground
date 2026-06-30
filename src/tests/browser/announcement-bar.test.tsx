@@ -49,7 +49,7 @@ describe("AnnouncementBar", () => {
     const withSpacer = await render(<AnnouncementBar contentId="t5">With spacer</AnnouncementBar>);
     await expect.element(withSpacer.getByText("With spacer")).toBeVisible();
     expect(document.querySelector('[data-slot="announcement-bar-spacer"]')).not.toBeNull();
-    void withSpacer.unmount();
+    await withSpacer.unmount();
 
     const noSpacer = await render(
       <AnnouncementBar contentId="t6" reserveSpace={false}>
