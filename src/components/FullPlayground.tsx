@@ -642,15 +642,15 @@ export function ThemedAppView(props: {
 
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
-      <AnnouncementBar contentId="ai-search-launch">
-        New: AI-powered search is now live.{" "}
+      <AnnouncementBar contentId="authzed-cloud">
+        Deploy fully managed SpiceDB clusters on AuthZed Cloud.{" "}
         <a
-          href="https://authzed.com/blog"
+          href="https://authzed.com/cloud/signup?utm_source=playground&utm_medium=announcement_bar&utm_campaign=authzed_cloud"
           target="_blank"
           rel="noreferrer"
           className="font-medium underline underline-offset-4"
         >
-          Learn more →
+          Try now →
         </a>
       </AnnouncementBar>
       <DiscardConfirmationDialog
