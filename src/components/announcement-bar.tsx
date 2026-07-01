@@ -11,7 +11,7 @@ const announcementBarVariants = cva(
   {
     variants: {
       variant: {
-        default: "bg-foreground text-background",
+        default: "bg-foreground text-background dark:bg-secondary dark:text-secondary-foreground",
         brand: "bg-primary text-primary-foreground",
         info: "bg-secondary text-secondary-foreground",
       },
