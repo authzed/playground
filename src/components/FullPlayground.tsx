@@ -20,6 +20,7 @@ import { useEffect, useRef, useState, useMemo, type ComponentProps, type ReactNo
 import sjcl from "sjcl";
 import { toast } from "sonner";
 
+import { AnnouncementBar } from "@/components/announcement-bar";
 import { AuthSlot } from "@/components/auth-slot";
 import { BreadcrumbPill } from "@/components/breadcrumb-pill";
 import { ThemeToggle } from "@/components/theme-toggle";
@@ -641,6 +642,17 @@ export function ThemedAppView(props: {
 
   return (
     <div className="isolate flex h-screen w-screen flex-col overflow-hidden">
+      <AnnouncementBar contentId="authzed-cloud">
+        Deploy fully managed SpiceDB clusters on AuthZed Cloud.{" "}
+        <a
+          href="https://authzed.com/cloud/signup?utm_source=playground&utm_medium=announcement_bar&utm_campaign=authzed_cloud"
+          target="_blank"
+          rel="noreferrer"
+          className="font-medium underline underline-offset-4"
+        >
+          Try now →
+        </a>
+      </AnnouncementBar>
       <DiscardConfirmationDialog
         open={confirmLoadExample}
         setOpen={setConfirmLoadExample}
