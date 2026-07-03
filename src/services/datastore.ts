@@ -376,7 +376,12 @@ export function useReadonlyDatastore(): DataStore {
  * persisted state (useful for screen sharing).
  */
 export function usePlaygroundDatastore(fresh?: boolean): DataStore {
-  const ephemeralRef = useRef(new EphemeralDataStore());
-  const localRef = useRef(new LocalStorageDataStore());
-  return fresh ? ephemeralRef.current : localRef.current;
+  // Only the selected store is instantiated. Constructing LocalStorageDataStore
+  // in fresh mode is avoided so a fresh session never touches local storage, and
+  // lazy refs avoid allocating a throwaway instance on every render.
+  const storeRef = useRef<DataStore | null>(null);
+  if (storeRef.current === null) {
+    storeRef.current = fresh ? new EphemeralDataStore() : new LocalStorageDataStore();
+  }
+  return storeRef.current;
 }
