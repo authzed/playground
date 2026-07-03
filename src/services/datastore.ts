@@ -338,7 +338,10 @@ class LocalStorageDataStore extends DataStore {
 }
 
 export class EphemeralDataStore extends DataStore {
-  private data: DataStorageData = EMPTY_STORE;
+  // Deep clone rather than referencing the module-level EMPTY_STORE: update()
+  // mutates the stored object in place, so sharing the reference would corrupt
+  // the default sample for every other store that falls back to EMPTY_STORE.
+  private data: DataStorageData = JSON.parse(JSON.stringify(EMPTY_STORE));
   private wasEdited: boolean = false;
 
   getStored(): DataStorageData {
