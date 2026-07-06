@@ -1,5 +1,7 @@
 import { useEffect } from "react";
 
+import { isEUVisitor, readConsentCookie } from "@/lib/consent";
+
 declare global {
   interface Window {
     gtag: (
@@ -13,6 +15,18 @@ declare global {
 
 let tagInjected = false;
 let userSet = false;
+
+/**
+ * hasMarketingConsent reports whether ad-related storage (e.g. Google Consent
+ * Mode's ad_storage) may be used. EU-ish visitors are opt-in (denied until the
+ * az-consent cookie says otherwise); everyone else is opt-out (granted unless
+ * the cookie says otherwise).
+ */
+const hasMarketingConsent = (isEU: boolean): boolean => {
+  const consent = readConsentCookie();
+  if (consent !== null) return consent.marketing;
+  return !isEU;
+};
 
 /**
  * useGoogleAnalytics is a hook which registers with Google Analytics and reports
@@ -48,6 +62,22 @@ export const useGoogleAnalytics = (measurementId?: string) => {
           // eslint-disable-next-line prefer-rest-params
           window.dataLayer.push(arguments);
         };
+      // Consent Mode: ad-related storage defaults to denied, then is updated
+      // from the az-consent cookie before the GTM container loads. EU-ish
+      // visitors are opt-in (denied absent a cookie); everyone else is
+      // opt-out (granted absent a cookie).
+      window.gtag("consent", "default", {
+        ad_storage: "denied",
+        ad_user_data: "denied",
+        ad_personalization: "denied",
+      });
+      const adConsent = hasMarketingConsent(isEUVisitor()) ? "granted" : "denied";
+      window.gtag("consent", "update", {
+        ad_storage: adConsent,
+        ad_user_data: adConsent,
+        ad_personalization: adConsent,
+      });
+
       window.gtag("js", new Date());
       window.gtag("config", measurementId);
 
