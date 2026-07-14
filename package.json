@@ -14,9 +14,11 @@
     "lint-fix": "oxlint --type-aware --type-check --fix",
     "format": "oxfmt",
     "format:check": "oxfmt --check",
-    "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh"
+    "update:deps": "./scripts/update-spicedb.sh && buf generate && ./scripts/update-zed.sh",
+    "sync:skill": "pnpm dlx tsx scripts/sync-skill.ts"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.111.0",
     "@authzed/spicedb-parser-js": "^1.1.0",
     "@aws-sdk/client-s3": "^3.997.0",
     "@bufbuild/protobuf": "^2.4.0",
@@ -43,6 +45,8 @@
     "@tanstack/react-pacer": "^0.22.0",
     "@tanstack/react-router": "^1.169.2",
     "@tanstack/react-router-devtools": "^1.166.13",
+    "@upstash/ratelimit": "^2.0.8",
+    "@upstash/redis": "^1.38.0",
     "@vercel/node": "^5.2.0",
     "@xyflow/react": "^12.10.1",
     "ansi-to-html": "^0.7.2",

@@ -2,6 +2,8 @@
 export default function AppConfig() {
   const config = {
     shareApiEndpoint: import.meta.env.VITE_SHARE_API_ENDPOINT,
+    aiApiEndpoint: import.meta.env.VITE_AI_API_ENDPOINT,
+    aiEnabled: import.meta.env.VITE_AI_ENABLED !== "false",
     ga: {
       measurementId: import.meta.env.VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID,
     },

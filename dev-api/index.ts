@@ -1,9 +1,13 @@
 import { createHash } from "crypto";
 import type { IncomingMessage, ServerResponse } from "http";
 
+import Anthropic from "@anthropic-ai/sdk";
 import type { ViteDevServer } from "vite";
 import z from "zod";
 
+import { handleAiRequest } from "../api/ai";
+import { type AnthropicLike } from "../api/_lib/aiHandler";
+import { createWritableSseSink } from "../api/_lib/sse";
 import { zSharedDataV2 } from "../src/schemas/share-data";
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -87,6 +91,46 @@ export function configureServer(server: ViteDevServer) {
       }
 
       return json(res, 200, JSON.parse(data));
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/ai") {
+      let body: unknown;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return json(res, 400, { error: "Invalid JSON" });
+      }
+
+      res.setHeader("Content-Type", "text/event-stream");
+      res.setHeader("Cache-Control", "no-cache, no-transform");
+      res.setHeader("X-Accel-Buffering", "no");
+
+      const sink = createWritableSseSink(
+        (chunk) => res.write(chunk),
+        () => res.end(),
+      );
+      const respondError = (status: number, b: unknown) => {
+        if (res.headersSent) {
+          sink.send("error", b);
+          sink.end();
+          return;
+        }
+        json(res, status, b);
+      };
+
+      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+        .messages as unknown as AnthropicLike;
+
+      await handleAiRequest({
+        method: "POST",
+        body,
+        ip: "dev",
+        env: process.env,
+        anthropic,
+        sink,
+        respondError,
+      });
+      return;
     }
 
     next();

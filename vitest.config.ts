@@ -12,7 +12,7 @@ export default mergeConfig(
           extends: true,
           test: {
             name: "unit",
-            include: ["src/**/*.test.ts", "src/**/*.test.tsx"],
+            include: ["src/**/*.test.ts", "src/**/*.test.tsx", "api/**/*.test.ts"],
             exclude: ["src/tests/browser/**"],
           },
         },
