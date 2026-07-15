@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-import type { ChatMessage } from "./types";
+import type { ChatMessage, DisplayArtifact } from "./types";
 
 export type AssistantStatus = "idle" | "streaming" | "executing_tools" | "error";
 
@@ -10,18 +10,12 @@ export interface ToolActivity {
   summary: string;
   ok: boolean;
 }
-export interface DocDiff {
-  target: string;
-  before: string;
-  after: string;
-  revisionId?: string;
-}
 export interface DisplayMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
   toolActivity: ToolActivity[];
-  diffs: DocDiff[];
+  artifacts: DisplayArtifact[];
   checkpointRevisionId?: string;
   state?: "pending" | "done" | "error";
   errorText?: string;
@@ -55,7 +49,7 @@ export const useAssistantStore = create<AssistantState>()(
           messages: [...s.messages, { role: "user", content: text }],
           display: [
             ...s.display,
-            { id: `u-${s.display.length}`, role: "user", text, toolActivity: [], diffs: [] },
+            { id: `u-${s.display.length}`, role: "user", text, toolActivity: [], artifacts: [] },
           ],
         })),
       setMessages: (messages) => set({ messages }),
@@ -63,10 +57,17 @@ export const useAssistantStore = create<AssistantState>()(
     }),
     {
       name: "playground-assistant-state",
-      version: 1,
+      // v2: DisplayMessage.diffs became .artifacts. The old shape is incompatible,
+      // so drop persisted chat on upgrade rather than migrating it.
+      version: 2,
+      migrate: () => ({ messages: [], display: [] }),
       partialize: (s) => ({
         messages: s.messages.slice(-MAX_PERSISTED_MESSAGES),
-        display: s.display.slice(-MAX_PERSISTED_MESSAGES),
+        // Trace artifacts are large protobuf trees — don't persist them (diffs stay).
+        display: s.display.slice(-MAX_PERSISTED_MESSAGES).map((m) => ({
+          ...m,
+          artifacts: m.artifacts.filter((a) => a.kind !== "trace"),
+        })),
       }),
     },
   ),

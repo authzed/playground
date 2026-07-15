@@ -1,6 +1,12 @@
 import type { ToolRegistry } from "./registry";
-import { KIND_BY_TARGET } from "./tools/editDocument";
-import type { ChatMessage, ContentBlock, SseEvent, ToolResultBlock, WireTool } from "./types";
+import type {
+  ChatMessage,
+  ContentBlock,
+  DisplayArtifact,
+  SseEvent,
+  ToolResultBlock,
+  WireTool,
+} from "./types";
 import type { ToolContext } from "./types";
 
 export interface StateSnapshot {
@@ -22,7 +28,7 @@ export interface TurnDeps {
   maxRoundTrips?: number;
   onText: (delta: string) => void;
   onToolActivity: (a: { name: string; summary: string; ok: boolean }) => void;
-  onDiff: (d: { target: string; before: string; after: string }) => void;
+  onArtifact: (artifact: DisplayArtifact) => void;
 }
 
 export interface TurnResult {
@@ -120,31 +126,25 @@ async function executeClientTool(
     };
   }
 
-  // Capture a diff for edit_document.
-  let before: string | undefined;
-  const target = (parsed.data as { target?: keyof typeof KIND_BY_TARGET }).target;
-
   try {
-    if (call.name === "edit_document" && target) {
-      before = deps.ctx.datastore.getSingletonByKind(KIND_BY_TARGET[target]).editableContents;
-    }
     const result = await tool.execute(parsed.data, deps.ctx);
     const ok = (result as { ok?: boolean }).ok !== false;
 
-    if (call.name === "edit_document" && target && before !== undefined && ok) {
-      const after = deps.ctx.datastore.getSingletonByKind(KIND_BY_TARGET[target]).editableContents;
-      // Only surface a diff card when the document actually changed — a no-op
-      // edit (before === after) would otherwise render an empty diff card.
-      if (after !== before) {
-        deps.onDiff({ target, before, after });
-      }
+    // Rich rendering and model-facing redaction are declared per tool (render /
+    // redactFromModel) — the controller stays free of per-tool name checks.
+    if (ok && tool.render) {
+      const artifact = tool.render(result, parsed.data, deps.ctx);
+      if (artifact) deps.onArtifact(artifact);
     }
+    const modelResult = tool.redactFromModel?.length
+      ? omitKeys(result, tool.redactFromModel)
+      : result;
 
     deps.onToolActivity({ name: call.name, summary: summarize(call.name, result), ok });
     return {
       type: "tool_result",
       tool_use_id: call.id,
-      content: JSON.stringify(result),
+      content: JSON.stringify(modelResult),
       is_error: !ok,
     };
   } catch (err) {
@@ -158,9 +158,16 @@ async function executeClientTool(
   }
 }
 
+function omitKeys(obj: unknown, keys: readonly string[]): unknown {
+  if (typeof obj !== "object" || obj === null) return obj;
+  const copy: Record<string, unknown> = { ...(obj as Record<string, unknown>) };
+  for (const key of keys) delete copy[key];
+  return copy;
+}
+
 function summarize(name: string, result: unknown): string {
   const r = result as Record<string, unknown>;
-  if (name === "run_check") {
+  if (name === "run_check" || name === "explain_check") {
     if (typeof r.result === "string") {
       return `check ⟹ ${r.result}`;
     }

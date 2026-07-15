@@ -1,6 +1,7 @@
 import type { z } from "zod";
 
 import type { DocumentRef } from "../../components/editor-groups/types";
+import type { CheckDebugTrace } from "../../spicedb-common/protodefs/authzed/api/v1/debug_pb";
 import type { DataStore, DataStoreItemKind } from "../datastore";
 import type { Services } from "../services";
 
@@ -26,12 +27,28 @@ export interface ToolContext {
   history: HistoryRecorder;
 }
 
+/**
+ * A rich, UI-only artifact a tool can attach to the chat (a diff card, a
+ * check-trace tree, ...). Produced by a tool's render() and rendered by
+ * AssistantMessage. Large fields backing it are kept out of the model-facing
+ * tool result via redactFromModel — so the controller needs NO per-tool checks.
+ */
+export type DisplayArtifact =
+  | { kind: "diff"; target: string; before: string; after: string }
+  | { kind: "trace"; trace: CheckDebugTrace };
+
 export interface AssistantTool<I = unknown, R = unknown> {
   name: string;
   description: string;
   parameters: z.ZodType<I>;
   resultSchema?: z.ZodType<R>;
   execute: (input: I, ctx: ToolContext) => R | Promise<R>;
+  // Optional rich-render metadata (declared per tool, not special-cased in the
+  // controller). render() derives a UI-only artifact from a SUCCESSFUL result;
+  // redactFromModel lists result keys the controller strips from the (verbose)
+  // model-facing tool_result.
+  render?: (result: R, input: I, ctx: ToolContext) => DisplayArtifact | undefined;
+  redactFromModel?: readonly string[];
 }
 
 export interface WireTool {

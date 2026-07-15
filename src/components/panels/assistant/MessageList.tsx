@@ -2,6 +2,7 @@ import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
 import type { DisplayMessage } from "../../../services/assistant/store";
+import type { LocalParseService } from "../../../services/localparse";
 
 import { AssistantMessage } from "./AssistantMessage";
 
@@ -9,10 +10,12 @@ export function MessageList({
   messages,
   onUndo,
   busy,
+  localParseService,
 }: {
   messages: DisplayMessage[];
   onUndo: (m: DisplayMessage) => void;
   busy: boolean;
+  localParseService: LocalParseService;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [messages, busy]);
@@ -31,7 +34,12 @@ export function MessageList({
         </div>
       )}
       {messages.map((m) => (
-        <AssistantMessage key={m.id} message={m} onUndo={() => onUndo(m)} />
+        <AssistantMessage
+          key={m.id}
+          message={m}
+          onUndo={() => onUndo(m)}
+          localParseService={localParseService}
+        />
       ))}
       {busy && (
         <div className="mr-6 flex items-center gap-2 text-xs text-muted-foreground">

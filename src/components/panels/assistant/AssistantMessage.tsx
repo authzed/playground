@@ -3,17 +3,21 @@ import { AlertTriangle, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 import type { DisplayMessage } from "../../../services/assistant/store";
+import type { LocalParseService } from "../../../services/localparse";
 
 import { DiffCard } from "./DiffCard";
 import { Markdown } from "./Markdown";
 import { ToolActivityChip } from "./ToolActivityChip";
+import { TraceCard } from "./TraceCard";
 
 export function AssistantMessage({
   message,
   onUndo,
+  localParseService,
 }: {
   message: DisplayMessage;
   onUndo?: () => void;
+  localParseService: LocalParseService;
 }) {
   if (message.role === "user") {
     return (
@@ -24,9 +28,11 @@ export function AssistantMessage({
   }
 
   // Undo is a single message-level action: it restores the pre-turn checkpoint,
-  // reverting EVERY change this message made — so it belongs to the message, not
-  // to an individual diff card. Shown once the turn has finished.
-  const showUndo = message.diffs.length > 0 && !!onUndo && message.state !== "pending";
+  // reverting EVERY edit this message made — so it belongs to the message, not to
+  // an individual diff card, and only shows when the message actually edited docs.
+  const artifacts = message.artifacts ?? [];
+  const showUndo =
+    artifacts.some((a) => a.kind === "diff") && !!onUndo && message.state !== "pending";
 
   return (
     <div className="group mr-6 space-y-2">
@@ -38,9 +44,13 @@ export function AssistantMessage({
           ))}
         </div>
       )}
-      {message.diffs.map((d, i) => (
-        <DiffCard key={i} diff={d} />
-      ))}
+      {artifacts.map((a, i) =>
+        a.kind === "diff" ? (
+          <DiffCard key={i} diff={a} />
+        ) : (
+          <TraceCard key={i} trace={a.trace} localParseService={localParseService} />
+        ),
+      )}
       {message.state === "error" && (
         <div className="flex items-start gap-1.5 rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs text-destructive">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />

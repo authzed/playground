@@ -25,6 +25,9 @@ export interface EditDocumentResult {
   applied_summary?: string;
   error?: string;
   match_count?: number;
+  // Populated on success to drive the diff card; redacted from the model result.
+  before?: string;
+  after?: string;
 }
 
 function countOccurrences(haystack: string, needle: string): number {
@@ -77,6 +80,19 @@ export const editDocumentTool: AssistantTool<EditDocumentInput, EditDocumentResu
 
     ctx.datastore.update(item, after);
     ctx.history.record({ source: "ai", label: `Edited ${input.target}` });
-    return { ok: true, target: input.target, applied_summary: `Updated ${input.target}.` };
+    return {
+      ok: true,
+      target: input.target,
+      applied_summary: `Updated ${input.target}.`,
+      before,
+      after,
+    };
+  },
+  redactFromModel: ["before", "after"],
+  render(result) {
+    // Suppress a no-op edit (before === after) — nothing meaningful to show.
+    if (result.before === undefined || result.after === undefined) return undefined;
+    if (result.before === result.after) return undefined;
+    return { kind: "diff", target: result.target, before: result.before, after: result.after };
   },
 };

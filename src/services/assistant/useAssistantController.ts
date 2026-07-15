@@ -86,7 +86,7 @@ export function useAssistantController(
               role: "assistant",
               text: "",
               toolActivity: [],
-              diffs: [],
+              artifacts: [],
               checkpointRevisionId,
               state: "pending",
             },
@@ -110,7 +110,7 @@ export function useAssistantController(
           maxRoundTrips: 10,
           onText: (delta) => patchAssistant((m) => (m.text += delta)),
           onToolActivity: (a) => patchAssistant((m) => m.toolActivity.push(a)),
-          onDiff: (d) => patchAssistant((m) => m.diffs.push({ ...d })),
+          onArtifact: (artifact) => patchAssistant((m) => m.artifacts.push(artifact)),
         });
 
         const errText = result.error
@@ -150,8 +150,8 @@ function cloneAndPatch(
 ) {
   const copy: import("./store").DisplayMessage = {
     ...m,
-    toolActivity: [...m.toolActivity],
-    diffs: [...m.diffs],
+    toolActivity: [...(m.toolActivity ?? [])],
+    artifacts: [...(m.artifacts ?? [])],
   };
   fn(copy);
   return copy;

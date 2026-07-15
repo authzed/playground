@@ -7,6 +7,7 @@ import {
   updateCheckWatchTool,
 } from "./checkWatches";
 import { editDocumentTool } from "./editDocument";
+import { explainCheckTool } from "./explainCheck";
 import { openTabToLineTool } from "./openTabToLine";
 import { runCheckTool } from "./runCheck";
 import { runValidationTool } from "./runValidation";
@@ -14,6 +15,7 @@ import { runValidationTool } from "./runValidation";
 const ALL_CLIENT_TOOLS = [
   editDocumentTool,
   runCheckTool,
+  explainCheckTool,
   runValidationTool,
   listCheckWatchesTool,
   addCheckWatchTool,

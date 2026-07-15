@@ -2,6 +2,7 @@ import { cn } from "@/lib/utils";
 
 const ICONS: Record<string, string> = {
   run_check: "🔍",
+  explain_check: "🔎",
   run_validation: "✅",
   edit_document: "✎",
   add_check_watch: "📌",

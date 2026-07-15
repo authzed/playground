@@ -43,7 +43,12 @@ export function AssistantPanel({
           New chat
         </Button>
       </div>
-      <MessageList messages={display} onUndo={onUndo} busy={busy} />
+      <MessageList
+        messages={display}
+        onUndo={onUndo}
+        busy={busy}
+        localParseService={services.localParseService}
+      />
       <ChatInput disabled={busy} onSubmit={submit} />
     </div>
   );

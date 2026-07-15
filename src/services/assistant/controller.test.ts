@@ -27,7 +27,7 @@ const baseDeps = {
   getState: () => ({ schema: "", relationships: "", assertions: "", expected: "" }),
   onText: vi.fn(),
   onToolActivity: vi.fn(),
-  onDiff: vi.fn(),
+  onArtifact: vi.fn(),
 };
 
 describe("runAssistantTurn", () => {
