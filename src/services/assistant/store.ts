@@ -22,6 +22,7 @@ export interface DisplayMessage {
   text: string;
   toolActivity: ToolActivity[];
   diffs: DocDiff[];
+  checkpointRevisionId?: string;
 }
 
 export interface AssistantState {

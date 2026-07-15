@@ -11,9 +11,13 @@ import { runAssistantTurn, type StateSnapshot } from "./controller";
 import { useAssistantStore } from "./store";
 import { streamAssistant } from "./streamClient";
 import { buildDefaultRegistry } from "./tools";
-import { NOOP_HISTORY, type ToolContext } from "./types";
+import type { HistoryRecorder, ToolContext } from "./types";
 
-export function useAssistantController(services: Services, datastore: DataStore) {
+export function useAssistantController(
+  services: Services,
+  datastore: DataStore,
+  history: HistoryRecorder,
+) {
   // Keep the latest services/datastore in refs (services is rebuilt every render).
   const servicesRef = useRef(services);
   servicesRef.current = services;
@@ -45,9 +49,9 @@ export function useAssistantController(services: Services, datastore: DataStore)
         else s.setActiveTab(groupId, ref);
       },
       openWatchesPanel: () => useDrawerStore.getState().openPanel("watches"),
-      history: NOOP_HISTORY, // replaced by the IndexedDB recorder in Plan 3
+      history,
     }),
-    [],
+    [history],
   );
   // ctx.datastore must always be current:
   ctx.datastore = datastoreRef.current;
@@ -61,6 +65,11 @@ export function useAssistantController(services: Services, datastore: DataStore)
       store.appendUser(text);
       store.setStatus("streaming");
 
+      const checkpointRevisionId = ctx.history.record({
+        source: "manual",
+        label: "Before assistant turn",
+      });
+
       const abort = new AbortController();
       abortRef.current = abort;
 
@@ -73,7 +82,14 @@ export function useAssistantController(services: Services, datastore: DataStore)
         if ((s.display.length ? s.display[s.display.length - 1] : undefined)?.id !== assistantId) {
           s.setDisplay([
             ...s.display,
-            { id: assistantId, role: "assistant", text: "", toolActivity: [], diffs: [] },
+            {
+              id: assistantId,
+              role: "assistant",
+              text: "",
+              toolActivity: [],
+              diffs: [],
+              checkpointRevisionId,
+            },
           ]);
         }
       };

@@ -59,6 +59,7 @@ import {
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
+import { useHistoryRecorder } from "../services/history/useHistoryRecorder";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
@@ -79,9 +80,13 @@ import { EditorGroups } from "./editor-groups/EditorGroups";
 import { useEditorStore } from "./editor-groups/state";
 import type { DocumentRef } from "./editor-groups/types";
 import { EditorDisplay } from "./EditorDisplay";
+import { AssistantPanel } from "./panels/assistant/AssistantPanel";
+import { HistoryPanel } from "./panels/history/HistoryPanel";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";
+import { DockActivityBar } from "./rightdock/DockActivityBar";
+import { RightDock } from "./rightdock/RightDock";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -175,6 +180,16 @@ export function ThemedAppView(props: {
     problemService,
     developerService,
     zedTerminalService,
+  };
+
+  const aiEnabled = AppConfig().aiEnabled;
+  const historyRecorder = useHistoryRecorder(datastore);
+
+  const dockPanels = {
+    assistant: (
+      <AssistantPanel services={services} datastore={datastore} history={historyRecorder} />
+    ),
+    history: <HistoryPanel datastore={datastore} />,
   };
 
   const conductDownload = () => {
@@ -796,28 +811,32 @@ export function ThemedAppView(props: {
       </header>
 
       {/* === Editor groups (tab strip + content per group) === */}
-      <div className="flex-1 min-h-0">
-        <EditorGroups
-          renderContent={renderDocument}
-          tabDiagnostics={{
-            schema: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.SCHEMA),
-              warnings: services.problemService.warnings.length,
-            },
-            relationships: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.RELATIONSHIPS),
-              warnings: 0,
-            },
-            assertions: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.ASSERTIONS),
-              warnings: 0,
-            },
-            expected: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.EXPECTED_RELATIONS),
-              warnings: 0,
-            },
-          }}
-        />
+      <div className="flex flex-1 min-h-0 flex-row">
+        <div className="min-w-0 flex-1">
+          <EditorGroups
+            renderContent={renderDocument}
+            tabDiagnostics={{
+              schema: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.SCHEMA),
+                warnings: services.problemService.warnings.length,
+              },
+              relationships: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.RELATIONSHIPS),
+                warnings: 0,
+              },
+              assertions: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.ASSERTIONS),
+                warnings: 0,
+              },
+              expected: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.EXPECTED_RELATIONS),
+                warnings: 0,
+              },
+            }}
+          />
+        </div>
+        {aiEnabled && <RightDock panels={dockPanels} />}
+        {aiEnabled && <DockActivityBar />}
       </div>
 
       {/* === Bottom drawer (one panel at a time) === */}
