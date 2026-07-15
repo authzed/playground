@@ -39,7 +39,14 @@ export async function runAiTurn(
   const tools = buildToolDefs(req.tools);
   const messages: { role: string; content: unknown }[] = [...req.messages];
 
+  // When only server tools run, the loop continues within this one client stream,
+  // so text from several model round-trips arrives back-to-back. Insert a paragraph
+  // break before each later trip's first text so the blocks don't run together
+  // (mirrors the client-side separator that spans client-tool round-trips).
+  let hasEmittedText = false;
+
   for (let trip = 0; trip < deps.maxRoundTrips; trip++) {
+    let tripEmittedText = false;
     const stream = deps.anthropic.stream({
       model: deps.model,
       max_tokens: deps.maxTokens,
@@ -47,7 +54,12 @@ export async function runAiTurn(
       tools,
       messages,
     });
-    stream.on("text", (delta) => sink.send("text", { delta }));
+    stream.on("text", (delta) => {
+      const prefix = !tripEmittedText && hasEmittedText ? "\n\n" : "";
+      tripEmittedText = true;
+      hasEmittedText = true;
+      sink.send("text", { delta: prefix + delta });
+    });
     const final = await stream.finalMessage();
 
     messages.push({ role: "assistant", content: final.content });

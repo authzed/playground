@@ -100,6 +100,76 @@ describe("runAssistantTurn", () => {
     expect(toolResultMsg.content[0]).toMatchObject({ type: "tool_result", tool_use_id: "t1" });
   });
 
+  it("separates text from different round trips with a paragraph break", async () => {
+    const registry = new ToolRegistry();
+    registry.register({
+      name: "noop",
+      description: "d",
+      parameters: z.object({}),
+      execute: () => ({}),
+    });
+    const onText = vi.fn();
+    let _call = 0;
+    const frames: SseEvent[][] = [
+      [
+        { event: "text", data: { delta: "First block." } },
+        {
+          event: "handoff",
+          data: {
+            assistantContent: [{ type: "tool_use", id: "t", name: "noop", input: {} }],
+            serverToolResults: [],
+            clientToolCalls: [{ id: "t", name: "noop", input: {} }],
+          },
+        },
+      ],
+      [
+        { event: "text", data: { delta: "Second block." } },
+        {
+          event: "done",
+          data: {
+            assistantContent: [{ type: "text", text: "Second block." }],
+            stop_reason: "end_turn",
+          },
+        },
+      ],
+    ];
+    const stream = () =>
+      (async function* () {
+        for (const e of frames[_call++]) yield e;
+      })();
+
+    await runAssistantTurn([{ role: "user", content: "go" }], {
+      ...baseDeps,
+      registry,
+      onText,
+      stream: stream as any,
+    });
+
+    // First trip's text is emitted as-is; the second trip's first text is prefixed
+    // with a paragraph break so the two blocks don't run together.
+    expect(onText).toHaveBeenNthCalledWith(1, "First block.");
+    expect(onText).toHaveBeenNthCalledWith(2, "\n\nSecond block.");
+  });
+
+  it("does not insert a separator between deltas within one round trip", async () => {
+    const onText = vi.fn();
+    const stream = gen([
+      { event: "text", data: { delta: "one " } },
+      { event: "text", data: { delta: "two" } },
+      {
+        event: "done",
+        data: { assistantContent: [{ type: "text", text: "one two" }], stop_reason: "end_turn" },
+      },
+    ]);
+    await runAssistantTurn([{ role: "user", content: "yo" }], {
+      ...baseDeps,
+      onText,
+      stream: stream as any,
+    });
+    expect(onText).toHaveBeenNthCalledWith(1, "one ");
+    expect(onText).toHaveBeenNthCalledWith(2, "two");
+  });
+
   it("returns a step_limit error when round trips are exhausted", async () => {
     const registry = new ToolRegistry();
     registry.register({

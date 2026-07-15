@@ -1,6 +1,11 @@
-import type { ReactNode } from "react";
+import { useMonaco } from "@monaco-editor/react";
+import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+
+import { useResolvedTheme } from "../../../hooks/use-resolved-theme";
+import { DS_LANGUAGE_NAME } from "../../../spicedb-common/lang/dslang";
+import { TUPLE_LANGUAGE_NAME } from "../../relationshipeditor/tuplelang";
 
 // Maps a fenced-code language tag to a friendly label shown above the block.
 const LANG_LABELS: Record<string, string> = {
@@ -12,6 +17,16 @@ const LANG_LABELS: Record<string, string> = {
   yaml: "yaml",
   yml: "yaml",
   json: "json",
+};
+
+// Fenced-code tags that map onto a registered Monaco language, so the chat can
+// reuse the editor's real tokenizer + theme for highlighting.
+const MONACO_LANG_BY_TAG: Record<string, string> = {
+  zed: DS_LANGUAGE_NAME,
+  schema: DS_LANGUAGE_NAME,
+  spicedb: DS_LANGUAGE_NAME,
+  relationships: TUPLE_LANGUAGE_NAME,
+  rel: TUPLE_LANGUAGE_NAME,
 };
 
 const SCHEMA_LANGS = new Set(["zed", "schema", "spicedb"]);
@@ -61,10 +76,58 @@ function highlightSchema(code: string): ReactNode[] {
   return nodes;
 }
 
+// Highlights code with the editor's real Monaco tokenizer + active theme via
+// `colorize`, reusing the loader-resolved monaco instance the editor registered
+// the DSL/tuple languages on. Falls back to `fallback` until monaco is loaded and
+// the language is registered (or if colorize fails).
+function MonacoHighlighted({
+  code,
+  monacoLang,
+  fallback,
+}: {
+  code: string;
+  monacoLang: string;
+  fallback: ReactNode;
+}) {
+  const monaco = useMonaco();
+  const theme = useResolvedTheme();
+  const [html, setHtml] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!monaco || !monaco.languages.getLanguages().some((l) => l.id === monacoLang)) {
+      setHtml(null);
+      return;
+    }
+    let cancelled = false;
+    monaco.editor
+      .colorize(code, monacoLang, {})
+      .then((result) => {
+        if (!cancelled) setHtml(result);
+      })
+      .catch(() => {
+        if (!cancelled) setHtml(null);
+      });
+    return () => {
+      cancelled = true;
+    };
+    // `theme` is a dependency so the block re-colorizes when the editor theme flips.
+  }, [monaco, monacoLang, code, theme]);
+
+  return html === null ? (
+    <code>{fallback}</code>
+  ) : (
+    <code dangerouslySetInnerHTML={{ __html: html }} />
+  );
+}
+
 function CodeBlock({ lang, code }: { lang?: string; code: string }) {
   const key = (lang ?? "").toLowerCase();
   const label = LANG_LABELS[key] ?? key;
   const body = code.replace(/\n$/, "");
+  const monacoLang = MONACO_LANG_BY_TAG[key];
+  // Fallback while Monaco loads (or for non-Monaco languages): the lightweight
+  // schema highlighter for schema tags, plain text otherwise.
+  const fallback: ReactNode = SCHEMA_LANGS.has(key) ? highlightSchema(body) : body;
   return (
     <div className="my-2 overflow-hidden rounded border border-chrome-divider">
       {label && (
@@ -73,7 +136,11 @@ function CodeBlock({ lang, code }: { lang?: string; code: string }) {
         </div>
       )}
       <pre className="overflow-x-auto bg-muted p-2 font-mono text-xs leading-snug">
-        <code>{SCHEMA_LANGS.has(key) ? highlightSchema(body) : body}</code>
+        {monacoLang ? (
+          <MonacoHighlighted code={body} monacoLang={monacoLang} fallback={fallback} />
+        ) : (
+          <code>{fallback}</code>
+        )}
       </pre>
     </div>
   );
