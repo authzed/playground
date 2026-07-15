@@ -27,7 +27,12 @@ export async function handleAiRequest(args: {
   if ((env.AI_ENABLED ?? "true") === "false") {
     return respondError(503, { error: "AI assistant is disabled" });
   }
-  if (!env.ANTHROPIC_API_KEY) return respondError(500, { error: "Server configuration error" });
+  if (!env.ANTHROPIC_API_KEY) {
+    console.error(
+      "[api/ai] ANTHROPIC_API_KEY is not set — returning 500. Set it in .env (dev) or the Vercel env (prod).",
+    );
+    return respondError(500, { error: "Server configuration error" });
+  }
 
   const { data, error } = z.safeParse(AiRequestSchema, body);
   if (error) return respondError(400, { error: "Invalid request body" });
@@ -50,6 +55,7 @@ export async function handleAiRequest(args: {
       sink,
     );
   } catch (err) {
+    console.error("[api/ai] turn failed:", err);
     sink.send("error", { code: "server_error", message: (err as Error).message });
     sink.end();
   }
