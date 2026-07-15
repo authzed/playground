@@ -19,6 +19,14 @@ describe("assistant leaf components", () => {
     await expect.element(screen.getByText("definition")).toBeInTheDocument();
   });
 
+  it("renders a GFM table", async () => {
+    const md = "| Watch | Result |\n|---|---|\n| existing | allowed |\n| new | denied |";
+    const screen = await render(<Markdown>{md}</Markdown>);
+    await expect.element(screen.getByRole("table")).toBeInTheDocument();
+    await expect.element(screen.getByText("Watch")).toBeInTheDocument();
+    await expect.element(screen.getByText("allowed")).toBeInTheDocument();
+  });
+
   it("renders a tool chip summary", async () => {
     const screen = await render(
       <ToolActivityChip activity={{ name: "run_check", summary: "check ⟹ allowed", ok: true }} />,

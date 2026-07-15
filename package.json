@@ -71,6 +71,7 @@
     "react-dom": "^19.2.6",
     "react-markdown": "^10.1.0",
     "react-responsive-carousel": "^3.2.23",
+    "remark-gfm": "^4.0.1",
     "serve": "^14.2.6",
     "sjcl": "^1.0.8",
     "sonner": "^2.0.7",

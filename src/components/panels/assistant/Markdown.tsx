@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 
 // Maps a fenced-code language tag to a friendly label shown above the block.
 const LANG_LABELS: Record<string, string> = {
@@ -82,6 +83,7 @@ export function Markdown({ children }: { children: string }) {
   return (
     <div className="prose prose-sm max-w-none break-words text-sm leading-relaxed">
       <ReactMarkdown
+        remarkPlugins={[remarkGfm]}
         components={{
           a: ({ href, children }) => (
             <a
@@ -92,6 +94,19 @@ export function Markdown({ children }: { children: string }) {
             >
               {children}
             </a>
+          ),
+          table: ({ children }) => (
+            <div className="my-2 overflow-x-auto">
+              <table className="w-full border-collapse text-xs">{children}</table>
+            </div>
+          ),
+          th: ({ children }) => (
+            <th className="border border-chrome-divider bg-muted px-2 py-1 text-left font-semibold">
+              {children}
+            </th>
+          ),
+          td: ({ children }) => (
+            <td className="border border-chrome-divider px-2 py-1">{children}</td>
           ),
           // Unwrap the default <pre> — CodeBlock provides its own container.
           pre: ({ children }) => <>{children}</>,
