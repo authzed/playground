@@ -7,6 +7,11 @@ import { createLimiter } from "./_lib/ratelimit";
 import { AiRequestSchema } from "./_lib/schema";
 import { createWritableSseSink, type SseSink } from "./_lib/sse";
 
+function posIntEnv(value: string | undefined, fallback: number): number {
+  const n = Number(value);
+  return Number.isFinite(n) && n > 0 ? n : fallback;
+}
+
 export async function handleAiRequest(args: {
   method: string;
   body: unknown;
@@ -33,22 +38,29 @@ export async function handleAiRequest(args: {
     return respondError(429, { error: "Rate limit exceeded", retryAfter: rl.retryAfterSeconds });
   }
 
-  await runAiTurn(
-    data,
-    {
-      anthropic,
-      model: env.AI_MODEL ?? "claude-sonnet-5",
-      maxTokens: Number(env.AI_MAX_TOKENS ?? "8192"),
-      maxRoundTrips: Number(env.AI_MAX_ROUND_TRIPS ?? "10"),
-    },
-    sink,
-  );
+  try {
+    await runAiTurn(
+      data,
+      {
+        anthropic,
+        model: env.AI_MODEL ?? "claude-sonnet-5",
+        maxTokens: posIntEnv(env.AI_MAX_TOKENS, 8192),
+        maxRoundTrips: posIntEnv(env.AI_MAX_ROUND_TRIPS, 10),
+      },
+      sink,
+    );
+  } catch (err) {
+    sink.send("error", { code: "server_error", message: (err as Error).message });
+    sink.end();
+  }
 }
 
 function clientIp(req: VercelRequest): string {
+  const realIp = req.headers["x-real-ip"];
+  if (typeof realIp === "string" && realIp.trim()) return realIp.trim();
   const fwd = req.headers["x-forwarded-for"];
-  if (typeof fwd === "string") return fwd.split(",")[0].trim();
-  if (Array.isArray(fwd)) return fwd[0];
+  if (typeof fwd === "string" && fwd.trim()) return fwd.split(",")[0].trim();
+  if (Array.isArray(fwd) && fwd.length) return fwd[0];
   return req.socket?.remoteAddress ?? "unknown";
 }
 
@@ -66,7 +78,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   const respondError = (status: number, body: unknown) => {
     // If headers already sent (mid-stream), surface as an SSE error instead.
     if (res.headersSent) {
-      sink.send("error", body);
+      sink.send("error", {
+        message: (body as { error?: string }).error ?? "Server error",
+        retryAfter: (body as { retryAfter?: number }).retryAfter,
+      });
       sink.end();
       return;
     }

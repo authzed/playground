@@ -38,24 +38,38 @@ export async function runAssistantTurn(
   let messages = [...startMessages];
 
   for (let trip = 0; trip < maxRoundTrips; trip++) {
-    const stream = deps.stream({ messages, state: deps.getState(), tools: deps.registry.toWire() });
-
     let handoff: Extract<SseEvent, { event: "handoff" }>["data"] | null = null;
     let doneErr: TurnResult["error"] | undefined;
     let finished = false;
 
-    for await (const ev of stream) {
-      if (ev.event === "text") {
-        deps.onText(ev.data.delta);
-      } else if (ev.event === "done") {
-        messages.push({ role: "assistant", content: ev.data.assistantContent });
-        finished = true;
-      } else if (ev.event === "error") {
-        doneErr = { message: ev.data.message, retryAfter: ev.data.retryAfter };
-        finished = true;
-      } else if (ev.event === "handoff") {
-        handoff = ev.data;
+    try {
+      const stream = deps.stream({
+        messages,
+        state: deps.getState(),
+        tools: deps.registry.toWire(),
+      });
+
+      for await (const ev of stream) {
+        if (ev.event === "text") {
+          deps.onText(ev.data.delta);
+        } else if (ev.event === "done") {
+          messages.push({ role: "assistant", content: ev.data.assistantContent });
+          finished = true;
+        } else if (ev.event === "error") {
+          doneErr = { message: ev.data.message, retryAfter: ev.data.retryAfter };
+          finished = true;
+        } else if (ev.event === "handoff") {
+          handoff = ev.data;
+        }
       }
+    } catch (err) {
+      return {
+        messages,
+        error: {
+          message: (err as Error).message,
+          retryAfter: (err as { retryAfter?: number }).retryAfter,
+        },
+      };
     }
 
     if (doneErr) return { messages, error: doneErr };

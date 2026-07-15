@@ -101,19 +101,23 @@ export function useAssistantController(
         s.setDisplay(display);
       };
 
-      const result = await runAssistantTurn(useAssistantStore.getState().messages, {
-        stream: (req) => streamAssistant({ endpoint, ...req, signal: abort.signal }),
-        registry,
-        ctx,
-        getState: readState,
-        maxRoundTrips: 10,
-        onText: (delta) => patchAssistant((m) => (m.text += delta)),
-        onToolActivity: (a) => patchAssistant((m) => m.toolActivity.push(a)),
-        onDiff: (d) => patchAssistant((m) => m.diffs.push({ ...d })),
-      });
+      try {
+        const result = await runAssistantTurn(useAssistantStore.getState().messages, {
+          stream: (req) => streamAssistant({ endpoint, ...req, signal: abort.signal }),
+          registry,
+          ctx,
+          getState: readState,
+          maxRoundTrips: 10,
+          onText: (delta) => patchAssistant((m) => (m.text += delta)),
+          onToolActivity: (a) => patchAssistant((m) => m.toolActivity.push(a)),
+          onDiff: (d) => patchAssistant((m) => m.diffs.push({ ...d })),
+        });
 
-      useAssistantStore.getState().setMessages(result.messages);
-      useAssistantStore.getState().setStatus(result.error ? "error" : "idle", result.error);
+        useAssistantStore.getState().setMessages(result.messages);
+        useAssistantStore.getState().setStatus(result.error ? "error" : "idle", result.error);
+      } catch (err) {
+        useAssistantStore.getState().setStatus("error", { message: (err as Error).message });
+      }
     },
     [ctx, readState, registry],
   );

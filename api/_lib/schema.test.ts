@@ -29,4 +29,12 @@ describe("AiRequestSchema", () => {
     const { error } = z.safeParse(AiRequestSchema, { ...valid, tools });
     expect(error).toBeDefined();
   });
+
+  it("rejects an oversized state document", () => {
+    const { error } = z.safeParse(AiRequestSchema, {
+      ...valid,
+      state: { ...valid.state, schema: "x".repeat(200_001) },
+    });
+    expect(error).toBeDefined();
+  });
 });

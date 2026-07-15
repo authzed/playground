@@ -126,4 +126,25 @@ describe("runAssistantTurn", () => {
     });
     expect(result.error?.message).toMatch(/step limit/i);
   });
+
+  it("surfaces a thrown stream error (e.g. 429) as a turn error with retryAfter", async () => {
+    class RateLimitError extends Error {
+      retryAfter?: number;
+      constructor(m: string, r?: number) {
+        super(m);
+        this.retryAfter = r;
+      }
+    }
+    const stream = () =>
+      // eslint-disable-next-line require-yield -- intentionally throws before ever yielding
+      (async function* () {
+        throw new RateLimitError("Rate limit exceeded", 30);
+      })();
+    const result = await runAssistantTurn([{ role: "user", content: "hi" }], {
+      ...baseDeps,
+      stream: stream as any,
+    });
+    expect(result.error?.message).toMatch(/rate limit/i);
+    expect(result.error?.retryAfter).toBe(30);
+  });
 });

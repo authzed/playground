@@ -8,10 +8,10 @@ const MessageSchema = z.object({
 });
 
 const StateSchema = z.object({
-  schema: z.string(),
-  relationships: z.string(),
-  assertions: z.string(),
-  expected: z.string(),
+  schema: z.string().max(200_000),
+  relationships: z.string().max(200_000),
+  assertions: z.string().max(200_000),
+  expected: z.string().max(200_000),
 });
 
 const ToolSchema = z.object({
@@ -21,7 +21,7 @@ const ToolSchema = z.object({
 });
 
 export const AiRequestSchema = z.object({
-  messages: z.array(MessageSchema).min(1),
+  messages: z.array(MessageSchema).min(1).max(200),
   state: StateSchema,
   tools: z.array(ToolSchema).max(MAX_CLIENT_TOOLS),
 });

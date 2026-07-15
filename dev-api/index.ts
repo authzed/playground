@@ -111,7 +111,10 @@ export function configureServer(server: ViteDevServer) {
       );
       const respondError = (status: number, b: unknown) => {
         if (res.headersSent) {
-          sink.send("error", b);
+          sink.send("error", {
+            message: (b as { error?: string }).error ?? "Server error",
+            retryAfter: (b as { retryAfter?: number }).retryAfter,
+          });
           sink.end();
           return;
         }
