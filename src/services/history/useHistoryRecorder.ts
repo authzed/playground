@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef } from "react";
 
 import type { HistoryRecorder } from "../assistant/types";
 import { DataStore, DataStoreItemKind } from "../datastore";
+import { consumePendingSessionReset } from "../sessionReset";
 
 import { useHistoryStore } from "./historyStore";
 import type { HistoryDocs, Revision } from "./types";
@@ -40,12 +41,17 @@ export function useHistoryRecorder(datastore: DataStore): HistoryRecorder {
   const dsRef = useRef(datastore);
   dsRef.current = datastore;
 
-  // Hydrate once + record an initial snapshot.
+  // Hydrate once + record an initial snapshot. If a new document was loaded via
+  // the share route just before this mount, discard the previous document's
+  // persisted revisions (consumed after hydrate so it wins over the idb load).
   useEffect(() => {
     void useHistoryStore
       .getState()
       .hydrate()
       .then(() => {
+        if (consumePendingSessionReset()) {
+          useHistoryStore.getState().clear();
+        }
         useHistoryStore.getState().record({
           source: "manual",
           label: "Session start",

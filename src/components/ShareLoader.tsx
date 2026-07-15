@@ -11,8 +11,10 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useAssistantStore } from "@/services/assistant/store";
 import { useLiveCheckService } from "@/services/check";
 import { usePlaygroundDatastore } from "@/services/datastore";
+import { markPendingSessionReset } from "@/services/sessionReset";
 import { useDeveloperService } from "@/spicedb-common/services/developerservice";
 
 /**
@@ -43,6 +45,11 @@ export function ShareLoader() {
     if (liveCheckService) {
       liveCheckService.loadWatches(shareData.check_watches ?? []);
     }
+    // A shared payload replaces the current document — start the AI chat fresh
+    // now, and flag the history recorder to discard the old document's revisions
+    // when the playground mounts (see consumePendingSessionReset).
+    useAssistantStore.getState().reset();
+    markPendingSessionReset();
     void navigate({ to: "/", replace: true });
   }, [shareData, datastore, shareId, liveCheckService, navigate]);
 
