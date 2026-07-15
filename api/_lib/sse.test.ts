@@ -4,9 +4,7 @@ import { createWritableSseSink, formatSseEvent } from "./sse";
 
 describe("formatSseEvent", () => {
   it("formats an event with JSON data and a blank-line terminator", () => {
-    expect(formatSseEvent("text", { delta: "hi" })).toBe(
-      'event: text\ndata: {"delta":"hi"}\n\n',
-    );
+    expect(formatSseEvent("text", { delta: "hi" })).toBe('event: text\ndata: {"delta":"hi"}\n\n');
   });
 });
 
@@ -19,9 +17,7 @@ describe("createWritableSseSink", () => {
     sink.send("done", { stop_reason: "end_turn" });
     sink.end();
 
-    expect(write).toHaveBeenCalledWith(
-      'event: done\ndata: {"stop_reason":"end_turn"}\n\n',
-    );
+    expect(write).toHaveBeenCalledWith('event: done\ndata: {"stop_reason":"end_turn"}\n\n');
     expect(end).toHaveBeenCalledOnce();
   });
 

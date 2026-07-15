@@ -12,12 +12,22 @@ describe("createLimiter", () => {
 describe("resolvePerMinute", () => {
   it("falls back to 15 for absent, empty, non-numeric, zero, or negative values", () => {
     expect(resolvePerMinute({} as NodeJS.ProcessEnv)).toBe(15);
-    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "" } as unknown as NodeJS.ProcessEnv)).toBe(15);
-    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "abc" } as unknown as NodeJS.ProcessEnv)).toBe(15);
-    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "0" } as unknown as NodeJS.ProcessEnv)).toBe(15);
-    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "-5" } as unknown as NodeJS.ProcessEnv)).toBe(15);
+    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "" } as unknown as NodeJS.ProcessEnv)).toBe(
+      15,
+    );
+    expect(
+      resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "abc" } as unknown as NodeJS.ProcessEnv),
+    ).toBe(15);
+    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "0" } as unknown as NodeJS.ProcessEnv)).toBe(
+      15,
+    );
+    expect(
+      resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "-5" } as unknown as NodeJS.ProcessEnv),
+    ).toBe(15);
   });
   it("uses a valid positive value", () => {
-    expect(resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "30" } as unknown as NodeJS.ProcessEnv)).toBe(30);
+    expect(
+      resolvePerMinute({ AI_RATELIMIT_PER_MINUTE: "30" } as unknown as NodeJS.ProcessEnv),
+    ).toBe(30);
   });
 });

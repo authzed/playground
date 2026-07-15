@@ -1,13 +1,9 @@
-import { create } from "@bufbuild/protobuf";
 import { useDebouncedCallback } from "@tanstack/react-pacer/debouncer";
 import { useEffect, useState, useMemo, useCallback } from "react";
 import { v4 as uuidv4 } from "uuid";
 
-import { parseRelationship } from "../spicedb-common/parsing";
 import { DebugInformation } from "../spicedb-common/protodefs/authzed/api/v1/debug_pb";
 import {
-  CheckOperationParametersSchema,
-  CheckOperationsResult_Membership,
   DeveloperError,
   DeveloperResponse,
   DeveloperWarning,
@@ -20,6 +16,7 @@ import { CheckWatch } from "../spicedb-common/validationfileformat";
 
 import { loadStoredWatches, saveStoredWatches } from "./checkwatchstorage";
 import { DataStore, DataStoreItemKind } from "./datastore";
+import { runChecksAgainst, type CheckTuple } from "./wasmRunners";
 
 export type { CheckWatch } from "../spicedb-common/validationfileformat";
 
@@ -136,15 +133,6 @@ export function assertionStringToCheckWatch(value: string): CheckWatch | undefin
   return { object, action, subject, context };
 }
 
-function liveCheckItemToString(item: LiveCheckItem): string {
-  let subject = item.subject;
-  if (subject.indexOf("#") < 0) {
-    subject = `${subject}#...`;
-  }
-  const caveat = item.context ? `[${item.context}]` : "";
-  return `${item.object}#${item.action}@${subject}${caveat}`;
-}
-
 function runEditCheckWasm(
   developerService: DeveloperService,
   datastore: DataStore,
@@ -155,62 +143,47 @@ function runEditCheckWasm(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
 
-  const request = developerService.newRequest(schema, relationshipsString);
-  if (request === undefined) {
-    return;
-  }
+  const tuples: CheckTuple[] = items.map((item) => ({
+    object: item.object,
+    action: item.action,
+    subject: item.subject,
+    context: item.context,
+  }));
 
-  // Add a check for warnings.
-  let warnings: DeveloperWarning[] = [];
-  request.schemaWarnings((result) => {
-    warnings = result.warnings;
-  });
+  const result = runChecksAgainst(developerService, schema, relationshipsString, tuples);
+  if (result === undefined) return;
 
-  // Build the relationships to be checked, validating as we go.
-  items.forEach((item: LiveCheckItem) => {
-    const parsed = parseRelationship(liveCheckItemToString(item));
-    if (parsed === undefined) {
-      item.status = LiveCheckItemStatus.NOT_VALID;
-      item.debugInformation = undefined;
-      return;
-    }
-
-    item.status = LiveCheckItemStatus.NOT_CHECKED;
-    request.check(
-      create(CheckOperationParametersSchema, {
-        resource: parsed.resourceAndRelation!,
-        subject: parsed.subject!,
-        caveatContext: parsed.caveat?.context,
-      }),
-      (result) => {
-        if (result.checkError) {
-          item.status = LiveCheckItemStatus.INVALID;
-          item.errorMessage = result.checkError.message;
-          item.debugInformation = undefined;
-          return;
-        }
-
-        if (
-          result.partialCaveatInfo?.missingRequiredContext &&
-          result.partialCaveatInfo?.missingRequiredContext.length > 0
-        ) {
-          item.status = LiveCheckItemStatus.CAVEATED;
-          item.debugInformation = result.resolvedDebugInformation;
-          item.errorMessage = undefined;
-          return;
-        }
-
-        item.debugInformation = result.resolvedDebugInformation;
-        item.status =
-          result.membership === CheckOperationsResult_Membership.MEMBER
-            ? LiveCheckItemStatus.FOUND
-            : LiveCheckItemStatus.NOT_FOUND;
+  result.outcomes.forEach((outcome, i) => {
+    const item = items[i];
+    switch (outcome.kind) {
+      case "unparseable":
+        item.status = LiveCheckItemStatus.NOT_VALID;
+        item.debugInformation = undefined;
+        break;
+      case "error":
+        item.status = LiveCheckItemStatus.INVALID;
+        item.errorMessage = outcome.message;
+        item.debugInformation = undefined;
+        break;
+      case "caveated":
+        item.status = LiveCheckItemStatus.CAVEATED;
+        item.debugInformation = outcome.debugInformation;
         item.errorMessage = undefined;
-      },
-    );
+        break;
+      case "member":
+        item.status = LiveCheckItemStatus.FOUND;
+        item.debugInformation = outcome.debugInformation;
+        item.errorMessage = undefined;
+        break;
+      case "not_member":
+        item.status = LiveCheckItemStatus.NOT_FOUND;
+        item.debugInformation = outcome.debugInformation;
+        item.errorMessage = undefined;
+        break;
+    }
   });
 
-  return [request.execute(), warnings];
+  return [result.response, result.warnings];
 }
 
 /**

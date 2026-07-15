@@ -1,0 +1,70 @@
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
+
+import type { ChatMessage } from "./types";
+
+export type AssistantStatus = "idle" | "streaming" | "executing_tools" | "error";
+
+export interface ToolActivity {
+  name: string;
+  summary: string;
+  ok: boolean;
+}
+export interface DocDiff {
+  target: string;
+  before: string;
+  after: string;
+  revisionId?: string;
+}
+export interface DisplayMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+  toolActivity: ToolActivity[];
+  diffs: DocDiff[];
+}
+
+export interface AssistantState {
+  messages: ChatMessage[];
+  display: DisplayMessage[];
+  status: AssistantStatus;
+  error?: { message: string; retryAfter?: number };
+  reset: () => void;
+  setStatus: (s: AssistantStatus, error?: AssistantState["error"]) => void;
+  appendUser: (text: string) => void;
+  setMessages: (m: ChatMessage[]) => void;
+  setDisplay: (d: DisplayMessage[]) => void;
+}
+
+const MAX_PERSISTED_MESSAGES = 40;
+
+export const useAssistantStore = create<AssistantState>()(
+  persist(
+    (set) => ({
+      messages: [],
+      display: [],
+      status: "idle",
+      error: undefined,
+      reset: () => set({ messages: [], display: [], status: "idle", error: undefined }),
+      setStatus: (status, error) => set({ status, error }),
+      appendUser: (text) =>
+        set((s) => ({
+          messages: [...s.messages, { role: "user", content: text }],
+          display: [
+            ...s.display,
+            { id: `u-${s.display.length}`, role: "user", text, toolActivity: [], diffs: [] },
+          ],
+        })),
+      setMessages: (messages) => set({ messages }),
+      setDisplay: (display) => set({ display }),
+    }),
+    {
+      name: "playground-assistant-state",
+      version: 1,
+      partialize: (s) => ({
+        messages: s.messages.slice(-MAX_PERSISTED_MESSAGES),
+        display: s.display.slice(-MAX_PERSISTED_MESSAGES),
+      }),
+    },
+  ),
+);

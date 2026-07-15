@@ -1,4 +1,5 @@
 import { SKILL_OVERVIEW } from "../_skill/content";
+
 import type { AiRequest } from "./schema";
 import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools";
 
@@ -42,7 +43,11 @@ export function buildSystemBlocks(state: AiRequest["state"]): SystemBlock[] {
 
   return [
     // Static, cacheable prefix: skill + instructions.
-    { type: "text", text: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}`, cache_control: { type: "ephemeral" } },
+    {
+      type: "text",
+      text: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}`,
+      cache_control: { type: "ephemeral" },
+    },
     // Dynamic suffix: the live state (changes each request).
     { type: "text", text: stateText },
   ];

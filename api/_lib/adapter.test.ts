@@ -8,7 +8,8 @@ const baseArgs = {
   anthropic: {
     stream: () => ({
       on: () => {},
-      finalMessage: () => Promise.resolve({ content: [{ type: "text", text: "hi" }], stop_reason: "end_turn" }),
+      finalMessage: () =>
+        Promise.resolve({ content: [{ type: "text", text: "hi" }], stop_reason: "end_turn" }),
     }),
   },
 };
@@ -21,7 +22,11 @@ const validBody = {
 
 function fakeSink() {
   const events: { event: string; data: unknown }[] = [];
-  return { send: (event: string, data: unknown) => events.push({ event, data }), end: vi.fn(), events };
+  return {
+    send: (event: string, data: unknown) => events.push({ event, data }),
+    end: vi.fn(),
+    events,
+  };
 }
 
 describe("handleAiRequest", () => {

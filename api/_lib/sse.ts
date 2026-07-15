@@ -7,10 +7,7 @@ export function formatSseEvent(event: string, data: unknown): string {
   return `event: ${event}\ndata: ${JSON.stringify(data)}\n\n`;
 }
 
-export function createWritableSseSink(
-  write: (chunk: string) => void,
-  end: () => void,
-): SseSink {
+export function createWritableSseSink(write: (chunk: string) => void, end: () => void): SseSink {
   let ended = false;
   return {
     send(event, data) {

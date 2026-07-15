@@ -10,6 +10,7 @@ import {
 import { DeveloperService } from "../spicedb-common/services/developerservice";
 
 import { buildAssertionsYaml, buildValidationBlockYaml } from "./validationfileformat";
+import { runValidationAgainst } from "./wasmRunners";
 
 export enum ValidationStatus {
   NOT_RUN = 0,
@@ -45,82 +46,48 @@ function runValidation(
   callback: ValidationCallback,
   setValidationState: (state: ValidationState) => void,
 ) {
-  setValidationState({
-    status: ValidationStatus.RUNNING,
-  });
-
+  setValidationState({ status: ValidationStatus.RUNNING });
   const datastoreIndex = datastore.currentIndex();
 
   const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "";
   const relationshipsString = datastore.getSingletonByKind(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
-  const request = developerService.newRequest(schema, relationshipsString);
-  if (request === undefined) {
-    setValidationState({
-      status: ValidationStatus.CALL_ERROR,
-    });
+  const assertionsYaml = buildAssertionsYaml(datastore);
+  const validationYaml = buildValidationBlockYaml(datastore);
+
+  const outcome = runValidationAgainst(
+    developerService,
+    schema,
+    relationshipsString,
+    assertionsYaml,
+    validationYaml,
+  );
+  if (outcome === undefined) {
+    setValidationState({ status: ValidationStatus.CALL_ERROR });
     return;
   }
-
-  const validationYaml = buildValidationBlockYaml(datastore);
-  const assertionsYaml = buildAssertionsYaml(datastore);
-
-  const inputDevErrors: DeveloperError[] = [];
-  const validationDevErrors: DeveloperError[] = [];
-
-  request.runAssertions(assertionsYaml, (result) => {
-    if (result.inputError) {
-      inputDevErrors.push(result.inputError);
-      return;
-    }
-
-    validationDevErrors.push(...result.validationErrors);
-  });
-
-  let updatedValidationYaml: string | null = null;
-  request.runValidation(validationYaml, (result) => {
-    updatedValidationYaml = result.updatedValidationYaml;
-
-    if (result.inputError) {
-      inputDevErrors.push(result.inputError);
-      return;
-    }
-
-    validationDevErrors.push(...result.validationErrors);
-  });
-
-  let warnings: DeveloperWarning[] = [];
-  request.schemaWarnings((result) => {
-    warnings = result.warnings;
-  });
-
-  const response = request.execute();
-  if (response.internalError) {
+  if (outcome.internalError) {
     setValidationState({
       status: ValidationStatus.VALIDATION_ERROR,
       validationDatastoreIndex: datastoreIndex,
-      runError: response.internalError,
+      runError: outcome.internalError,
       lastRun: new Date(),
-      warnings: warnings,
+      warnings: outcome.warnings,
     });
     return;
   }
 
-  if (response.developerErrors) {
-    inputDevErrors.push(...response.developerErrors.inputErrors);
-  }
-
-  const validated = inputDevErrors.length === 0 && validationDevErrors.length === 0;
+  const validated = outcome.requestErrors.length === 0 && outcome.validationErrors.length === 0;
   setValidationState({
     status: validated ? ValidationStatus.VALIDATED : ValidationStatus.VALIDATION_ERROR,
-    requestErrors: inputDevErrors,
-    validationErrors: validationDevErrors,
+    requestErrors: outcome.requestErrors,
+    validationErrors: outcome.validationErrors,
     validationDatastoreIndex: datastoreIndex,
     lastRun: new Date(),
-    warnings: warnings,
+    warnings: outcome.warnings,
   });
-  callback(validated, { updatedValidationYaml: updatedValidationYaml });
+  callback(validated, { updatedValidationYaml: outcome.updatedValidationYaml });
 }
 
 export interface ValidationService {

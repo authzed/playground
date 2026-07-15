@@ -20,7 +20,10 @@ function fakeAnthropic(finals: FinalMessage[], textByCall: string[][] = []): Ant
 function collectingSink() {
   const events: { event: string; data: any }[] = [];
   return {
-    sink: { send: (event: string, data: unknown) => events.push({ event, data: data as any }), end: vi.fn() },
+    sink: {
+      send: (event: string, data: unknown) => events.push({ event, data: data as any }),
+      end: vi.fn(),
+    },
     events,
   };
 }
@@ -41,7 +44,10 @@ describe("runAiTurn", () => {
     );
     await runAiTurn(req, { ...deps, anthropic }, sink);
 
-    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual(["hel", "lo"]);
+    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual([
+      "hel",
+      "lo",
+    ]);
     const done = events.find((e) => e.event === "done");
     expect(done?.data.stop_reason).toBe("end_turn");
     expect(sink.end).toHaveBeenCalledOnce();
@@ -59,7 +65,9 @@ describe("runAiTurn", () => {
 
     const handoff = events.find((e) => e.event === "handoff");
     expect(handoff).toBeDefined();
-    expect(handoff!.data.clientToolCalls).toEqual([{ id: "t1", name: "run_check", input: { resource: "doc:x" } }]);
+    expect(handoff!.data.clientToolCalls).toEqual([
+      { id: "t1", name: "run_check", input: { resource: "doc:x" } },
+    ]);
     expect(handoff!.data.serverToolResults).toEqual([]);
     expect(events.find((e) => e.event === "done")).toBeUndefined();
   });
@@ -68,7 +76,9 @@ describe("runAiTurn", () => {
     const { sink, events } = collectingSink();
     const anthropic = fakeAnthropic([
       {
-        content: [{ type: "tool_use", id: "s1", name: "read_skill_reference", input: { name: "patterns" } }],
+        content: [
+          { type: "tool_use", id: "s1", name: "read_skill_reference", input: { name: "patterns" } },
+        ],
         stop_reason: "tool_use",
       },
       { content: [{ type: "text", text: "done" }], stop_reason: "end_turn" },
@@ -100,7 +110,9 @@ describe("runAiTurn", () => {
   it("emits a step_limit error when round trips are exhausted", async () => {
     const { sink, events } = collectingSink();
     const serverOnly: FinalMessage = {
-      content: [{ type: "tool_use", id: "s", name: "read_skill_reference", input: { name: "patterns" } }],
+      content: [
+        { type: "tool_use", id: "s", name: "read_skill_reference", input: { name: "patterns" } },
+      ],
       stop_reason: "tool_use",
     };
     const anthropic = fakeAnthropic(Array.from({ length: 5 }, () => serverOnly));
