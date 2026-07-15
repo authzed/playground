@@ -56,9 +56,48 @@ export async function handleAiRequest(args: {
     );
   } catch (err) {
     console.error("[api/ai] turn failed:", err);
-    sink.send("error", { code: "server_error", message: (err as Error).message });
+    sink.send("error", describeTurnError(err));
     sink.end();
   }
+}
+
+// Reads the `retry-after` header (seconds) from an upstream error, tolerating
+// both a Headers object and a plain record.
+function retryAfterSeconds(err: unknown): number | undefined {
+  const headers = (err as { headers?: unknown }).headers;
+  let raw: string | null | undefined;
+  if (headers && typeof (headers as Headers).get === "function") {
+    raw = (headers as Headers).get("retry-after");
+  } else if (headers && typeof headers === "object") {
+    raw = (headers as Record<string, string>)["retry-after"];
+  }
+  const n = Number(raw);
+  return Number.isFinite(n) && n > 0 ? n : undefined;
+}
+
+// Maps an error thrown during the turn to a client-facing SSE error. Upstream
+// rate limits and overloads get a clear, actionable message (and retry timing)
+// instead of an opaque failure.
+export function describeTurnError(err: unknown): {
+  code: string;
+  message: string;
+  retryAfter?: number;
+} {
+  const status = (err as { status?: number }).status;
+  if (status === 429) {
+    return {
+      code: "rate_limit",
+      message: "The AI service is rate limited. Please wait a moment and try again.",
+      retryAfter: retryAfterSeconds(err),
+    };
+  }
+  if (status === 503 || status === 529) {
+    return {
+      code: "overloaded",
+      message: "The AI service is temporarily overloaded. Please try again shortly.",
+    };
+  }
+  return { code: "server_error", message: (err as Error).message || "The request failed." };
 }
 
 function clientIp(req: VercelRequest): string {
