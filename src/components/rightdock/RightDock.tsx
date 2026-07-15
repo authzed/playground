@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 
 import { type DockPanelId, maxDockWidth, useRightDockStore } from "./state";
 
-export function RightDock({ panels }: { panels: Record<DockPanelId, React.ReactNode> }) {
+export function RightDock({ panels }: { panels: Partial<Record<DockPanelId, React.ReactNode>> }) {
   const open = useRightDockStore((s) => s.open);
   const activePanel = useRightDockStore((s) => s.activePanel);
   const perPanelWidth = useRightDockStore((s) => s.perPanelWidth);
@@ -24,7 +24,10 @@ export function RightDock({ panels }: { panels: Record<DockPanelId, React.ReactN
     };
   }, [drag, activePanel, setWidth]);
 
-  if (!open || !activePanel) return null;
+  // The active panel may be unavailable (e.g. a persisted "assistant" panel when AI
+  // is disabled) — hide the dock rather than showing an empty frame.
+  const content = activePanel ? panels[activePanel] : undefined;
+  if (!open || !activePanel || !content) return null;
   const width = Math.min(perPanelWidth[activePanel], maxDockWidth());
 
   return (
@@ -41,7 +44,7 @@ export function RightDock({ panels }: { panels: Record<DockPanelId, React.ReactN
         role="separator"
         aria-orientation="vertical"
       />
-      <div className="min-w-0 flex-1 overflow-hidden">{panels[activePanel]}</div>
+      <div className="min-w-0 flex-1 overflow-hidden">{content}</div>
     </div>
   );
 }

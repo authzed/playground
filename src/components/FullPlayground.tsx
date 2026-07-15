@@ -89,6 +89,7 @@ import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";
 import { DockActivityBar } from "./rightdock/DockActivityBar";
 import { RightDock } from "./rightdock/RightDock";
+import type { DockPanelId } from "./rightdock/state";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -202,12 +203,15 @@ export function ThemedAppView(props: {
     });
   }, [datastore]);
 
-  const dockPanels = {
-    assistant: (
-      <AssistantPanel services={services} datastore={datastore} history={historyRecorder} />
-    ),
+  // History is always available; the assistant panel is only added when AI is enabled.
+  const dockPanels: Partial<Record<DockPanelId, ReactNode>> = {
     history: <HistoryPanel datastore={datastore} />,
   };
+  if (aiEnabled) {
+    dockPanels.assistant = (
+      <AssistantPanel services={services} datastore={datastore} history={historyRecorder} />
+    );
+  }
 
   const conductDownload = () => {
     const yamlContents = createValidationYAML(
@@ -852,8 +856,8 @@ export function ThemedAppView(props: {
             }}
           />
         </div>
-        {aiEnabled && <RightDock panels={dockPanels} />}
-        {aiEnabled && <DockActivityBar />}
+        <RightDock panels={dockPanels} />
+        <DockActivityBar aiEnabled={aiEnabled} />
       </div>
 
       {/* === Bottom drawer (one panel at a time) === */}

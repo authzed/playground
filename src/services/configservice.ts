@@ -3,9 +3,10 @@ export default function AppConfig() {
   const config = {
     shareApiEndpoint: import.meta.env.VITE_SHARE_API_ENDPOINT,
     aiApiEndpoint: import.meta.env.VITE_AI_API_ENDPOINT,
-    // Opt-in: the AI assistant UI is hidden unless explicitly enabled. An unset or
-    // empty flag (e.g. on a preview deploy without the backend configured) keeps the
-    // dock button and panel hidden, rather than showing a non-functional assistant.
+    // Opt-in: the AI assistant is hidden unless explicitly enabled. An unset or empty
+    // flag (e.g. on a preview deploy without the backend configured) hides the
+    // assistant button and panel rather than showing a non-functional assistant. The
+    // revision-history panel in the same dock stays available regardless.
     aiEnabled: import.meta.env.VITE_AI_ENABLED === "true",
     ga: {
       measurementId: import.meta.env.VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID,
