@@ -12,8 +12,8 @@ importers:
         specifier: ^0.111.0
         version: 0.111.0(zod@4.3.6)
       '@authzed/spicedb-parser-js':
-        specifier: ^1.1.0
-        version: 1.1.0
+        specifier: ^1.2.0
+        version: 1.2.0
       '@aws-sdk/client-s3':
         specifier: ^3.997.0
         version: 3.997.0
@@ -318,8 +318,8 @@ packages:
   '@asamuzakjp/nwsapi@2.3.9':
     resolution: {integrity: sha512-n8GuYSrI9bF7FFZ/SjhwevlHc8xaVlb/7HmHelnc/PZXBD2ZR49NnN9sMMuDdEGPeeRQ5d0hqlSlEpgCX3Wl0Q==}
 
-  '@authzed/spicedb-parser-js@1.1.0':
-    resolution: {integrity: sha512-PHoVVZdE6vqRJjes2E57i6LxNbaW4LlfIl5crbaaw4qCT1LgIgJ8wM6556mOopUNzyzal1BgscfiQOtajoKDFg==}
+  '@authzed/spicedb-parser-js@1.2.0':
+    resolution: {integrity: sha512-aVRM9fIjUIuBWffOIOecIsuQ14pdTUuPqUrQuZDHqo8lV/8VO2IfbbsIgjdorSXQPyOLdwdjSCMeQKFe66Z1Eg==}
 
   '@aws-crypto/crc32@5.2.0':
     resolution: {integrity: sha512-nLbCWqQNgUiwwtFsen1AdzAtvuLRsQS8rYgMuxCrdKf9kOssamGLuPwyTY9wyYblNr9+1XM8v6zoDTPPSIeANg==}
@@ -5528,7 +5528,7 @@ snapshots:
 
   '@asamuzakjp/nwsapi@2.3.9': {}
 
-  '@authzed/spicedb-parser-js@1.1.0':
+  '@authzed/spicedb-parser-js@1.2.0':
     dependencies:
       parsimmon: 1.18.1
 
