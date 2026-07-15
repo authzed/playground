@@ -133,7 +133,11 @@ async function executeClientTool(
 
     if (call.name === "edit_document" && target && before !== undefined && ok) {
       const after = deps.ctx.datastore.getSingletonByKind(KIND_BY_TARGET[target]).editableContents;
-      deps.onDiff({ target, before, after });
+      // Only surface a diff card when the document actually changed — a no-op
+      // edit (before === after) would otherwise render an empty diff card.
+      if (after !== before) {
+        deps.onDiff({ target, before, after });
+      }
     }
 
     deps.onToolActivity({ name: call.name, summary: summarize(call.name, result), ok });

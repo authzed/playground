@@ -42,12 +42,11 @@ export function useAssistantController(
       datastore: datastoreRef.current,
       getServices: () => servicesRef.current,
       reveal: (kind, range) => useRevealStore.getState().requestReveal(kind, range),
-      openDocument: (ref) => {
-        const s = useEditorStore.getState();
-        const groupId = s.layout.kind === "single" ? s.layout.group.id : s.layout.primary.id;
-        if (s.closedPool.includes(ref)) s.openInGroup(ref, groupId);
-        else s.setActiveTab(groupId, ref);
-      },
+      // showDocument activates the tab in whichever group already hosts it
+      // (the primary group OR a split secondary group), instead of forcing it
+      // into the primary group — which previously duplicated a doc that lived
+      // in a right-hand split onto the left side.
+      openDocument: (ref) => useEditorStore.getState().showDocument(ref),
       openWatchesPanel: () => useDrawerStore.getState().openPanel("watches"),
       history,
     }),
@@ -89,6 +88,7 @@ export function useAssistantController(
               toolActivity: [],
               diffs: [],
               checkpointRevisionId,
+              state: "pending",
             },
           ]);
         }
@@ -113,10 +113,24 @@ export function useAssistantController(
           onDiff: (d) => patchAssistant((m) => m.diffs.push({ ...d })),
         });
 
+        const errText = result.error
+          ? result.error.retryAfter
+            ? `${result.error.message} (retry in ${result.error.retryAfter}s)`
+            : result.error.message
+          : undefined;
+        patchAssistant((m) => {
+          m.state = result.error ? "error" : "done";
+          m.errorText = errText;
+        });
         useAssistantStore.getState().setMessages(result.messages);
         useAssistantStore.getState().setStatus(result.error ? "error" : "idle", result.error);
       } catch (err) {
-        useAssistantStore.getState().setStatus("error", { message: (err as Error).message });
+        const message = (err as Error).message;
+        patchAssistant((m) => {
+          m.state = "error";
+          m.errorText = message;
+        });
+        useAssistantStore.getState().setStatus("error", { message });
       }
     },
     [ctx, readState, registry],

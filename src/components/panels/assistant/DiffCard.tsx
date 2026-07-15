@@ -38,6 +38,9 @@ function renderLineDiff(before: string, after: string) {
   const a = new Set(after.split("\n"));
   const removed = before.split("\n").filter((l) => !a.has(l));
   const added = after.split("\n").filter((l) => !b.has(l));
+  if (removed.length === 0 && added.length === 0) {
+    return <div className="text-muted-foreground">(whitespace or line-order change)</div>;
+  }
   return (
     <>
       {removed.map((l, i) => (

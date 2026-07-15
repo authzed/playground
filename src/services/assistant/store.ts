@@ -23,6 +23,8 @@ export interface DisplayMessage {
   toolActivity: ToolActivity[];
   diffs: DocDiff[];
   checkpointRevisionId?: string;
+  state?: "pending" | "done" | "error";
+  errorText?: string;
 }
 
 export interface AssistantState {

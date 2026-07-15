@@ -23,7 +23,6 @@ export function AssistantPanel({
   const { submit } = useAssistantController(services, datastore, history);
   const display = useAssistantStore((s) => s.display);
   const status = useAssistantStore((s) => s.status);
-  const error = useAssistantStore((s) => s.error);
   const reset = useAssistantStore((s) => s.reset);
 
   const onUndo = (m: DisplayMessage) => {
@@ -44,13 +43,7 @@ export function AssistantPanel({
           New chat
         </Button>
       </div>
-      <MessageList messages={display} onUndo={onUndo} />
-      {error && (
-        <div className="mx-3 mb-2 rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs text-destructive">
-          {error.message}
-          {error.retryAfter ? ` (retry in ${error.retryAfter}s)` : ""}
-        </div>
-      )}
+      <MessageList messages={display} onUndo={onUndo} busy={busy} />
       <ChatInput disabled={busy} onSubmit={submit} />
     </div>
   );

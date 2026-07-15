@@ -1,3 +1,5 @@
+import { AlertTriangle, Check } from "lucide-react";
+
 import type { DisplayMessage } from "../../../services/assistant/store";
 
 import { DiffCard } from "./DiffCard";
@@ -31,6 +33,18 @@ export function AssistantMessage({
       {message.diffs.map((d, i) => (
         <DiffCard key={i} diff={d} onUndo={i === 0 ? onUndo : undefined} />
       ))}
+      {message.state === "error" && (
+        <div className="flex items-start gap-1.5 rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs text-destructive">
+          <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          <span>Failed — {message.errorText ?? "something went wrong"}</span>
+        </div>
+      )}
+      {message.state === "done" && (
+        <div className="flex items-center gap-1 text-xs text-muted-foreground">
+          <Check className="h-3.5 w-3.5" aria-hidden />
+          <span>Done</span>
+        </div>
+      )}
     </div>
   );
 }
