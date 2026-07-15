@@ -18,12 +18,17 @@ export function readHistoryDocs(datastore: DataStore): HistoryDocs {
 }
 
 export function restoreRevision(datastore: DataStore, revision: Revision): void {
-  datastore.load({
-    schema: revision.docs.schema,
-    relationshipsYaml: revision.docs.relationships,
-    assertionsYaml: revision.docs.assertions,
-    verificationYaml: revision.docs.expected,
-  });
+  datastore.load(
+    {
+      schema: revision.docs.schema,
+      relationshipsYaml: revision.docs.relationships,
+      assertionsYaml: revision.docs.assertions,
+      verificationYaml: revision.docs.expected,
+    },
+    // A restore is an in-session undo — don't fire the reload listeners that
+    // would wipe the chat/history the user is restoring within.
+    { isRestore: true },
+  );
   useHistoryStore
     .getState()
     .record({ source: "restore", label: "Restored a revision", docs: revision.docs });

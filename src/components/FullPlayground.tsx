@@ -51,6 +51,7 @@ import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
+import { useAssistantStore } from "../services/assistant/store";
 import {
   useLiveCheckService,
   type LiveCheckService,
@@ -59,7 +60,8 @@ import {
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
-import { useHistoryRecorder } from "../services/history/useHistoryRecorder";
+import { useHistoryStore } from "../services/history/historyStore";
+import { readHistoryDocs, useHistoryRecorder } from "../services/history/useHistoryRecorder";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
@@ -184,6 +186,21 @@ export function ThemedAppView(props: {
 
   const aiEnabled = AppConfig().aiEnabled;
   const historyRecorder = useHistoryRecorder(datastore);
+
+  // Loading a NEW document (example, share, or the blank "New" reset) clears the
+  // AI chat and revision history that belonged to the previous document. Restores
+  // (in-session undo) pass isRestore and do NOT trigger this.
+  useEffect(() => {
+    return datastore.registerReloadListener(() => {
+      useAssistantStore.getState().reset();
+      useHistoryStore.getState().clear();
+      useHistoryStore.getState().record({
+        source: "manual",
+        label: "Loaded document",
+        docs: readHistoryDocs(datastore),
+      });
+    });
+  }, [datastore]);
 
   const dockPanels = {
     assistant: (
