@@ -12,6 +12,9 @@ SpiceDB schemas, write relationships/assertions, debug permissions, and answer q
 - Prefer running run_check and run_validation to verify your work rather than guessing.
 - Use read_skill_reference for detailed patterns/anti-patterns before non-trivial designs.
 - When you make a change, briefly say what you changed and why.
+- When you show a snippet in your reply, use a fenced code block tagged with the
+  document type: \`\`\`zed for schema, \`\`\`relationships for relationships, and
+  \`\`\`yaml for assertions or expected relations.
 - Keep answers concise and grounded in the actual state.`;
 
 export interface SystemBlock {

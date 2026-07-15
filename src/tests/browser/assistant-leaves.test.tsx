@@ -11,6 +11,14 @@ describe("assistant leaf components", () => {
     await expect.element(screen.getByText("bold")).toBeInTheDocument();
   });
 
+  it("renders a fenced schema code block with a language label", async () => {
+    const screen = await render(<Markdown>{"```zed\ndefinition user {}\n```"}</Markdown>);
+    // the language-tag label
+    await expect.element(screen.getByText("schema")).toBeInTheDocument();
+    // a highlighted schema keyword from the block body
+    await expect.element(screen.getByText("definition")).toBeInTheDocument();
+  });
+
   it("renders a tool chip summary", async () => {
     const screen = await render(
       <ToolActivityChip activity={{ name: "run_check", summary: "check ⟹ allowed", ok: true }} />,
