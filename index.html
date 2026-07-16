@@ -35,10 +35,38 @@
       content="The SpiceDB Playground is an interactive app for building, testing, and iterating on application permission models without installing any software."
     />
     <meta name="twitter:image" content="https://play.authzed.com/OG-SpiceDB-Playground@2x.jpg" />
+
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "SpiceDB Playground",
+        "url": "https://play.authzed.com",
+        "description": "The SpiceDB Playground is an interactive app for building, testing, and iterating on application permission models without installing any software. It lets developers write access control schemas, define test relationships, and run real-time checks using a WebAssembly-powered SpiceDB instance.",
+        "applicationCategory": "DeveloperApplication",
+        "operatingSystem": "Any",
+        "browserRequirements": "Requires JavaScript and WebAssembly support.",
+        "image": "https://play.authzed.com/OG-SpiceDB-Playground@2x.jpg",
+        "publisher": {
+          "@type": "Organization",
+          "name": "AuthZed",
+          "url": "https://authzed.com"
+        }
+      }
+    </script>
   </head>
 
   <body>
-    <noscript>JavaScript is required to run this single-page app. Sorry :/</noscript>
+    <noscript>
+      <h1>SpiceDB Playground</h1>
+      <p>
+        The SpiceDB Playground is an interactive app for building, testing, and iterating on
+        application permission models without installing any software. It lets developers write
+        access control schemas, define test relationships, and run real-time checks using a
+        WebAssembly-powered SpiceDB instance.
+      </p>
+      <p>JavaScript is required to run this app. Please enable JavaScript in your browser.</p>
+    </noscript>
     <div id="root"></div>
     <div id="portal"></div>
     <script type="module" src="/src/index.tsx"></script>
