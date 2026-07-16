@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { createWritableSseSink, formatSseEvent } from "./sse";
+import { createWritableSseSink, formatSseEvent } from "./sse.js";
 
 describe("formatSseEvent", () => {
   it("formats an event with JSON data and a blank-line terminator", () => {

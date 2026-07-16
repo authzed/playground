@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import z from "zod";
 
-import { AiRequestSchema } from "./schema";
+import { AiRequestSchema } from "./schema.js";
 
 const valid = {
   messages: [{ role: "user", content: "add a viewer role" }],

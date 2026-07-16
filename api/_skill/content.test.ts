@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { SKILL_OVERVIEW, SKILL_REFERENCES } from "./content";
+import { SKILL_OVERVIEW, SKILL_REFERENCES } from "./content.js";
 
 describe("vendored skill content", () => {
   it("has a non-empty overview mentioning SpiceDB", () => {

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { type AnthropicLike, type FinalMessage, runAiTurn } from "./aiHandler";
+import { type AnthropicLike, type FinalMessage, runAiTurn } from "./aiHandler.js";
 
 function fakeAnthropic(finals: FinalMessage[], textByCall: string[][] = []): AnthropicLike {
   let call = 0;

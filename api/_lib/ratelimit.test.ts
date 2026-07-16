@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { createLimiter, resolvePerMinute } from "./ratelimit";
+import { createLimiter, resolvePerMinute } from "./ratelimit.js";
 
 describe("createLimiter", () => {
   it("allows all requests when Upstash env is absent (dev)", async () => {

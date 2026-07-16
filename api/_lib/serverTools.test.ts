@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools";
+import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
 
 const readSkill = SERVER_TOOLS.find((t) => t.name === "read_skill_reference")!;
 

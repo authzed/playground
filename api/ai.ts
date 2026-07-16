@@ -2,10 +2,10 @@ import Anthropic from "@anthropic-ai/sdk";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import z from "zod";
 
-import { type AnthropicLike, runAiTurn } from "./_lib/aiHandler";
-import { createLimiter } from "./_lib/ratelimit";
-import { AiRequestSchema } from "./_lib/schema";
-import { createWritableSseSink, type SseSink } from "./_lib/sse";
+import { type AnthropicLike, runAiTurn } from "./_lib/aiHandler.js";
+import { createLimiter } from "./_lib/ratelimit.js";
+import { AiRequestSchema } from "./_lib/schema.js";
+import { createWritableSseSink, type SseSink } from "./_lib/sse.js";
 
 function posIntEnv(value: string | undefined, fallback: number): number {
   const n = Number(value);

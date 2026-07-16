@@ -1,4 +1,4 @@
-import { SKILL_REFERENCES, type SkillReferenceName } from "../_skill/content";
+import { SKILL_REFERENCES, type SkillReferenceName } from "../_skill/content.js";
 
 export interface ServerTool {
   name: string;

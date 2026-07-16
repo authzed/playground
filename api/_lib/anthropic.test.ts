@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { ToolCollisionError, buildSystemBlocks, buildToolDefs } from "./anthropic";
+import { ToolCollisionError, buildSystemBlocks, buildToolDefs } from "./anthropic.js";
 
 describe("buildSystemBlocks", () => {
   it("puts the cached skill overview first and the live state after", () => {

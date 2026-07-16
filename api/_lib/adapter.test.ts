@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { handleAiRequest } from "../ai";
+import { handleAiRequest } from "../ai.js";
 
 const baseArgs = {
   ip: "1.2.3.4",

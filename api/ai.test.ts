@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { describeTurnError } from "./ai";
+import { describeTurnError } from "./ai.js";
 
 describe("describeTurnError", () => {
   it("maps a 429 with a Headers retry-after to a rate_limit error with timing", () => {

@@ -1,7 +1,7 @@
-import { SKILL_OVERVIEW } from "../_skill/content";
+import { SKILL_OVERVIEW } from "../_skill/content.js";
 
-import type { AiRequest } from "./schema";
-import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools";
+import type { AiRequest } from "./schema.js";
+import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
 
 export class ToolCollisionError extends Error {}
 

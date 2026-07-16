@@ -1,7 +1,7 @@
-import { buildSystemBlocks, buildToolDefs } from "./anthropic";
-import type { AiRequest } from "./schema";
-import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools";
-import type { SseSink } from "./sse";
+import { buildSystemBlocks, buildToolDefs } from "./anthropic.js";
+import type { AiRequest } from "./schema.js";
+import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
+import type { SseSink } from "./sse.js";
 
 export interface ContentBlock {
   type: string;
