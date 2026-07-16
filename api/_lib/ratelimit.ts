@@ -19,8 +19,8 @@ export function resolvePerMinute(env: NodeJS.ProcessEnv): number {
 }
 
 export function createLimiter(env: NodeJS.ProcessEnv): Limiter {
-  const url = env.UPSTASH_REDIS_REST_URL;
-  const token = env.UPSTASH_REDIS_REST_TOKEN;
+  const url = env.KV_REST_API_URL;
+  const token = env.KV_REST_API_TOKEN;
   if (!url || !token) return NOOP_LIMITER;
 
   const perMinute = resolvePerMinute(env);
