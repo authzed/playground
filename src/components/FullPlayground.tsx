@@ -123,6 +123,7 @@ enum SharingStatus {
 export function FullPlayground() {
   return (
     <>
+      <h1 className="sr-only">SpiceDB Playground</h1>
       <DiscordChatCrate
         serverId={AppConfig().discord.serverId}
         channelId={AppConfig().discord.channelId}
