@@ -18,7 +18,12 @@ export function MessageList({
   localParseService: LocalParseService;
 }) {
   const endRef = useRef<HTMLDivElement>(null);
-  useEffect(() => endRef.current?.scrollIntoView({ block: "end" }), [messages, busy]);
+  useEffect(() => {
+    // Some environments' scrollIntoView returns a Promise; an effect must
+    // return either nothing or a cleanup function, so don't let that value
+    // become this effect's implicit return.
+    endRef.current?.scrollIntoView({ block: "end" });
+  }, [messages, busy]);
 
   const last = messages.length > 0 ? messages[messages.length - 1] : undefined;
   const working =
