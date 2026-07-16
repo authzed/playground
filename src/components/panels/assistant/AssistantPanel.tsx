@@ -1,3 +1,5 @@
+import { usePostHog } from "@posthog/react";
+
 import { Button } from "@/components/ui/button";
 
 import { type DisplayMessage, useAssistantStore } from "../../../services/assistant/store";
@@ -24,16 +26,20 @@ export function AssistantPanel({
   const display = useAssistantStore((s) => s.display);
   const status = useAssistantStore((s) => s.status);
   const reset = useAssistantStore((s) => s.reset);
+  const posthog = usePostHog();
 
   const onUndo = (m: DisplayMessage) => {
     if (!m.checkpointRevisionId) return;
     const rev = useHistoryStore.getState().get(m.checkpointRevisionId);
-    if (rev) restoreRevision(datastore, rev);
+    if (!rev) return;
+    posthog.capture("playground_ai_state_restored");
+    restoreRevision(datastore, rev);
   };
 
   const busy = status === "streaming" || status === "executing_tools";
 
   const onNewChat = () => {
+    posthog.capture("playground_ai_chat_started");
     // Abort any in-flight turn before resetting — reset() alone bumps the
     // store's generation (so a stale turn's results are ignored when it
     // resolves), but doesn't stop the underlying fetch from still running.

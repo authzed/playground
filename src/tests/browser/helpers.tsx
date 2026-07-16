@@ -1,3 +1,4 @@
+import { PostHogProvider } from "@posthog/react";
 import {
   Outlet,
   RouterProvider,
@@ -6,6 +7,7 @@ import {
   createRoute,
   createRouter,
 } from "@tanstack/react-router";
+import posthog from "posthog-js";
 import { useMemo } from "react";
 import { CookiesProvider } from "react-cookie";
 import { expect } from "vitest";
@@ -36,13 +38,18 @@ function TestApp() {
     <>
       <Toaster />
       <CookiesProvider>
-        <ThemeProvider>
-          <SettingsProvider>
-            <TooltipProvider delayDuration={400}>
-              <RouterProvider router={router} />
-            </TooltipProvider>
-          </SettingsProvider>
-        </ThemeProvider>
+        {/* Mirrors App.tsx's PHProvider: the real app always wraps in a
+            PostHogProvider, even when posthog.init() is skipped (no env
+            vars) — components calling usePostHog() must always find one. */}
+        <PostHogProvider client={posthog}>
+          <ThemeProvider>
+            <SettingsProvider>
+              <TooltipProvider delayDuration={400}>
+                <RouterProvider router={router} />
+              </TooltipProvider>
+            </SettingsProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </CookiesProvider>
     </>
   );

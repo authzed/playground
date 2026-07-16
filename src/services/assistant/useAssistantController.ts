@@ -1,3 +1,4 @@
+import { usePostHog } from "@posthog/react";
 import { useCallback, useMemo, useRef } from "react";
 
 import { useDrawerStore } from "../../components/drawer/state";
@@ -26,6 +27,7 @@ export function useAssistantController(
 
   const registry = useMemo(() => buildDefaultRegistry(), []);
   const abortRef = useRef<AbortController | null>(null);
+  const posthog = usePostHog();
 
   const readState = useCallback((): StateSnapshot => readDatastoreDocs(datastoreRef.current), []);
 
@@ -53,6 +55,7 @@ export function useAssistantController(
       if (store.status === "streaming" || store.status === "executing_tools") return;
       if (!text.trim()) return;
 
+      posthog.capture("playground_ai_message_sent");
       store.appendUser(text);
       store.setStatus("streaming");
       // Captured so this turn's async continuation can detect a reset()
@@ -145,7 +148,7 @@ export function useAssistantController(
         useAssistantStore.getState().setStatus("error", { message });
       }
     },
-    [ctx, readState, registry],
+    [ctx, readState, registry, posthog],
   );
 
   const stop = useCallback(() => {
