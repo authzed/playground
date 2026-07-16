@@ -156,6 +156,13 @@ function runEditCheckWasm(
   result.outcomes.forEach((outcome, i) => {
     const item = items[i];
     switch (outcome.kind) {
+      case "pending":
+        // Queued but its callback never fired (e.g. an internal developer-service
+        // error mid-execute) — leave the item in its neutral not-checked state
+        // rather than fabricating a per-item error alongside the top-level
+        // SERVICE_ERROR banner this run will also surface.
+        item.status = LiveCheckItemStatus.NOT_CHECKED;
+        break;
       case "unparseable":
         item.status = LiveCheckItemStatus.NOT_VALID;
         item.debugInformation = undefined;

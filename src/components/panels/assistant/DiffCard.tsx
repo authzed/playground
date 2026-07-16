@@ -32,12 +32,39 @@ export function DiffCard({
   );
 }
 
-// Minimal line-level diff: removed lines prefixed '-', added lines '+'.
+function countLines(lines: string[]): Map<string, number> {
+  const counts = new Map<string, number>();
+  for (const l of lines) counts.set(l, (counts.get(l) ?? 0) + 1);
+  return counts;
+}
+
+// Minimal line-level diff: removed lines prefixed '-', added lines '+'. Lines
+// are compared as a multiset (counting duplicates), not a set — otherwise
+// deleting one of several identical lines looks like no change at all.
 function renderLineDiff(before: string, after: string) {
-  const b = new Set(before.split("\n"));
-  const a = new Set(after.split("\n"));
-  const removed = before.split("\n").filter((l) => !a.has(l));
-  const added = after.split("\n").filter((l) => !b.has(l));
+  const beforeLines = before.split("\n");
+  const afterLines = after.split("\n");
+
+  const afterRemaining = countLines(afterLines);
+  const removed = beforeLines.filter((l) => {
+    const remaining = afterRemaining.get(l) ?? 0;
+    if (remaining > 0) {
+      afterRemaining.set(l, remaining - 1);
+      return false;
+    }
+    return true;
+  });
+
+  const beforeRemaining = countLines(beforeLines);
+  const added = afterLines.filter((l) => {
+    const remaining = beforeRemaining.get(l) ?? 0;
+    if (remaining > 0) {
+      beforeRemaining.set(l, remaining - 1);
+      return false;
+    }
+    return true;
+  });
+
   if (removed.length === 0 && added.length === 0) {
     return <div className="text-muted-foreground">(whitespace or line-order change)</div>;
   }

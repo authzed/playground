@@ -50,4 +50,8 @@ export const explainCheckTool: AssistantTool<z.infer<typeof InputSchema>, Explai
   render(result) {
     return result.trace ? { kind: "trace", trace: result.trace } : undefined;
   },
+  isError: (result) => result.result === "error",
+  summarize: (result) => `check ⟹ ${result.result}`,
+  icon: "🔎",
+  label: "Explain check",
 };

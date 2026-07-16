@@ -2,7 +2,7 @@ import { z } from "zod";
 
 import type { LiveCheckItem, LiveCheckService } from "../../check";
 import { checkInputToWatch, statusLabel } from "../checkFormat";
-import { runCheck } from "../runners";
+import { type CheckRunResult, runCheck } from "../runners";
 import type { AssistantTool, ToolContext } from "../types";
 
 const CheckShape = {
@@ -16,7 +16,18 @@ function svc(ctx: ToolContext): LiveCheckService {
   return ctx.getServices().liveCheckService;
 }
 
-export const listCheckWatchesTool: AssistantTool<Record<string, never>> = {
+interface ListCheckWatchesResult {
+  watches: {
+    watch_id: string;
+    resource: string;
+    permission: string;
+    subject: string;
+    caveat_context: string;
+    status: ReturnType<typeof statusLabel>;
+  }[];
+}
+
+export const listCheckWatchesTool: AssistantTool<Record<string, never>, ListCheckWatchesResult> = {
   name: "list_check_watches",
   description: "List the current check watches with their live results.",
   parameters: z.object({}),
@@ -32,9 +43,24 @@ export const listCheckWatchesTool: AssistantTool<Record<string, never>> = {
       })),
     };
   },
+  summarize: (result) => {
+    const count = result.watches.length;
+    return `${count} watch${count === 1 ? "" : "es"}`;
+  },
+  icon: "📋",
+  label: "List check watches",
 };
 
-export const addCheckWatchTool: AssistantTool<z.infer<z.ZodObject<typeof CheckShape>>> = {
+interface AddCheckWatchResult {
+  watch_id: string;
+  current_result: CheckRunResult["result"];
+  message?: string;
+}
+
+export const addCheckWatchTool: AssistantTool<
+  z.infer<z.ZodObject<typeof CheckShape>>,
+  AddCheckWatchResult
+> = {
   name: "add_check_watch",
   description:
     "Add a persistent check watch (opens the Check Watches panel) and return its immediate result.",
@@ -46,10 +72,21 @@ export const addCheckWatchTool: AssistantTool<z.infer<z.ZodObject<typeof CheckSh
     const immediate = runCheck(ctx.getServices().developerService, ctx.datastore, watch);
     return { watch_id, current_result: immediate.result, message: immediate.message };
   },
+  isError: (result) => result.current_result === "error",
+  summarize: (result) => `watch added ⟹ ${result.current_result}`,
+  icon: "📌",
+  label: "Add check watch",
 };
 
+interface UpdateCheckWatchResult {
+  ok: boolean;
+  watch_id?: string;
+  error?: string;
+}
+
 export const updateCheckWatchTool: AssistantTool<
-  z.infer<z.ZodObject<{ watch_id: z.ZodString } & Partial<typeof CheckShape>>>
+  z.infer<z.ZodObject<{ watch_id: z.ZodString } & Partial<typeof CheckShape>>>,
+  UpdateCheckWatchResult
 > = {
   name: "update_check_watch",
   description: "Update an existing check watch's fields by watch_id.",
@@ -72,9 +109,17 @@ export const updateCheckWatchTool: AssistantTool<
     service.itemUpdated(watch);
     return { ok: true, watch_id: input.watch_id };
   },
+  summarize: (result) => (result.ok ? "watch updated" : (result.error ?? "failed")),
+  icon: "✏️",
+  label: "Update check watch",
 };
 
-export const removeCheckWatchTool: AssistantTool<{ watch_id: string }> = {
+interface RemoveCheckWatchResult {
+  ok: boolean;
+  error?: string;
+}
+
+export const removeCheckWatchTool: AssistantTool<{ watch_id: string }, RemoveCheckWatchResult> = {
   name: "remove_check_watch",
   description: "Remove a check watch by watch_id.",
   parameters: z.object({ watch_id: z.string() }),
@@ -85,4 +130,7 @@ export const removeCheckWatchTool: AssistantTool<{ watch_id: string }> = {
     service.removeItem(item);
     return { ok: true };
   },
+  summarize: (result) => (result.ok ? "watch removed" : (result.error ?? "failed")),
+  icon: "🗑",
+  label: "Remove check watch",
 };

@@ -4,7 +4,7 @@ import { useDrawerStore } from "../../components/drawer/state";
 import { useRevealStore } from "../../components/editor-groups/revealStore";
 import { useEditorStore } from "../../components/editor-groups/state";
 import AppConfig from "../configservice";
-import { DataStore, DataStoreItemKind } from "../datastore";
+import { DataStore, readDatastoreDocs } from "../datastore";
 import type { Services } from "../services";
 
 import { runAssistantTurn, type StateSnapshot } from "./controller";
@@ -27,15 +27,7 @@ export function useAssistantController(
   const registry = useMemo(() => buildDefaultRegistry(), []);
   const abortRef = useRef<AbortController | null>(null);
 
-  const readState = useCallback((): StateSnapshot => {
-    const ds = datastoreRef.current;
-    return {
-      schema: ds.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "",
-      relationships: ds.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "",
-      assertions: ds.getSingletonByKind(DataStoreItemKind.ASSERTIONS).editableContents ?? "",
-      expected: ds.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).editableContents ?? "",
-    };
-  }, []);
+  const readState = useCallback((): StateSnapshot => readDatastoreDocs(datastoreRef.current), []);
 
   const ctx = useMemo<ToolContext>(
     () => ({
@@ -63,6 +55,10 @@ export function useAssistantController(
 
       store.appendUser(text);
       store.setStatus("streaming");
+      // Captured so this turn's async continuation can detect a reset()
+      // (New chat / example load / share load) that happened while it was
+      // in flight and avoid resurrecting stale results into the fresh store.
+      const myGeneration = useAssistantStore.getState().generation;
 
       const checkpointRevisionId = ctx.history.record({
         source: "manual",
@@ -97,6 +93,10 @@ export function useAssistantController(
 
       const patchAssistant = (fn: (m: import("./store").DisplayMessage) => void) => {
         const s = useAssistantStore.getState();
+        // A reset() (bumping generation) means this turn is stale — its
+        // in-flight text/tool/artifact events must not resurrect into the
+        // fresh (possibly already-reused) display array.
+        if (s.generation !== myGeneration) return;
         const display = s.display.map((m) => (m.id === assistantId ? cloneAndPatch(m, fn) : m));
         s.setDisplay(display);
       };
@@ -113,6 +113,17 @@ export function useAssistantController(
           onArtifact: (artifact) => patchAssistant((m) => m.artifacts.push(artifact)),
         });
 
+        if (useAssistantStore.getState().generation !== myGeneration) return;
+
+        if (result.aborted) {
+          // The user clicked Stop — stop() already returned status to idle;
+          // just finalize the message with whatever streamed in before the abort.
+          patchAssistant((m) => {
+            m.state = "done";
+          });
+          return;
+        }
+
         const errText = result.error
           ? result.error.retryAfter
             ? `${result.error.message} (retry in ${result.error.retryAfter}s)`
@@ -125,6 +136,7 @@ export function useAssistantController(
         useAssistantStore.getState().setMessages(result.messages);
         useAssistantStore.getState().setStatus(result.error ? "error" : "idle", result.error);
       } catch (err) {
+        if (useAssistantStore.getState().generation !== myGeneration) return;
         const message = (err as Error).message;
         patchAssistant((m) => {
           m.state = "error";

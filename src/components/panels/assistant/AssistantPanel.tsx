@@ -20,7 +20,7 @@ export function AssistantPanel({
   datastore: DataStore;
   history: HistoryRecorder;
 }) {
-  const { submit } = useAssistantController(services, datastore, history);
+  const { submit, stop } = useAssistantController(services, datastore, history);
   const display = useAssistantStore((s) => s.display);
   const status = useAssistantStore((s) => s.status);
   const reset = useAssistantStore((s) => s.reset);
@@ -33,13 +33,21 @@ export function AssistantPanel({
 
   const busy = status === "streaming" || status === "executing_tools";
 
+  const onNewChat = () => {
+    // Abort any in-flight turn before resetting — reset() alone bumps the
+    // store's generation (so a stale turn's results are ignored when it
+    // resolves), but doesn't stop the underlying fetch from still running.
+    stop();
+    reset();
+  };
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex items-center justify-between border-b border-chrome-divider px-3 py-1.5 text-xs">
         <span className="font-semibold uppercase tracking-wide text-muted-foreground">
           Assistant
         </span>
-        <Button size="sm" variant="ghost" onClick={reset}>
+        <Button size="sm" variant="ghost" onClick={onNewChat}>
           New chat
         </Button>
       </div>

@@ -331,6 +331,25 @@ export abstract class DataStore {
   }
 }
 
+export interface DatastoreDocs {
+  schema: string;
+  relationships: string;
+  assertions: string;
+  expected: string;
+}
+
+/** Reads the 4 editable documents out of a datastore into one plain snapshot. */
+export function readDatastoreDocs(datastore: DataStore): DatastoreDocs {
+  return {
+    schema: datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "",
+    relationships:
+      datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "",
+    assertions: datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).editableContents ?? "",
+    expected:
+      datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).editableContents ?? "",
+  };
+}
+
 const LOCAL_STORAGE_DATASTORE_KEY_PREFIX = "playgrounddata";
 const LOCAL_STORAGE_DATASTORE_VERSION = "0.21";
 const LOCAL_STORAGE_DATASTORE_KEY = `${LOCAL_STORAGE_DATASTORE_KEY_PREFIX}-${LOCAL_STORAGE_DATASTORE_VERSION}`;

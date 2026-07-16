@@ -49,6 +49,17 @@ export interface AssistantTool<I = unknown, R = unknown> {
   // model-facing tool_result.
   render?: (result: R, input: I, ctx: ToolContext) => DisplayArtifact | undefined;
   redactFromModel?: readonly string[];
+  // Declares whether a result represents a failure. Defaults to checking a
+  // generic `ok` field; declared per tool when the result shape encodes
+  // failure differently (e.g. a check's `result: "error"`).
+  isError?: (result: R) => boolean;
+  // Short human-readable summary of the result, shown in the chat's tool
+  // activity chip. Defaults to the result's `error` field or "done".
+  summarize?: (result: R, input: I) => string;
+  // Display metadata for the tool activity chip. Defaults to a bullet icon
+  // and the raw tool name.
+  icon?: string;
+  label?: string;
 }
 
 export interface WireTool {

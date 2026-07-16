@@ -45,4 +45,17 @@ describe("assistant leaf components", () => {
     await screen.getByRole("button", { name: /undo/i }).click();
     expect(undone).toBe(true);
   });
+
+  it("detects removing one of several duplicate lines as a real change", async () => {
+    // Regression: a Set-based diff treated "a\na\nb" -> "a\nb" as no change at
+    // all, since "a" was still present in both versions' Sets.
+    const screen = await render(
+      <DiffCard diff={{ target: "schema", before: "a\na\nb", after: "a\nb" }} />,
+    );
+    await screen.getByRole("button", { name: /what changed/i }).click();
+    await expect.element(screen.getByText("- a")).toBeInTheDocument();
+    await expect
+      .element(screen.getByText(/whitespace or line-order change/))
+      .not.toBeInTheDocument();
+  });
 });

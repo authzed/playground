@@ -75,7 +75,11 @@ export const editDocumentTool: AssistantTool<EditDocumentInput, EditDocumentResu
           error: `old_string matched ${count} times; make it unique.`,
         };
       }
-      after = before.replace(oldStr, input.new_string ?? "");
+      // Splice by index rather than String.replace: the replacement string may
+      // contain literal "$&"/"$$"-style sequences that replace() would treat as
+      // substitution patterns instead of literal text.
+      const idx = before.indexOf(oldStr);
+      after = before.slice(0, idx) + (input.new_string ?? "") + before.slice(idx + oldStr.length);
     }
 
     ctx.datastore.update(item, after);
@@ -95,4 +99,10 @@ export const editDocumentTool: AssistantTool<EditDocumentInput, EditDocumentResu
     if (result.before === result.after) return undefined;
     return { kind: "diff", target: result.target, before: result.before, after: result.after };
   },
+  summarize(result) {
+    if (result.applied_summary) return result.applied_summary;
+    return result.ok ? "edited" : (result.error ?? "error");
+  },
+  icon: "✎",
+  label: "Edit document",
 };

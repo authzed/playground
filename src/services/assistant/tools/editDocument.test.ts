@@ -41,6 +41,24 @@ describe("editDocumentTool", () => {
     expect(item.editableContents).toContain("definition doc {}");
   });
 
+  it("treats new_string literally instead of as a replacement pattern", async () => {
+    // Regression: String.replace() interprets "$&"/"$$" in the replacement
+    // argument as substitution tokens, silently corrupting a new_string that
+    // happens to contain one of them.
+    const { ctx, item } = ctxWith("definition user {}\n");
+    const res = await editDocumentTool.execute(
+      {
+        target: "schema",
+        op: "str_replace",
+        old_string: "definition user {}",
+        new_string: "// cost is $$5, ref: $&",
+      },
+      ctx,
+    );
+    expect(res.ok).toBe(true);
+    expect(item.editableContents).toBe("// cost is $$5, ref: $&\n");
+  });
+
   it("fails when str_replace matches zero times", async () => {
     const { ctx, update } = ctxWith("definition user {}\n");
     const res = await editDocumentTool.execute(

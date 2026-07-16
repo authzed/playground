@@ -46,7 +46,17 @@ export const useHistoryStore = create<HistoryState>((set, get) => ({
   storage: null,
   async hydrate(storage) {
     const s = storage ?? idbHistoryStorage();
-    set({ storage: s, revisions: await s.load() });
+    const revisionsBeforeLoad = get().revisions;
+    const loaded = await s.load();
+    // record()/clear() always replace `revisions` with a new array. If it's
+    // no longer the one we started with, something else (e.g. a reset to a
+    // blank/example document) touched history while this load was in
+    // flight — don't clobber it with stale on-disk history.
+    if (get().revisions !== revisionsBeforeLoad) {
+      set({ storage: s });
+      return;
+    }
+    set({ storage: s, revisions: loaded });
   },
   record(entry) {
     const revs = get().revisions;

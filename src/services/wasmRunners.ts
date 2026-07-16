@@ -33,7 +33,11 @@ export interface CheckTuple {
 export type CheckOutcome =
   | { kind: "unparseable" }
   | { kind: "error"; message: string }
-  | { kind: "caveated"; debugInformation?: DebugInformation }
+  // The check was queued but its callback never fired (e.g. the developer
+  // service hit an internal error mid-execute). Distinct from "error" so
+  // consumers can treat it as neutral/not-yet-resolved rather than a failure.
+  | { kind: "pending" }
+  | { kind: "caveated"; debugInformation?: DebugInformation; missingContext?: string[] }
   | { kind: "member"; debugInformation?: DebugInformation }
   | { kind: "not_member"; debugInformation?: DebugInformation };
 
@@ -53,10 +57,7 @@ export function runChecksAgainst(
     warnings = result.warnings;
   });
 
-  const outcomes: CheckOutcome[] = tuples.map(() => ({
-    kind: "error",
-    message: "Check did not complete.",
-  }));
+  const outcomes: CheckOutcome[] = tuples.map(() => ({ kind: "pending" }));
   tuples.forEach((tuple, i) => {
     const parsed = parseRelationship(
       checkTupleString(tuple.object, tuple.action, tuple.subject, tuple.context),
@@ -80,7 +81,11 @@ export function runChecksAgainst(
           result.partialCaveatInfo?.missingRequiredContext &&
           result.partialCaveatInfo.missingRequiredContext.length > 0
         ) {
-          outcomes[i] = { kind: "caveated", debugInformation: result.resolvedDebugInformation };
+          outcomes[i] = {
+            kind: "caveated",
+            debugInformation: result.resolvedDebugInformation,
+            missingContext: result.partialCaveatInfo.missingRequiredContext,
+          };
           return;
         }
         outcomes[i] =

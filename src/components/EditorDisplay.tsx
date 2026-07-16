@@ -581,7 +581,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
       startLineNumber: r.startLine,
       startColumn: r.startColumn ?? 1,
       endLineNumber: r.endLine ?? r.startLine,
-      endColumn: r.endColumn ?? 1,
+      // Mirror startColumn (rather than defaulting to 1) so a startColumn given
+      // without an explicit end stays a valid, non-inverted single-line range.
+      endColumn: r.endColumn ?? r.startColumn ?? 1,
     });
     editor.setPosition({ lineNumber: r.startLine, column: r.startColumn ?? 1 });
     // depend on nonce so repeated reveals to the same line re-fire

@@ -1,4 +1,5 @@
 import { useMonaco } from "@monaco-editor/react";
+import { useDebouncedValue } from "@tanstack/react-pacer/debouncer";
 import { useEffect, useState, type ReactNode } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -92,6 +93,11 @@ function MonacoHighlighted({
   const monaco = useMonaco();
   const theme = useResolvedTheme();
   const [html, setHtml] = useState<string | null>(null);
+  // Debounce the code driving colorize: a streaming message appends a
+  // character at a time, and re-running full-block colorize on every one of
+  // those deltas is wasted work — settle for a beat (or until streaming
+  // finishes) before re-highlighting.
+  const [debouncedCode] = useDebouncedValue(code, { wait: 300 });
 
   useEffect(() => {
     if (!monaco || !monaco.languages.getLanguages().some((l) => l.id === monacoLang)) {
@@ -100,7 +106,7 @@ function MonacoHighlighted({
     }
     let cancelled = false;
     monaco.editor
-      .colorize(code, monacoLang, {})
+      .colorize(debouncedCode, monacoLang, {})
       .then((result) => {
         if (!cancelled) setHtml(result);
       })
@@ -111,7 +117,7 @@ function MonacoHighlighted({
       cancelled = true;
     };
     // `theme` is a dependency so the block re-colorizes when the editor theme flips.
-  }, [monaco, monacoLang, code, theme]);
+  }, [monaco, monacoLang, debouncedCode, theme]);
 
   return html === null ? (
     <code>{fallback}</code>

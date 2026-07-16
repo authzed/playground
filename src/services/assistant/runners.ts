@@ -31,12 +31,26 @@ function outcomeToResult(o: CheckOutcome): CheckRunResult {
     case "not_member":
       return { result: "denied" };
     case "caveated":
-      return { result: "conditional" };
+      return { result: "conditional", missingContext: o.missingContext };
     case "error":
       return { result: "error", message: o.message };
     case "unparseable":
       return { result: "error", message: "Could not parse the check tuple." };
+    case "pending":
+      return { result: "error", message: "Check did not complete." };
   }
+}
+
+function runSingleCheck(
+  dev: DeveloperService,
+  datastore: DataStore,
+  tuple: CheckTuple,
+): CheckOutcome {
+  const schema = readDoc(datastore, DataStoreItemKind.SCHEMA);
+  const relationships = readDoc(datastore, DataStoreItemKind.RELATIONSHIPS);
+  const res = runChecksAgainst(dev, schema, relationships, [tuple]);
+  if (!res) return { kind: "error", message: "Could not compile the schema." };
+  return res.outcomes[0];
 }
 
 export function runCheck(
@@ -44,11 +58,7 @@ export function runCheck(
   datastore: DataStore,
   tuple: CheckTuple,
 ): CheckRunResult {
-  const schema = readDoc(datastore, DataStoreItemKind.SCHEMA);
-  const relationships = readDoc(datastore, DataStoreItemKind.RELATIONSHIPS);
-  const res = runChecksAgainst(dev, schema, relationships, [tuple]);
-  if (!res) return { result: "error", message: "Could not compile the schema." };
-  return outcomeToResult(res.outcomes[0]);
+  return outcomeToResult(runSingleCheck(dev, datastore, tuple));
 }
 
 // Like runCheck but also returns the debug trace (for the explain_check tool).
@@ -57,11 +67,7 @@ export function explainCheck(
   datastore: DataStore,
   tuple: CheckTuple,
 ): CheckExplainResult {
-  const schema = readDoc(datastore, DataStoreItemKind.SCHEMA);
-  const relationships = readDoc(datastore, DataStoreItemKind.RELATIONSHIPS);
-  const res = runChecksAgainst(dev, schema, relationships, [tuple]);
-  if (!res) return { result: "error", message: "Could not compile the schema." };
-  const o = res.outcomes[0];
+  const o = runSingleCheck(dev, datastore, tuple);
   const debugInformation =
     o.kind === "member" || o.kind === "not_member" || o.kind === "caveated"
       ? o.debugInformation

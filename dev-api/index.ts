@@ -1,12 +1,10 @@
 import { createHash } from "crypto";
 import type { IncomingMessage, ServerResponse } from "http";
 
-import Anthropic from "@anthropic-ai/sdk";
 import type { ViteDevServer } from "vite";
 import z from "zod";
 
-import { type AnthropicLike } from "../api/_lib/aiHandler";
-import { createWritableSseSink } from "../api/_lib/sse";
+import { bootstrapAiRoute } from "../api/_lib/aiRoute";
 import { handleAiRequest } from "../api/ai";
 import { zSharedDataV2 } from "../src/schemas/share-data";
 
@@ -101,28 +99,7 @@ export function configureServer(server: ViteDevServer) {
         return json(res, 400, { error: "Invalid JSON" });
       }
 
-      res.setHeader("Content-Type", "text/event-stream");
-      res.setHeader("Cache-Control", "no-cache, no-transform");
-      res.setHeader("X-Accel-Buffering", "no");
-
-      const sink = createWritableSseSink(
-        (chunk) => res.write(chunk),
-        () => res.end(),
-      );
-      const respondError = (status: number, b: unknown) => {
-        if (res.headersSent) {
-          sink.send("error", {
-            message: (b as { error?: string }).error ?? "Server error",
-            retryAfter: (b as { retryAfter?: number }).retryAfter,
-          });
-          sink.end();
-          return;
-        }
-        json(res, status, b);
-      };
-
-      const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
-        .messages as unknown as AnthropicLike;
+      const { sink, anthropic, respondError } = bootstrapAiRoute(res);
 
       await handleAiRequest({
         method: "POST",

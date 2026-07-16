@@ -1,21 +1,14 @@
 import { useEffect, useMemo, useRef } from "react";
 
 import type { HistoryRecorder } from "../assistant/types";
-import { DataStore, DataStoreItemKind } from "../datastore";
+import { DataStore, readDatastoreDocs } from "../datastore";
 import { consumePendingSessionReset } from "../sessionReset";
 
 import { useHistoryStore } from "./historyStore";
 import type { HistoryDocs, Revision } from "./types";
 
 export function readHistoryDocs(datastore: DataStore): HistoryDocs {
-  return {
-    schema: datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "",
-    relationships:
-      datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "",
-    assertions: datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).editableContents ?? "",
-    expected:
-      datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).editableContents ?? "",
-  };
+  return readDatastoreDocs(datastore);
 }
 
 export function restoreRevision(datastore: DataStore, revision: Revision): void {

@@ -26,6 +26,9 @@ export interface AssistantState {
   display: DisplayMessage[];
   status: AssistantStatus;
   error?: { message: string; retryAfter?: number };
+  // Bumped by reset() so an in-flight turn's async continuation can tell a
+  // reset happened mid-turn and skip resurrecting stale results into the store.
+  generation: number;
   reset: () => void;
   setStatus: (s: AssistantStatus, error?: AssistantState["error"]) => void;
   appendUser: (text: string) => void;
@@ -42,7 +45,15 @@ export const useAssistantStore = create<AssistantState>()(
       display: [],
       status: "idle",
       error: undefined,
-      reset: () => set({ messages: [], display: [], status: "idle", error: undefined }),
+      generation: 0,
+      reset: () =>
+        set((s) => ({
+          messages: [],
+          display: [],
+          status: "idle",
+          error: undefined,
+          generation: s.generation + 1,
+        })),
       setStatus: (status, error) => set({ status, error }),
       appendUser: (text) =>
         set((s) => ({

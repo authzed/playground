@@ -1,4 +1,5 @@
 import { buildSystemBlocks, buildToolDefs } from "./anthropic.js";
+import { ParagraphBreakTracker } from "./paragraphBreak.js";
 import type { AiRequest } from "./schema.js";
 import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
 import type { SseSink } from "./sse.js";
@@ -43,10 +44,10 @@ export async function runAiTurn(
   // so text from several model round-trips arrives back-to-back. Insert a paragraph
   // break before each later trip's first text so the blocks don't run together
   // (mirrors the client-side separator that spans client-tool round-trips).
-  let hasEmittedText = false;
+  const paragraphBreaks = new ParagraphBreakTracker();
 
   for (let trip = 0; trip < deps.maxRoundTrips; trip++) {
-    let tripEmittedText = false;
+    paragraphBreaks.nextTrip();
     const stream = deps.anthropic.stream({
       model: deps.model,
       max_tokens: deps.maxTokens,
@@ -55,10 +56,7 @@ export async function runAiTurn(
       messages,
     });
     stream.on("text", (delta) => {
-      const prefix = !tripEmittedText && hasEmittedText ? "\n\n" : "";
-      tripEmittedText = true;
-      hasEmittedText = true;
-      sink.send("text", { delta: prefix + delta });
+      sink.send("text", { delta: paragraphBreaks.apply(delta) });
     });
     const final = await stream.finalMessage();
 

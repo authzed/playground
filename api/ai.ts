@@ -1,11 +1,11 @@
-import Anthropic from "@anthropic-ai/sdk";
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import z from "zod";
 
 import { type AnthropicLike, runAiTurn } from "./_lib/aiHandler.js";
+import { bootstrapAiRoute } from "./_lib/aiRoute.js";
 import { createLimiter } from "./_lib/ratelimit.js";
 import { AiRequestSchema } from "./_lib/schema.js";
-import { createWritableSseSink, type SseSink } from "./_lib/sse.js";
+import type { SseSink } from "./_lib/sse.js";
 
 function posIntEnv(value: string | undefined, fallback: number): number {
   const n = Number(value);
@@ -110,39 +110,14 @@ function clientIp(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache, no-transform");
-  res.setHeader("Connection", "keep-alive");
-  res.setHeader("X-Accel-Buffering", "no");
-
-  const sink = createWritableSseSink(
-    (chunk) => res.write(chunk),
-    () => res.end(),
-  );
-
-  const respondError = (status: number, body: unknown) => {
-    // If headers already sent (mid-stream), surface as an SSE error instead.
-    if (res.headersSent) {
-      sink.send("error", {
-        message: (body as { error?: string }).error ?? "Server error",
-        retryAfter: (body as { retryAfter?: number }).retryAfter,
-      });
-      sink.end();
-      return;
-    }
-    res.statusCode = status;
-    res.setHeader("Content-Type", "application/json");
-    res.end(JSON.stringify(body));
-  };
-
-  const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY }).messages;
+  const { sink, anthropic, respondError } = bootstrapAiRoute(res);
 
   await handleAiRequest({
     method: req.method ?? "GET",
     body: req.body,
     ip: clientIp(req),
     env: process.env,
-    anthropic: anthropic as unknown as AnthropicLike,
+    anthropic,
     sink,
     respondError,
   });
