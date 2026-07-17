@@ -28,6 +28,7 @@ import {
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 
 import { useDrawerStore } from "./drawer/state";
+import { useSchemaJumpStore } from "./editor-groups/schema-jump";
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
 import registerTupleLanguage, { TUPLE_LANGUAGE_NAME } from "./relationshipeditor/tuplelang";
 
@@ -91,6 +92,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   }, [props.services.liveCheckService]);
 
   const location = useLocation();
+  const pendingSchemaReveal = useSchemaJumpStore((s) => s.pendingReveal);
 
   const datastore = props.datastore;
   const currentItem = props.currentItem;
@@ -455,6 +457,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
 
       updateMarkers();
       updatePosition();
+      revealSchemaJump();
     }
   };
 
@@ -558,6 +561,39 @@ export function EditorDisplay(props: EditorDisplayProps) {
       }
     }
   };
+
+  // Reveal a location requested via the schema-jump store. Called both from the
+  // store subscription effect (schema editor already mounted) and from
+  // handleEditorMounted (schema tab was just activated, editor mounts fresh).
+  const revealSchemaJump = () => {
+    if (currentItem?.kind !== DataStoreItemKind.SCHEMA) {
+      return;
+    }
+    const pending = useSchemaJumpStore.getState().pendingReveal;
+    if (!pending) {
+      return;
+    }
+    const editors = editorRefs.current;
+    if (currentItem.id === undefined || !(currentItem.id in editors)) {
+      return;
+    }
+    const editor = editors[currentItem.id];
+    editor.revealRangeInCenter({
+      startLineNumber: pending.line,
+      startColumn: pending.column,
+      endLineNumber: pending.line,
+      endColumn: pending.column,
+    });
+    editor.setPosition({ lineNumber: pending.line, column: pending.column });
+    editor.focus();
+    useSchemaJumpStore.getState().consumeReveal();
+  };
+
+  useEffect(() => {
+    revealSchemaJump();
+    // NOTE: only re-run when a new reveal is requested.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [pendingSchemaReveal]);
 
   useEffect(() => {
     updatePosition();
