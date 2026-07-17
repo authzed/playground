@@ -1,4 +1,9 @@
 {
+  "functions": {
+    "api/ai.ts": {
+      "maxDuration": 60
+    }
+  },
   "headers": [
     {
       "source": "/static/(.*)",
