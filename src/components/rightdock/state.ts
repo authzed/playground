@@ -30,9 +30,12 @@ type Actions = {
   setWidth: (p: DockPanelId, w: number) => void;
 };
 
+// Open to the assistant by default so first-time visitors see it right away.
+// Returning visitors get their persisted open/closed state instead (see
+// `persist` below), which overrides this default once rehydrated.
 const DEFAULT_STATE: State = {
-  open: false,
-  activePanel: null,
+  open: true,
+  activePanel: "assistant",
   perPanelWidth: { assistant: DEFAULT_WIDTH, history: DEFAULT_WIDTH },
 };
 
@@ -65,4 +68,4 @@ export const useRightDockStore = create<State & Actions>()(
   ),
 );
 
-export { DEFAULT_WIDTH, MIN_WIDTH };
+export { DEFAULT_STATE, DEFAULT_WIDTH, MIN_WIDTH };

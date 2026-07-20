@@ -4,6 +4,7 @@ import { render } from "vitest-browser-react";
 import { DockActivityBar } from "../../components/rightdock/DockActivityBar";
 import { RightDock } from "../../components/rightdock/RightDock";
 import { useRightDockStore } from "../../components/rightdock/state";
+import { TooltipProvider } from "../../components/ui/tooltip";
 
 beforeEach(() => {
   useRightDockStore.setState({ open: false, activePanel: null });
@@ -11,13 +12,21 @@ beforeEach(() => {
 
 describe("DockActivityBar", () => {
   it("hides the Assistant button when AI is disabled but keeps History", async () => {
-    const screen = await render(<DockActivityBar aiEnabled={false} />);
+    const screen = await render(
+      <TooltipProvider>
+        <DockActivityBar aiEnabled={false} />
+      </TooltipProvider>,
+    );
     await expect.element(screen.getByRole("button", { name: "History" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Assistant" }).elements()).toHaveLength(0);
   });
 
   it("shows both buttons when AI is enabled", async () => {
-    const screen = await render(<DockActivityBar aiEnabled={true} />);
+    const screen = await render(
+      <TooltipProvider>
+        <DockActivityBar aiEnabled={true} />
+      </TooltipProvider>,
+    );
     await expect.element(screen.getByRole("button", { name: "Assistant" })).toBeInTheDocument();
     await expect.element(screen.getByRole("button", { name: "History" })).toBeInTheDocument();
   });

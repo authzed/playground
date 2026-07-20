@@ -1,9 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { useRightDockStore } from "./state";
+import { DEFAULT_STATE, useRightDockStore } from "./state";
 
 describe("useRightDockStore", () => {
   beforeEach(() => useRightDockStore.getState().closeDock());
+
+  it("defaults new visitors to the assistant panel open", () => {
+    expect(DEFAULT_STATE.open).toBe(true);
+    expect(DEFAULT_STATE.activePanel).toBe("assistant");
+  });
 
   it("opens a panel", () => {
     useRightDockStore.getState().openPanel("assistant");
