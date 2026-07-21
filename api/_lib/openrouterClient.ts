@@ -75,8 +75,23 @@ interface RawDeltaToolCall {
   function?: { name?: string; arguments?: string };
 }
 interface RawChunk {
-  error?: { message?: string; code?: number };
+  error?: { message?: string; code?: number | string };
   choices?: [{ delta?: { content?: string; tool_calls?: RawDeltaToolCall[] }; finish_reason?: string }];
+}
+
+// OpenRouter's own docs disagree on whether a mid-stream error's `code` is a
+// numeric HTTP-status mirror or a string error type, so accept either: pass
+// a real number through, parse a numeric string (e.g. "429"), and fall back
+// to a generic server error for a non-numeric string rather than comparing
+// a string against describeTurnError's numeric status checks and silently
+// mismatching every one of them.
+function normalizeErrorCode(code: number | string | undefined): number {
+  if (typeof code === "number") return code;
+  if (typeof code === "string") {
+    const parsed = Number(code);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return 500;
 }
 
 /**
@@ -88,7 +103,7 @@ export function accumulateChunk(acc: StreamAccumulator, chunk: RawChunk): string
   if (chunk.error) {
     throw new OpenRouterApiError(
       chunk.error.message ?? "OpenRouter stream error",
-      chunk.error.code ?? 500,
+      normalizeErrorCode(chunk.error.code),
       new Headers(),
     );
   }

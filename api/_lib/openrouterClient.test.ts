@@ -72,6 +72,28 @@ describe("accumulateChunk / finalizeAccumulator", () => {
     ).toThrow(OpenRouterApiError);
   });
 
+  it("parses a numeric-string error code (docs are inconsistent on the type)", () => {
+    const acc = createAccumulator();
+    try {
+      accumulateChunk(acc, { error: { message: "rate limited", code: "429" } });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(OpenRouterApiError);
+      expect((err as OpenRouterApiError).status).toBe(429);
+    }
+  });
+
+  it("falls back to a generic status for a non-numeric string error code", () => {
+    const acc = createAccumulator();
+    try {
+      accumulateChunk(acc, { error: { message: "provider disconnected", code: "server_error" } });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(OpenRouterApiError);
+      expect((err as OpenRouterApiError).status).toBe(500);
+    }
+  });
+
   it("defaults finish_reason to stop when none was ever seen", () => {
     const acc = createAccumulator();
     accumulateChunk(acc, { choices: [{ delta: { content: "hi" } }] });
