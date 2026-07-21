@@ -9,7 +9,10 @@ const baseArgs = {
     stream: () => ({
       on: () => {},
       finalMessage: () =>
-        Promise.resolve({ message: { role: "assistant", content: "hi" }, finish_reason: "stop" }),
+        Promise.resolve({
+          message: { role: "assistant" as const, content: "hi" },
+          finish_reason: "stop",
+        }),
     }),
   },
 };
