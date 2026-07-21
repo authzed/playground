@@ -1,13 +1,6 @@
 import { ParagraphBreakTracker } from "./paragraphBreak";
 import type { ToolRegistry } from "./registry";
-import type {
-  ChatMessage,
-  ContentBlock,
-  DisplayArtifact,
-  SseEvent,
-  ToolResultBlock,
-  WireTool,
-} from "./types";
+import type { ChatMessage, ClientToolCall, DisplayArtifact, SseEvent, ToolMessage, WireTool } from "./types";
 import type { ToolContext } from "./types";
 
 export interface StateSnapshot {
@@ -71,7 +64,7 @@ export async function runAssistantTurn(
         if (ev.event === "text") {
           deps.onText(paragraphBreaks.apply(ev.data.delta));
         } else if (ev.event === "done") {
-          messages.push({ role: "assistant", content: ev.data.assistantContent });
+          messages.push(ev.data.assistantMessage);
           finished = true;
         } else if (ev.event === "error") {
           doneErr = { message: ev.data.message, retryAfter: ev.data.retryAfter };
@@ -97,47 +90,31 @@ export async function runAssistantTurn(
     if (finished && !handoff) return { messages };
     if (!handoff) return { messages }; // stream ended without done/handoff — treat as complete
 
-    messages.push({ role: "assistant", content: handoff.assistantContent });
-
-    const results: ToolResultBlock[] = handoff.serverToolResults.map((r) => ({
-      type: "tool_result",
-      tool_use_id: r.tool_use_id,
-      content: r.content,
-    }));
+    messages.push(handoff.assistantMessage);
+    messages.push(...handoff.serverToolResults);
 
     for (const call of handoff.clientToolCalls) {
-      results.push(await executeClientTool(call, deps));
+      messages.push(await executeClientTool(call, deps));
     }
-
-    messages.push({ role: "user", content: results as unknown as ContentBlock[] });
   }
 
   return { messages, error: { message: "Reached the step limit for this turn." } };
 }
 
-async function executeClientTool(
-  call: { id: string; name: string; input: unknown },
-  deps: TurnDeps,
-): Promise<ToolResultBlock> {
+async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<ToolMessage> {
   const tool = deps.registry.get(call.name);
   if (!tool) {
     deps.onToolActivity({ name: call.name, summary: "unknown tool", ok: false });
-    return {
-      type: "tool_result",
-      tool_use_id: call.id,
-      content: `Unknown tool "${call.name}".`,
-      is_error: true,
-    };
+    return { role: "tool", tool_call_id: call.id, content: `Unknown tool "${call.name}".` };
   }
 
   const parsed = tool.parameters.safeParse(call.input);
   if (!parsed.success) {
     deps.onToolActivity({ name: call.name, summary: "invalid input", ok: false });
     return {
-      type: "tool_result",
-      tool_use_id: call.id,
+      role: "tool",
+      tool_call_id: call.id,
       content: `Invalid input for ${call.name}: ${parsed.error.message}`,
-      is_error: true,
     };
   }
 
@@ -161,19 +138,13 @@ async function executeClientTool(
       summary: tool.summarize ? tool.summarize(result, parsed.data) : defaultSummarize(result),
       ok,
     });
-    return {
-      type: "tool_result",
-      tool_use_id: call.id,
-      content: JSON.stringify(modelResult),
-      is_error: !ok,
-    };
+    return { role: "tool", tool_call_id: call.id, content: JSON.stringify(modelResult) };
   } catch (err) {
     deps.onToolActivity({ name: call.name, summary: "error", ok: false });
     return {
-      type: "tool_result",
-      tool_use_id: call.id,
+      role: "tool",
+      tool_call_id: call.id,
       content: `Tool ${call.name} threw: ${(err as Error).message}`,
-      is_error: true,
     };
   }
 }

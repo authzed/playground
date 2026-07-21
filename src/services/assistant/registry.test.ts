@@ -25,7 +25,7 @@ describe("ToolRegistry", () => {
     expect(() => r.register(tool)).toThrow(/demo/);
   });
 
-  it("produces Anthropic wire tool defs with an input_schema object", () => {
+  it("produces wire tool defs with an input_schema object", () => {
     const r = new ToolRegistry();
     r.register(tool);
     const wire = r.toWire();

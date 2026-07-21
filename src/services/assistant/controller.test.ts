@@ -37,7 +37,7 @@ describe("runAssistantTurn", () => {
       { event: "text", data: { delta: "hi" } },
       {
         event: "done",
-        data: { assistantContent: [{ type: "text", text: "hi" }], stop_reason: "end_turn" },
+        data: { assistantMessage: { role: "assistant", content: "hi" }, finish_reason: "stop" },
       },
     ]);
     const start: ChatMessage[] = [{ role: "user", content: "yo" }];
@@ -45,7 +45,7 @@ describe("runAssistantTurn", () => {
     expect(onText).toHaveBeenCalledWith("hi");
     expect(result.messages[result.messages.length - 1]).toEqual({
       role: "assistant",
-      content: [{ type: "text", text: "hi" }],
+      content: "hi",
     });
     expect(result.error).toBeUndefined();
   });
@@ -67,9 +67,17 @@ describe("runAssistantTurn", () => {
           {
             event: "handoff",
             data: {
-              assistantContent: [
-                { type: "tool_use", id: "t1", name: "run_check", input: { resource: "doc:x" } },
-              ],
+              assistantMessage: {
+                role: "assistant",
+                content: null,
+                tool_calls: [
+                  {
+                    id: "t1",
+                    type: "function",
+                    function: { name: "run_check", arguments: '{"resource":"doc:x"}' },
+                  },
+                ],
+              },
               serverToolResults: [],
               clientToolCalls: [{ id: "t1", name: "run_check", input: { resource: "doc:x" } }],
             },
@@ -78,7 +86,7 @@ describe("runAssistantTurn", () => {
         [
           {
             event: "done",
-            data: { assistantContent: [{ type: "text", text: "done" }], stop_reason: "end_turn" },
+            data: { assistantMessage: { role: "assistant", content: "done" }, finish_reason: "stop" },
           },
         ],
       ];
@@ -94,10 +102,9 @@ describe("runAssistantTurn", () => {
     });
 
     expect(execute).toHaveBeenCalledWith({ resource: "doc:x" }, ctx);
-    // messages: user, assistant(tool_use), user(tool_result), assistant(text)
+    // messages: user, assistant(tool_calls), tool(result), assistant(text)
     expect(result.messages).toHaveLength(4);
-    const toolResultMsg = result.messages[2] as any;
-    expect(toolResultMsg.content[0]).toMatchObject({ type: "tool_result", tool_use_id: "t1" });
+    expect(result.messages[2]).toMatchObject({ role: "tool", tool_call_id: "t1" });
   });
 
   it("separates text from different round trips with a paragraph break", async () => {
@@ -116,7 +123,11 @@ describe("runAssistantTurn", () => {
         {
           event: "handoff",
           data: {
-            assistantContent: [{ type: "tool_use", id: "t", name: "noop", input: {} }],
+            assistantMessage: {
+              role: "assistant",
+              content: null,
+              tool_calls: [{ id: "t", type: "function", function: { name: "noop", arguments: "{}" } }],
+            },
             serverToolResults: [],
             clientToolCalls: [{ id: "t", name: "noop", input: {} }],
           },
@@ -126,10 +137,7 @@ describe("runAssistantTurn", () => {
         { event: "text", data: { delta: "Second block." } },
         {
           event: "done",
-          data: {
-            assistantContent: [{ type: "text", text: "Second block." }],
-            stop_reason: "end_turn",
-          },
+          data: { assistantMessage: { role: "assistant", content: "Second block." }, finish_reason: "stop" },
         },
       ],
     ];
@@ -158,7 +166,7 @@ describe("runAssistantTurn", () => {
       { event: "text", data: { delta: "two" } },
       {
         event: "done",
-        data: { assistantContent: [{ type: "text", text: "one two" }], stop_reason: "end_turn" },
+        data: { assistantMessage: { role: "assistant", content: "one two" }, finish_reason: "stop" },
       },
     ]);
     await runAssistantTurn([{ role: "user", content: "yo" }], {
@@ -182,7 +190,11 @@ describe("runAssistantTurn", () => {
       {
         event: "handoff",
         data: {
-          assistantContent: [{ type: "tool_use", id: "t", name: "noop", input: {} }],
+          assistantMessage: {
+            role: "assistant",
+            content: null,
+            tool_calls: [{ id: "t", type: "function", function: { name: "noop", arguments: "{}" } }],
+          },
           serverToolResults: [],
           clientToolCalls: [{ id: "t", name: "noop", input: {} }],
         },
