@@ -1,4 +1,4 @@
-import { createParser, type EventSourceMessage } from "eventsource-parser";
+import type { EventSourceMessage } from "eventsource-parser";
 import { EventSourceParserStream } from "eventsource-parser/stream";
 
 export interface OpenRouterToolCall {
