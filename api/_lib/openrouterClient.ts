@@ -104,9 +104,12 @@ function normalizeErrorCode(code: number | string | undefined): number {
  */
 export function accumulateChunk(acc: StreamAccumulator, chunk: RawChunk): string {
   if (chunk.error) {
+    const rawCode = chunk.error.code;
+    const baseMessage = chunk.error.message ?? "OpenRouter stream error";
+    const isNonNumericStringCode = typeof rawCode === "string" && !Number.isFinite(Number(rawCode));
     throw new OpenRouterApiError(
-      chunk.error.message ?? "OpenRouter stream error",
-      normalizeErrorCode(chunk.error.code),
+      isNonNumericStringCode ? `${baseMessage} (code: ${rawCode})` : baseMessage,
+      normalizeErrorCode(rawCode),
       new Headers(),
     );
   }
@@ -166,6 +169,34 @@ export function createOpenRouterClient(
   };
 }
 
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const MAX_ATTEMPTS = 3;
+
+// Retries only the request that establishes the connection — once any bytes
+// of the response body have been read, a failure is handled as a mid-stream
+// error instead (see accumulateChunk), since a partially-streamed response
+// can't be safely restarted without risking duplicated or lost text.
+async function fetchWithRetry(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    if (attempt > 0) {
+      const delayMs = Math.min(500 * 2 ** (attempt - 1), 4000);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+    try {
+      const res = await fetchImpl(url, init);
+      const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
+      if (res.ok || isLastAttempt || !RETRYABLE_STATUSES.has(res.status)) return res;
+    } catch (err) {
+      if (attempt === MAX_ATTEMPTS - 1) throw err;
+    }
+  }
+  throw new Error("unreachable"); // MAX_ATTEMPTS >= 1 guarantees a return or throw above
+}
+
 async function runStream(
   apiKey: string,
   fetchImpl: typeof fetch,
@@ -173,7 +204,7 @@ async function runStream(
   params: OpenRouterRequestParams,
   onText: (delta: string) => void,
 ): Promise<OpenRouterFinalMessage> {
-  const res = await fetchImpl(`${baseUrl}/chat/completions`, {
+  const res = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

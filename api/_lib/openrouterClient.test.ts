@@ -210,7 +210,86 @@ describe("createOpenRouterClient", () => {
     });
     await expect(stream.finalMessage()).rejects.toMatchObject({
       status: 500,
-      message: "Provider disconnected unexpectedly",
+      message: "Provider disconnected unexpectedly (code: server_error)",
     });
+  });
+
+  it("retries a transient network error and succeeds on a later attempt", async () => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      const fetchImpl = vi.fn().mockImplementation(() => {
+        calls++;
+        if (calls < 3) return Promise.reject(new Error("network blip"));
+        return Promise.resolve(
+          sseResponse([
+            'data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n',
+            'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
+            "data: [DONE]\n\n",
+          ]),
+        );
+      });
+      const client = createOpenRouterClient("sk-test", fetchImpl);
+      const stream = client.stream({
+        model: "anthropic/claude-sonnet-5",
+        max_tokens: 100,
+        messages: [],
+        tools: [],
+      });
+      const finalPromise = stream.finalMessage();
+      await vi.runAllTimersAsync();
+      const final = await finalPromise;
+
+      expect(calls).toBe(3);
+      expect(final.message.content).toBe("Hi");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("retries a retryable HTTP status and succeeds on a later attempt", async () => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      const fetchImpl = vi.fn().mockImplementation(() => {
+        calls++;
+        if (calls < 2) return Promise.resolve(new Response("", { status: 503 }));
+        return Promise.resolve(
+          sseResponse([
+            'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
+            "data: [DONE]\n\n",
+          ]),
+        );
+      });
+      const client = createOpenRouterClient("sk-test", fetchImpl);
+      const stream = client.stream({
+        model: "anthropic/claude-sonnet-5",
+        max_tokens: 100,
+        messages: [],
+        tools: [],
+      });
+      const finalPromise = stream.finalMessage();
+      await vi.runAllTimersAsync();
+      await finalPromise;
+
+      expect(calls).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not retry a non-retryable HTTP status", async () => {
+    const fetchImpl = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ error: { message: "Invalid API key" } }), { status: 401 }),
+    );
+    const client = createOpenRouterClient("sk-test", fetchImpl);
+    const stream = client.stream({
+      model: "anthropic/claude-sonnet-5",
+      max_tokens: 100,
+      messages: [],
+      tools: [],
+    });
+    await expect(stream.finalMessage()).rejects.toMatchObject({ status: 401 });
+    expect(fetchImpl).toHaveBeenCalledTimes(1);
   });
 });
