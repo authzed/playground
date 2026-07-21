@@ -89,18 +89,22 @@ interface RawChunk {
 // HTTP 200 status, so a mid-stream failure arrives as an inline `error` with
 // a string type code (e.g. "server_error") rather than a real HTTP status —
 // confirmed against https://openrouter.ai/docs/api_reference/streaming#handling-errors-during-streaming.
-// Accept a real number too (belt and suspenders, and it parses a numeric
-// string like "429" if one ever appears) and fall back to a generic server
-// error for any other string, rather than comparing it against
-// describeTurnError's numeric status checks and silently mismatching all of
-// them.
-function normalizeErrorCode(code: number | string | undefined): number {
+// Parses `code` to a real HTTP-status-like number, or null if it can't be
+// interpreted as one (including an empty/whitespace-only string, which
+// Number() would otherwise silently treat as 0). Shared by normalizeErrorCode
+// and accumulateChunk's message-annotation check so the two can't drift out
+// of sync with each other.
+function parseNumericCode(code: number | string | undefined): number | null {
   if (typeof code === "number") return code;
-  if (typeof code === "string") {
+  if (typeof code === "string" && code.trim() !== "") {
     const parsed = Number(code);
     if (Number.isFinite(parsed)) return parsed;
   }
-  return 500;
+  return null;
+}
+
+function normalizeErrorCode(code: number | string | undefined): number {
+  return parseNumericCode(code) ?? 500;
 }
 
 /**
@@ -112,7 +116,7 @@ export function accumulateChunk(acc: StreamAccumulator, chunk: RawChunk): string
   if (chunk.error) {
     const rawCode = chunk.error.code;
     const baseMessage = chunk.error.message ?? "OpenRouter stream error";
-    const isNonNumericStringCode = typeof rawCode === "string" && !Number.isFinite(Number(rawCode));
+    const isNonNumericStringCode = typeof rawCode === "string" && parseNumericCode(rawCode) === null;
     throw new OpenRouterApiError(
       isNonNumericStringCode ? `${baseMessage} (code: ${rawCode})` : baseMessage,
       normalizeErrorCode(rawCode),
@@ -196,6 +200,9 @@ async function fetchWithRetry(
       const res = await fetchImpl(url, init);
       const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
       if (res.ok || isLastAttempt || !RETRYABLE_STATUSES.has(res.status)) return res;
+      // Discarding this response to retry — release the connection back to
+      // the pool instead of leaking it by never reading/canceling the body.
+      await res.body?.cancel();
     } catch (err) {
       if (attempt === MAX_ATTEMPTS - 1) throw err;
     }

@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi, type MockInstance } from "vitest";
 
 import {
   accumulateChunk,
@@ -94,6 +94,18 @@ describe("accumulateChunk / finalizeAccumulator", () => {
     }
   });
 
+  it("treats an empty error code string as non-numeric, not zero", () => {
+    const acc = createAccumulator();
+    try {
+      accumulateChunk(acc, { error: { message: "upstream reset", code: "" } });
+      expect.unreachable();
+    } catch (err) {
+      expect(err).toBeInstanceOf(OpenRouterApiError);
+      expect((err as OpenRouterApiError).status).toBe(500);
+      expect((err as OpenRouterApiError).message).toContain("(code: )");
+    }
+  });
+
   it("defaults finish_reason to stop when none was ever seen", () => {
     const acc = createAccumulator();
     accumulateChunk(acc, { choices: [{ delta: { content: "hi" } }] });
@@ -157,11 +169,16 @@ describe("createOpenRouterClient", () => {
   });
 
   it("throws OpenRouterApiError with status/headers on a non-OK response", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ error: { message: "Rate limit exceeded" } }), {
-        status: 429,
-        headers: { "retry-after": "12" },
-      }),
+    // 429 is a retryable status, so this exercises fetchWithRetry too — a
+    // fresh Response per call, since a real fetch() never hands back the
+    // same Response instance (with the same already-drained body) twice.
+    const fetchImpl = vi.fn().mockImplementation(() =>
+      Promise.resolve(
+        new Response(JSON.stringify({ error: { message: "Rate limit exceeded" } }), {
+          status: 429,
+          headers: { "retry-after": "12" },
+        }),
+      ),
     );
     const client = createOpenRouterClient("sk-test", fetchImpl);
     const stream = client.stream({
@@ -273,6 +290,43 @@ describe("createOpenRouterClient", () => {
       await finalPromise;
 
       expect(calls).toBe(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("cancels a discarded retryable response's body before retrying", async () => {
+    vi.useFakeTimers();
+    try {
+      let calls = 0;
+      let cancelSpy: MockInstance<(reason?: unknown) => Promise<void>> | undefined;
+      const fetchImpl = vi.fn().mockImplementation(() => {
+        calls++;
+        if (calls === 1) {
+          const body = new ReadableStream({
+            start(controller) {
+              controller.close();
+            },
+          });
+          cancelSpy = vi.spyOn(body, "cancel");
+          return Promise.resolve(new Response(body, { status: 503 }));
+        }
+        return Promise.resolve(
+          sseResponse(['data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n', "data: [DONE]\n\n"]),
+        );
+      });
+      const client = createOpenRouterClient("sk-test", fetchImpl);
+      const stream = client.stream({
+        model: "anthropic/claude-sonnet-5",
+        max_tokens: 100,
+        messages: [],
+        tools: [],
+      });
+      const finalPromise = stream.finalMessage();
+      await vi.runAllTimersAsync();
+      await finalPromise;
+
+      expect(cancelSpy).toHaveBeenCalledTimes(1);
     } finally {
       vi.useRealTimers();
     }
