@@ -95,7 +95,7 @@ interface RawChunk {
 // and accumulateChunk's message-annotation check so the two can't drift out
 // of sync with each other.
 function parseNumericCode(code: number | string | undefined): number | null {
-  if (typeof code === "number") return code;
+  if (typeof code === "number") return Number.isFinite(code) ? code : null;
   if (typeof code === "string" && code.trim() !== "") {
     const parsed = Number(code);
     if (Number.isFinite(parsed)) return parsed;
