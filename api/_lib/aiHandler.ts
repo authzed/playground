@@ -42,13 +42,34 @@ export async function runAiTurn(
       return;
     }
 
-    const serverCalls = toolCalls.filter((c) => SERVER_TOOL_NAMES.has(c.function.name));
-    const clientCalls = toolCalls.filter((c) => !SERVER_TOOL_NAMES.has(c.function.name));
+    // Tool calls whose arguments fail to parse can't be safely executed or
+    // handed to the client — synthesize an explicit failure result instead of
+    // substituting {} and letting the tool run with silently-wrong input.
+    const malformedResults: OpenRouterMessage[] = [];
+    const parsedArguments = new Map<string, unknown>();
+    for (const c of toolCalls) {
+      const parsed = parseArguments(c.function.arguments);
+      if (parsed.ok) {
+        parsedArguments.set(c.id, parsed.value);
+      } else {
+        malformedResults.push({
+          role: "tool",
+          tool_call_id: c.id,
+          content: `Malformed arguments for tool "${c.function.name}": ${parsed.error}. The call was not executed.`,
+        });
+      }
+    }
+    const validCalls = toolCalls.filter((c) => parsedArguments.has(c.id));
+    const serverCalls = validCalls.filter((c) => SERVER_TOOL_NAMES.has(c.function.name));
+    const clientCalls = validCalls.filter((c) => !SERVER_TOOL_NAMES.has(c.function.name));
 
-    const serverToolResults: OpenRouterMessage[] = serverCalls.map((c) => {
-      const tool = SERVER_TOOLS.find((t) => t.name === c.function.name)!;
-      return { role: "tool", tool_call_id: c.id, content: tool.execute(parseArguments(c.function.arguments)) };
-    });
+    const serverToolResults: OpenRouterMessage[] = [
+      ...malformedResults,
+      ...serverCalls.map((c) => {
+        const tool = SERVER_TOOLS.find((t) => t.name === c.function.name)!;
+        return { role: "tool" as const, tool_call_id: c.id, content: tool.execute(parsedArguments.get(c.id)) };
+      }),
+    ];
 
     if (clientCalls.length > 0) {
       sink.send("handoff", {
@@ -57,14 +78,14 @@ export async function runAiTurn(
         clientToolCalls: clientCalls.map((c) => ({
           id: c.id,
           name: c.function.name,
-          input: parseArguments(c.function.arguments),
+          input: parsedArguments.get(c.id),
         })),
       });
       sink.end();
       return;
     }
 
-    // Only server tools: append their results and continue the loop.
+    // Only server tools (and/or malformed-call failures): append results and continue the loop.
     messages.push(...serverToolResults);
   }
 
@@ -72,10 +93,10 @@ export async function runAiTurn(
   sink.end();
 }
 
-function parseArguments(raw: string): unknown {
+function parseArguments(raw: string): { ok: true; value: unknown } | { ok: false; error: string } {
   try {
-    return JSON.parse(raw);
-  } catch {
-    return {};
+    return { ok: true, value: JSON.parse(raw) };
+  } catch (err) {
+    return { ok: false, error: (err as Error).message };
   }
 }

@@ -3,10 +3,13 @@ import { describe, expect, it, vi } from "vitest";
 import { runAiTurn } from "./aiHandler.js";
 import type { OpenRouterFinalMessage, OpenRouterLike } from "./openrouterClient.js";
 
-function fakeClient(finals: OpenRouterFinalMessage[], textByCall: string[][] = []): OpenRouterLike {
+function fakeClient(finals: OpenRouterFinalMessage[], textByCall: string[][] = []): OpenRouterLike & { calls: any[] } {
   let call = 0;
+  const calls: any[] = [];
   return {
-    stream() {
+    calls,
+    stream(params) {
+      calls.push(params);
       const idx = call++;
       return {
         on(event: "text", cb: (d: string) => void) {
@@ -177,5 +180,57 @@ describe("runAiTurn", () => {
     await runAiTurn(req, { ...deps, client, maxRoundTrips: 2 }, sink);
 
     expect(events.find((e) => e.event === "error")?.data.code).toBe("step_limit");
+  });
+
+  it("synthesizes a clear failure result for malformed tool-call arguments, without executing the tool", async () => {
+    const { sink, events } = collectingSink();
+    const client = fakeClient([
+      {
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "s1", type: "function", function: { name: "read_skill_reference", arguments: '{"name":"patte' } },
+          ],
+        },
+        finish_reason: "tool_calls",
+      },
+      { message: { role: "assistant", content: "done" }, finish_reason: "stop" },
+    ]);
+    await runAiTurn(req, { ...deps, client }, sink);
+
+    expect(events.find((e) => e.event === "handoff")).toBeUndefined();
+    expect(events.find((e) => e.event === "done")).toBeDefined();
+
+    const secondCallMessages = client.calls[1].messages;
+    const toolResult = secondCallMessages.find(
+      (m: any) => m.role === "tool" && m.tool_call_id === "s1",
+    );
+    expect(toolResult?.content).toMatch(/Malformed arguments for tool "read_skill_reference"/);
+    expect(toolResult?.content).toMatch(/not executed/);
+  });
+
+  it("includes a malformed-argument failure alongside a valid client tool call in the same handoff", async () => {
+    const { sink, events } = collectingSink();
+    const client = fakeClient([
+      {
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "bad1", type: "function", function: { name: "read_skill_reference", arguments: "{not json" } },
+            { id: "c1", type: "function", function: { name: "run_check", arguments: "{}" } },
+          ],
+        },
+        finish_reason: "tool_calls",
+      },
+    ]);
+    await runAiTurn(req, { ...deps, client }, sink);
+
+    const handoff = events.find((e) => e.event === "handoff")!;
+    expect(handoff.data.clientToolCalls.map((c: any) => c.id)).toEqual(["c1"]);
+    expect(handoff.data.serverToolResults).toHaveLength(1);
+    expect(handoff.data.serverToolResults[0]).toMatchObject({ tool_call_id: "bad1" });
+    expect((handoff.data.serverToolResults[0] as any).content).toMatch(/Malformed arguments/);
   });
 });
