@@ -68,9 +68,11 @@ export const useAssistantStore = create<AssistantState>()(
     }),
     {
       name: "playground-assistant-state",
-      // v2: DisplayMessage.diffs became .artifacts. The old shape is incompatible,
-      // so drop persisted chat on upgrade rather than migrating it.
-      version: 2,
+      // v3: ChatMessage moved from Anthropic content-blocks to OpenAI-style
+      // tool_calls/tool-role messages (the OpenRouter migration). The old shape
+      // is incompatible with the new /api/ai wire schema, so drop persisted
+      // chat on upgrade rather than migrating it (same pattern as v2).
+      version: 3,
       migrate: () => ({ messages: [], display: [] }),
       partialize: (s) => ({
         messages: s.messages.slice(-MAX_PERSISTED_MESSAGES),
