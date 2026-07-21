@@ -46,7 +46,21 @@ export function buildSystemMessage(state: AiRequest["state"]): OpenRouterMessage
 
   return {
     role: "system",
-    content: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}\n\n${stateText}`,
+    // Anthropic-specific extension (cache_control), passed through by
+    // OpenRouter — safe for the current anthropic/claude-sonnet-5 model, but
+    // would need reconsidering if the model is ever changed to a non-Anthropic
+    // provider. Splitting into a cached static prefix (skill overview +
+    // instructions, which never changes) and an uncached dynamic suffix (the
+    // live playground state, which changes every request) mirrors the
+    // pre-OpenRouter-migration Anthropic-native caching design.
+    content: [
+      {
+        type: "text",
+        text: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}`,
+        cache_control: { type: "ephemeral" },
+      },
+      { type: "text", text: stateText },
+    ],
   };
 }
 

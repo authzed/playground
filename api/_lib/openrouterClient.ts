@@ -7,9 +7,15 @@ export interface OpenRouterToolCall {
   function: { name: string; arguments: string };
 }
 
+export interface OpenRouterTextPart {
+  type: "text";
+  text: string;
+  cache_control?: { type: "ephemeral" };
+}
+
 export interface OpenRouterMessage {
   role: "system" | "user" | "assistant" | "tool";
-  content: string | null;
+  content: string | null | OpenRouterTextPart[];
   tool_calls?: OpenRouterToolCall[];
   tool_call_id?: string;
 }

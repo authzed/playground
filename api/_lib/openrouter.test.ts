@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { ToolCollisionError, buildSystemMessage, buildToolDefs } from "./openrouter.js";
 
 describe("buildSystemMessage", () => {
-  it("is a single system message containing the skill overview and the live state", () => {
+  it("caches the static skill overview and instructions, leaving the live state uncached", () => {
     const message = buildSystemMessage({
       schema: "definition user {}",
       relationships: "",
@@ -11,8 +11,12 @@ describe("buildSystemMessage", () => {
       expected: "",
     });
     expect(message.role).toBe("system");
-    expect(message.content).toContain("SpiceDB");
-    expect(message.content).toContain("definition user {}");
+    const content = message.content as { type: string; text: string; cache_control?: unknown }[];
+    expect(content[0].text).toContain("SpiceDB");
+    expect(content[0].cache_control).toEqual({ type: "ephemeral" });
+    const stateBlock = content[content.length - 1];
+    expect(stateBlock.text).toContain("definition user {}");
+    expect(stateBlock.cache_control).toBeUndefined();
   });
 });
 
