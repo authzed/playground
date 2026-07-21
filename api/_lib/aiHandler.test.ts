@@ -1,8 +1,9 @@
 import { describe, expect, it, vi } from "vitest";
 
-import { type AnthropicLike, type FinalMessage, runAiTurn } from "./aiHandler.js";
+import { runAiTurn } from "./aiHandler.js";
+import type { OpenRouterFinalMessage, OpenRouterLike } from "./openrouterClient.js";
 
-function fakeAnthropic(finals: FinalMessage[], textByCall: string[][] = []): AnthropicLike {
+function fakeClient(finals: OpenRouterFinalMessage[], textByCall: string[][] = []): OpenRouterLike {
   let call = 0;
   return {
     stream() {
@@ -33,35 +34,38 @@ const req = {
   state: { schema: "", relationships: "", assertions: "", expected: "" },
   tools: [{ name: "run_check", description: "d", input_schema: { type: "object" } }],
 };
-const deps = { model: "claude-sonnet-5", maxTokens: 1024, maxRoundTrips: 10 };
+const deps = { model: "anthropic/claude-sonnet-5", maxTokens: 1024, maxRoundTrips: 10 };
 
 describe("runAiTurn", () => {
   it("streams text and emits done when the model uses no tools", async () => {
     const { sink, events } = collectingSink();
-    const anthropic = fakeAnthropic(
-      [{ content: [{ type: "text", text: "hello" }], stop_reason: "end_turn" }],
+    const client = fakeClient(
+      [{ message: { role: "assistant", content: "hello" }, finish_reason: "stop" }],
       [["hel", "lo"]],
     );
-    await runAiTurn(req, { ...deps, anthropic }, sink);
+    await runAiTurn(req, { ...deps, client }, sink);
 
-    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual([
-      "hel",
-      "lo",
-    ]);
+    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual(["hel", "lo"]);
     const done = events.find((e) => e.event === "done");
-    expect(done?.data.stop_reason).toBe("end_turn");
+    expect(done?.data.finish_reason).toBe("stop");
     expect(sink.end).toHaveBeenCalledOnce();
   });
 
   it("hands off client tool calls without finishing the turn", async () => {
     const { sink, events } = collectingSink();
-    const anthropic = fakeAnthropic([
+    const client = fakeClient([
       {
-        content: [{ type: "tool_use", id: "t1", name: "run_check", input: { resource: "doc:x" } }],
-        stop_reason: "tool_use",
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "t1", type: "function", function: { name: "run_check", arguments: '{"resource":"doc:x"}' } },
+          ],
+        },
+        finish_reason: "tool_calls",
       },
     ]);
-    await runAiTurn(req, { ...deps, anthropic }, sink);
+    await runAiTurn(req, { ...deps, client }, sink);
 
     const handoff = events.find((e) => e.event === "handoff");
     expect(handoff).toBeDefined();
@@ -74,16 +78,24 @@ describe("runAiTurn", () => {
 
   it("executes a server tool inline and continues to a final answer", async () => {
     const { sink, events } = collectingSink();
-    const anthropic = fakeAnthropic([
+    const client = fakeClient([
       {
-        content: [
-          { type: "tool_use", id: "s1", name: "read_skill_reference", input: { name: "patterns" } },
-        ],
-        stop_reason: "tool_use",
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "s1",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: '{"name":"patterns"}' },
+            },
+          ],
+        },
+        finish_reason: "tool_calls",
       },
-      { content: [{ type: "text", text: "done" }], stop_reason: "end_turn" },
+      { message: { role: "assistant", content: "done" }, finish_reason: "stop" },
     ]);
-    await runAiTurn(req, { ...deps, anthropic }, sink);
+    await runAiTurn(req, { ...deps, client }, sink);
 
     expect(events.find((e) => e.event === "handoff")).toBeUndefined();
     expect(events.find((e) => e.event === "done")).toBeDefined();
@@ -91,27 +103,28 @@ describe("runAiTurn", () => {
 
   it("separates text between server-tool round-trips with a paragraph break", async () => {
     const { sink, events } = collectingSink();
-    const anthropic = fakeAnthropic(
+    const client = fakeClient(
       [
         {
-          content: [
-            { type: "text", text: "Let me check the docs." },
-            {
-              type: "tool_use",
-              id: "s1",
-              name: "read_skill_reference",
-              input: { name: "patterns" },
-            },
-          ],
-          stop_reason: "tool_use",
+          message: {
+            role: "assistant",
+            content: "Let me check the docs.",
+            tool_calls: [
+              {
+                id: "s1",
+                type: "function",
+                function: { name: "read_skill_reference", arguments: '{"name":"patterns"}' },
+              },
+            ],
+          },
+          finish_reason: "tool_calls",
         },
-        { content: [{ type: "text", text: "Based on the reference." }], stop_reason: "end_turn" },
+        { message: { role: "assistant", content: "Based on the reference." }, finish_reason: "stop" },
       ],
       [["Let me check the docs."], ["Based on the reference."]],
     );
-    await runAiTurn(req, { ...deps, anthropic }, sink);
+    await runAiTurn(req, { ...deps, client }, sink);
 
-    // The second trip's first text is prefixed so it doesn't run into the first.
     expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual([
       "Let me check the docs.",
       "\n\nBased on the reference.",
@@ -120,32 +133,48 @@ describe("runAiTurn", () => {
 
   it("returns server results alongside pending client calls for a mixed message", async () => {
     const { sink, events } = collectingSink();
-    const anthropic = fakeAnthropic([
+    const client = fakeClient([
       {
-        content: [
-          { type: "tool_use", id: "s1", name: "read_skill_reference", input: { name: "patterns" } },
-          { type: "tool_use", id: "c1", name: "run_check", input: {} },
-        ],
-        stop_reason: "tool_use",
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "s1",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: '{"name":"patterns"}' },
+            },
+            { id: "c1", type: "function", function: { name: "run_check", arguments: "{}" } },
+          ],
+        },
+        finish_reason: "tool_calls",
       },
     ]);
-    await runAiTurn(req, { ...deps, anthropic }, sink);
+    await runAiTurn(req, { ...deps, client }, sink);
 
     const handoff = events.find((e) => e.event === "handoff")!;
     expect(handoff.data.clientToolCalls.map((c: any) => c.id)).toEqual(["c1"]);
-    expect(handoff.data.serverToolResults.map((r: any) => r.tool_use_id)).toEqual(["s1"]);
+    expect(handoff.data.serverToolResults.map((r: any) => r.tool_call_id)).toEqual(["s1"]);
   });
 
   it("emits a step_limit error when round trips are exhausted", async () => {
     const { sink, events } = collectingSink();
-    const serverOnly: FinalMessage = {
-      content: [
-        { type: "tool_use", id: "s", name: "read_skill_reference", input: { name: "patterns" } },
-      ],
-      stop_reason: "tool_use",
+    const serverOnly: OpenRouterFinalMessage = {
+      message: {
+        role: "assistant",
+        content: null,
+        tool_calls: [
+          {
+            id: "s",
+            type: "function",
+            function: { name: "read_skill_reference", arguments: '{"name":"patterns"}' },
+          },
+        ],
+      },
+      finish_reason: "tool_calls",
     };
-    const anthropic = fakeAnthropic(Array.from({ length: 5 }, () => serverOnly));
-    await runAiTurn(req, { ...deps, anthropic, maxRoundTrips: 2 }, sink);
+    const client = fakeClient(Array.from({ length: 5 }, () => serverOnly));
+    await runAiTurn(req, { ...deps, client, maxRoundTrips: 2 }, sink);
 
     expect(events.find((e) => e.event === "error")?.data.code).toBe("step_limit");
   });

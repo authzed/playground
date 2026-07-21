@@ -1,6 +1,4 @@
-import Anthropic from "@anthropic-ai/sdk";
-
-import { type AnthropicLike } from "./aiHandler.js";
+import { createOpenRouterClient, type OpenRouterLike } from "./openrouterClient.js";
 import { createWritableSseSink, type SseSink } from "./sse.js";
 
 // A minimal shape covering both VercelResponse and Node's ServerResponse, the
@@ -15,12 +13,12 @@ export interface AiRouteResponse {
 
 export interface AiRouteBootstrap {
   sink: SseSink;
-  anthropic: AnthropicLike;
+  client: OpenRouterLike;
   respondError: (status: number, body: unknown) => void;
 }
 
 /**
- * Sets up the SSE response headers/sink, the Anthropic client, and a
+ * Sets up the SSE response headers/sink, the OpenRouter client, and a
  * respondError closure shared by the production (api/ai.ts) and local dev
  * (dev-api/index.ts) entry points for the /api/ai route.
  */
@@ -50,9 +48,10 @@ export function bootstrapAiRoute(res: AiRouteResponse): AiRouteBootstrap {
     res.end(JSON.stringify(body));
   };
 
-  const anthropic = new Anthropic({
-    apiKey: process.env.ANTHROPIC_API_KEY,
-  }).messages as unknown as AnthropicLike;
+  // For now, use ANTHROPIC_API_KEY as the OpenRouter API key. Task 5 will
+  // swap this to use the proper OPENROUTER_API_KEY env var.
+  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENROUTER_API_KEY || "";
+  const client = createOpenRouterClient(apiKey);
 
-  return { sink, anthropic, respondError };
+  return { sink, client, respondError };
 }

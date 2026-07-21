@@ -56,9 +56,9 @@ describe("bootstrapAiRoute", () => {
     expect(write).toHaveBeenCalledWith('event: error\ndata: {"message":"boom","retryAfter":3}\n\n');
   });
 
-  it("returns an Anthropic-like client", () => {
+  it("returns an OpenRouter-like client", () => {
     const { res } = fakeResponse();
-    const { anthropic } = bootstrapAiRoute(res);
-    expect(typeof anthropic.stream).toBe("function");
+    const { client } = bootstrapAiRoute(res);
+    expect(typeof client.stream).toBe("function");
   });
 });

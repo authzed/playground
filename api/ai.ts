@@ -1,11 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import z from "zod";
 
-import { type AnthropicLike, runAiTurn } from "./_lib/aiHandler.js";
+import { runAiTurn } from "./_lib/aiHandler.js";
 import { bootstrapAiRoute } from "./_lib/aiRoute.js";
 import { createLimiter } from "./_lib/ratelimit.js";
 import { AiRequestSchema } from "./_lib/schema.js";
 import type { SseSink } from "./_lib/sse.js";
+import type { OpenRouterLike } from "./_lib/openrouterClient.js";
 
 function posIntEnv(value: string | undefined, fallback: number): number {
   const n = Number(value);
@@ -17,11 +18,11 @@ export async function handleAiRequest(args: {
   body: unknown;
   ip: string;
   env: NodeJS.ProcessEnv;
-  anthropic: AnthropicLike;
+  client: OpenRouterLike;
   sink: SseSink;
   respondError: (status: number, body: unknown) => void;
 }): Promise<void> {
-  const { method, body, ip, env, anthropic, sink, respondError } = args;
+  const { method, body, ip, env, client, sink, respondError } = args;
 
   if (method !== "POST") return respondError(405, { error: "Method not allowed" });
   if ((env.AI_ENABLED ?? "true") === "false") {
@@ -47,8 +48,8 @@ export async function handleAiRequest(args: {
     await runAiTurn(
       data,
       {
-        anthropic,
-        model: env.AI_MODEL ?? "claude-sonnet-5",
+        client,
+        model: env.AI_MODEL ?? "anthropic/claude-sonnet-5",
         maxTokens: posIntEnv(env.AI_MAX_TOKENS, 8192),
         maxRoundTrips: posIntEnv(env.AI_MAX_ROUND_TRIPS, 10),
       },
@@ -110,14 +111,14 @@ function clientIp(req: VercelRequest): string {
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  const { sink, anthropic, respondError } = bootstrapAiRoute(res);
+  const { sink, client, respondError } = bootstrapAiRoute(res);
 
   await handleAiRequest({
     method: req.method ?? "GET",
     body: req.body,
     ip: clientIp(req),
     env: process.env,
-    anthropic,
+    client,
     sink,
     respondError,
   });

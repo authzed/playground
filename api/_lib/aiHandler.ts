@@ -1,103 +1,81 @@
-import { buildSystemBlocks, buildToolDefs } from "./anthropic.js";
+import { buildSystemMessage, buildToolDefs } from "./openrouter.js";
+import type { OpenRouterFinalMessage, OpenRouterLike, OpenRouterMessage } from "./openrouterClient.js";
 import { ParagraphBreakTracker } from "./paragraphBreak.js";
 import type { AiRequest } from "./schema.js";
 import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
 import type { SseSink } from "./sse.js";
 
-export interface ContentBlock {
-  type: string;
-  [k: string]: unknown;
-}
-export interface FinalMessage {
-  content: ContentBlock[];
-  stop_reason: string;
-}
-export interface AnthropicStreamLike {
-  on(event: "text", cb: (delta: string) => void): void;
-  finalMessage(): Promise<FinalMessage>;
-}
-export interface AnthropicLike {
-  stream(params: unknown): AnthropicStreamLike;
-}
-
-interface ToolUseBlock extends ContentBlock {
-  type: "tool_use";
-  id: string;
-  name: string;
-  input: unknown;
-}
-
-function isToolUse(b: ContentBlock): b is ToolUseBlock {
-  return b.type === "tool_use";
-}
-
 export async function runAiTurn(
   req: AiRequest,
-  deps: { anthropic: AnthropicLike; model: string; maxTokens: number; maxRoundTrips: number },
+  deps: { client: OpenRouterLike; model: string; maxTokens: number; maxRoundTrips: number },
   sink: SseSink,
 ): Promise<void> {
-  const system = buildSystemBlocks(req.state);
+  const system = buildSystemMessage(req.state);
   const tools = buildToolDefs(req.tools);
-  const messages: { role: string; content: unknown }[] = [...req.messages];
+  const messages: OpenRouterMessage[] = [system, ...req.messages];
 
-  // When only server tools run, the loop continues within this one client stream,
-  // so text from several model round-trips arrives back-to-back. Insert a paragraph
-  // break before each later trip's first text so the blocks don't run together
-  // (mirrors the client-side separator that spans client-tool round-trips).
+  // The model emits text across multiple round trips (a block of text, then tool
+  // calls, then more text) that get appended into one conversation, so insert a
+  // paragraph break before each later trip's first text so the blocks don't run
+  // together (mirrors the client-side separator that spans client-tool round-trips).
   const paragraphBreaks = new ParagraphBreakTracker();
 
   for (let trip = 0; trip < deps.maxRoundTrips; trip++) {
     paragraphBreaks.nextTrip();
-    const stream = deps.anthropic.stream({
+    const stream = deps.client.stream({
       model: deps.model,
       max_tokens: deps.maxTokens,
-      system,
-      tools,
       messages,
+      tools,
     });
     stream.on("text", (delta) => {
       sink.send("text", { delta: paragraphBreaks.apply(delta) });
     });
-    const final = await stream.finalMessage();
+    const final: OpenRouterFinalMessage = await stream.finalMessage();
 
-    messages.push({ role: "assistant", content: final.content });
+    messages.push(final.message);
 
-    const toolUses = final.content.filter(isToolUse);
-    if (toolUses.length === 0) {
-      sink.send("done", { assistantContent: final.content, stop_reason: final.stop_reason });
+    const toolCalls = final.message.tool_calls ?? [];
+    if (toolCalls.length === 0) {
+      sink.send("done", { assistantMessage: final.message, finish_reason: final.finish_reason });
       sink.end();
       return;
     }
 
-    const serverUses = toolUses.filter((u) => SERVER_TOOL_NAMES.has(u.name));
-    const clientUses = toolUses.filter((u) => !SERVER_TOOL_NAMES.has(u.name));
+    const serverCalls = toolCalls.filter((c) => SERVER_TOOL_NAMES.has(c.function.name));
+    const clientCalls = toolCalls.filter((c) => !SERVER_TOOL_NAMES.has(c.function.name));
 
-    const serverToolResults = serverUses.map((u) => {
-      const tool = SERVER_TOOLS.find((t) => t.name === u.name)!;
-      return { tool_use_id: u.id, content: tool.execute(u.input) };
+    const serverToolResults: OpenRouterMessage[] = serverCalls.map((c) => {
+      const tool = SERVER_TOOLS.find((t) => t.name === c.function.name)!;
+      return { role: "tool", tool_call_id: c.id, content: tool.execute(parseArguments(c.function.arguments)) };
     });
 
-    if (clientUses.length > 0) {
+    if (clientCalls.length > 0) {
       sink.send("handoff", {
-        assistantContent: final.content,
+        assistantMessage: final.message,
         serverToolResults,
-        clientToolCalls: clientUses.map((u) => ({ id: u.id, name: u.name, input: u.input })),
+        clientToolCalls: clientCalls.map((c) => ({
+          id: c.id,
+          name: c.function.name,
+          input: parseArguments(c.function.arguments),
+        })),
       });
       sink.end();
       return;
     }
 
     // Only server tools: append their results and continue the loop.
-    messages.push({
-      role: "user",
-      content: serverToolResults.map((r) => ({
-        type: "tool_result",
-        tool_use_id: r.tool_use_id,
-        content: r.content,
-      })),
-    });
+    messages.push(...serverToolResults);
   }
 
   sink.send("error", { code: "step_limit", message: "Reached the maximum number of tool steps." });
   sink.end();
+}
+
+function parseArguments(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    return {};
+  }
 }
