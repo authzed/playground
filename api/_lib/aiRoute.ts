@@ -48,10 +48,7 @@ export function bootstrapAiRoute(res: AiRouteResponse): AiRouteBootstrap {
     res.end(JSON.stringify(body));
   };
 
-  // For now, use ANTHROPIC_API_KEY as the OpenRouter API key. Task 5 will
-  // swap this to use the proper OPENROUTER_API_KEY env var.
-  const apiKey = process.env.ANTHROPIC_API_KEY || process.env.OPENROUTER_API_KEY || "";
-  const client = createOpenRouterClient(apiKey);
+  const client = createOpenRouterClient(process.env.OPENROUTER_API_KEY ?? "");
 
   return { sink, client, respondError };
 }
