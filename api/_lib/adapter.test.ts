@@ -4,7 +4,7 @@ import { handleAiRequest } from "../ai.js";
 
 const baseArgs = {
   ip: "1.2.3.4",
-  env: { ANTHROPIC_API_KEY: "sk-test", AI_ENABLED: "true" } as unknown as NodeJS.ProcessEnv,
+  env: { OPENROUTER_API_KEY: "sk-test", AI_ENABLED: "true" } as unknown as NodeJS.ProcessEnv,
   client: {
     stream: () => ({
       on: () => {},

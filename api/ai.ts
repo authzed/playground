@@ -28,9 +28,9 @@ export async function handleAiRequest(args: {
   if ((env.AI_ENABLED ?? "true") === "false") {
     return respondError(503, { error: "AI assistant is disabled" });
   }
-  if (!env.ANTHROPIC_API_KEY) {
+  if (!env.OPENROUTER_API_KEY) {
     console.error(
-      "[api/ai] ANTHROPIC_API_KEY is not set — returning 500. Set it in .env (dev) or the Vercel env (prod).",
+      "[api/ai] OPENROUTER_API_KEY is not set — returning 500. Set it in .env (dev) or the Vercel env (prod).",
     );
     return respondError(500, { error: "Server configuration error" });
   }
@@ -92,7 +92,7 @@ export function describeTurnError(err: unknown): {
       retryAfter: retryAfterSeconds(err),
     };
   }
-  if (status === 503 || status === 529) {
+  if (status === 502 || status === 503 || status === 529) {
     return {
       code: "overloaded",
       message: "The AI service is temporarily overloaded. Please try again shortly.",

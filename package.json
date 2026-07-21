@@ -18,7 +18,6 @@
     "sync:skill": "pnpm dlx tsx scripts/sync-skill.ts"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.111.0",
     "@authzed/spicedb-parser-js": "^1.2.0",
     "@aws-sdk/client-s3": "^3.997.0",
     "@bufbuild/protobuf": "^2.4.0",

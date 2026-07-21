@@ -33,6 +33,10 @@ describe("describeTurnError", () => {
     expect(describeTurnError({ status: 529 }).code).toBe("overloaded");
   });
 
+  it("maps a 502 to an overloaded error (OpenRouter provider-error status)", () => {
+    expect(describeTurnError({ status: 502 }).code).toBe("overloaded");
+  });
+
   it("falls back to a server_error with the message for other failures", () => {
     expect(describeTurnError(new Error("boom"))).toEqual({
       code: "server_error",

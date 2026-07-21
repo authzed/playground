@@ -8,7 +8,7 @@ import svgr from "vite-plugin-svgr";
 import { configureServer } from "./dev-api/index";
 
 // Load .env files into process.env so the dev-api middleware (server-side) can
-// read non-VITE_ vars like ANTHROPIC_API_KEY. Vite only exposes VITE_* vars to
+// read non-VITE_ vars like OPENROUTER_API_KEY. Vite only exposes VITE_* vars to
 // the browser via import.meta.env, not to this Node process. Existing shell env
 // takes precedence over .env file values. Done at module scope (not in a config
 // callback) so this file stays an OBJECT export that vitest's mergeConfig can

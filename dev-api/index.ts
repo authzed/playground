@@ -99,14 +99,14 @@ export function configureServer(server: ViteDevServer) {
         return json(res, 400, { error: "Invalid JSON" });
       }
 
-      const { sink, anthropic, respondError } = bootstrapAiRoute(res);
+      const { sink, client, respondError } = bootstrapAiRoute(res);
 
       await handleAiRequest({
         method: "POST",
         body,
         ip: "dev",
         env: process.env,
-        anthropic,
+        client,
         sink,
         respondError,
       });
