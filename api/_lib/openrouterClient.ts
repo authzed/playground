@@ -79,12 +79,15 @@ interface RawChunk {
   choices?: [{ delta?: { content?: string; tool_calls?: RawDeltaToolCall[] }; finish_reason?: string }];
 }
 
-// OpenRouter's own docs disagree on whether a mid-stream error's `code` is a
-// numeric HTTP-status mirror or a string error type, so accept either: pass
-// a real number through, parse a numeric string (e.g. "429"), and fall back
-// to a generic server error for a non-numeric string rather than comparing
-// a string against describeTurnError's numeric status checks and silently
-// mismatching every one of them.
+// Once tokens have already streamed, OpenRouter can't change the committed
+// HTTP 200 status, so a mid-stream failure arrives as an inline `error` with
+// a string type code (e.g. "server_error") rather than a real HTTP status —
+// confirmed against https://openrouter.ai/docs/api_reference/streaming#handling-errors-during-streaming.
+// Accept a real number too (belt and suspenders, and it parses a numeric
+// string like "429" if one ever appears) and fall back to a generic server
+// error for any other string, rather than comparing it against
+// describeTurnError's numeric status checks and silently mismatching all of
+// them.
 function normalizeErrorCode(code: number | string | undefined): number {
   if (typeof code === "number") return code;
   if (typeof code === "string") {

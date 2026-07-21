@@ -190,4 +190,27 @@ describe("createOpenRouterClient", () => {
     });
     await expect(stream.finalMessage()).rejects.toMatchObject({ status: 503 });
   });
+
+  it("handles OpenRouter's documented mid-stream error chunk verbatim", async () => {
+    // Pinned to the exact example from
+    // https://openrouter.ai/docs/api_reference/streaming#handling-errors-during-streaming
+    // — once tokens have streamed, HTTP 200 is already committed, so the
+    // error arrives as a string type code, not a numeric HTTP status.
+    const fetchImpl = vi.fn().mockResolvedValue(
+      sseResponse([
+        'data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"openai/gpt-4o","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}\n\n',
+      ]),
+    );
+    const client = createOpenRouterClient("sk-test", fetchImpl);
+    const stream = client.stream({
+      model: "anthropic/claude-sonnet-5",
+      max_tokens: 100,
+      messages: [],
+      tools: [],
+    });
+    await expect(stream.finalMessage()).rejects.toMatchObject({
+      status: 500,
+      message: "Provider disconnected unexpectedly",
+    });
+  });
 });
