@@ -1,5 +1,6 @@
 import { SKILL_OVERVIEW } from "../_skill/content.js";
 
+import type { OpenRouterMessage, OpenRouterToolDef } from "./openrouterClient.js";
 import type { AiRequest } from "./schema.js";
 import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
 
@@ -18,17 +19,11 @@ SpiceDB schemas, write relationships/assertions, debug permissions, and answer s
   document type: \`\`\`zed for schema, \`\`\`relationships for relationships, and
   \`\`\`yaml for assertions or expected relations.
 - Keep answers concise and grounded in the actual state.
-- For questions unrelated to SpiceDB schema, interacting with the current playground state, 
+- For questions unrelated to SpiceDB schema, interacting with the current playground state,
   or if you are generally uncertain of a response, refer the user to SpiceDB documentation
   at https://authzed.com/docs`;
 
-export interface SystemBlock {
-  type: "text";
-  text: string;
-  cache_control?: { type: "ephemeral" };
-}
-
-export function buildSystemBlocks(state: AiRequest["state"]): SystemBlock[] {
+export function buildSystemMessage(state: AiRequest["state"]): OpenRouterMessage {
   const stateText = [
     "# Current playground state",
     "## Schema",
@@ -49,34 +44,25 @@ export function buildSystemBlocks(state: AiRequest["state"]): SystemBlock[] {
     "```",
   ].join("\n");
 
-  return [
-    // Static, cacheable prefix: skill + instructions.
-    {
-      type: "text",
-      text: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}`,
-      cache_control: { type: "ephemeral" },
-    },
-    // Dynamic suffix: the live state (changes each request).
-    { type: "text", text: stateText },
-  ];
+  return {
+    role: "system",
+    content: `${SKILL_OVERVIEW}\n\n${PLAYGROUND_INSTRUCTIONS}\n\n${stateText}`,
+  };
 }
 
-export interface ToolDef {
-  name: string;
-  description: string;
-  input_schema: Record<string, unknown>;
-}
-
-export function buildToolDefs(clientTools: AiRequest["tools"]): ToolDef[] {
+export function buildToolDefs(clientTools: AiRequest["tools"]): OpenRouterToolDef[] {
   for (const t of clientTools) {
     if (SERVER_TOOL_NAMES.has(t.name)) {
       throw new ToolCollisionError(`Client tool "${t.name}" collides with a server tool`);
     }
   }
-  const serverDefs: ToolDef[] = SERVER_TOOLS.map((t) => ({
-    name: t.name,
-    description: t.description,
-    input_schema: t.input_schema,
+  const clientDefs: OpenRouterToolDef[] = clientTools.map((t) => ({
+    type: "function",
+    function: { name: t.name, description: t.description, parameters: t.input_schema },
   }));
-  return [...clientTools, ...serverDefs];
+  const serverDefs: OpenRouterToolDef[] = SERVER_TOOLS.map((t) => ({
+    type: "function",
+    function: { name: t.name, description: t.description, parameters: t.input_schema },
+  }));
+  return [...clientDefs, ...serverDefs];
 }

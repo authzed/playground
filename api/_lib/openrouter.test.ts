@@ -1,29 +1,28 @@
 import { describe, expect, it } from "vitest";
 
-import { ToolCollisionError, buildSystemBlocks, buildToolDefs } from "./anthropic.js";
+import { ToolCollisionError, buildSystemMessage, buildToolDefs } from "./openrouter.js";
 
-describe("buildSystemBlocks", () => {
-  it("puts the cached skill overview first and the live state after", () => {
-    const blocks = buildSystemBlocks({
+describe("buildSystemMessage", () => {
+  it("is a single system message containing the skill overview and the live state", () => {
+    const message = buildSystemMessage({
       schema: "definition user {}",
       relationships: "",
       assertions: "",
       expected: "",
     });
-    expect(blocks[0].cache_control).toEqual({ type: "ephemeral" });
-    expect(blocks[0].text).toContain("SpiceDB");
-    const stateBlock = blocks[blocks.length - 1];
-    expect(stateBlock.cache_control).toBeUndefined();
-    expect(stateBlock.text).toContain("definition user {}");
+    expect(message.role).toBe("system");
+    expect(message.content).toContain("SpiceDB");
+    expect(message.content).toContain("definition user {}");
   });
 });
 
 describe("buildToolDefs", () => {
-  it("merges client tools with server tools", () => {
+  it("merges client tools with server tools as OpenAI-shaped function defs", () => {
     const defs = buildToolDefs([
       { name: "run_check", description: "d", input_schema: { type: "object" } },
     ]);
-    const names = defs.map((d) => d.name);
+    expect(defs.map((d) => d.type)).toEqual(defs.map(() => "function"));
+    const names = defs.map((d) => d.function.name);
     expect(names).toContain("run_check");
     expect(names).toContain("read_skill_reference");
   });
