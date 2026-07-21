@@ -37,4 +37,40 @@ describe("AiRequestSchema", () => {
     });
     expect(error).toBeDefined();
   });
+
+  it("accepts an assistant message with tool_calls and null content", () => {
+    const { error } = z.safeParse(AiRequestSchema, {
+      ...valid,
+      messages: [
+        ...valid.messages,
+        {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "t1", type: "function", function: { name: "run_check", arguments: "{}" } },
+          ],
+        },
+      ],
+    });
+    expect(error).toBeUndefined();
+  });
+
+  it("accepts a tool-role message", () => {
+    const { error } = z.safeParse(AiRequestSchema, {
+      ...valid,
+      messages: [
+        ...valid.messages,
+        { role: "tool", tool_call_id: "t1", content: "{\"ok\":true}" },
+      ],
+    });
+    expect(error).toBeUndefined();
+  });
+
+  it("rejects a message with an unknown role", () => {
+    const { error } = z.safeParse(AiRequestSchema, {
+      ...valid,
+      messages: [{ role: "system", content: "nope" }],
+    });
+    expect(error).toBeDefined();
+  });
 });
