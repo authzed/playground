@@ -86,7 +86,10 @@ describe("runAssistantTurn", () => {
         [
           {
             event: "done",
-            data: { assistantMessage: { role: "assistant", content: "done" }, finish_reason: "stop" },
+            data: {
+              assistantMessage: { role: "assistant", content: "done" },
+              finish_reason: "stop",
+            },
           },
         ],
       ];
@@ -126,7 +129,9 @@ describe("runAssistantTurn", () => {
             assistantMessage: {
               role: "assistant",
               content: null,
-              tool_calls: [{ id: "t", type: "function", function: { name: "noop", arguments: "{}" } }],
+              tool_calls: [
+                { id: "t", type: "function", function: { name: "noop", arguments: "{}" } },
+              ],
             },
             serverToolResults: [],
             clientToolCalls: [{ id: "t", name: "noop", input: {} }],
@@ -137,7 +142,10 @@ describe("runAssistantTurn", () => {
         { event: "text", data: { delta: "Second block." } },
         {
           event: "done",
-          data: { assistantMessage: { role: "assistant", content: "Second block." }, finish_reason: "stop" },
+          data: {
+            assistantMessage: { role: "assistant", content: "Second block." },
+            finish_reason: "stop",
+          },
         },
       ],
     ];
@@ -166,7 +174,10 @@ describe("runAssistantTurn", () => {
       { event: "text", data: { delta: "two" } },
       {
         event: "done",
-        data: { assistantMessage: { role: "assistant", content: "one two" }, finish_reason: "stop" },
+        data: {
+          assistantMessage: { role: "assistant", content: "one two" },
+          finish_reason: "stop",
+        },
       },
     ]);
     await runAssistantTurn([{ role: "user", content: "yo" }], {
@@ -193,7 +204,9 @@ describe("runAssistantTurn", () => {
           assistantMessage: {
             role: "assistant",
             content: null,
-            tool_calls: [{ id: "t", type: "function", function: { name: "noop", arguments: "{}" } }],
+            tool_calls: [
+              { id: "t", type: "function", function: { name: "noop", arguments: "{}" } },
+            ],
           },
           serverToolResults: [],
           clientToolCalls: [{ id: "t", name: "noop", input: {} }],
@@ -264,7 +277,9 @@ describe("runAssistantTurn", () => {
       stream: stream as any,
     });
 
-    const toolMessage = result.messages.find((m: any) => m.role === "tool" && m.tool_call_id === "t1");
+    const toolMessage = result.messages.find(
+      (m: any) => m.role === "tool" && m.tool_call_id === "t1",
+    );
     expect(toolMessage?.content).toMatch(/^Error:/);
     expect(toolMessage?.content).toContain('"passed":false');
   });
@@ -290,7 +305,11 @@ describe("runAssistantTurn", () => {
               role: "assistant",
               content: null,
               tool_calls: [
-                { id: "c1", type: "function", function: { name: "run_check", arguments: "{not json" } },
+                {
+                  id: "c1",
+                  type: "function",
+                  function: { name: "run_check", arguments: "{not json" },
+                },
               ],
             },
             serverToolResults: [
@@ -302,7 +321,9 @@ describe("runAssistantTurn", () => {
               },
             ],
             clientToolCalls: [],
-            malformedClientToolCalls: [{ id: "c1", name: "run_check", error: "Unexpected end of JSON input" }],
+            malformedClientToolCalls: [
+              { id: "c1", name: "run_check", error: "Unexpected end of JSON input" },
+            ],
           },
         },
       ],
@@ -326,6 +347,10 @@ describe("runAssistantTurn", () => {
     });
 
     expect(execute).not.toHaveBeenCalled();
-    expect(onToolActivity).toHaveBeenCalledWith({ name: "run_check", summary: "malformed arguments", ok: false });
+    expect(onToolActivity).toHaveBeenCalledWith({
+      name: "run_check",
+      summary: "malformed arguments",
+      ok: false,
+    });
   });
 });

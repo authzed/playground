@@ -82,7 +82,9 @@ interface RawDeltaToolCall {
 }
 interface RawChunk {
   error?: { message?: string; code?: number | string };
-  choices?: [{ delta?: { content?: string; tool_calls?: RawDeltaToolCall[] }; finish_reason?: string }];
+  choices?: [
+    { delta?: { content?: string; tool_calls?: RawDeltaToolCall[] }; finish_reason?: string },
+  ];
 }
 
 // Once tokens have already streamed, OpenRouter can't change the committed
@@ -116,7 +118,8 @@ export function accumulateChunk(acc: StreamAccumulator, chunk: RawChunk): string
   if (chunk.error) {
     const rawCode = chunk.error.code;
     const baseMessage = chunk.error.message ?? "OpenRouter stream error";
-    const isNonNumericStringCode = typeof rawCode === "string" && parseNumericCode(rawCode) === null;
+    const isNonNumericStringCode =
+      typeof rawCode === "string" && parseNumericCode(rawCode) === null;
     throw new OpenRouterApiError(
       isNonNumericStringCode ? `${baseMessage} (code: ${rawCode})` : baseMessage,
       normalizeErrorCode(rawCode),
@@ -236,7 +239,9 @@ async function runStream(
   }
 
   const acc = createAccumulator();
-  const events = res.body.pipeThrough(new TextDecoderStream()).pipeThrough(new EventSourceParserStream());
+  const events = res.body
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new EventSourceParserStream());
 
   for await (const event of events as unknown as AsyncIterable<EventSourceMessage>) {
     if (event.data === "[DONE]") continue;

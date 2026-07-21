@@ -58,10 +58,7 @@ describe("AiRequestSchema", () => {
   it("accepts a tool-role message", () => {
     const { error } = z.safeParse(AiRequestSchema, {
       ...valid,
-      messages: [
-        ...valid.messages,
-        { role: "tool", tool_call_id: "t1", content: "{\"ok\":true}" },
-      ],
+      messages: [...valid.messages, { role: "tool", tool_call_id: "t1", content: '{"ok":true}' }],
     });
     expect(error).toBeUndefined();
   });

@@ -25,7 +25,12 @@ describe("accumulateChunk / finalizeAccumulator", () => {
         {
           delta: {
             tool_calls: [
-              { index: 0, id: "call_1", type: "function", function: { name: "run_check", arguments: "" } },
+              {
+                index: 0,
+                id: "call_1",
+                type: "function",
+                function: { name: "run_check", arguments: "" },
+              },
             ],
           },
         },
@@ -35,7 +40,9 @@ describe("accumulateChunk / finalizeAccumulator", () => {
       choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: '{"re' } }] } }],
     });
     accumulateChunk(acc, {
-      choices: [{ delta: { tool_calls: [{ index: 0, function: { arguments: 'source":"doc:x"}' } }] } }],
+      choices: [
+        { delta: { tool_calls: [{ index: 0, function: { arguments: 'source":"doc:x"}' } }] } },
+      ],
     });
     accumulateChunk(acc, { choices: [{ delta: {}, finish_reason: "tool_calls" }] });
 
@@ -43,7 +50,11 @@ describe("accumulateChunk / finalizeAccumulator", () => {
     expect(final.finish_reason).toBe("tool_calls");
     expect(final.message.content).toBeNull();
     expect(final.message.tool_calls).toEqual([
-      { id: "call_1", type: "function", function: { name: "run_check", arguments: '{"resource":"doc:x"}' } },
+      {
+        id: "call_1",
+        type: "function",
+        function: { name: "run_check", arguments: '{"resource":"doc:x"}' },
+      },
     ]);
   });
 
@@ -54,8 +65,18 @@ describe("accumulateChunk / finalizeAccumulator", () => {
         {
           delta: {
             tool_calls: [
-              { index: 0, id: "call_a", type: "function", function: { name: "a", arguments: "{}" } },
-              { index: 1, id: "call_b", type: "function", function: { name: "b", arguments: "{}" } },
+              {
+                index: 0,
+                id: "call_a",
+                type: "function",
+                function: { name: "a", arguments: "{}" },
+              },
+              {
+                index: 1,
+                id: "call_b",
+                type: "function",
+                function: { name: "b", arguments: "{}" },
+              },
             ],
           },
         },
@@ -126,13 +147,15 @@ describe("createOpenRouterClient", () => {
   }
 
   it("streams text deltas and resolves the final message", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(
-      sseResponse([
-        'data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n',
-        'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
-        "data: [DONE]\n\n",
-      ]),
-    );
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(
+        sseResponse([
+          'data: {"choices":[{"delta":{"content":"Hi"}}]}\n\n',
+          'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
+          "data: [DONE]\n\n",
+        ]),
+      );
     const client = createOpenRouterClient("sk-test", fetchImpl);
     const stream = client.stream({
       model: "anthropic/claude-sonnet-5",
@@ -195,9 +218,11 @@ describe("createOpenRouterClient", () => {
   });
 
   it("throws OpenRouterApiError on a mid-stream inline error chunk", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(
-      sseResponse(['data: {"error":{"message":"provider overloaded","code":503}}\n\n']),
-    );
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(
+        sseResponse(['data: {"error":{"message":"provider overloaded","code":503}}\n\n']),
+      );
     const client = createOpenRouterClient("sk-test", fetchImpl);
     const stream = client.stream({
       model: "anthropic/claude-sonnet-5",
@@ -213,11 +238,13 @@ describe("createOpenRouterClient", () => {
     // https://openrouter.ai/docs/api_reference/streaming#handling-errors-during-streaming
     // — once tokens have streamed, HTTP 200 is already committed, so the
     // error arrives as a string type code, not a numeric HTTP status.
-    const fetchImpl = vi.fn().mockResolvedValue(
-      sseResponse([
-        'data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"openai/gpt-4o","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}\n\n',
-      ]),
-    );
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(
+        sseResponse([
+          'data: {"id":"cmpl-abc123","object":"chat.completion.chunk","created":1234567890,"model":"openai/gpt-4o","provider":"openai","error":{"code":"server_error","message":"Provider disconnected unexpectedly"},"choices":[{"index":0,"delta":{"content":""},"finish_reason":"error"}]}\n\n',
+        ]),
+      );
     const client = createOpenRouterClient("sk-test", fetchImpl);
     const stream = client.stream({
       model: "anthropic/claude-sonnet-5",
@@ -312,7 +339,10 @@ describe("createOpenRouterClient", () => {
           return Promise.resolve(new Response(body, { status: 503 }));
         }
         return Promise.resolve(
-          sseResponse(['data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n', "data: [DONE]\n\n"]),
+          sseResponse([
+            'data: {"choices":[{"delta":{},"finish_reason":"stop"}]}\n\n',
+            "data: [DONE]\n\n",
+          ]),
         );
       });
       const client = createOpenRouterClient("sk-test", fetchImpl);
@@ -333,9 +363,11 @@ describe("createOpenRouterClient", () => {
   });
 
   it("does not retry a non-retryable HTTP status", async () => {
-    const fetchImpl = vi.fn().mockResolvedValue(
-      new Response(JSON.stringify({ error: { message: "Invalid API key" } }), { status: 401 }),
-    );
+    const fetchImpl = vi
+      .fn()
+      .mockResolvedValue(
+        new Response(JSON.stringify({ error: { message: "Invalid API key" } }), { status: 401 }),
+      );
     const client = createOpenRouterClient("sk-test", fetchImpl);
     const stream = client.stream({
       model: "anthropic/claude-sonnet-5",

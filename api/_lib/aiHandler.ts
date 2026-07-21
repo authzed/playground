@@ -1,5 +1,9 @@
 import { buildSystemMessage, buildToolDefs } from "./openrouter.js";
-import type { OpenRouterFinalMessage, OpenRouterLike, OpenRouterMessage } from "./openrouterClient.js";
+import type {
+  OpenRouterFinalMessage,
+  OpenRouterLike,
+  OpenRouterMessage,
+} from "./openrouterClient.js";
 import { ParagraphBreakTracker } from "./paragraphBreak.js";
 import type { AiRequest } from "./schema.js";
 import { SERVER_TOOLS, SERVER_TOOL_NAMES } from "./serverTools.js";
@@ -48,7 +52,10 @@ export async function runAiTurn(
     // Paired by array position, never by call.id — ids aren't guaranteed
     // unique across the calls in one turn, and keying by id let one call's
     // arguments silently overwrite another's.
-    const outcomes = toolCalls.map((call) => ({ call, parsed: parseArguments(call.function.arguments) }));
+    const outcomes = toolCalls.map((call) => ({
+      call,
+      parsed: parseArguments(call.function.arguments),
+    }));
 
     const malformedResults: OpenRouterMessage[] = [];
     const malformedClientToolCalls: { id: string; name: string; error: string }[] = [];
@@ -60,21 +67,32 @@ export async function runAiTurn(
         content: `Malformed arguments for tool "${o.call.function.name}": ${o.parsed.error}. The call was not executed.`,
       });
       if (!SERVER_TOOL_NAMES.has(o.call.function.name)) {
-        malformedClientToolCalls.push({ id: o.call.id, name: o.call.function.name, error: o.parsed.error });
+        malformedClientToolCalls.push({
+          id: o.call.id,
+          name: o.call.function.name,
+          error: o.parsed.error,
+        });
       }
     }
 
     const validOutcomes = outcomes.filter(
-      (o): o is { call: (typeof outcomes)[number]["call"]; parsed: { ok: true; value: unknown } } => o.parsed.ok,
+      (o): o is { call: (typeof outcomes)[number]["call"]; parsed: { ok: true; value: unknown } } =>
+        o.parsed.ok,
     );
     const serverOutcomes = validOutcomes.filter((o) => SERVER_TOOL_NAMES.has(o.call.function.name));
-    const clientOutcomes = validOutcomes.filter((o) => !SERVER_TOOL_NAMES.has(o.call.function.name));
+    const clientOutcomes = validOutcomes.filter(
+      (o) => !SERVER_TOOL_NAMES.has(o.call.function.name),
+    );
 
     const serverToolResults: OpenRouterMessage[] = [
       ...malformedResults,
       ...serverOutcomes.map((o) => {
         const tool = SERVER_TOOLS.find((t) => t.name === o.call.function.name)!;
-        return { role: "tool" as const, tool_call_id: o.call.id, content: tool.execute(o.parsed.value) };
+        return {
+          role: "tool" as const,
+          tool_call_id: o.call.id,
+          content: tool.execute(o.parsed.value),
+        };
       }),
     ];
 

@@ -3,7 +3,10 @@ import { describe, expect, it, vi } from "vitest";
 import { runAiTurn } from "./aiHandler.js";
 import type { OpenRouterFinalMessage, OpenRouterLike } from "./openrouterClient.js";
 
-function fakeClient(finals: OpenRouterFinalMessage[], textByCall: string[][] = []): OpenRouterLike & { calls: any[] } {
+function fakeClient(
+  finals: OpenRouterFinalMessage[],
+  textByCall: string[][] = [],
+): OpenRouterLike & { calls: any[] } {
   let call = 0;
   const calls: any[] = [];
   return {
@@ -48,7 +51,10 @@ describe("runAiTurn", () => {
     );
     await runAiTurn(req, { ...deps, client }, sink);
 
-    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual(["hel", "lo"]);
+    expect(events.filter((e) => e.event === "text").map((e) => e.data.delta)).toEqual([
+      "hel",
+      "lo",
+    ]);
     const done = events.find((e) => e.event === "done");
     expect(done?.data.finish_reason).toBe("stop");
     expect(sink.end).toHaveBeenCalledOnce();
@@ -62,7 +68,11 @@ describe("runAiTurn", () => {
           role: "assistant",
           content: null,
           tool_calls: [
-            { id: "t1", type: "function", function: { name: "run_check", arguments: '{"resource":"doc:x"}' } },
+            {
+              id: "t1",
+              type: "function",
+              function: { name: "run_check", arguments: '{"resource":"doc:x"}' },
+            },
           ],
         },
         finish_reason: "tool_calls",
@@ -122,7 +132,10 @@ describe("runAiTurn", () => {
           },
           finish_reason: "tool_calls",
         },
-        { message: { role: "assistant", content: "Based on the reference." }, finish_reason: "stop" },
+        {
+          message: { role: "assistant", content: "Based on the reference." },
+          finish_reason: "stop",
+        },
       ],
       [["Let me check the docs."], ["Based on the reference."]],
     );
@@ -190,7 +203,11 @@ describe("runAiTurn", () => {
           role: "assistant",
           content: null,
           tool_calls: [
-            { id: "s1", type: "function", function: { name: "read_skill_reference", arguments: '{"name":"patte' } },
+            {
+              id: "s1",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: '{"name":"patte' },
+            },
           ],
         },
         finish_reason: "tool_calls",
@@ -218,7 +235,11 @@ describe("runAiTurn", () => {
           role: "assistant",
           content: null,
           tool_calls: [
-            { id: "bad1", type: "function", function: { name: "read_skill_reference", arguments: "{not json" } },
+            {
+              id: "bad1",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: "{not json" },
+            },
             { id: "c1", type: "function", function: { name: "run_check", arguments: "{}" } },
           ],
         },
@@ -242,8 +263,16 @@ describe("runAiTurn", () => {
           role: "assistant",
           content: null,
           tool_calls: [
-            { id: "x", type: "function", function: { name: "read_skill_reference", arguments: "{not json" } },
-            { id: "x", type: "function", function: { name: "run_check", arguments: '{"resource":"doc:x"}' } },
+            {
+              id: "x",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: "{not json" },
+            },
+            {
+              id: "x",
+              type: "function",
+              function: { name: "run_check", arguments: '{"resource":"doc:x"}' },
+            },
           ],
         },
         finish_reason: "tool_calls",
@@ -286,6 +315,6 @@ describe("runAiTurn", () => {
     expect(handoff!.data.malformedClientToolCalls).toEqual([
       { id: "c1", name: "run_check", error: expect.any(String) },
     ]);
-    expect((handoff!.data.serverToolResults[0] as any)).toMatchObject({ tool_call_id: "c1" });
+    expect(handoff!.data.serverToolResults[0] as any).toMatchObject({ tool_call_id: "c1" });
   });
 });

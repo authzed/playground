@@ -1,6 +1,13 @@
 import { ParagraphBreakTracker } from "./paragraphBreak";
 import type { ToolRegistry } from "./registry";
-import type { ChatMessage, ClientToolCall, DisplayArtifact, SseEvent, ToolMessage, WireTool } from "./types";
+import type {
+  ChatMessage,
+  ClientToolCall,
+  DisplayArtifact,
+  SseEvent,
+  ToolMessage,
+  WireTool,
+} from "./types";
 import type { ToolContext } from "./types";
 
 export interface StateSnapshot {

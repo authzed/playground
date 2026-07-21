@@ -1,7 +1,6 @@
-import { useEffect } from "react";
-
 import { usePostHog } from "@posthog/react";
 import { Bot, History } from "lucide-react";
+import { useEffect } from "react";
 
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
@@ -49,10 +48,7 @@ export function DockActivityBar({ aiEnabled }: { aiEnabled: boolean }) {
               size="icon-sm"
               variant="ghost"
               aria-label="Assistant"
-              className={cn(
-                "relative",
-                isActive("assistant") && "bg-chrome-panel text-foreground",
-              )}
+              className={cn("relative", isActive("assistant") && "bg-chrome-panel text-foreground")}
               onClick={onToggleAssistant}
             >
               <Bot />
