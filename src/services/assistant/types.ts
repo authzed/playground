@@ -68,14 +68,19 @@ export interface WireTool {
   input_schema: Record<string, unknown>;
 }
 
-export type ContentBlock = { type: string; [k: string]: unknown };
-export type ChatMessage = { role: "user" | "assistant"; content: string | ContentBlock[] };
-export type ToolResultBlock = {
-  type: "tool_result";
-  tool_use_id: string;
-  content: string;
-  is_error?: boolean;
+export type ToolCall = {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
 };
+export type UserMessage = { role: "user"; content: string };
+export type AssistantMessage = {
+  role: "assistant";
+  content: string | null;
+  tool_calls?: ToolCall[];
+};
+export type ToolMessage = { role: "tool"; tool_call_id: string; content: string };
+export type ChatMessage = UserMessage | AssistantMessage | ToolMessage;
 export type ClientToolCall = { id: string; name: string; input: unknown };
 
 export type SseEvent =
@@ -83,10 +88,10 @@ export type SseEvent =
   | {
       event: "handoff";
       data: {
-        assistantContent: ContentBlock[];
-        serverToolResults: { tool_use_id: string; content: string }[];
+        assistantMessage: AssistantMessage;
+        serverToolResults: ToolMessage[];
         clientToolCalls: ClientToolCall[];
       };
     }
-  | { event: "done"; data: { assistantContent: ContentBlock[]; stop_reason: string } }
+  | { event: "done"; data: { assistantMessage: AssistantMessage; finish_reason: string } }
   | { event: "error"; data: { code?: string; message: string; retryAfter?: number } };
