@@ -124,6 +124,14 @@ describe("createOpenRouterClient", () => {
         }),
       }),
     );
+    const [, requestInit] = fetchImpl.mock.calls[0];
+    expect(JSON.parse(requestInit.body as string)).toEqual({
+      model: "anthropic/claude-sonnet-5",
+      max_tokens: 100,
+      messages: [{ role: "user", content: "hi" }],
+      tools: [],
+      stream: true,
+    });
   });
 
   it("throws OpenRouterApiError with status/headers on a non-OK response", async () => {
