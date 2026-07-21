@@ -229,4 +229,43 @@ describe("runAssistantTurn", () => {
     expect(result.error?.message).toMatch(/rate limit/i);
     expect(result.error?.retryAfter).toBe(30);
   });
+
+  it("prefixes a failing tool result with 'Error:' so the model can't miss it", async () => {
+    const registry = new ToolRegistry();
+    registry.register({
+      name: "run_validation",
+      description: "d",
+      parameters: z.object({}),
+      execute: () => ({ passed: false, failures: ["missing relation"] }),
+      isError: (result) => (result as { passed: boolean }).passed === false,
+    });
+
+    const stream = gen([
+      {
+        event: "handoff",
+        data: {
+          assistantMessage: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              { id: "t1", type: "function", function: { name: "run_validation", arguments: "{}" } },
+            ],
+          },
+          serverToolResults: [],
+          clientToolCalls: [{ id: "t1", name: "run_validation", input: {} }],
+        },
+      },
+    ]);
+
+    const result = await runAssistantTurn([{ role: "user", content: "validate" }], {
+      ...baseDeps,
+      registry,
+      maxRoundTrips: 1,
+      stream: stream as any,
+    });
+
+    const toolMessage = result.messages.find((m: any) => m.role === "tool" && m.tool_call_id === "t1");
+    expect(toolMessage?.content).toMatch(/^Error:/);
+    expect(toolMessage?.content).toContain('"passed":false');
+  });
 });

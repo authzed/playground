@@ -138,7 +138,12 @@ async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<
       summary: tool.summarize ? tool.summarize(result, parsed.data) : defaultSummarize(result),
       ok,
     });
-    return { role: "tool", tool_call_id: call.id, content: JSON.stringify(modelResult) };
+    // OpenAI's tool-role messages have no dedicated failure flag (unlike
+    // Anthropic's is_error on tool_result blocks) — prefix the content so a
+    // failing tool call is unambiguous to the model even when the tool's own
+    // JSON payload doesn't self-describe failure (e.g. no ok/error field).
+    const content = JSON.stringify(modelResult);
+    return { role: "tool", tool_call_id: call.id, content: ok ? content : `Error: ${content}` };
   } catch (err) {
     deps.onToolActivity({ name: call.name, summary: "error", ok: false });
     return {
