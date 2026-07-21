@@ -233,4 +233,59 @@ describe("runAiTurn", () => {
     expect(handoff.data.serverToolResults[0]).toMatchObject({ tool_call_id: "bad1" });
     expect((handoff.data.serverToolResults[0] as any).content).toMatch(/Malformed arguments/);
   });
+
+  it("does not cross-contaminate arguments between tool calls that share the same id", async () => {
+    const { sink, events } = collectingSink();
+    const client = fakeClient([
+      {
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "x", type: "function", function: { name: "read_skill_reference", arguments: "{not json" } },
+            { id: "x", type: "function", function: { name: "run_check", arguments: '{"resource":"doc:x"}' } },
+          ],
+        },
+        finish_reason: "tool_calls",
+      },
+    ]);
+    await runAiTurn(req, { ...deps, client }, sink);
+
+    const handoff = events.find((e) => e.event === "handoff")!;
+    // The malformed read_skill_reference call must not be treated as valid,
+    // and the valid run_check call must not be silently dropped or have its
+    // arguments merged with the other call sharing the same id.
+    expect(handoff.data.clientToolCalls).toEqual([
+      { id: "x", name: "run_check", input: { resource: "doc:x" } },
+    ]);
+    expect(handoff.data.serverToolResults).toHaveLength(1);
+    expect((handoff.data.serverToolResults[0] as any).content).toMatch(
+      /Malformed arguments for tool "read_skill_reference"/,
+    );
+  });
+
+  it("hands off (rather than silently continuing) when the only tool call is a malformed client-tool call", async () => {
+    const { sink, events } = collectingSink();
+    const client = fakeClient([
+      {
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            { id: "c1", type: "function", function: { name: "run_check", arguments: "{not json" } },
+          ],
+        },
+        finish_reason: "tool_calls",
+      },
+    ]);
+    await runAiTurn(req, { ...deps, client }, sink);
+
+    const handoff = events.find((e) => e.event === "handoff");
+    expect(handoff).toBeDefined();
+    expect(handoff!.data.clientToolCalls).toEqual([]);
+    expect(handoff!.data.malformedClientToolCalls).toEqual([
+      { id: "c1", name: "run_check", error: expect.any(String) },
+    ]);
+    expect((handoff!.data.serverToolResults[0] as any)).toMatchObject({ tool_call_id: "c1" });
+  });
 });

@@ -45,47 +45,55 @@ export async function runAiTurn(
     // Tool calls whose arguments fail to parse can't be safely executed or
     // handed to the client — synthesize an explicit failure result instead of
     // substituting {} and letting the tool run with silently-wrong input.
+    // Paired by array position, never by call.id — ids aren't guaranteed
+    // unique across the calls in one turn, and keying by id let one call's
+    // arguments silently overwrite another's.
+    const outcomes = toolCalls.map((call) => ({ call, parsed: parseArguments(call.function.arguments) }));
+
     const malformedResults: OpenRouterMessage[] = [];
-    const parsedArguments = new Map<string, unknown>();
-    for (const c of toolCalls) {
-      const parsed = parseArguments(c.function.arguments);
-      if (parsed.ok) {
-        parsedArguments.set(c.id, parsed.value);
-      } else {
-        malformedResults.push({
-          role: "tool",
-          tool_call_id: c.id,
-          content: `Malformed arguments for tool "${c.function.name}": ${parsed.error}. The call was not executed.`,
-        });
+    const malformedClientToolCalls: { id: string; name: string; error: string }[] = [];
+    for (const o of outcomes) {
+      if (o.parsed.ok) continue;
+      malformedResults.push({
+        role: "tool",
+        tool_call_id: o.call.id,
+        content: `Malformed arguments for tool "${o.call.function.name}": ${o.parsed.error}. The call was not executed.`,
+      });
+      if (!SERVER_TOOL_NAMES.has(o.call.function.name)) {
+        malformedClientToolCalls.push({ id: o.call.id, name: o.call.function.name, error: o.parsed.error });
       }
     }
-    const validCalls = toolCalls.filter((c) => parsedArguments.has(c.id));
-    const serverCalls = validCalls.filter((c) => SERVER_TOOL_NAMES.has(c.function.name));
-    const clientCalls = validCalls.filter((c) => !SERVER_TOOL_NAMES.has(c.function.name));
+
+    const validOutcomes = outcomes.filter(
+      (o): o is { call: (typeof outcomes)[number]["call"]; parsed: { ok: true; value: unknown } } => o.parsed.ok,
+    );
+    const serverOutcomes = validOutcomes.filter((o) => SERVER_TOOL_NAMES.has(o.call.function.name));
+    const clientOutcomes = validOutcomes.filter((o) => !SERVER_TOOL_NAMES.has(o.call.function.name));
 
     const serverToolResults: OpenRouterMessage[] = [
       ...malformedResults,
-      ...serverCalls.map((c) => {
-        const tool = SERVER_TOOLS.find((t) => t.name === c.function.name)!;
-        return { role: "tool" as const, tool_call_id: c.id, content: tool.execute(parsedArguments.get(c.id)) };
+      ...serverOutcomes.map((o) => {
+        const tool = SERVER_TOOLS.find((t) => t.name === o.call.function.name)!;
+        return { role: "tool" as const, tool_call_id: o.call.id, content: tool.execute(o.parsed.value) };
       }),
     ];
 
-    if (clientCalls.length > 0) {
+    if (clientOutcomes.length > 0 || malformedClientToolCalls.length > 0) {
       sink.send("handoff", {
         assistantMessage: final.message,
         serverToolResults,
-        clientToolCalls: clientCalls.map((c) => ({
-          id: c.id,
-          name: c.function.name,
-          input: parsedArguments.get(c.id),
+        clientToolCalls: clientOutcomes.map((o) => ({
+          id: o.call.id,
+          name: o.call.function.name,
+          input: o.parsed.value,
         })),
+        malformedClientToolCalls,
       });
       sink.end();
       return;
     }
 
-    // Only server tools (and/or malformed-call failures): append results and continue the loop.
+    // Only server tools (and/or malformed server-named-call failures): append results and continue the loop.
     messages.push(...serverToolResults);
   }
 

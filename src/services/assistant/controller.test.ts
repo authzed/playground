@@ -268,4 +268,64 @@ describe("runAssistantTurn", () => {
     expect(toolMessage?.content).toMatch(/^Error:/);
     expect(toolMessage?.content).toContain('"passed":false');
   });
+
+  it("reports tool activity for a malformed client tool call without executing anything", async () => {
+    const onToolActivity = vi.fn();
+    const registry = new ToolRegistry();
+    const execute = vi.fn();
+    registry.register({
+      name: "run_check",
+      description: "d",
+      parameters: z.object({ resource: z.string() }),
+      execute,
+    });
+
+    let _call = 0;
+    const frames: SseEvent[][] = [
+      [
+        {
+          event: "handoff",
+          data: {
+            assistantMessage: {
+              role: "assistant",
+              content: null,
+              tool_calls: [
+                { id: "c1", type: "function", function: { name: "run_check", arguments: "{not json" } },
+              ],
+            },
+            serverToolResults: [
+              {
+                role: "tool",
+                tool_call_id: "c1",
+                content:
+                  'Malformed arguments for tool "run_check": Unexpected end of JSON input. The call was not executed.',
+              },
+            ],
+            clientToolCalls: [],
+            malformedClientToolCalls: [{ id: "c1", name: "run_check", error: "Unexpected end of JSON input" }],
+          },
+        },
+      ],
+      [
+        {
+          event: "done",
+          data: { assistantMessage: { role: "assistant", content: "done" }, finish_reason: "stop" },
+        },
+      ],
+    ];
+    const stream = () =>
+      (async function* () {
+        for (const e of frames[_call++]) yield e;
+      })();
+
+    await runAssistantTurn([{ role: "user", content: "check it" }], {
+      ...baseDeps,
+      registry,
+      onToolActivity,
+      stream: stream as any,
+    });
+
+    expect(execute).not.toHaveBeenCalled();
+    expect(onToolActivity).toHaveBeenCalledWith({ name: "run_check", summary: "malformed arguments", ok: false });
+  });
 });

@@ -93,6 +93,10 @@ export async function runAssistantTurn(
     messages.push(handoff.assistantMessage);
     messages.push(...handoff.serverToolResults);
 
+    for (const call of handoff.malformedClientToolCalls ?? []) {
+      deps.onToolActivity({ name: call.name, summary: "malformed arguments", ok: false });
+    }
+
     for (const call of handoff.clientToolCalls) {
       messages.push(await executeClientTool(call, deps));
     }

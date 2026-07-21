@@ -91,6 +91,7 @@ export type SseEvent =
         assistantMessage: AssistantMessage;
         serverToolResults: ToolMessage[];
         clientToolCalls: ClientToolCall[];
+        malformedClientToolCalls?: { id: string; name: string; error: string }[];
       };
     }
   | { event: "done"; data: { assistantMessage: AssistantMessage; finish_reason: string } }
