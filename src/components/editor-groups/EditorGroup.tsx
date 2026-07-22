@@ -97,35 +97,38 @@ export function EditorGroup({
   return (
     <div className={cn("flex flex-col h-full", className)}>
       {/* Tab strip */}
-      <div
-        className="relative flex shrink-0 items-stretch bg-chrome-tabbar"
-        onDragOver={handleStripDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
-      >
-        {group.tabs.map((tab, i) => (
-          <React.Fragment key={tab}>
-            {dropIndicator?.index === i && <DropMarker />}
-            <TabContextMenu tab={tab} groupId={group.id} canClose={canCloseTabs}>
-              <EditorTab
-                document={tab}
-                active={tab === group.activeTab}
-                canClose={canCloseTabs}
-                diagnostics={tabDiagnostics?.[tab]}
-                onClick={() => setActiveTab(group.id, tab)}
-                onClose={() => closeTab(tab)}
-                onDragStart={(e) => handleDragStart(e, tab)}
-                onDragOver={(e) => handleTabDragOver(e, tab)}
-                onDrop={handleDrop}
-              />
-            </TabContextMenu>
-          </React.Fragment>
-        ))}
-        {dropIndicator?.index === group.tabs.length && <DropMarker />}
-        <div className="ml-1 flex items-center">
-          <OpenDocumentMenu groupId={group.id} />
+      <div className="flex shrink-0 items-stretch bg-chrome-tabbar">
+        <div
+          className="relative flex min-w-0 flex-1 items-stretch overflow-x-auto"
+          onDragOver={handleStripDragOver}
+          onDragLeave={handleDragLeave}
+          onDrop={handleDrop}
+        >
+          {group.tabs.map((tab, i) => (
+            <React.Fragment key={tab}>
+              {dropIndicator?.index === i && <DropMarker />}
+              <TabContextMenu tab={tab} groupId={group.id} canClose={canCloseTabs}>
+                <EditorTab
+                  document={tab}
+                  active={tab === group.activeTab}
+                  canClose={canCloseTabs}
+                  diagnostics={tabDiagnostics?.[tab]}
+                  onClick={() => setActiveTab(group.id, tab)}
+                  onClose={() => closeTab(tab)}
+                  onDragStart={(e) => handleDragStart(e, tab)}
+                  onDragOver={(e) => handleTabDragOver(e, tab)}
+                  onDrop={handleDrop}
+                  className="shrink-0 whitespace-nowrap"
+                />
+              </TabContextMenu>
+            </React.Fragment>
+          ))}
+          {dropIndicator?.index === group.tabs.length && <DropMarker />}
+          <div className="ml-1 flex shrink-0 items-center">
+            <OpenDocumentMenu groupId={group.id} />
+          </div>
         </div>
-        <div className="ml-auto flex items-center pr-1">
+        <div className="ml-auto flex shrink-0 items-center pr-1">
           <SplitMenu tab={group.activeTab} />
           {closable && (
             <Tooltip>
