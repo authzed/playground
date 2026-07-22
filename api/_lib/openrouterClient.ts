@@ -1,0 +1,259 @@
+import type { EventSourceMessage } from "eventsource-parser";
+import { EventSourceParserStream } from "eventsource-parser/stream";
+
+export interface OpenRouterToolCall {
+  id: string;
+  type: "function";
+  function: { name: string; arguments: string };
+}
+
+export interface OpenRouterTextPart {
+  type: "text";
+  text: string;
+  cache_control?: { type: "ephemeral" };
+}
+
+export interface OpenRouterMessage {
+  role: "system" | "user" | "assistant" | "tool";
+  content: string | null | OpenRouterTextPart[];
+  tool_calls?: OpenRouterToolCall[];
+  tool_call_id?: string;
+}
+
+export interface OpenRouterToolDef {
+  type: "function";
+  function: { name: string; description: string; parameters: Record<string, unknown> };
+}
+
+export interface OpenRouterRequestParams {
+  model: string;
+  max_tokens: number;
+  messages: OpenRouterMessage[];
+  tools: OpenRouterToolDef[];
+}
+
+export interface OpenRouterFinalMessage {
+  message: OpenRouterMessage;
+  finish_reason: string;
+}
+
+export interface OpenRouterStreamLike {
+  on(event: "text", cb: (delta: string) => void): void;
+  finalMessage(): Promise<OpenRouterFinalMessage>;
+}
+
+export interface OpenRouterLike {
+  stream(params: OpenRouterRequestParams): OpenRouterStreamLike;
+}
+
+export class OpenRouterApiError extends Error {
+  status: number;
+  headers: Headers;
+  constructor(message: string, status: number, headers: Headers) {
+    super(message);
+    this.name = "OpenRouterApiError";
+    this.status = status;
+    this.headers = headers;
+  }
+}
+
+interface ToolCallAccumulator {
+  id?: string;
+  type?: "function";
+  name: string;
+  arguments: string;
+}
+
+export interface StreamAccumulator {
+  content: string;
+  toolCalls: Map<number, ToolCallAccumulator>;
+  finishReason: string | null;
+}
+
+export function createAccumulator(): StreamAccumulator {
+  return { content: "", toolCalls: new Map(), finishReason: null };
+}
+
+interface RawDeltaToolCall {
+  index: number;
+  id?: string;
+  type?: "function";
+  function?: { name?: string; arguments?: string };
+}
+interface RawChunk {
+  error?: { message?: string; code?: number | string };
+  choices?: [
+    { delta?: { content?: string; tool_calls?: RawDeltaToolCall[] }; finish_reason?: string },
+  ];
+}
+
+// Once tokens have already streamed, OpenRouter can't change the committed
+// HTTP 200 status, so a mid-stream failure arrives as an inline `error` with
+// a string type code (e.g. "server_error") rather than a real HTTP status —
+// confirmed against https://openrouter.ai/docs/api_reference/streaming#handling-errors-during-streaming.
+// Parses `code` to a real HTTP-status-like number, or null if it can't be
+// interpreted as one (including an empty/whitespace-only string, which
+// Number() would otherwise silently treat as 0). Shared by normalizeErrorCode
+// and accumulateChunk's message-annotation check so the two can't drift out
+// of sync with each other.
+function parseNumericCode(code: number | string | undefined): number | null {
+  if (typeof code === "number") return Number.isFinite(code) ? code : null;
+  if (typeof code === "string" && code.trim() !== "") {
+    const parsed = Number(code);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return null;
+}
+
+function normalizeErrorCode(code: number | string | undefined): number {
+  return parseNumericCode(code) ?? 500;
+}
+
+/**
+ * Folds one raw chat-completion chunk into `acc`, returning any new text this
+ * chunk added (empty string if none). Throws OpenRouterApiError if the chunk
+ * carries an inline provider error (OpenRouter's mid-stream failure shape).
+ */
+export function accumulateChunk(acc: StreamAccumulator, chunk: RawChunk): string {
+  if (chunk.error) {
+    const rawCode = chunk.error.code;
+    const baseMessage = chunk.error.message ?? "OpenRouter stream error";
+    const isNonNumericStringCode =
+      typeof rawCode === "string" && parseNumericCode(rawCode) === null;
+    throw new OpenRouterApiError(
+      isNonNumericStringCode ? `${baseMessage} (code: ${rawCode})` : baseMessage,
+      normalizeErrorCode(rawCode),
+      new Headers(),
+    );
+  }
+  const choice = chunk.choices?.[0];
+  if (!choice) return "";
+  const delta = choice.delta ?? {};
+  const textDelta = typeof delta.content === "string" ? delta.content : "";
+  if (textDelta) acc.content += textDelta;
+  for (const tc of delta.tool_calls ?? []) {
+    const existing = acc.toolCalls.get(tc.index) ?? { name: "", arguments: "" };
+    if (tc.id) existing.id = tc.id;
+    if (tc.type) existing.type = tc.type;
+    if (tc.function?.name) existing.name += tc.function.name;
+    if (tc.function?.arguments) existing.arguments += tc.function.arguments;
+    acc.toolCalls.set(tc.index, existing);
+  }
+  if (choice.finish_reason) acc.finishReason = choice.finish_reason;
+  return textDelta;
+}
+
+export function finalizeAccumulator(acc: StreamAccumulator): OpenRouterFinalMessage {
+  const toolCalls = [...acc.toolCalls.entries()]
+    .sort(([a], [b]) => a - b)
+    .map(([, tc]) => ({
+      id: tc.id ?? "",
+      type: "function" as const,
+      function: { name: tc.name, arguments: tc.arguments },
+    }));
+  return {
+    message: {
+      role: "assistant",
+      content: acc.content || null,
+      ...(toolCalls.length > 0 ? { tool_calls: toolCalls } : {}),
+    },
+    finish_reason: acc.finishReason ?? "stop",
+  };
+}
+
+export function createOpenRouterClient(
+  apiKey: string,
+  fetchImpl: typeof fetch = fetch,
+  baseUrl = "https://openrouter.ai/api/v1",
+): OpenRouterLike {
+  return {
+    stream(params) {
+      const textCallbacks: ((delta: string) => void)[] = [];
+      const finalMessage = runStream(apiKey, fetchImpl, baseUrl, params, (delta) => {
+        for (const cb of textCallbacks) cb(delta);
+      });
+      return {
+        on(event, cb) {
+          if (event === "text") textCallbacks.push(cb);
+        },
+        finalMessage: () => finalMessage,
+      };
+    },
+  };
+}
+
+const RETRYABLE_STATUSES = new Set([429, 500, 502, 503, 504]);
+const MAX_ATTEMPTS = 3;
+
+// Retries only the request that establishes the connection — once any bytes
+// of the response body have been read, a failure is handled as a mid-stream
+// error instead (see accumulateChunk), since a partially-streamed response
+// can't be safely restarted without risking duplicated or lost text.
+async function fetchWithRetry(
+  fetchImpl: typeof fetch,
+  url: string,
+  init: RequestInit,
+): Promise<Response> {
+  for (let attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+    if (attempt > 0) {
+      const delayMs = Math.min(500 * 2 ** (attempt - 1), 4000);
+      await new Promise((resolve) => setTimeout(resolve, delayMs));
+    }
+    try {
+      const res = await fetchImpl(url, init);
+      const isLastAttempt = attempt === MAX_ATTEMPTS - 1;
+      if (res.ok || isLastAttempt || !RETRYABLE_STATUSES.has(res.status)) return res;
+      // Discarding this response to retry — release the connection back to
+      // the pool instead of leaking it by never reading/canceling the body.
+      await res.body?.cancel();
+    } catch (err) {
+      if (attempt === MAX_ATTEMPTS - 1) throw err;
+    }
+  }
+  throw new Error("unreachable"); // MAX_ATTEMPTS >= 1 guarantees a return or throw above
+}
+
+async function runStream(
+  apiKey: string,
+  fetchImpl: typeof fetch,
+  baseUrl: string,
+  params: OpenRouterRequestParams,
+  onText: (delta: string) => void,
+): Promise<OpenRouterFinalMessage> {
+  const res = await fetchWithRetry(fetchImpl, `${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({ ...params, stream: true }),
+  });
+
+  if (!res.ok || !res.body) {
+    const body = await res.json().catch(() => ({}) as { error?: { message?: string } });
+    throw new OpenRouterApiError(
+      body?.error?.message ?? `OpenRouter request failed (${res.status})`,
+      res.status,
+      res.headers,
+    );
+  }
+
+  const acc = createAccumulator();
+  const events = res.body
+    .pipeThrough(new TextDecoderStream())
+    .pipeThrough(new EventSourceParserStream());
+
+  for await (const event of events as unknown as AsyncIterable<EventSourceMessage>) {
+    if (event.data === "[DONE]") continue;
+    let chunk: RawChunk;
+    try {
+      chunk = JSON.parse(event.data);
+    } catch {
+      continue;
+    }
+    const delta = accumulateChunk(acc, chunk);
+    if (delta) onText(delta);
+  }
+
+  return finalizeAccumulator(acc);
+}

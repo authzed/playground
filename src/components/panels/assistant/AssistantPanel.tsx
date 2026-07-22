@@ -1,0 +1,69 @@
+import { usePostHog } from "@posthog/react";
+
+import { Button } from "@/components/ui/button";
+
+import { type DisplayMessage, useAssistantStore } from "../../../services/assistant/store";
+import type { HistoryRecorder } from "../../../services/assistant/types";
+import { useAssistantController } from "../../../services/assistant/useAssistantController";
+import type { DataStore } from "../../../services/datastore";
+import { useHistoryStore } from "../../../services/history/historyStore";
+import { restoreRevision } from "../../../services/history/useHistoryRecorder";
+import type { Services } from "../../../services/services";
+
+import { ChatInput } from "./ChatInput";
+import { MessageList } from "./MessageList";
+
+export function AssistantPanel({
+  services,
+  datastore,
+  history,
+}: {
+  services: Services;
+  datastore: DataStore;
+  history: HistoryRecorder;
+}) {
+  const { submit, stop } = useAssistantController(services, datastore, history);
+  const display = useAssistantStore((s) => s.display);
+  const status = useAssistantStore((s) => s.status);
+  const reset = useAssistantStore((s) => s.reset);
+  const posthog = usePostHog();
+
+  const onUndo = (m: DisplayMessage) => {
+    if (!m.checkpointRevisionId) return;
+    const rev = useHistoryStore.getState().get(m.checkpointRevisionId);
+    if (!rev) return;
+    posthog.capture("playground_ai_state_restored");
+    restoreRevision(datastore, rev);
+  };
+
+  const busy = status === "streaming" || status === "executing_tools";
+
+  const onNewChat = () => {
+    posthog.capture("playground_ai_chat_started");
+    // Abort any in-flight turn before resetting — reset() alone bumps the
+    // store's generation (so a stale turn's results are ignored when it
+    // resolves), but doesn't stop the underlying fetch from still running.
+    stop();
+    reset();
+  };
+
+  return (
+    <div className="flex h-full flex-col">
+      <div className="flex items-center justify-between border-b border-chrome-divider px-3 py-1.5 text-xs">
+        <span className="font-semibold uppercase tracking-wide text-muted-foreground">
+          Assistant
+        </span>
+        <Button size="sm" variant="ghost" onClick={onNewChat}>
+          New chat
+        </Button>
+      </div>
+      <MessageList
+        messages={display}
+        onUndo={onUndo}
+        busy={busy}
+        localParseService={services.localParseService}
+      />
+      <ChatInput disabled={busy} onSubmit={submit} />
+    </div>
+  );
+}

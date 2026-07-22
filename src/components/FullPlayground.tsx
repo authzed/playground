@@ -51,6 +51,7 @@ import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
 import { DiscordChatCrate } from "../playground-ui/DiscordChatCrate";
 import { useGoogleAnalytics } from "../playground-ui/GoogleAnalyticsHook";
+import { useAssistantStore } from "../services/assistant/store";
 import {
   useLiveCheckService,
   type LiveCheckService,
@@ -59,6 +60,8 @@ import {
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
+import { useHistoryStore } from "../services/history/historyStore";
+import { readHistoryDocs, useHistoryRecorder } from "../services/history/useHistoryRecorder";
 import { useLocalParseService } from "../services/localparse";
 import { useProblemService } from "../services/problem";
 import { ValidationResult, ValidationStatus, useValidationService } from "../services/validation";
@@ -79,9 +82,14 @@ import { EditorGroups } from "./editor-groups/EditorGroups";
 import { useEditorStore } from "./editor-groups/state";
 import type { DocumentRef } from "./editor-groups/types";
 import { EditorDisplay } from "./EditorDisplay";
+import { AssistantPanel } from "./panels/assistant/AssistantPanel";
+import { HistoryPanel } from "./panels/history/HistoryPanel";
 import { ProblemsPanel } from "./panels/problems";
 import { TerminalPanel } from "./panels/terminal";
 import { WatchesPanel } from "./panels/watches";
+import { DockActivityBar } from "./rightdock/DockActivityBar";
+import { RightDock } from "./rightdock/RightDock";
+import type { DockPanelId } from "./rightdock/state";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -176,6 +184,34 @@ export function ThemedAppView(props: {
     developerService,
     zedTerminalService,
   };
+
+  const aiEnabled = AppConfig().aiEnabled;
+  const historyRecorder = useHistoryRecorder(datastore);
+
+  // Loading a NEW document (example, share, or the blank "New" reset) clears the
+  // AI chat and revision history that belonged to the previous document. Restores
+  // (in-session undo) pass isRestore and do NOT trigger this.
+  useEffect(() => {
+    return datastore.registerReloadListener(() => {
+      useAssistantStore.getState().reset();
+      useHistoryStore.getState().clear();
+      useHistoryStore.getState().record({
+        source: "manual",
+        label: "Loaded document",
+        docs: readHistoryDocs(datastore),
+      });
+    });
+  }, [datastore]);
+
+  // History is always available; the assistant panel is only added when AI is enabled.
+  const dockPanels: Partial<Record<DockPanelId, ReactNode>> = {
+    history: <HistoryPanel datastore={datastore} />,
+  };
+  if (aiEnabled) {
+    dockPanels.assistant = (
+      <AssistantPanel services={services} datastore={datastore} history={historyRecorder} />
+    );
+  }
 
   const conductDownload = () => {
     const yamlContents = createValidationYAML(
@@ -796,28 +832,32 @@ export function ThemedAppView(props: {
       </header>
 
       {/* === Editor groups (tab strip + content per group) === */}
-      <div className="flex-1 min-h-0">
-        <EditorGroups
-          renderContent={renderDocument}
-          tabDiagnostics={{
-            schema: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.SCHEMA),
-              warnings: services.problemService.warnings.length,
-            },
-            relationships: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.RELATIONSHIPS),
-              warnings: 0,
-            },
-            assertions: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.ASSERTIONS),
-              warnings: 0,
-            },
-            expected: {
-              errors: services.problemService.getErrorCount(DataStoreItemKind.EXPECTED_RELATIONS),
-              warnings: 0,
-            },
-          }}
-        />
+      <div className="flex flex-1 min-h-0 flex-row">
+        <div className="min-w-0 flex-1">
+          <EditorGroups
+            renderContent={renderDocument}
+            tabDiagnostics={{
+              schema: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.SCHEMA),
+                warnings: services.problemService.warnings.length,
+              },
+              relationships: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.RELATIONSHIPS),
+                warnings: 0,
+              },
+              assertions: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.ASSERTIONS),
+                warnings: 0,
+              },
+              expected: {
+                errors: services.problemService.getErrorCount(DataStoreItemKind.EXPECTED_RELATIONS),
+                warnings: 0,
+              },
+            }}
+          />
+        </div>
+        <RightDock panels={dockPanels} />
+        <DockActivityBar aiEnabled={aiEnabled} />
       </div>
 
       {/* === Bottom drawer (one panel at a time) === */}

@@ -28,6 +28,7 @@ import {
 } from "../spicedb-common/protodefs/developer/v1/developer_pb";
 
 import { useDrawerStore } from "./drawer/state";
+import { useRevealStore } from "./editor-groups/revealStore";
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
 import registerTupleLanguage, { TUPLE_LANGUAGE_NAME } from "./relationshipeditor/tuplelang";
 
@@ -91,6 +92,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
   }, [props.services.liveCheckService]);
 
   const location = useLocation();
+  const revealRequest = useRevealStore((s) => s.request);
 
   const datastore = props.datastore;
   const currentItem = props.currentItem;
@@ -565,6 +567,28 @@ export function EditorDisplay(props: EditorDisplayProps) {
     // NOTE: We only care if the locationState changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [locationState]);
+
+  // Reveal a range requested via the assistant's `open_tab_to_line` tool
+  // (see revealStore). Only acts when the request targets the document
+  // currently displayed by this editor and the editor is mounted.
+  useEffect(() => {
+    if (!revealRequest || currentItem?.kind !== revealRequest.kind) return;
+    const editors = editorRefs.current;
+    if (currentItem?.id === undefined || !(currentItem.id in editors)) return;
+    const editor = editors[currentItem.id];
+    const r = revealRequest.range;
+    editor.revealRangeInCenter({
+      startLineNumber: r.startLine,
+      startColumn: r.startColumn ?? 1,
+      endLineNumber: r.endLine ?? r.startLine,
+      // Mirror startColumn (rather than defaulting to 1) so a startColumn given
+      // without an explicit end stays a valid, non-inverted single-line range.
+      endColumn: r.endColumn ?? r.startColumn ?? 1,
+    });
+    editor.setPosition({ lineNumber: r.startLine, column: r.startColumn ?? 1 });
+    // depend on nonce so repeated reveals to the same line re-fire
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [revealRequest?.nonce, currentItem?.id, currentItem?.kind]);
 
   useEffect(() => {
     if (!props.services.problemService.isUpdating) {

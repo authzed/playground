@@ -4,6 +4,8 @@ import type { IncomingMessage, ServerResponse } from "http";
 import type { ViteDevServer } from "vite";
 import z from "zod";
 
+import { bootstrapAiRoute } from "../api/_lib/aiRoute";
+import { handleAiRequest } from "../api/ai";
 import { zSharedDataV2 } from "../src/schemas/share-data";
 
 const encodeURL = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
@@ -87,6 +89,28 @@ export function configureServer(server: ViteDevServer) {
       }
 
       return json(res, 200, JSON.parse(data));
+    }
+
+    if (req.method === "POST" && url.pathname === "/api/ai") {
+      let body: unknown;
+      try {
+        body = JSON.parse(await readBody(req));
+      } catch {
+        return json(res, 400, { error: "Invalid JSON" });
+      }
+
+      const { sink, client, respondError } = bootstrapAiRoute(res);
+
+      await handleAiRequest({
+        method: "POST",
+        body,
+        ip: "dev",
+        env: process.env,
+        client,
+        sink,
+        respondError,
+      });
+      return;
     }
 
     next();

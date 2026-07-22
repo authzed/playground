@@ -99,6 +99,7 @@ assertFalse:
 
 export type ListenerCallback = (index: string) => void;
 export type RemovalCallback = () => void;
+export type ReloadListenerCallback = () => void;
 
 /**
  * DataStore defines the storage layer for data in the playground.
@@ -110,6 +111,7 @@ export abstract class DataStore {
   abstract isPopulated(): boolean;
 
   private listeners: Record<string, ListenerCallback> = {};
+  private reloadListeners: Record<string, ReloadListenerCallback> = {};
 
   protected setStoredAndReport(data: DataStorageData): void {
     this.setStored(data);
@@ -132,6 +134,25 @@ export abstract class DataStore {
     return () => {
       delete this.listeners[key];
     };
+  }
+
+  /**
+   * registerReloadListener registers a callback invoked when the datastore is
+   * reloaded with a NEW document (an example, a share, or a blank reset) — but
+   * NOT when a prior state is restored (see load's isRestore option). Use it to
+   * reset session-scoped state (e.g. the AI chat and revision history) that was
+   * tied to the previous document.
+   */
+  public registerReloadListener(callback: ReloadListenerCallback): RemovalCallback {
+    const key = uuidv4();
+    this.reloadListeners[key] = callback;
+    return () => {
+      delete this.reloadListeners[key];
+    };
+  }
+
+  private notifyReload(): void {
+    Object.values(this.reloadListeners).forEach((callback) => callback());
   }
 
   /**
@@ -204,17 +225,20 @@ export abstract class DataStore {
    * load loads the given parsed data into the datastore,
    * erasing any data already existing in the store.
    */
-  public load({
-    schema,
-    relationshipsYaml,
-    assertionsYaml,
-    verificationYaml,
-  }: {
-    schema: string;
-    relationshipsYaml: string;
-    assertionsYaml: string;
-    verificationYaml: string;
-  }) {
+  public load(
+    {
+      schema,
+      relationshipsYaml,
+      assertionsYaml,
+      verificationYaml,
+    }: {
+      schema: string;
+      relationshipsYaml: string;
+      assertionsYaml: string;
+      verificationYaml: string;
+    },
+    opts?: { isRestore?: boolean },
+  ) {
     // NOTE: Quick way to deep clone.
     const store: DataStorageData = JSON.parse(JSON.stringify(EMPTY_STORE));
 
@@ -231,6 +255,12 @@ export abstract class DataStore {
     store.items[DataStorePaths.ExpectedRelations()].editableContents = verificationYaml;
 
     this.setStoredAndReport(store);
+
+    // A new document was loaded (example/share/blank reset). Restores pass
+    // isRestore so they don't nuke the chat/history the user is undoing within.
+    if (!opts?.isRestore) {
+      this.notifyReload();
+    }
   }
 
   /**
@@ -299,6 +329,25 @@ export abstract class DataStore {
     data.baseline = null;
     this.setStoredAndReport(data);
   }
+}
+
+export interface DatastoreDocs {
+  schema: string;
+  relationships: string;
+  assertions: string;
+  expected: string;
+}
+
+/** Reads the 4 editable documents out of a datastore into one plain snapshot. */
+export function readDatastoreDocs(datastore: DataStore): DatastoreDocs {
+  return {
+    schema: datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "",
+    relationships:
+      datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "",
+    assertions: datastore.getSingletonByKind(DataStoreItemKind.ASSERTIONS).editableContents ?? "",
+    expected:
+      datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).editableContents ?? "",
+  };
 }
 
 const LOCAL_STORAGE_DATASTORE_KEY_PREFIX = "playgrounddata";

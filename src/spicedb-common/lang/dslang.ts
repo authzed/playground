@@ -237,7 +237,25 @@ export default function registerDSLanguage(monaco: typeof monacoEditor) {
         [/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }],
       ],
       subdef: [[/[a-z0-9_]+/, { token: "identifier.definition", next: "@popall" }]],
-      permission: [[/[a-z0-9_]+/, { token: "identifier.permission", next: "@expr" }]],
+      permission: [[/[a-z0-9_]+/, { token: "identifier.permission", next: "@permissionbody" }]],
+      // After the permission name, an optional return-type annotation (`: user | group`,
+      // the SpiceDB `use typechecking` feature) may appear before the `=` expression.
+      // When absent, rematch straight into the expression.
+      permissionbody: [
+        { include: "@whitespace" },
+        [/:/, { token: "allowed", next: "@permissionannotation" }],
+        [/$/, { token: "close", next: "@popall" }],
+        [/./, { token: "@rematch", next: "@expr" }],
+      ],
+      permissionannotation: [
+        [/$/, { token: "close", next: "@popall" }],
+        [/}/, { token: "@rematch", next: "@popall" }],
+        [/=/, { token: "@rematch", next: "@expr" }],
+        [/permission/, { token: "@rematch", next: "@popall" }],
+        [/relation/, { token: "@rematch", next: "@popall" }],
+        [/\w+/, { token: "type.identifier" }],
+        { include: "@whitespace" },
+      ],
       expr: [
         [/$/, { token: "close", next: "@popall" }],
         [/}/, { token: "@rematch", next: "@popall" }],
