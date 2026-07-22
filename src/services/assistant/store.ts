@@ -29,11 +29,18 @@ export interface AssistantState {
   // Bumped by reset() so an in-flight turn's async continuation can tell a
   // reset happened mid-turn and skip resurrecting stale results into the store.
   generation: number;
+  // A one-shot prompt requested from outside the panel (e.g. an inline "Ask
+  // assistant to fix" affordance). AssistantPanel consumes it on mount/idle and
+  // submits it. Transient — deliberately excluded from `partialize` so a reload
+  // never re-fires a stale request.
+  pendingPrompt: string | null;
   reset: () => void;
   setStatus: (s: AssistantStatus, error?: AssistantState["error"]) => void;
   appendUser: (text: string) => void;
   setMessages: (m: ChatMessage[]) => void;
   setDisplay: (d: DisplayMessage[]) => void;
+  requestPrompt: (text: string) => void;
+  consumePrompt: () => void;
 }
 
 const MAX_PERSISTED_MESSAGES = 40;
@@ -46,12 +53,14 @@ export const useAssistantStore = create<AssistantState>()(
       status: "idle",
       error: undefined,
       generation: 0,
+      pendingPrompt: null,
       reset: () =>
         set((s) => ({
           messages: [],
           display: [],
           status: "idle",
           error: undefined,
+          pendingPrompt: null,
           generation: s.generation + 1,
         })),
       setStatus: (status, error) => set({ status, error }),
@@ -65,6 +74,8 @@ export const useAssistantStore = create<AssistantState>()(
         })),
       setMessages: (messages) => set({ messages }),
       setDisplay: (display) => set({ display }),
+      requestPrompt: (text) => set({ pendingPrompt: text }),
+      consumePrompt: () => set({ pendingPrompt: null }),
     }),
     {
       name: "playground-assistant-state",

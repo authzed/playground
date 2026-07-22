@@ -23,4 +23,17 @@ describe("useAssistantStore", () => {
     useAssistantStore.getState().reset();
     expect(useAssistantStore.getState().messages).toEqual([]);
   });
+
+  it("requestPrompt sets pendingPrompt and consumePrompt clears it", () => {
+    useAssistantStore.getState().requestPrompt("debug this");
+    expect(useAssistantStore.getState().pendingPrompt).toBe("debug this");
+    useAssistantStore.getState().consumePrompt();
+    expect(useAssistantStore.getState().pendingPrompt).toBeNull();
+  });
+
+  it("reset clears a pending prompt", () => {
+    useAssistantStore.getState().requestPrompt("debug this");
+    useAssistantStore.getState().reset();
+    expect(useAssistantStore.getState().pendingPrompt).toBeNull();
+  });
 });

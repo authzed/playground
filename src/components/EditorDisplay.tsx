@@ -10,7 +10,10 @@ import { flushSync } from "react-dom";
 import { useSettings } from "@/components/SettingsProvider";
 import { useResolvedTheme } from "@/hooks/use-resolved-theme";
 
+import { buildErrorPrompt, type ErrorPromptInput } from "../services/assistant/debugPrompts";
+import { requestAssistantDebug } from "../services/assistant/debugRequest";
 import { assertionStringToCheckWatch, CheckWatch, LiveCheckService } from "../services/check";
+import AppConfig from "../services/configservice";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
@@ -47,6 +50,14 @@ const latestLocalParseStateRef: { current: LocalParseState | null } = { current:
 const latestLiveCheckServiceRef: { current: LiveCheckService | null } = { current: null };
 
 const ADD_CHECK_WATCH_COMMAND_ID = "playground.addCheckWatchFromAssertion";
+
+const ASK_ASSISTANT_DEBUG_COMMAND_ID = "playground.askAssistantDebug";
+
+// Maps each editor model's URI to the datastore kind it displays, so the
+// module-scope assistant-debug CodeLens provider (which only receives a model)
+// can restrict itself to the schema and assertions documents and label the
+// prompt's error source correctly.
+const modelKindByUri = new Map<string, DataStoreItemKind>();
 
 export type EditorDisplayProps = {
   datastore: DataStore;
@@ -418,6 +429,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       registerDSLanguage(monacoInstance);
       registerTupleLanguage(monacoInstance, () => latestLocalParseStateRef.current!);
       registerAssertionFixes(monacoInstance);
+      registerAssistantDebugLenses(monacoInstance);
       languagesRegistered = true;
       // Themes are defined inside registerDSLanguage. The Editor already rendered
       // with the theme prop before defineTheme ran, so Monaco fell back to its
@@ -430,6 +442,9 @@ export function EditorDisplay(props: EditorDisplayProps) {
         ...editorRefs.current,
         [itemId]: editor,
       };
+
+      const model = editor.getModel();
+      if (model) modelKindByUri.set(model.uri.toString(), currentItem.kind);
 
       editor.onDidChangeCursorPosition((e: monaco.editor.ICursorPositionChangedEvent) => {
         debouncedSetEditorPosition(e.position);
@@ -453,6 +468,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
         }
         resizeObserversRef.current[itemId]?.disconnect();
         delete resizeObserversRef.current[itemId];
+        if (model) modelKindByUri.delete(model.uri.toString());
       });
 
       updateMarkers();
@@ -744,4 +760,76 @@ function registerAssertionFixes(monacoInstance: typeof monaco) {
   };
   codeLensProviderRef.current = codeLensProvider;
   monacoInstance.languages.registerCodeLensProvider("yaml", codeLensProvider);
+}
+
+/**
+ * registerAssistantDebugLenses wires an "Ask assistant to fix" CodeLens above
+ * each error marker in the schema and assertions editors. Clicking it opens the
+ * assistant and auto-submits a prompt describing that specific error. Mirrors
+ * registerAssertionFixes (registered once at module scope, refreshed on marker
+ * changes). Gated on AppConfig().aiEnabled so nothing appears when AI is off.
+ *
+ * Markers in each editor are already source-scoped by updateMarkers (the schema
+ * editor only shows SCHEMA-source errors; the assertions editor only
+ * ASSERTION-source), so we key the error source off the model's datastore kind
+ * via modelKindByUri and restrict to the schema + assertions documents.
+ */
+function registerAssistantDebugLenses(monacoInstance: typeof monaco) {
+  monacoInstance.editor.registerCommand(
+    ASK_ASSISTANT_DEBUG_COMMAND_ID,
+    (_accessor: unknown, arg: ErrorPromptInput) => {
+      requestAssistantDebug(buildErrorPrompt(arg), "editor");
+    },
+  );
+
+  const providerRef: { current: monaco.languages.CodeLensProvider | null } = { current: null };
+  const emitter = new monacoInstance.Emitter<monaco.languages.CodeLensProvider>();
+  monacoInstance.editor.onDidChangeMarkers(() => {
+    if (providerRef.current) emitter.fire(providerRef.current);
+  });
+
+  const provider: monaco.languages.CodeLensProvider = {
+    onDidChange: emitter.event,
+    provideCodeLenses: (model) => {
+      const empty = { lenses: [], dispose: () => undefined };
+      if (!AppConfig().aiEnabled) return empty;
+      const kind = modelKindByUri.get(model.uri.toString());
+      if (kind !== DataStoreItemKind.SCHEMA && kind !== DataStoreItemKind.ASSERTIONS) {
+        return empty;
+      }
+      const source =
+        kind === DataStoreItemKind.SCHEMA
+          ? DeveloperError_Source.SCHEMA
+          : DeveloperError_Source.ASSERTION;
+      const markers = monacoInstance.editor.getModelMarkers({ resource: model.uri });
+      const lenses: monaco.languages.CodeLens[] = [];
+      for (const marker of markers) {
+        if (marker.severity !== monacoInstance.MarkerSeverity.Error) continue;
+        const context = typeof marker.code === "string" ? marker.code : (marker.code?.value ?? "");
+        const arg: ErrorPromptInput = {
+          source,
+          line: marker.startLineNumber,
+          message: marker.message,
+          context,
+        };
+        lenses.push({
+          range: {
+            startLineNumber: marker.startLineNumber,
+            startColumn: 1,
+            endLineNumber: marker.startLineNumber,
+            endColumn: 1,
+          },
+          command: {
+            id: ASK_ASSISTANT_DEBUG_COMMAND_ID,
+            title: "$(lightbulb) Ask assistant to fix",
+            arguments: [arg],
+          },
+        });
+      }
+      return { lenses, dispose: () => undefined };
+    },
+  };
+  providerRef.current = provider;
+  monacoInstance.languages.registerCodeLensProvider(DS_LANGUAGE_NAME, provider);
+  monacoInstance.languages.registerCodeLensProvider("yaml", provider);
 }

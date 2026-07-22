@@ -6,6 +6,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip
 import { cn } from "@/lib/utils";
 
 import { assertionStringToCheckWatch, LiveCheckService } from "../../services/check";
+import AppConfig from "../../services/configservice";
 import { Services } from "../../services/services";
 import {
   DeveloperError,
@@ -15,6 +16,7 @@ import {
 import { DocumentLink } from "../document-link";
 import { useDrawerStore } from "../drawer/state";
 
+import { AskAssistantFixAction } from "./AskAssistantActions";
 import { DeveloperSourceDisplay, DeveloperWarningSourceDisplay } from "./errordisplays";
 
 interface ProblemsPanelProps {
@@ -26,6 +28,7 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
   const warnings = services.problemService.warnings;
   const invalidRels = services.problemService.invalidRelationships;
   const allValidationErrors = services.problemService.validationErrors;
+  const aiEnabled = AppConfig().aiEnabled;
 
   const schemaErrors = requestErrors.filter((e) => e.source === DeveloperError_Source.SCHEMA);
   const relationshipRequestErrors = requestErrors.filter(
@@ -46,7 +49,11 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
     <div className="p-2 space-y-1">
       <Group title="Schema" errorCount={schemaErrors.length} warningCount={warnings.length}>
         {schemaErrors.map((de, i) => (
-          <ErrorRow key={`s${i}`} error={de} />
+          <ErrorRow
+            key={`s${i}`}
+            error={de}
+            action={aiEnabled ? <AskAssistantFixAction error={de} /> : undefined}
+          />
         ))}
         {warnings.map((dw, i) => (
           <WarningRow key={`w${i}`} warning={dw} />
@@ -78,7 +85,12 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
           <ErrorRow
             key={`a${i}`}
             error={de}
-            action={<AddCheckWatchAction error={de} liveCheckService={services.liveCheckService} />}
+            action={
+              <div className="flex items-center gap-1">
+                <AddCheckWatchAction error={de} liveCheckService={services.liveCheckService} />
+                {aiEnabled && <AskAssistantFixAction error={de} />}
+              </div>
+            }
           />
         ))}
       </Group>
@@ -97,7 +109,11 @@ export function ProblemsPanel({ services }: ProblemsPanelProps) {
         }
       >
         {validationErrors.map((ve, i) => (
-          <ErrorRow key={`v${i}`} error={ve} />
+          <ErrorRow
+            key={`v${i}`}
+            error={ve}
+            action={aiEnabled ? <AskAssistantFixAction error={ve} /> : undefined}
+          />
         ))}
       </Group>
     </div>
