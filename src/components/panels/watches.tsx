@@ -28,12 +28,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 
+import { isDebuggableWatchStatus } from "../../services/assistant/debugPrompts";
 import {
   LiveCheckItem,
   LiveCheckItemStatus,
   LiveCheckService,
   LiveCheckStatus,
 } from "../../services/check";
+import AppConfig from "../../services/configservice";
 import { DataStore, DataStoreItemKind } from "../../services/datastore";
 import { LocalParseService } from "../../services/localparse";
 import { Services } from "../../services/services";
@@ -41,6 +43,8 @@ import { parseRelationships } from "../../spicedb-common/parsing";
 import { RelationTuple as Relationship } from "../../spicedb-common/protodefs/core/v1/core_pb";
 import { CheckDebugTraceView } from "../CheckDebugTraceView";
 import { Alert, AlertTitle, AlertDescription } from "../ui/alert";
+
+import { AskAssistantDebugButton } from "./AskAssistantActions";
 
 interface WatchesPanelProps {
   services: Services;
@@ -315,10 +319,19 @@ function LiveCheckRow(props: LiveCheckRowProps) {
             className="font-mono placeholder:text-muted-foreground/50"
           />
         </TableCell>
-        <TableCell className="w-8">
-          <Button size="icon-sm" variant="ghost" onClick={() => liveCheckService.removeItem(item)}>
-            <Trash2 />
-          </Button>
+        <TableCell className="w-auto whitespace-nowrap">
+          <div className="flex items-center justify-end gap-1">
+            {AppConfig().aiEnabled && isDebuggableWatchStatus(item.status) && (
+              <AskAssistantDebugButton item={item} />
+            )}
+            <Button
+              size="icon-sm"
+              variant="ghost"
+              onClick={() => liveCheckService.removeItem(item)}
+            >
+              <Trash2 />
+            </Button>
+          </div>
         </TableCell>
       </TableRow>
       {item.debugInformation !== undefined && isExpanded && (

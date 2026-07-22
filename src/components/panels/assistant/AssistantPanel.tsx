@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { type DisplayMessage, useAssistantStore } from "../../../services/assistant/store";
 import type { HistoryRecorder } from "../../../services/assistant/types";
 import { useAssistantController } from "../../../services/assistant/useAssistantController";
+import { usePendingPromptConsumer } from "../../../services/assistant/usePendingPrompt";
 import type { DataStore } from "../../../services/datastore";
 import { useHistoryStore } from "../../../services/history/historyStore";
 import { restoreRevision } from "../../../services/history/useHistoryRecorder";
@@ -23,6 +24,9 @@ export function AssistantPanel({
   history: HistoryRecorder;
 }) {
   const { submit, stop } = useAssistantController(services, datastore, history);
+  // Drain any externally-requested debug prompt (inline "Ask assistant to fix"
+  // affordances) into a turn now that the panel is mounted.
+  usePendingPromptConsumer(submit);
   const display = useAssistantStore((s) => s.display);
   const status = useAssistantStore((s) => s.status);
   const reset = useAssistantStore((s) => s.reset);
