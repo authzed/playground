@@ -1,7 +1,7 @@
 {
   "functions": {
     "api/ai.ts": {
-      "maxDuration": 60
+      "maxDuration": 180
     }
   },
   "headers": [
