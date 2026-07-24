@@ -28,7 +28,13 @@ export interface TurnDeps {
   getState: () => StateSnapshot;
   maxRoundTrips?: number;
   onText: (delta: string) => void;
-  onToolActivity: (a: { name: string; summary: string; ok: boolean }) => void;
+  // Tool activity is bracketed so the UI can show an in-progress chip for the
+  // duration of the call rather than only after it resolves. `id` is the tool
+  // call id and correlates the two.
+  onToolStart: (a: { id: string; name: string }) => void;
+  onToolEnd: (a: { id: string; name: string; summary: string; ok: boolean }) => void;
+  // Transient "what's happening now" label; null clears it.
+  onStatus: (label: string | null) => void;
   onArtifact: (artifact: DisplayArtifact) => void;
 }
 
@@ -58,6 +64,14 @@ export async function runAssistantTurn(
     let handoff: Extract<SseEvent, { event: "handoff" }>["data"] | null = null;
     let doneErr: TurnResult["error"] | undefined;
     let finished = false;
+    // A server-tool status label applies only until the model produces output
+    // again — tracked so it can be cleared exactly once.
+    let statusActive = false;
+    const clearStatus = () => {
+      if (!statusActive) return;
+      statusActive = false;
+      deps.onStatus(null);
+    };
     paragraphBreaks.nextTrip();
 
     try {
@@ -67,18 +81,30 @@ export async function runAssistantTurn(
         tools: deps.registry.toWire(),
       });
 
-      for await (const ev of stream) {
-        if (ev.event === "text") {
-          deps.onText(paragraphBreaks.apply(ev.data.delta));
-        } else if (ev.event === "done") {
-          messages.push(ev.data.assistantMessage);
-          finished = true;
-        } else if (ev.event === "error") {
-          doneErr = { message: ev.data.message, retryAfter: ev.data.retryAfter };
-          finished = true;
-        } else if (ev.event === "handoff") {
-          handoff = ev.data;
+      try {
+        for await (const ev of stream) {
+          if (ev.event === "text") {
+            clearStatus();
+            deps.onText(paragraphBreaks.apply(ev.data.delta));
+          } else if (ev.event === "status") {
+            statusActive = true;
+            deps.onStatus(ev.data.label);
+          } else if (ev.event === "done") {
+            messages.push(ev.data.assistantMessage);
+            finished = true;
+          } else if (ev.event === "error") {
+            doneErr = { message: ev.data.message, retryAfter: ev.data.retryAfter };
+            finished = true;
+          } else if (ev.event === "handoff") {
+            handoff = ev.data;
+          }
         }
+      } finally {
+        // Runs on every exit from the loop above — normal completion, an
+        // AbortError from the user clicking Stop, or any other stream
+        // failure — so a server-tool status label is never left stuck in
+        // the UI when the stream doesn't resume with text/done.
+        clearStatus();
       }
     } catch (err) {
       if ((err as Error).name === "AbortError") {
@@ -101,7 +127,10 @@ export async function runAssistantTurn(
     messages.push(...handoff.serverToolResults);
 
     for (const call of handoff.malformedClientToolCalls ?? []) {
-      deps.onToolActivity({ name: call.name, summary: "malformed arguments", ok: false });
+      // Never executed, but still bracketed so the UI has one uniform path
+      // from start to resolution for every call it displays.
+      deps.onToolStart({ id: call.id, name: call.name });
+      deps.onToolEnd({ id: call.id, name: call.name, summary: "malformed arguments", ok: false });
     }
 
     for (const call of handoff.clientToolCalls) {
@@ -112,16 +141,30 @@ export async function runAssistantTurn(
   return { messages, error: { message: "Reached the step limit for this turn." } };
 }
 
+// Defers to the next macrotask so the browser can paint work queued by the
+// callback that ran just before it. `setTimeout` rather than
+// requestAnimationFrame: rAF fires *before* paint (so synchronous work in its
+// callback still blocks the frame), and it doesn't exist under Node in tests.
+function yieldToPaint(): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
 async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<ToolMessage> {
+  // Announced before any validation so every displayed call — including the
+  // ones rejected below — has a start that is guaranteed a matching end.
+  deps.onToolStart({ id: call.id, name: call.name });
+  const end = (summary: string, ok: boolean) =>
+    deps.onToolEnd({ id: call.id, name: call.name, summary, ok });
+
   const tool = deps.registry.get(call.name);
   if (!tool) {
-    deps.onToolActivity({ name: call.name, summary: "unknown tool", ok: false });
+    end("unknown tool", false);
     return { role: "tool", tool_call_id: call.id, content: `Unknown tool "${call.name}".` };
   }
 
   const parsed = tool.parameters.safeParse(call.input);
   if (!parsed.success) {
-    deps.onToolActivity({ name: call.name, summary: "invalid input", ok: false });
+    end("invalid input", false);
     return {
       role: "tool",
       tool_call_id: call.id,
@@ -130,6 +173,11 @@ async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<
   }
 
   try {
+    // Every client tool is synchronous, so without yielding here the start and
+    // end callbacks land in the same macrotask: React batches both store writes
+    // and paints once, with the chip already resolved. Handing the event loop a
+    // turn lets the in-progress chip and status label actually render.
+    await yieldToPaint();
     const result = await tool.execute(parsed.data, deps.ctx);
     const ok = tool.isError ? !tool.isError(result) : (result as { ok?: boolean }).ok !== false;
 
@@ -144,11 +192,7 @@ async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<
       ? omitKeys(result, tool.redactFromModel)
       : result;
 
-    deps.onToolActivity({
-      name: call.name,
-      summary: tool.summarize ? tool.summarize(result, parsed.data) : defaultSummarize(result),
-      ok,
-    });
+    end(tool.summarize ? tool.summarize(result, parsed.data) : defaultSummarize(result), ok);
     // OpenAI's tool-role messages have no dedicated failure flag (unlike
     // Anthropic's is_error on tool_result blocks) — prefix the content so a
     // failing tool call is unambiguous to the model even when the tool's own
@@ -156,7 +200,7 @@ async function executeClientTool(call: ClientToolCall, deps: TurnDeps): Promise<
     const content = JSON.stringify(modelResult);
     return { role: "tool", tool_call_id: call.id, content: ok ? content : `Error: ${content}` };
   } catch (err) {
-    deps.onToolActivity({ name: call.name, summary: "error", ok: false });
+    end("error", false);
     return {
       role: "tool",
       tool_call_id: call.id,

@@ -49,6 +49,7 @@ export const listCheckWatchesTool: AssistantTool<Record<string, never>, ListChec
   },
   icon: "📋",
   label: "List check watches",
+  progressLabel: "Reading check watches",
 };
 
 interface AddCheckWatchResult {
@@ -76,6 +77,7 @@ export const addCheckWatchTool: AssistantTool<
   summarize: (result) => `watch added ⟹ ${result.current_result}`,
   icon: "📌",
   label: "Add check watch",
+  progressLabel: "Adding check watch",
 };
 
 interface UpdateCheckWatchResult {
@@ -112,6 +114,7 @@ export const updateCheckWatchTool: AssistantTool<
   summarize: (result) => (result.ok ? "watch updated" : (result.error ?? "failed")),
   icon: "✏️",
   label: "Update check watch",
+  progressLabel: "Updating check watch",
 };
 
 interface RemoveCheckWatchResult {
@@ -133,4 +136,5 @@ export const removeCheckWatchTool: AssistantTool<{ watch_id: string }, RemoveChe
   summarize: (result) => (result.ok ? "watch removed" : (result.error ?? "failed")),
   icon: "🗑",
   label: "Remove check watch",
+  progressLabel: "Removing check watch",
 };

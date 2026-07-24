@@ -18,4 +18,5 @@ export const runValidationTool: AssistantTool<z.infer<typeof InputSchema>, Valid
   summarize: (result) => (result.passed ? "validation passed" : "validation failed"),
   icon: "✅",
   label: "Run validation",
+  progressLabel: "Running validation",
 };

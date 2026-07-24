@@ -20,7 +20,7 @@ function assistantMsg(over: Partial<DisplayMessage>): DisplayMessage {
   };
 }
 
-const chip = (summary: string) => ({ name: "edit_document", summary, ok: true });
+const chip = (summary: string) => ({ name: "edit_document", summary, status: "ok" as const });
 const diff = (target: string) => ({ kind: "diff" as const, target, before: "a", after: "b" });
 
 describe("AssistantMessage collapse behavior", () => {

@@ -29,7 +29,9 @@ describe("assistant leaf components", () => {
 
   it("renders a tool chip summary", async () => {
     const screen = await render(
-      <ToolActivityChip activity={{ name: "run_check", summary: "check ⟹ allowed", ok: true }} />,
+      <ToolActivityChip
+        activity={{ name: "run_check", summary: "check ⟹ allowed", status: "ok" }}
+      />,
     );
     await expect.element(screen.getByText(/allowed/)).toBeInTheDocument();
   });

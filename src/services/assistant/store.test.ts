@@ -36,4 +36,17 @@ describe("useAssistantStore", () => {
     useAssistantStore.getState().reset();
     expect(useAssistantStore.getState().pendingPrompt).toBeNull();
   });
+
+  it("tracks the transient activity label", () => {
+    useAssistantStore.getState().setActivity("Editing document");
+    expect(useAssistantStore.getState().activity).toBe("Editing document");
+    useAssistantStore.getState().setActivity(null);
+    expect(useAssistantStore.getState().activity).toBeNull();
+  });
+
+  it("reset clears the activity label", () => {
+    useAssistantStore.getState().setActivity("Running check");
+    useAssistantStore.getState().reset();
+    expect(useAssistantStore.getState().activity).toBeNull();
+  });
 });
