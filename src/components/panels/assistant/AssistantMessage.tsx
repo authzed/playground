@@ -89,8 +89,10 @@ export function AssistantMessage({
       {message.state === "error" && (
         <div className="flex items-start gap-1.5 rounded border border-destructive/40 bg-destructive/10 px-2 py-1 text-xs text-destructive">
           <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" aria-hidden />
+          {/* The destructive styling and icon already signal failure; the
+              message itself is a complete, actionable sentence. */}
           <span className="min-w-0 break-words">
-            Failed — {message.errorText ?? "something went wrong"}
+            {message.errorText ?? "Something went wrong. Please try again."}
           </span>
         </div>
       )}

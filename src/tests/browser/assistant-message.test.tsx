@@ -69,7 +69,7 @@ describe("AssistantMessage collapse behavior", () => {
         })}
       />,
     );
-    await expect.element(screen.getByText(/Failed/)).toBeInTheDocument();
+    await expect.element(screen.getByText(/boom/)).toBeInTheDocument();
     expect(screen.getByText(/Actions taken/).elements()).toHaveLength(0);
   });
 });
