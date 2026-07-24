@@ -26,7 +26,9 @@ const baseDeps = {
   ctx,
   getState: () => ({ schema: "", relationships: "", assertions: "", expected: "" }),
   onText: vi.fn(),
-  onToolActivity: vi.fn(),
+  onToolStart: vi.fn(),
+  onToolEnd: vi.fn(),
+  onStatus: vi.fn(),
   onArtifact: vi.fn(),
 };
 
@@ -285,7 +287,8 @@ describe("runAssistantTurn", () => {
   });
 
   it("reports tool activity for a malformed client tool call without executing anything", async () => {
-    const onToolActivity = vi.fn();
+    const onToolStart = vi.fn();
+    const onToolEnd = vi.fn();
     const registry = new ToolRegistry();
     const execute = vi.fn();
     registry.register({
@@ -342,15 +345,195 @@ describe("runAssistantTurn", () => {
     await runAssistantTurn([{ role: "user", content: "check it" }], {
       ...baseDeps,
       registry,
-      onToolActivity,
+      onToolStart,
+      onToolEnd,
       stream: stream as any,
     });
 
     expect(execute).not.toHaveBeenCalled();
-    expect(onToolActivity).toHaveBeenCalledWith({
+    // Malformed calls still get a guaranteed start/end pair, same as executed ones.
+    expect(onToolStart).toHaveBeenCalledWith({ id: "c1", name: "run_check" });
+    expect(onToolEnd).toHaveBeenCalledWith({
+      id: "c1",
       name: "run_check",
       summary: "malformed arguments",
       ok: false,
     });
+  });
+
+  it("brackets a client tool with a start and an end sharing the call id", async () => {
+    const onToolStart = vi.fn();
+    const onToolEnd = vi.fn();
+    const registry = new ToolRegistry();
+    registry.register({
+      name: "run_check",
+      description: "d",
+      parameters: z.object({ resource: z.string() }),
+      execute: () => ({ ok: true }),
+      summarize: () => "allowed",
+    });
+
+    const stream = gen([
+      {
+        event: "handoff",
+        data: {
+          assistantMessage: {
+            role: "assistant",
+            content: null,
+            tool_calls: [
+              {
+                id: "t1",
+                type: "function",
+                function: { name: "run_check", arguments: '{"resource":"doc:x"}' },
+              },
+            ],
+          },
+          serverToolResults: [],
+          clientToolCalls: [{ id: "t1", name: "run_check", input: { resource: "doc:x" } }],
+        },
+      },
+    ]);
+
+    await runAssistantTurn([{ role: "user", content: "check" }], {
+      ...baseDeps,
+      registry,
+      maxRoundTrips: 1,
+      onToolStart,
+      onToolEnd,
+      stream: stream as any,
+    });
+
+    expect(onToolStart).toHaveBeenCalledWith({ id: "t1", name: "run_check" });
+    expect(onToolEnd).toHaveBeenCalledWith({
+      id: "t1",
+      name: "run_check",
+      summary: "allowed",
+      ok: true,
+    });
+  });
+
+  it("yields to the event loop between starting a tool and executing it", async () => {
+    // Every client tool is synchronous. Without a yield, onToolStart and
+    // tool.execute run in one macrotask, so React batches the start and end
+    // store writes and the in-progress chip never paints. Assert a macrotask
+    // boundary actually separates them.
+    const events: string[] = [];
+    const registry = new ToolRegistry();
+    registry.register({
+      name: "run_check",
+      description: "d",
+      parameters: z.object({}),
+      execute: () => {
+        events.push("execute");
+        return { ok: true };
+      },
+    });
+
+    const stream = gen([
+      {
+        event: "handoff",
+        data: {
+          assistantMessage: { role: "assistant", content: null },
+          serverToolResults: [],
+          clientToolCalls: [{ id: "t1", name: "run_check", input: {} }],
+        },
+      },
+    ]);
+
+    await runAssistantTurn([{ role: "user", content: "check" }], {
+      ...baseDeps,
+      registry,
+      maxRoundTrips: 1,
+      onToolStart: () => {
+        events.push("start");
+        // Queued before the controller's own yield, so it must run first — and
+        // it can only run at all if the controller gives up the macrotask.
+        setTimeout(() => events.push("macrotask"), 0);
+      },
+      stream: stream as any,
+    });
+
+    // Without the yield, execute() runs in the same macrotask as the start
+    // callback and this reads ["start", "execute", "macrotask"].
+    expect(events).toEqual(["start", "macrotask", "execute"]);
+  });
+
+  it("still ends the tool when it is unknown to the registry", async () => {
+    const onToolStart = vi.fn();
+    const onToolEnd = vi.fn();
+    const stream = gen([
+      {
+        event: "handoff",
+        data: {
+          assistantMessage: { role: "assistant", content: null },
+          serverToolResults: [],
+          clientToolCalls: [{ id: "z9", name: "nope", input: {} }],
+        },
+      },
+    ]);
+
+    await runAssistantTurn([{ role: "user", content: "go" }], {
+      ...baseDeps,
+      maxRoundTrips: 1,
+      onToolStart,
+      onToolEnd,
+      stream: stream as any,
+    });
+
+    // A start with no matching end would leave a chip spinning forever.
+    expect(onToolStart).toHaveBeenCalledWith({ id: "z9", name: "nope" });
+    expect(onToolEnd).toHaveBeenCalledWith({
+      id: "z9",
+      name: "nope",
+      summary: "unknown tool",
+      ok: false,
+    });
+  });
+
+  it("forwards a status event and clears it once text resumes", async () => {
+    const onStatus = vi.fn();
+    const stream = gen([
+      { event: "status", data: { label: "Reading design references" } },
+      { event: "text", data: { delta: "ok" } },
+      {
+        event: "done",
+        data: { assistantMessage: { role: "assistant", content: "ok" }, finish_reason: "stop" },
+      },
+    ]);
+
+    await runAssistantTurn([{ role: "user", content: "hi" }], {
+      ...baseDeps,
+      onStatus,
+      stream: stream as any,
+    });
+
+    expect(onStatus).toHaveBeenNthCalledWith(1, "Reading design references");
+    expect(onStatus).toHaveBeenNthCalledWith(2, null);
+    // A spurious extra clear (e.g. one at loop-end and another in a finally)
+    // would slip past the two positional assertions above without this.
+    expect(onStatus).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears a stuck status label when the stream throws mid-iteration", async () => {
+    const onStatus = vi.fn();
+    class NetworkError extends Error {}
+    const stream = () =>
+      // eslint-disable-next-line require-yield -- intentionally throws after one yield
+      (async function* () {
+        yield { event: "status", data: { label: "Reading design references" } } as SseEvent;
+        throw new NetworkError("connection reset");
+      })();
+
+    const result = await runAssistantTurn([{ role: "user", content: "hi" }], {
+      ...baseDeps,
+      onStatus,
+      stream: stream as any,
+    });
+
+    // The stream never resumed with text/done, so without a finally the
+    // status label set above would be left stuck in the UI forever.
+    expect(onStatus).toHaveBeenCalledWith(null);
+    expect(onStatus).toHaveBeenCalledTimes(2);
+    expect(result.error?.message).toMatch(/connection reset/i);
   });
 });

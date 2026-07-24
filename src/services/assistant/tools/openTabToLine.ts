@@ -29,4 +29,5 @@ export const openTabToLineTool: AssistantTool<z.infer<typeof InputSchema>> = {
   summarize: (_result, input) => `opened ${input.target}:${input.line}`,
   icon: "↪",
   label: "Open tab",
+  progressLabel: "Opening editor",
 };

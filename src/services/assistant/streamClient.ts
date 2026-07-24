@@ -17,6 +17,23 @@ export class RateLimitError extends Error {
   }
 }
 
+// Non-200s that never reached our route — CDN/proxy 5xx, gateway timeouts —
+// carry no server-composed copy, so map the bare status to something a user can
+// act on rather than surfacing a naked status code.
+function fallbackErrorMessage(status: number): string {
+  if (status === 429) {
+    return "You're sending messages too quickly. Please wait a moment and try again.";
+  }
+  if (status === 504) return "The AI service took too long to respond. Please try again.";
+  if (status >= 500) {
+    return "The AI service is temporarily unavailable. Please try again in a moment.";
+  }
+  if (status === 404) {
+    return "The AI service could not be reached. Please reload the page and try again.";
+  }
+  return `The request failed (${status}). Please try again.`;
+}
+
 export async function* streamAssistant(
   req: StreamRequest,
   fetchImpl: typeof fetch = fetch,
@@ -35,9 +52,11 @@ export async function* streamAssistant(
     } catch {
       /* ignore */
     }
-    if (res.status === 429)
-      throw new RateLimitError(payload.error ?? "Rate limit exceeded", payload.retryAfter);
-    throw new Error(payload.error ?? `Request failed (${res.status})`);
+    // Server-composed copy (api/_lib/aiErrors.ts) is authoritative; the
+    // fallback only covers responses that never reached our route.
+    const message = payload.error ?? fallbackErrorMessage(res.status);
+    if (res.status === 429) throw new RateLimitError(message, payload.retryAfter);
+    throw new Error(message);
   }
 
   const reader = res.body.getReader();

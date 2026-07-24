@@ -71,4 +71,23 @@ describe("streamAssistant", () => {
       events.push(e);
     expect(events.map((e) => e.event)).toEqual(["done"]);
   });
+
+  it("falls back to friendly copy when a non-200 carries no JSON body", async () => {
+    // A CDN/proxy 503 never reaches our route, so there is no server-composed
+    // `error` field to surface.
+    const fetchImpl = async () => new Response("<html>gateway</html>", { status: 503 });
+    await expect(async () => {
+      for await (const _ of streamAssistant(req, fetchImpl as unknown as typeof fetch)) void _;
+    }).rejects.toThrow(/temporarily unavailable/i);
+  });
+
+  it("prefers the server-composed message over the fallback", async () => {
+    const fetchImpl = async () =>
+      new Response(JSON.stringify({ code: "disabled", error: "The AI assistant is turned off." }), {
+        status: 503,
+      });
+    await expect(async () => {
+      for await (const _ of streamAssistant(req, fetchImpl as unknown as typeof fetch)) void _;
+    }).rejects.toThrow(/turned off/i);
+  });
 });

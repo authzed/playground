@@ -20,7 +20,7 @@ function assistantMsg(over: Partial<DisplayMessage>): DisplayMessage {
   };
 }
 
-const chip = (summary: string) => ({ name: "edit_document", summary, ok: true });
+const chip = (summary: string) => ({ name: "edit_document", summary, status: "ok" as const });
 const diff = (target: string) => ({ kind: "diff" as const, target, before: "a", after: "b" });
 
 describe("AssistantMessage collapse behavior", () => {
@@ -69,7 +69,7 @@ describe("AssistantMessage collapse behavior", () => {
         })}
       />,
     );
-    await expect.element(screen.getByText(/Failed/)).toBeInTheDocument();
+    await expect.element(screen.getByText(/boom/)).toBeInTheDocument();
     expect(screen.getByText(/Actions taken/).elements()).toHaveLength(0);
   });
 });

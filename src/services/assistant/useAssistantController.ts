@@ -11,7 +11,7 @@ import type { Services } from "../services";
 import { runAssistantTurn, type StateSnapshot } from "./controller";
 import { useAssistantStore } from "./store";
 import { streamAssistant } from "./streamClient";
-import { buildDefaultRegistry } from "./tools";
+import { TOOL_DISPLAY, buildDefaultRegistry } from "./tools";
 import type { HistoryRecorder, ToolContext } from "./types";
 
 export function useAssistantController(
@@ -104,6 +104,14 @@ export function useAssistantController(
         s.setDisplay(display);
       };
 
+      // Same staleness guard as patchAssistant: a reset() mid-turn must not let
+      // this turn's late callbacks write a label into the fresh store.
+      const setActivity = (label: string | null) => {
+        const s = useAssistantStore.getState();
+        if (s.generation !== myGeneration) return;
+        s.setActivity(label);
+      };
+
       try {
         const result = await runAssistantTurn(useAssistantStore.getState().messages, {
           stream: (req) => streamAssistant({ endpoint, ...req, signal: abort.signal }),
@@ -112,7 +120,29 @@ export function useAssistantController(
           getState: readState,
           maxRoundTrips: 10,
           onText: (delta) => patchAssistant((m) => (m.text += delta)),
-          onToolActivity: (a) => patchAssistant((m) => m.toolActivity.push(a)),
+          onToolStart: ({ id, name }) => {
+            patchAssistant((m) =>
+              m.toolActivity.push({ id, name, summary: "", status: "running" }),
+            );
+            setActivity(TOOL_DISPLAY[name]?.progress ?? name);
+          },
+          onToolEnd: ({ id, name, summary, ok }) => {
+            patchAssistant((m) => {
+              // Resolve the chip this call opened; matching on id keeps
+              // concurrent or repeated calls to the same tool distinct.
+              let matched = false;
+              m.toolActivity = m.toolActivity.map((a) => {
+                if (matched || a.id !== id || a.status !== "running") return a;
+                matched = true;
+                return { ...a, summary, status: ok ? ("ok" as const) : ("error" as const) };
+              });
+              if (!matched) {
+                m.toolActivity.push({ id, name, summary, status: ok ? "ok" : "error" });
+              }
+            });
+            setActivity(null);
+          },
+          onStatus: (label) => setActivity(label),
           onArtifact: (artifact) => patchAssistant((m) => m.artifacts.push(artifact)),
         });
 
@@ -121,6 +151,7 @@ export function useAssistantController(
         if (result.aborted) {
           // The user clicked Stop — stop() already returned status to idle;
           // just finalize the message with whatever streamed in before the abort.
+          setActivity(null);
           patchAssistant((m) => {
             m.state = "done";
           });
@@ -136,10 +167,12 @@ export function useAssistantController(
           m.state = result.error ? "error" : "done";
           m.errorText = errText;
         });
+        setActivity(null);
         useAssistantStore.getState().setMessages(result.messages);
         useAssistantStore.getState().setStatus(result.error ? "error" : "idle", result.error);
       } catch (err) {
         if (useAssistantStore.getState().generation !== myGeneration) return;
+        setActivity(null);
         const message = (err as Error).message;
         patchAssistant((m) => {
           m.state = "error";
@@ -153,6 +186,7 @@ export function useAssistantController(
 
   const stop = useCallback(() => {
     abortRef.current?.abort();
+    useAssistantStore.getState().setActivity(null);
     useAssistantStore.getState().setStatus("idle");
   }, []);
 

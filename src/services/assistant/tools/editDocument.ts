@@ -105,4 +105,5 @@ export const editDocumentTool: AssistantTool<EditDocumentInput, EditDocumentResu
   },
   icon: "✎",
   label: "Edit document",
+  progressLabel: "Editing document",
 };
