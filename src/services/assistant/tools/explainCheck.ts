@@ -54,4 +54,5 @@ export const explainCheckTool: AssistantTool<z.infer<typeof InputSchema>, Explai
   summarize: (result) => `check ⟹ ${result.result}`,
   icon: "🔎",
   label: "Explain check",
+  progressLabel: "Explaining check",
 };

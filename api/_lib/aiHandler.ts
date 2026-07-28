@@ -84,17 +84,18 @@ export async function runAiTurn(
       (o) => !SERVER_TOOL_NAMES.has(o.call.function.name),
     );
 
-    const serverToolResults: OpenRouterMessage[] = [
-      ...malformedResults,
-      ...serverOutcomes.map((o) => {
-        const tool = SERVER_TOOLS.find((t) => t.name === o.call.function.name)!;
-        return {
-          role: "tool" as const,
-          tool_call_id: o.call.id,
-          content: tool.execute(o.parsed.value),
-        };
-      }),
-    ];
+    const serverToolResults: OpenRouterMessage[] = [...malformedResults];
+    for (const o of serverOutcomes) {
+      const tool = SERVER_TOOLS.find((t) => t.name === o.call.function.name)!;
+      // Announce before executing: a server-tool-only round trip emits no
+      // handoff, so this is the client's only signal that work is happening.
+      sink.send("status", { label: tool.progressLabel });
+      serverToolResults.push({
+        role: "tool",
+        tool_call_id: o.call.id,
+        content: tool.execute(o.parsed.value),
+      });
+    }
 
     if (clientOutcomes.length > 0 || malformedClientToolCalls.length > 0) {
       sink.send("handoff", {

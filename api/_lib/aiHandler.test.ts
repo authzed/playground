@@ -317,4 +317,33 @@ describe("runAiTurn", () => {
     ]);
     expect(handoff!.data.serverToolResults[0] as any).toMatchObject({ tool_call_id: "c1" });
   });
+
+  it("announces each server tool with a status event before the turn completes", async () => {
+    const { sink, events } = collectingSink();
+    const client = fakeClient([
+      {
+        message: {
+          role: "assistant",
+          content: null,
+          tool_calls: [
+            {
+              id: "s1",
+              type: "function",
+              function: { name: "read_skill_reference", arguments: '{"name":"patterns"}' },
+            },
+          ],
+        },
+        finish_reason: "tool_calls",
+      },
+      { message: { role: "assistant", content: "done" }, finish_reason: "stop" },
+    ]);
+    await runAiTurn(req, { ...deps, client }, sink);
+
+    // Server tools run entirely server-side, so without this event the client
+    // sees no activity at all while they execute.
+    const statusIdx = events.findIndex((e) => e.event === "status");
+    expect(statusIdx).toBeGreaterThanOrEqual(0);
+    expect(events[statusIdx].data.label).toBe("Reading design references");
+    expect(statusIdx).toBeLessThan(events.findIndex((e) => e.event === "done"));
+  });
 });

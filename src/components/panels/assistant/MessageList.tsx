@@ -1,7 +1,7 @@
 import { Loader2 } from "lucide-react";
 import { useEffect, useRef } from "react";
 
-import type { DisplayMessage } from "../../../services/assistant/store";
+import { type DisplayMessage, useAssistantStore } from "../../../services/assistant/store";
 import type { LocalParseService } from "../../../services/localparse";
 
 import { AssistantMessage } from "./AssistantMessage";
@@ -17,6 +17,7 @@ export function MessageList({
   busy: boolean;
   localParseService: LocalParseService;
 }) {
+  const activity = useAssistantStore((s) => s.activity);
   const endRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
     // Some environments' scrollIntoView returns a Promise; an effect must
@@ -26,10 +27,14 @@ export function MessageList({
   }, [messages, busy]);
 
   const last = messages.length > 0 ? messages[messages.length - 1] : undefined;
-  const working =
+  // A specific activity ("Editing document", "Reading design references") always
+  // wins; the generic fallback covers the model's own thinking/streaming time,
+  // during which no tool is running.
+  const fallback =
     last?.role === "assistant" && !last.text && last.toolActivity.length === 0
       ? "Thinking…"
       : "Working…";
+  const working = activity ?? fallback;
 
   return (
     <div className="flex-1 space-y-3 overflow-auto p-3">

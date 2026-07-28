@@ -5,10 +5,15 @@ import type { ChatMessage, DisplayArtifact } from "./types";
 
 export type AssistantStatus = "idle" | "streaming" | "executing_tools" | "error";
 
+export type ToolActivityStatus = "running" | "ok" | "error";
+
 export interface ToolActivity {
+  // The tool call id — correlates the in-progress chip with its completion.
+  id?: string;
   name: string;
+  // Empty while running; the tool's own summary once resolved.
   summary: string;
-  ok: boolean;
+  status: ToolActivityStatus;
 }
 export interface DisplayMessage {
   id: string;
@@ -26,6 +31,9 @@ export interface AssistantState {
   display: DisplayMessage[];
   status: AssistantStatus;
   error?: { message: string; retryAfter?: number };
+  // What the assistant is doing right now ("Editing document"), shown in the
+  // live status line. Transient: never persisted, cleared on reset.
+  activity: string | null;
   // Bumped by reset() so an in-flight turn's async continuation can tell a
   // reset happened mid-turn and skip resurrecting stale results into the store.
   generation: number;
@@ -36,6 +44,7 @@ export interface AssistantState {
   pendingPrompt: string | null;
   reset: () => void;
   setStatus: (s: AssistantStatus, error?: AssistantState["error"]) => void;
+  setActivity: (activity: string | null) => void;
   appendUser: (text: string) => void;
   setMessages: (m: ChatMessage[]) => void;
   setDisplay: (d: DisplayMessage[]) => void;
@@ -52,6 +61,7 @@ export const useAssistantStore = create<AssistantState>()(
       display: [],
       status: "idle",
       error: undefined,
+      activity: null,
       generation: 0,
       pendingPrompt: null,
       reset: () =>
@@ -60,10 +70,12 @@ export const useAssistantStore = create<AssistantState>()(
           display: [],
           status: "idle",
           error: undefined,
+          activity: null,
           pendingPrompt: null,
           generation: s.generation + 1,
         })),
       setStatus: (status, error) => set({ status, error }),
+      setActivity: (activity) => set({ activity }),
       appendUser: (text) =>
         set((s) => ({
           messages: [...s.messages, { role: "user", content: text }],

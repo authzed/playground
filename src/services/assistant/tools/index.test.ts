@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 
-import { CLIENT_TOOL_NAMES, buildDefaultRegistry } from "./index";
+import { CLIENT_TOOL_NAMES, TOOL_DISPLAY, buildDefaultRegistry } from "./index";
 
 describe("buildDefaultRegistry", () => {
   it("registers all nine client tools", () => {
@@ -22,5 +22,19 @@ describe("buildDefaultRegistry", () => {
       ].sort(),
     );
     expect(CLIENT_TOOL_NAMES).toContain("edit_document");
+  });
+});
+
+describe("TOOL_DISPLAY", () => {
+  it("exposes a present-progressive progress label for every client tool", () => {
+    for (const name of CLIENT_TOOL_NAMES) {
+      expect(TOOL_DISPLAY[name].progress).toMatch(/ing\b/);
+    }
+  });
+
+  it("keeps the imperative label distinct from the progress label", () => {
+    // The chip shows the imperative form; the status line shows the gerund.
+    expect(TOOL_DISPLAY.edit_document.label).toBe("Edit document");
+    expect(TOOL_DISPLAY.edit_document.progress).toBe("Editing document");
   });
 });

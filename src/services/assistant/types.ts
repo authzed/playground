@@ -60,6 +60,10 @@ export interface AssistantTool<I = unknown, R = unknown> {
   // and the raw tool name.
   icon?: string;
   label?: string;
+  // Present-progressive form shown in the live status line while the tool runs
+  // ("Editing document"), as opposed to `label`'s imperative ("Edit document").
+  // Falls back to `label`.
+  progressLabel?: string;
 }
 
 export interface WireTool {
@@ -95,4 +99,10 @@ export type SseEvent =
       };
     }
   | { event: "done"; data: { assistantMessage: AssistantMessage; finish_reason: string } }
+  | {
+      // Server-side progress, e.g. a server tool starting. Purely transient UI
+      // signal — never part of the conversation sent back to the model.
+      event: "status";
+      data: { label: string };
+    }
   | { event: "error"; data: { code?: string; message: string; retryAfter?: number } };

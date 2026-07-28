@@ -24,4 +24,5 @@ export const runCheckTool: AssistantTool<z.infer<typeof InputSchema>, CheckRunRe
   summarize: (result) => `check ⟹ ${result.result}`,
   icon: "🔍",
   label: "Run check",
+  progressLabel: "Running check",
 };
