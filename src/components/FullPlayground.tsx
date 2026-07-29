@@ -129,6 +129,7 @@ enum SharingStatus {
 }
 
 export function FullPlayground() {
+  const fresh = new URLSearchParams(window.location.search).has("fresh");
   return (
     <>
       <h1 className="sr-only">SpiceDB Playground</h1>
@@ -136,15 +137,17 @@ export function FullPlayground() {
         serverId={AppConfig().discord.serverId}
         channelId={AppConfig().discord.channelId}
       />
-      <ApolloedPlayground />
+      <ApolloedPlayground fresh={fresh} />
     </>
   );
 }
 
-function ApolloedPlayground() {
-  const datastore = usePlaygroundDatastore();
+function ApolloedPlayground({ fresh }: { fresh?: boolean }) {
+  const datastore = usePlaygroundDatastore(fresh);
   const developerService = useDeveloperService();
-  const liveCheckService = useLiveCheckService(developerService, datastore, { persist: true });
+  // In fresh mode, do not persist (or load) check watches either, so no saved
+  // playground state is exposed while screen sharing.
+  const liveCheckService = useLiveCheckService(developerService, datastore, { persist: !fresh });
   return (
     <ThemedAppView
       datastore={datastore}
