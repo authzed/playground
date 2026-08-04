@@ -13,7 +13,7 @@ describe("Playground", () => {
 
   it("default validation succeeds", async () => {
     const screen = await mountPlayground();
-    waitForWasm();
+    await waitForWasm();
     await screen.getByRole("tab", { name: "Assertions" }).click();
     await screen.getByRole("button", { name: "Run" }).click();
     await expect.element(screen.getByText("Validated!"), { timeout: 15000 }).toBeVisible();

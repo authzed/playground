@@ -60,6 +60,7 @@ import {
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
+import { enumerateExpectedKeys, mergeExpectedKeys } from "../services/expectedkeys";
 import { useHistoryStore } from "../services/history/historyStore";
 import { readHistoryDocs, useHistoryRecorder } from "../services/history/useHistoryRecorder";
 import { useLocalParseService } from "../services/localparse";
@@ -374,34 +375,90 @@ export function ThemedAppView(props: {
     }
 
     setPreviousValidationForDiff(undefined);
+
+    // Seed the document with every applicable key so SpiceDB has something to populate.
+    // Without this, only keys the user already wrote get expected subjects filled in.
+    const originalContents =
+      datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS).editableContents ?? "";
+    // A schema our parser cannot read is not necessarily one SpiceDB cannot read — the two
+    // parsers are versioned separately. Rather than refuse outright, fall back to populating
+    // whatever keys the document already has. The warning is deferred until SpiceDB has
+    // actually produced output: warning here would stack a warning on top of the error when
+    // SpiceDB rejects the schema too, and would claim keys were populated before anything was.
+    const keys = enumerateExpectedKeys(
+      datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents ?? "",
+      datastore.getSingletonByKind(DataStoreItemKind.RELATIONSHIPS).editableContents ?? "",
+    );
+    const enumerationFailed = keys === undefined;
+
+    const seededYaml = mergeExpectedKeys(originalContents, keys ?? []);
+    if (seededYaml === undefined) {
+      toast.error("Could not generate expected relations", {
+        description: "Expected Relations must be a YAML map of keys to expected subjects.",
+      });
+      return;
+    }
+
     validationService.conductValidation((_validated: boolean, result: ValidationResult) => {
-      if (result.updatedValidationYaml) {
-        const updatedYaml = normalizeValidationYAML(result.updatedValidationYaml);
-        const expectedRelations = datastore.getSingletonByKind(
-          DataStoreItemKind.EXPECTED_RELATIONS,
-        );
-
-        if (updatedYaml === expectedRelations.editableContents) {
-          return false;
-        }
-
-        if (diff) {
-          setPreviousValidationForDiff(expectedRelations.editableContents);
-        }
-
-        if (!updatedYaml) {
-          return false;
-        }
-
-        datastore.update(expectedRelations, updatedYaml);
-        datastoreUpdated();
-
-        // Rerun validation to remove any errors.
-        conductValidation();
+      // Only the validation run produces this, so its absence means the populate failed —
+      // an unreadable schema or relationships. A broken assertions document is deliberately
+      // not treated as a failure here: it has no bearing on expected relations.
+      //
+      // The validation status is set before this callback runs, so bailing without a toast
+      // would leave the UI reporting success having written nothing.
+      if (!result.updatedValidationYaml) {
+        toast.error("Could not generate expected relations", {
+          description: "The schema and relationships could not be evaluated.",
+        });
         return false;
       }
+
+      let updatedYaml = "";
+      try {
+        updatedYaml = normalizeValidationYAML(result.updatedValidationYaml);
+      } catch {
+        // Distinct from the case above: there the user's input could not be read, here
+        // SpiceDB's own output could not be. That is a playground bug, not something the
+        // user can fix, so it should not read like the others.
+        toast.error("Something went wrong generating expected relations", {
+          description: "SpiceDB returned expected relations the playground could not parse.",
+        });
+        return false;
+      }
+
+      const expectedRelations = datastore.getSingletonByKind(DataStoreItemKind.EXPECTED_RELATIONS);
+
+      // SpiceDB read the schema but we could not, so enumeration was skipped and the result
+      // only covers keys already in the document. That combination is the signal for parser
+      // skew — there is nothing in the developer API that reports it directly.
+      //
+      // Raised before the unchanged-result return below: "nothing changed" is the most likely
+      // outcome when enumeration was skipped, and it is exactly when the user most needs
+      // telling, since the button otherwise appears to have done nothing.
+      if (enumerationFailed) {
+        toast.warning("Expected relations may be incomplete", {
+          description:
+            "SpiceDB evaluated the schema, but the playground could not enumerate all relation " +
+            "and permission keys. Existing keys were regenerated; missing keys may not have " +
+            "been added.",
+        });
+      }
+
+      if (!updatedYaml || updatedYaml === originalContents) {
+        return false;
+      }
+
+      if (diff) {
+        setPreviousValidationForDiff(originalContents);
+      }
+
+      datastore.update(expectedRelations, updatedYaml);
+      datastoreUpdated();
+
+      // Rerun validation to remove any errors.
+      conductValidation();
       return false;
-    });
+    }, seededYaml);
   };
 
   const handleAcceptDiff = () => {
