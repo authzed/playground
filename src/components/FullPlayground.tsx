@@ -90,6 +90,7 @@ import { WatchesPanel } from "./panels/watches";
 import { DockActivityBar } from "./rightdock/DockActivityBar";
 import { RightDock } from "./rightdock/RightDock";
 import type { DockPanelId } from "./rightdock/state";
+import { SchemaExplainToggle } from "./schemaAnnotations/SchemaExplainToggle";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -475,6 +476,7 @@ export function ThemedAppView(props: {
               </TooltipTrigger>
               <TooltipContent>Open the schema visualizer</TooltipContent>
             </Tooltip>
+            <SchemaExplainToggle datastore={datastore} />
             <div className="ml-auto" />
             <DocLink
               title="Schema Development Guide"

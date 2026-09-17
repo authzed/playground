@@ -8,12 +8,14 @@ import {
 } from "./checkWatches";
 import { editDocumentTool } from "./editDocument";
 import { explainCheckTool } from "./explainCheck";
+import { explainSchemaTool } from "./explainSchema";
 import { openTabToLineTool } from "./openTabToLine";
 import { runCheckTool } from "./runCheck";
 import { runValidationTool } from "./runValidation";
 
 const ALL_CLIENT_TOOLS = [
   editDocumentTool,
+  explainSchemaTool,
   runCheckTool,
   explainCheckTool,
   runValidationTool,

@@ -17,6 +17,9 @@ import AppConfig from "../services/configservice";
 import { ScrollLocation, useCookieService } from "../services/cookieservice";
 import { DataStore, DataStoreItem, DataStoreItemKind } from "../services/datastore";
 import { LocalParseState } from "../services/localparse";
+import { requestSchemaExplanation } from "../services/schemaAnnotations/generate";
+import { computeAnnotationViews } from "../services/schemaAnnotations/resolve";
+import { useSchemaAnnotationStore } from "../services/schemaAnnotations/store";
 import { Services } from "../services/services";
 import registerDSLanguage, {
   DS_LANGUAGE_NAME,
@@ -34,6 +37,10 @@ import { useDrawerStore } from "./drawer/state";
 import { useRevealStore } from "./editor-groups/revealStore";
 import { ERROR_SOURCE_TO_ITEM } from "./panels/errordisplays";
 import registerTupleLanguage, { TUPLE_LANGUAGE_NAME } from "./relationshipeditor/tuplelang";
+import {
+  createAnnotationRenderer,
+  type AnnotationRenderer,
+} from "./schemaAnnotations/renderAnnotations";
 
 // Module-level singletons for one-shot language registration. Monaco's
 // `register*` calls are global; calling them on every editor mount can stack
@@ -58,6 +65,22 @@ const ASK_ASSISTANT_DEBUG_COMMAND_ID = "playground.askAssistantDebug";
 // can restrict itself to the schema and assertions documents and label the
 // prompt's error source correctly.
 const modelKindByUri = new Map<string, DataStoreItemKind>();
+
+const REGENERATE_SCHEMA_EXPLANATIONS_COMMAND_ID = "playground.regenerateSchemaExplanations";
+
+// Bridges React-owned annotation views to the module-scope hover provider
+// (which only receives a model + position) and the once-registered click
+// handler (which maps a clicked tag line back to its symbol). Holds full symbol
+// ranges so hover can hit-test the cursor.
+const latestSchemaHoverRef: {
+  current: Array<{
+    startLine: number;
+    endLine: number;
+    explanation: string;
+    stale: boolean;
+    symbolPath: string;
+  }>;
+} = { current: [] };
 
 export type EditorDisplayProps = {
   datastore: DataStore;
@@ -353,6 +376,47 @@ export function EditorDisplay(props: EditorDisplayProps) {
     );
   };
 
+  // Drives the inline annotation decorations/view-zones for the schema editor
+  // and refreshes latestSchemaHoverRef so the module-scope hover provider
+  // (registerSchemaExplanationHover) can hit-test the cursor against the
+  // latest views. Mirrors updateMarkers: called once at the end of
+  // handleEditorMounted, and again from a useEffect whenever the schema text
+  // or annotation store changes.
+  const updateSchemaAnnotations = () => {
+    if (!AppConfig().aiEnabled) return;
+    if (currentItem?.kind !== DataStoreItemKind.SCHEMA) return;
+    const editors = editorRefs.current;
+    if (currentItem?.id === undefined || !(currentItem.id in editors)) return;
+    const editor = editors[currentItem.id];
+    const monacoInstance = monacoInstanceRef.current;
+    if (!monacoInstance) return;
+
+    if (!annotationRendererRef.current) {
+      annotationRendererRef.current = createAnnotationRenderer(editor, monacoInstance);
+    }
+    const schemaText = currentItem.editableContents ?? "";
+    const { views, unexplained } = computeAnnotationViews(schemaText, schemaAnnotations);
+    annotationRendererRef.current.update({
+      views,
+      unexplained,
+      toggleState: annotationToggleState,
+      expandedSymbols,
+    });
+    // The schema editor runs with automaticLayout:false, so decorations and view
+    // zones added programmatically (e.g. right after the agent generates) aren't
+    // always flushed to the screen until the next layout pass — which is why
+    // they previously only appeared after a tab switch/reload. Nudge one on the
+    // next frame so freshly-generated annotations paint immediately.
+    requestAnimationFrame(() => editor.layout());
+    latestSchemaHoverRef.current = views.map((v) => ({
+      startLine: v.startLine,
+      endLine: v.endLine,
+      explanation: v.annotation.explanation,
+      stale: v.stale,
+      symbolPath: v.annotation.symbolPath,
+    }));
+  };
+
   const locationState = location.state as LocationState | undefined | null;
   const cookieService = useCookieService();
 
@@ -430,6 +494,7 @@ export function EditorDisplay(props: EditorDisplayProps) {
       registerTupleLanguage(monacoInstance, () => latestLocalParseStateRef.current!);
       registerAssertionFixes(monacoInstance);
       registerAssistantDebugLenses(monacoInstance);
+      registerSchemaExplanationHover(monacoInstance);
       languagesRegistered = true;
       // Themes are defined inside registerDSLanguage. The Editor already rendered
       // with the theme prop before defineTheme ran, so Monaco fell back to its
@@ -457,6 +522,28 @@ export function EditorDisplay(props: EditorDisplayProps) {
         debouncedSetEditorScroll([e.scrollTop, e.scrollLeft]);
       });
 
+      // In Compact mode, clicking a symbol's inline tag toggles its full
+      // explanation block above the line. We only act when the click landed on
+      // our injected ("after") tag text — not on normal end-of-line whitespace —
+      // so cursor placement keeps working everywhere else.
+      editor.onMouseDown((e) => {
+        if (currentItem.kind !== DataStoreItemKind.SCHEMA || !AppConfig().aiEnabled) return;
+        if (useSchemaAnnotationStore.getState().toggleState !== "compact") return;
+        const onInjectedTag = !!(e.target as unknown as { detail?: { injectedText?: unknown } })
+          .detail?.injectedText;
+        if (!onInjectedTag) return;
+        const line = e.target.position?.lineNumber;
+        if (line === undefined) return;
+        const hit = latestSchemaHoverRef.current.find((h) => h.startLine === line);
+        if (!hit) return;
+        setExpandedSymbols((prev) => {
+          const next = new Set(prev);
+          if (next.has(hit.symbolPath)) next.delete(hit.symbolPath);
+          else next.add(hit.symbolPath);
+          return next;
+        });
+      });
+
       attachResizeObserver(editor, itemId);
 
       // Clean up our refs when this editor instance is disposed (e.g. when
@@ -469,10 +556,13 @@ export function EditorDisplay(props: EditorDisplayProps) {
         resizeObserversRef.current[itemId]?.disconnect();
         delete resizeObserversRef.current[itemId];
         if (model) modelKindByUri.delete(model.uri.toString());
+        annotationRendererRef.current?.dispose();
+        annotationRendererRef.current = null;
       });
 
       updateMarkers();
       updatePosition();
+      updateSchemaAnnotations();
     }
   };
 
@@ -494,6 +584,18 @@ export function EditorDisplay(props: EditorDisplayProps) {
       resizeObserversRef.current = {};
     };
   }, []);
+
+  // Schema annotation store: drives the inline renderer and hover provider
+  // for the schema editor (see updateSchemaAnnotations below).
+  const annotationToggleState = useSchemaAnnotationStore((s) => s.toggleState);
+  const schemaAnnotations = useSchemaAnnotationStore((s) => s.annotations);
+  const annotationRendererRef = useRef<AnnotationRenderer | null>(null);
+  // Ephemeral: which symbols' full blocks are expanded via clicking their tag in
+  // Compact mode. Reset when leaving Compact (Full shows all; Off shows none).
+  const [expandedSymbols, setExpandedSymbols] = useState<ReadonlySet<string>>(() => new Set());
+  useEffect(() => {
+    if (annotationToggleState !== "compact") setExpandedSymbols((s) => (s.size ? new Set() : s));
+  }, [annotationToggleState]);
 
   // Drawer-driven relayout: the bottom drawer's resize handle mutates zustand
   // state synchronously during mousemove, but the drawer's height change
@@ -622,6 +724,17 @@ export function EditorDisplay(props: EditorDisplayProps) {
     props.services.problemService.warnings,
     props.services.problemService.validationErrors,
     props.services.problemService.invalidRelationships,
+  ]);
+
+  useEffect(() => {
+    updateSchemaAnnotations();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    currentItem?.id,
+    currentItem?.editableContents,
+    schemaAnnotations,
+    annotationToggleState,
+    expandedSymbols,
   ]);
 
   return (
@@ -832,4 +945,68 @@ function registerAssistantDebugLenses(monacoInstance: typeof monaco) {
   providerRef.current = provider;
   monacoInstance.languages.registerCodeLensProvider(DS_LANGUAGE_NAME, provider);
   monacoInstance.languages.registerCodeLensProvider("yaml", provider);
+}
+
+/**
+ * registerSchemaExplanationHover wires a hover provider over the schema
+ * editor that surfaces the AI-generated explanation for the symbol under the
+ * cursor, plus a command link to regenerate. Registered once at module scope
+ * (mirrors registerAssistantDebugLenses); reads the latest annotation views
+ * via latestSchemaHoverRef since the provider can't close over React state.
+ * Gated on AppConfig().aiEnabled, the schema document, and the annotation
+ * toggle being on.
+ */
+function registerSchemaExplanationHover(monacoInstance: typeof monaco) {
+  monacoInstance.editor.registerCommand(REGENERATE_SCHEMA_EXPLANATIONS_COMMAND_ID, () => {
+    requestSchemaExplanation();
+  });
+
+  monacoInstance.languages.registerHoverProvider(DS_LANGUAGE_NAME, {
+    provideHover(model, position) {
+      if (!AppConfig().aiEnabled) return null;
+      if (modelKindByUri.get(model.uri.toString()) !== DataStoreItemKind.SCHEMA) return null;
+      if (useSchemaAnnotationStore.getState().toggleState === "off") return null;
+
+      const hit = latestSchemaHoverRef.current.find(
+        (h) => position.lineNumber >= h.startLine && position.lineNumber <= h.endLine,
+      );
+      if (!hit) return null;
+
+      // NOTE: monaco-editor's public d.ts (this version) exposes IMarkdownString
+      // as a type only — there is no `monaco.MarkdownString` runtime class to
+      // `new` up, so we build the markdown value as a string and hand back a
+      // plain object satisfying IMarkdownString (value + isTrusted).
+      let mdValue = hit.explanation;
+      if (hit.stale) {
+        mdValue += "\n\n_Possibly out of date — the schema changed since this was generated._";
+      }
+      mdValue += `\n\n[↻ Regenerate explanations](command:${REGENERATE_SCHEMA_EXPLANATIONS_COMMAND_ID})`;
+
+      // Defensive clamp: the model may have shrunk since latestSchemaHoverRef
+      // was last populated (e.g. a rapid edit racing the debounced annotation
+      // recompute), so hit.endLine could point past the live model's last line.
+      const clampedEndLine = Math.min(hit.endLine, model.getLineCount());
+
+      return {
+        range: new monacoInstance.Range(
+          hit.startLine,
+          1,
+          clampedEndLine,
+          model.getLineMaxColumn(clampedEndLine),
+        ),
+        // Scoped to only the regenerate command: hit.explanation is LLM-authored
+        // text echoed from schema comments, which may contain prompt-injected
+        // `command:` links. isTrusted: true would make ALL command links
+        // clickable (e.g. escalating to playground.askAssistantDebug); scoping
+        // enabledCommands to just this one command keeps the regenerate link
+        // functional while closing that off.
+        contents: [
+          {
+            value: mdValue,
+            isTrusted: { enabledCommands: [REGENERATE_SCHEMA_EXPLANATIONS_COMMAND_ID] },
+          },
+        ],
+      };
+    },
+  });
 }

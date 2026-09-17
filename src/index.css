@@ -172,3 +172,36 @@ code {
 [data-flash-highlight="true"] > td {
   animation: flash-highlight 1s ease-out;
 }
+
+/* AI schema explanation annotations: ghosted overlays, never part of the buffer. */
+.schema-annot-tag {
+  color: var(--muted-foreground);
+  font-style: italic;
+  opacity: 0.85;
+}
+.schema-annot-unexplained {
+  color: color-mix(in oklch, var(--muted-foreground) 55%, transparent);
+  font-style: italic;
+}
+.schema-annot-stale {
+  opacity: 0.55;
+}
+.schema-annot-block {
+  padding: 2px 0 2px 12px;
+  border-left: 2px solid color-mix(in oklch, var(--primary) 45%, transparent);
+  color: var(--muted-foreground);
+  font-style: italic;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+  box-sizing: border-box;
+  line-height: 1.4;
+  opacity: 0.9;
+}
+.schema-annot-block.schema-annot-stale {
+  opacity: 0.6;
+}
+.schema-annot-code {
+  font-family: var(--font-mono, monospace);
+  font-style: normal;
+}
