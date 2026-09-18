@@ -17,7 +17,13 @@ const EntrySchema = z.object({
 
 const InputSchema = z.object({
   annotations: z.array(EntrySchema).min(1),
-  show: z.enum(["compact", "full"]).optional(),
+  show: z
+    .enum(["compact", "full"])
+    .optional()
+    .describe(
+      "How to reveal the explanations if they are currently hidden. Ignored when the user " +
+        "already has them showing; defaults to full.",
+    ),
 });
 export type ExplainSchemaInput = z.infer<typeof InputSchema>;
 
@@ -59,7 +65,12 @@ export const explainSchemaTool: AssistantTool<ExplainSchemaInput, ExplainSchemaR
     // report its unknowns for self-correction WITHOUT wiping any previously
     // stored annotations or flipping the density toggle.
     if (valid.length > 0) {
-      useSchemaAnnotationStore.getState().setAnnotations(valid, input.show ?? "full");
+      const store = useSchemaAnnotationStore.getState();
+      // If explanations are already showing (e.g. the user picked Compact and
+      // that is what triggered this run), their chosen density wins; `show` only
+      // decides how to reveal them when they were hidden.
+      const density = store.toggleState === "off" ? (input.show ?? "full") : store.toggleState;
+      store.setAnnotations(valid, density);
     }
     return { ok: valid.length > 0, explained_count: valid.length, unknown_symbols: unknown };
   },

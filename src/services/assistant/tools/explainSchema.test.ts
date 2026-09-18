@@ -64,6 +64,46 @@ describe("explainSchemaTool", () => {
     expect(stored.annotations[0].sourceHash).toBeTruthy();
   });
 
+  describe("density after generating", () => {
+    const entries = [
+      { symbolKind: "definition", symbolPath: "document", shortLabel: "core", explanation: "z" },
+    ] as const;
+
+    it("keeps Compact when the user turned it on before generating", async () => {
+      useSchemaAnnotationStore.getState().setToggleState("compact");
+      await explainSchemaTool.execute({ annotations: [...entries] }, ctxWith(SCHEMA));
+      expect(useSchemaAnnotationStore.getState().toggleState).toBe("compact");
+    });
+
+    it("keeps the user's density even if the model passes a different `show`", async () => {
+      useSchemaAnnotationStore.getState().setToggleState("compact");
+      await explainSchemaTool.execute({ show: "full", annotations: [...entries] }, ctxWith(SCHEMA));
+      expect(useSchemaAnnotationStore.getState().toggleState).toBe("compact");
+    });
+
+    it("keeps Full when the user is already on Full", async () => {
+      useSchemaAnnotationStore.getState().setToggleState("full");
+      await explainSchemaTool.execute(
+        { show: "compact", annotations: [...entries] },
+        ctxWith(SCHEMA),
+      );
+      expect(useSchemaAnnotationStore.getState().toggleState).toBe("full");
+    });
+
+    it("turns explanations on (default Full) when they were hidden", async () => {
+      await explainSchemaTool.execute({ annotations: [...entries] }, ctxWith(SCHEMA));
+      expect(useSchemaAnnotationStore.getState().toggleState).toBe("full");
+    });
+
+    it("honors `show` when explanations were hidden", async () => {
+      await explainSchemaTool.execute(
+        { show: "compact", annotations: [...entries] },
+        ctxWith(SCHEMA),
+      );
+      expect(useSchemaAnnotationStore.getState().toggleState).toBe("compact");
+    });
+  });
+
   it("skips unknown symbols but keeps valid ones", async () => {
     const res = await explainSchemaTool.execute(
       {
