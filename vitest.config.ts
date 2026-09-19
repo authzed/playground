@@ -30,6 +30,10 @@ export default mergeConfig(
           },
         },
       ],
+      // @authzed/spicedb-parser-js ships ESM that re-exports named bindings from
+      // the CJS `parsimmon` package; inline it so Vitest transforms it and the
+      // named imports resolve under Node.
+      server: { deps: { inline: ["@authzed/spicedb-parser-js"] } },
     },
   }),
 );

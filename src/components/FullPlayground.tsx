@@ -90,6 +90,7 @@ import { WatchesPanel } from "./panels/watches";
 import { DockActivityBar } from "./rightdock/DockActivityBar";
 import { RightDock } from "./rightdock/RightDock";
 import type { DockPanelId } from "./rightdock/state";
+import { SchemaExplainToggle } from "./schemaAnnotations/SchemaExplainToggle";
 import { Alert, AlertTitle } from "./ui/alert";
 import { ValidateButton } from "./ValidationButton";
 
@@ -447,6 +448,12 @@ export function ThemedAppView(props: {
   const isReadOnly = sharingStatus === SharingStatus.SHARING || props.datastore.isOutOfDate();
 
   // TODO: this is a component.
+  //
+  // Each EditorDisplay is keyed by its document so switching tabs remounts it.
+  // EditorDisplay registers its Monaco editor (and per-model state such as the
+  // schema annotations) under the item it was mounted for; the documents below
+  // render it at the same position, so without a key React would reuse one
+  // instance and swap the model underneath that bookkeeping.
   const renderDocument = (active: DocumentRef): ReactNode => {
     if (active === "schema") {
       const item = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA);
@@ -475,6 +482,7 @@ export function ThemedAppView(props: {
               </TooltipTrigger>
               <TooltipContent>Open the schema visualizer</TooltipContent>
             </Tooltip>
+            <SchemaExplainToggle datastore={datastore} />
             <div className="ml-auto" />
             <DocLink
               title="Schema Development Guide"
@@ -484,6 +492,7 @@ export function ThemedAppView(props: {
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
+                key={item.id}
                 datastore={datastore}
                 services={services}
                 currentItem={item}
@@ -540,6 +549,7 @@ export function ThemedAppView(props: {
                 />
               ) : (
                 <EditorDisplay
+                  key={item.id}
                   datastore={datastore}
                   services={services}
                   currentItem={item}
@@ -575,6 +585,7 @@ export function ThemedAppView(props: {
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
+                key={item.id}
                 datastore={datastore}
                 services={services}
                 currentItem={item}
@@ -649,6 +660,7 @@ export function ThemedAppView(props: {
           <div className="flex-1 min-h-0 relative">
             <div className="absolute inset-0">
               <EditorDisplay
+                key={item.id}
                 datastore={datastore}
                 services={services}
                 currentItem={item}
