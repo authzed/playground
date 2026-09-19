@@ -35,9 +35,9 @@ export function resolveSymbol(
     // Resolver's ResolvedCaveatDefinition does not carry a populated range in
     // parser v1.2.0 (line/column/offset are all 0). The raw caveat node in the
     // parsed AST does, so read the range directly from there.
-    const cav = schema.definitions.find(
-      (d) => d.kind === "caveatDef" && d.name === symbolPath,
-    ) as { range: TextRange } | undefined;
+    const cav = schema.definitions.find((d) => d.kind === "caveatDef" && d.name === symbolPath) as
+      | { range: TextRange }
+      | undefined;
     range = cav?.range;
   } else {
     // Member names contain no "/", but definition names may (e.g. "sub/user").
@@ -69,7 +69,11 @@ export function listSchemaSymbols(schemaText: string): UnexplainedSymbol[] {
 
   for (const rd of resolver.listDefinitions()) {
     const def = rd.definition;
-    out.push({ symbolKind: "definition", symbolPath: def.name, startLine: def.range.startIndex.line });
+    out.push({
+      symbolKind: "definition",
+      symbolPath: def.name,
+      startLine: def.range.startIndex.line,
+    });
     for (const rp of rd.listRelationsAndPermissions()) {
       out.push({
         symbolKind: rp.kind as AnnotationKind, // "relation" | "permission"

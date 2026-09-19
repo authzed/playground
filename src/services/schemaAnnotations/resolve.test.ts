@@ -69,7 +69,13 @@ describe("listSchemaSymbols", () => {
     const syms = listSchemaSymbols(SCHEMA);
     const paths = syms.map((s) => s.symbolPath);
     expect(paths).toEqual(
-      expect.arrayContaining(["user", "document", "document/viewer", "document/view", "is_tuesday"]),
+      expect.arrayContaining([
+        "user",
+        "document",
+        "document/viewer",
+        "document/view",
+        "is_tuesday",
+      ]),
     );
     expect(syms.find((s) => s.symbolPath === "is_tuesday")!.startLine).toBe(8);
   });

@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
-import { useSchemaAnnotationStore } from "./store";
 import { hashSymbolSource } from "./resolve";
+import { useSchemaAnnotationStore } from "./store";
 
 describe("useSchemaAnnotationStore", () => {
   beforeEach(() => useSchemaAnnotationStore.getState().reset());
