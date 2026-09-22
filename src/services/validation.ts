@@ -45,6 +45,7 @@ function runValidation(
   developerService: DeveloperService,
   callback: ValidationCallback,
   setValidationState: (state: ValidationState) => void,
+  overrideValidationYaml?: string,
 ) {
   setValidationState({ status: ValidationStatus.RUNNING });
   const datastoreIndex = datastore.currentIndex();
@@ -54,7 +55,7 @@ function runValidation(
     DataStoreItemKind.RELATIONSHIPS,
   ).editableContents;
   const assertionsYaml = buildAssertionsYaml(datastore);
-  const validationYaml = buildValidationBlockYaml(datastore);
+  const validationYaml = overrideValidationYaml ?? buildValidationBlockYaml(datastore);
 
   const outcome = runValidationAgainst(
     developerService,
@@ -93,7 +94,7 @@ function runValidation(
 export interface ValidationService {
   state: ValidationState;
   isRunning: boolean;
-  conductValidation: (callback: ValidationCallback) => void;
+  conductValidation: (callback: ValidationCallback, overrideValidationYaml?: string) => void;
 }
 
 export function useValidationService(
@@ -106,7 +107,7 @@ export function useValidationService(
 
   const { pushEvent } = useGoogleAnalytics();
 
-  const conductValidation = (callback: ValidationCallback) => {
+  const conductValidation = (callback: ValidationCallback, overrideValidationYaml?: string) => {
     runValidation(
       datastore,
       developerService,
@@ -124,6 +125,7 @@ export function useValidationService(
           });
         }
       },
+      overrideValidationYaml,
     );
   };
 

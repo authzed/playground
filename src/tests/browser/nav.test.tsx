@@ -39,7 +39,7 @@ describe("Navigation", () => {
 
   it("displays panels", async () => {
     const screen = await mountPlayground();
-    waitForWasm();
+    await waitForWasm();
     // NOTE: these buttons are unlabeled (no title or anything) but have
     // tooltips associated with them. It may make sense to use title directly here.
     await screen.getByLabelText("problems panel trigger").click();

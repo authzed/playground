@@ -14,6 +14,14 @@ export default mergeConfig(
             name: "unit",
             include: ["src/**/*.test.ts", "src/**/*.test.tsx", "api/**/*.test.ts"],
             exclude: ["src/tests/browser/**"],
+            server: {
+              deps: {
+                // @authzed/spicedb-parser-js pulls in parsimmon, a CJS module whose named
+                // exports Node's ESM loader can't see. Inlining lets Vite transform it, the
+                // same way it does for the browser project.
+                inline: ["@authzed/spicedb-parser-js"],
+              },
+            },
           },
         },
         {
