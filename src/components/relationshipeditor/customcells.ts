@@ -52,6 +52,7 @@ export function useCustomCells(
   resolver: Resolver | undefined,
   similarHighlighting: boolean,
   columnsWithWidths: Column[],
+  modifierHeld: boolean,
 ): {
   // The type we're providing here is about as narrow as we can
   // get without fully figuring out a discriminated union here.
@@ -218,6 +219,7 @@ export function useCustomCells(
     },
     similarHighlighting: similarHighlighting,
     columnsWithWidths: columnsWithWidths,
+    modifierHeld: modifierHeld,
   });
 
   // NOTE: we always set the current value on the props to ensure that the renderers
@@ -237,6 +239,7 @@ export function useCustomCells(
     },
     similarHighlighting: similarHighlighting,
     columnsWithWidths: columnsWithWidths,
+    modifierHeld: modifierHeld,
   };
 
   // renderers defines the custom cell types supported by the RelationshipEditor.
