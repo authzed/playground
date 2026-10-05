@@ -4,7 +4,7 @@ FROM --platform=$BUILDPLATFORM $BASE_IMAGE AS playground-builder
 WORKDIR /app
 # Bring in everything not ignored by the dockerignore
 COPY . .
-ENV YARN_CACHE_FOLDER=/tmp/yarn_cache
+RUN corepack enable
 
 # Environment variables for build time.
 ARG VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID=""
@@ -15,9 +15,9 @@ ARG VITE_DISCORD_CHANNEL_ID=""
 ARG VITE_DISCORD_INVITE_URL="https://authzed.com/discord"
 ARG VITE_DISCORD_SERVER_ID=""
 
-RUN yarn install --frozen-lockfile --non-interactive --network-timeout 1000000
+RUN pnpm install --frozen-lockfile
 
-RUN yarn build
+RUN pnpm build
 
 FROM $BASE_IMAGE AS playground-verifier
 
