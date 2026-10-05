@@ -48,3 +48,16 @@ describe("DataStore baseline tracking", () => {
     expect(store.computeContentHash()).not.toBe(before);
   });
 });
+
+describe("EphemeralDataStore isolation", () => {
+  it("editing one store does not leak into a freshly constructed store", () => {
+    const first = new EphemeralDataStore();
+    const item = first.getSingletonByKind(DataStoreItemKind.SCHEMA);
+    first.update(item, "definition leaked {}");
+
+    const second = new EphemeralDataStore();
+    expect(second.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents).not.toContain(
+      "leaked",
+    );
+  });
+});

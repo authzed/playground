@@ -387,7 +387,10 @@ class LocalStorageDataStore extends DataStore {
 }
 
 export class EphemeralDataStore extends DataStore {
-  private data: DataStorageData = EMPTY_STORE;
+  // Deep clone rather than referencing the module-level EMPTY_STORE: update()
+  // mutates the stored object in place, so sharing the reference would corrupt
+  // the default sample for every other store that falls back to EMPTY_STORE.
+  private data: DataStorageData = JSON.parse(JSON.stringify(EMPTY_STORE));
   private wasEdited: boolean = false;
 
   getStored(): DataStorageData {
@@ -421,8 +424,16 @@ export function useReadonlyDatastore(): DataStore {
 /**
  * usePlaygroundDatastore returns a hook for interacting with the backing datastore
  * for the playground. Data is retrieved and stored in local storage.
+ * When fresh is true, an ephemeral datastore is used instead, avoiding any
+ * persisted state (useful for screen sharing).
  */
-export function usePlaygroundDatastore(): DataStore {
-  const datastoreRef = useRef(new LocalStorageDataStore());
-  return datastoreRef.current;
+export function usePlaygroundDatastore(fresh?: boolean): DataStore {
+  // Only the selected store is instantiated. Constructing LocalStorageDataStore
+  // in fresh mode is avoided so a fresh session never touches local storage, and
+  // lazy refs avoid allocating a throwaway instance on every render.
+  const storeRef = useRef<DataStore | null>(null);
+  if (storeRef.current === null) {
+    storeRef.current = fresh ? new EphemeralDataStore() : new LocalStorageDataStore();
+  }
+  return storeRef.current;
 }
