@@ -15,10 +15,12 @@ import { TraceCard } from "./TraceCard";
 export function AssistantMessage({
   message,
   onUndo,
+  onCommunityHelp,
   localParseService,
 }: {
   message: DisplayMessage;
   onUndo?: () => void;
+  onCommunityHelp?: (draft: string) => void;
   localParseService: LocalParseService;
 }) {
   if (message.role === "user") {
@@ -59,6 +61,20 @@ export function AssistantMessage({
     if (a.kind === "trace") {
       renderedArtifacts.push(
         <TraceCard key={i} trace={a.trace} localParseService={localParseService} />,
+      );
+    } else if (a.kind === "community_help") {
+      renderedArtifacts.push(
+        <div key={i} className="space-y-2 rounded-md border p-3 text-sm">
+          <p>{a.reason}</p>
+          <Button
+            size="sm"
+            variant="outline"
+            disabled={!onCommunityHelp}
+            onClick={() => onCommunityHelp?.(a.draft)}
+          >
+            Ask in Discord
+          </Button>
+        </div>,
       );
     } else if (!collapseChanges) {
       renderedArtifacts.push(<DiffCard key={i} diff={a} />);

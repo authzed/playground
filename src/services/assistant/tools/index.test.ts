@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { CLIENT_TOOL_NAMES, TOOL_DISPLAY, buildDefaultRegistry } from "./index";
 
 describe("buildDefaultRegistry", () => {
-  it("registers all ten client tools", () => {
+  it("registers all client tools", () => {
     const names = buildDefaultRegistry()
       .list()
       .map((t) => t.name)
@@ -19,6 +19,7 @@ describe("buildDefaultRegistry", () => {
         "remove_check_watch",
         "run_check",
         "run_validation",
+        "suggest_community_help",
         "update_check_watch",
       ].sort(),
     );

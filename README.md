@@ -86,7 +86,7 @@ To enable the sharing functionality on Vercel, you need to configure the followi
 **Optional:**
 
 - `VITE_GOOGLE_ANALYTICS_MEASUREMENT_ID` - Google Analytics measurement ID
-- `VITE_DISCORD_CHANNEL_ID` - Discord channel ID for embedded chat
+- `VITE_DISCORD_CHANNEL_ID` - Discord channel ID for embedded chat and assistant community help
 - `VITE_DISCORD_SERVER_ID` - Discord server ID
 - `VITE_DISCORD_INVITE_URL` - Discord invite URL (defaults to https://authzed.com/discord)
 
@@ -136,5 +136,17 @@ Our [documentation website] is also open source if you'd like to clarify anythin
 SpiceDB is a community project where everyone is invited to participate and [feel welcomed].
 While the project has a technical goal, participation is not restricted to those with code contributions.
 Join our [Community Discord](https://authzed.com/discord) to ask questions and meet other users.
+
+The playground assistant offers **Ask the community** at any time, and can suggest
+**Ask in Discord** when it cannot verify a solution or you request human help.
+Review and edit the draft, optionally summarize the conversation, then choose
+**Create playground link** to attach a snapshot. Sharing includes the schema,
+relationships, assertions, expected relations, and check watches with their context;
+it does not include the chat. Anyone with that link can view the snapshot.
+
+Use **Copy message** and **Open Discord** to paste and post the question yourself.
+No bot posts on your behalf. The destination uses the configured Discord server and
+channel IDs, falling back to `VITE_DISCORD_INVITE_URL` or the community invite above.
+Draft editing and copying remain available if the AI or sharing service fails.
 
 [feel welcomed]: CODE-OF-CONDUCT.md
