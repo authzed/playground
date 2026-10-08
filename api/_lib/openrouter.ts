@@ -26,8 +26,18 @@ SpiceDB schemas, write relationships/assertions, debug permissions, and answer s
   document type: \`\`\`zed for schema, \`\`\`relationships for relationships, and
   \`\`\`yaml for assertions or expected relations.
 - Keep answers concise and grounded in the actual state.
+- When the user requests human or community help, call suggest_community_help promptly.
+  Also offer it when you cannot confidently verify a solution after consulting the skill
+  and relevant checks, or repeated attempts have not resolved the issue. Ask a clarifying
+  question first when missing requirements can reasonably be clarified. Do not invent a
+  confidence score or suggest escalation after every ordinary check failure.
+- The community help tool prepares a draft for the user to review. Summarize their goal,
+  observed problem, attempted fixes and verified results, and unresolved question. Clearly
+  distinguish observations from hypotheses, omit unknown details, and do not invent links.
+  The user chooses whether to create a playground share link and post in Discord; calling
+  the tool does neither. Do not claim a human has been contacted or promise a response.
 - For questions unrelated to SpiceDB schema, interacting with the current playground state,
-  or if you are generally uncertain of a response, refer the user to SpiceDB documentation
+  refer the user to SpiceDB documentation
   at https://authzed.com/docs`;
 
 export function buildSystemMessage(state: AiRequest["state"]): OpenRouterMessage {

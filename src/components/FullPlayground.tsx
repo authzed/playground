@@ -45,7 +45,7 @@ import {
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import useCopyToClipboard from "@/hooks/use-copy-to-clipboard";
-import { SharedDataV2 } from "@/schemas/share-data";
+import { createShareLink } from "@/services/sharing";
 
 import DISCORD from "../assets/discord.svg?react";
 import { useDocumentIdentity } from "../hooks/use-document-identity";
@@ -59,7 +59,12 @@ import {
 } from "../services/check";
 import AppConfig from "../services/configservice";
 import { RelationshipsEditorType, useCookieService } from "../services/cookieservice";
-import { DataStore, DataStoreItemKind, usePlaygroundDatastore } from "../services/datastore";
+import {
+  DataStore,
+  DataStoreItemKind,
+  readDatastoreDocs,
+  usePlaygroundDatastore,
+} from "../services/datastore";
 import { useHistoryStore } from "../services/history/historyStore";
 import { readHistoryDocs, useHistoryRecorder } from "../services/history/useHistoryRecorder";
 import { useLocalParseService } from "../services/localparse";
@@ -269,53 +274,15 @@ export function ThemedAppView(props: {
 
     setSharingStatus(SharingStatus.SHARING);
 
-    const schema = datastore.getSingletonByKind(DataStoreItemKind.SCHEMA).editableContents!;
-    const relationshipsYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.RELATIONSHIPS,
-    ).editableContents!;
-    const assertionsYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.ASSERTIONS,
-    ).editableContents!;
-    const validationYaml = datastore.getSingletonByKind(
-      DataStoreItemKind.EXPECTED_RELATIONS,
-    ).editableContents!;
-
-    const checkWatches = liveCheckService.items.map(liveCheckItemToWatch);
-
-    // Invoke sharing.
     try {
-      const response = await fetch(`${shareApiEndpoint}/api/share`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          version: "2",
-          schema,
-          relationships_yaml: relationshipsYaml,
-          assertions_yaml: assertionsYaml,
-          validation_yaml: validationYaml,
-          ...(checkWatches.length > 0 ? { check_watches: checkWatches } : {}),
-        } satisfies SharedDataV2),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
-        toast.error("Error sharing", {
-          description: errorData.error || "Failed to share playground",
-        });
-        setSharingStatus(SharingStatus.SHARE_ERROR);
-        return;
-      }
-
-      const result = await response.json();
-      const reference = result.hash;
-      pushEvent("shared", {
-        reference,
-      });
-
-      const newUrl = new URL(`/s/${reference}`, window.location.href);
-      await copy(newUrl.href);
+      const url = await createShareLink(
+        readDatastoreDocs(datastore),
+        liveCheckService.items.map(liveCheckItemToWatch),
+        shareApiEndpoint ?? "",
+        window.location.href,
+      );
+      pushEvent("shared", { reference: new URL(url).pathname.slice("/s/".length) });
+      await copy(url);
 
       setSharingStatus(SharingStatus.SHARED);
     } catch (error: unknown) {

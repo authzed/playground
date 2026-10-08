@@ -9,11 +9,13 @@ import { AssistantMessage } from "./AssistantMessage";
 export function MessageList({
   messages,
   onUndo,
+  onCommunityHelp,
   busy,
   localParseService,
 }: {
   messages: DisplayMessage[];
   onUndo: (m: DisplayMessage) => void;
+  onCommunityHelp?: (draft: string) => void;
   busy: boolean;
   localParseService: LocalParseService;
 }) {
@@ -48,6 +50,7 @@ export function MessageList({
           key={m.id}
           message={m}
           onUndo={() => onUndo(m)}
+          onCommunityHelp={onCommunityHelp}
           localParseService={localParseService}
         />
       ))}

@@ -34,6 +34,7 @@ export interface ToolContext {
  * tool result via redactFromModel — so the controller needs NO per-tool checks.
  */
 export type DisplayArtifact =
+  | { kind: "community_help"; reason: string; draft: string }
   | { kind: "diff"; target: string; before: string; after: string }
   | { kind: "trace"; trace: CheckDebugTrace };
 

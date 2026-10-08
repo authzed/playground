@@ -12,8 +12,10 @@ import { explainSchemaTool } from "./explainSchema";
 import { openTabToLineTool } from "./openTabToLine";
 import { runCheckTool } from "./runCheck";
 import { runValidationTool } from "./runValidation";
+import { suggestCommunityHelpTool } from "./suggestCommunityHelp";
 
 const ALL_CLIENT_TOOLS = [
+  suggestCommunityHelpTool,
   editDocumentTool,
   explainSchemaTool,
   runCheckTool,

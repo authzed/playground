@@ -1,6 +1,12 @@
 import { usePostHog } from "@posthog/react";
+import { useState } from "react";
 
 import { Button } from "@/components/ui/button";
+import { buildManualHelpDraft, summarizeForCommunity } from "@/services/assistant/communityHelp";
+import { liveCheckItemToWatch } from "@/services/check";
+import AppConfig from "@/services/configservice";
+import { readDatastoreDocs } from "@/services/datastore";
+import { createShareLink } from "@/services/sharing";
 
 import { type DisplayMessage, useAssistantStore } from "../../../services/assistant/store";
 import type { HistoryRecorder } from "../../../services/assistant/types";
@@ -12,6 +18,7 @@ import { restoreRevision } from "../../../services/history/useHistoryRecorder";
 import type { Services } from "../../../services/services";
 
 import { ChatInput } from "./ChatInput";
+import { CommunityHelpDialog } from "./CommunityHelpDialog";
 import { MessageList } from "./MessageList";
 
 export function AssistantPanel({
@@ -31,6 +38,9 @@ export function AssistantPanel({
   const status = useAssistantStore((s) => s.status);
   const reset = useAssistantStore((s) => s.reset);
   const posthog = usePostHog();
+  const [helpDraft, setHelpDraft] = useState<{ draft: string; generation: number } | null>(null);
+  const generation = useAssistantStore((s) => s.generation);
+  const openCommunityHelp = (draft: string) => setHelpDraft({ draft, generation });
 
   const onUndo = (m: DisplayMessage) => {
     if (!m.checkpointRevisionId) return;
@@ -53,21 +63,60 @@ export function AssistantPanel({
 
   return (
     <div className="flex h-full flex-col">
-      <div className="flex items-center justify-between border-b border-chrome-divider px-3 py-1.5 text-xs">
+      <div className="flex flex-wrap items-center justify-between gap-1 border-b border-chrome-divider px-3 py-1.5 text-xs">
         <span className="font-semibold uppercase tracking-wide text-muted-foreground">
           Assistant
         </span>
-        <Button size="sm" variant="ghost" onClick={onNewChat}>
-          New chat
-        </Button>
+        <div className="flex flex-wrap items-center gap-1">
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() =>
+              openCommunityHelp(buildManualHelpDraft(useAssistantStore.getState().messages))
+            }
+          >
+            Ask the community
+          </Button>
+          <Button size="sm" variant="ghost" onClick={onNewChat}>
+            New chat
+          </Button>
+        </div>
       </div>
       <MessageList
         messages={display}
         onUndo={onUndo}
         busy={busy}
         localParseService={services.localParseService}
+        onCommunityHelp={openCommunityHelp}
       />
       <ChatInput disabled={busy} onSubmit={submit} />
+      {helpDraft !== null && helpDraft.generation === generation && (
+        <CommunityHelpDialog
+          initialDraft={helpDraft.draft}
+          onClose={() => setHelpDraft(null)}
+          createLink={
+            AppConfig().shareApiEndpoint
+              ? () =>
+                  createShareLink(
+                    readDatastoreDocs(datastore),
+                    services.liveCheckService.items.map(liveCheckItemToWatch),
+                    AppConfig().shareApiEndpoint!,
+                    window.location.href,
+                  )
+              : undefined
+          }
+          summarize={
+            !busy
+              ? (signal) =>
+                  summarizeForCommunity({
+                    messages: useAssistantStore.getState().messages,
+                    state: readDatastoreDocs(datastore),
+                    signal,
+                  })
+              : undefined
+          }
+        />
+      )}
     </div>
   );
 }
